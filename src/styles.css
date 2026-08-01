@@ -13,6 +13,8 @@
   /* Secondary, reserved for the held beats and the build status. */
   --color-amber: #ffb454;
   --color-violet: #7e208a;
+  /* The music toggle only. Green so it never competes with the signup CTA. */
+  --color-mint: #3ddc97;
 
   --color-bone: #f6ecef;
   --color-lead: #e4d3e2;

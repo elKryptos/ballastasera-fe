@@ -39,7 +39,7 @@
     <div class="grid w-full items-center gap-4 sm:gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
       <!-- The mark, at size. Map pin + equaliser: where, and what's playing. -->
       <!-- On phones the pin is sized in dvh so it gives ground on short screens
-           instead of pushing the form and its note past the fold. -->
+        instead of pushing the form and its note past the fold. -->
       <div
         class="stage relative order-1 flex h-[13dvh] max-h-47.5 min-h-20 items-center justify-center lg:order-2 lg:h-auto lg:max-h-none lg:min-h-85">
         <div class="halo absolute aspect-square w-[62%] rounded-full"></div>
@@ -62,7 +62,7 @@
       </div>
 
       <!-- Mobile puts the music button straight under the headline, so it is in
-           the first screenful; on large screens it goes back to the end. -->
+        the first screenful; on large screens it goes back to the end. -->
       <div class="order-2 flex flex-col lg:order-1">
         <p
           class="eyebrow order-1 mb-2 font-mono text-[0.7rem] tracking-[0.22em] text-amber uppercase sm:mb-6 sm:text-[0.78rem]">
@@ -113,12 +113,12 @@
         }
 
         <!-- Starts the video wherever it is on the page, sound on. Pressing it
-             again pauses it where it is, it does not start over. -->
+          again pauses it where it is, it does not start over. -->
         <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video"
-          class="music group order-3 mb-4 inline-flex sm:mb-8 cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-rose/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
-          [ngClass]="videoOpen() 
-            ? 'border border-rose bg-rose/10 text-bone shadow-[0_0_15px_rgba(var(--tw-colors-rose),0.15)]' 
-            : 'border border-line bg-bone/3 text-muted hover:border-rose/60 hover:bg-bone/10 hover:text-bone'"
+          class="music group order-3 mb-4 inline-flex sm:mb-8 cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-mint/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
+          [ngClass]="videoOpen()
+            ? 'border border-mint bg-mint/15 text-bone shadow-[0_0_22px_-4px_var(--color-mint)]'
+            : 'border border-mint/45 bg-mint/8 text-bone shadow-[0_0_16px_-6px_var(--color-mint)] hover:border-mint hover:bg-mint/15 hover:text-bone'"
           [class.playing]="videoOpen()">
 
           <span class="eq flex h-3.5 items-end gap-0.75" aria-hidden="true">
@@ -208,7 +208,6 @@
     <nav class="flex gap-4.5" aria-label="Social">
       <a href="https://www.instagram.com/hans.manci/" target="_blank" rel="noopener noreferrer"
         class="no-underline transition-colors hover:text-green-500">Instagram</a>
-      <a href="#" class="no-underline transition-colors hover:text-rose">TikTok</a>
     </nav>
   </footer>
 </div>

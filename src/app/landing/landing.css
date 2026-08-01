@@ -176,17 +176,34 @@
   width: 3px;
   height: 34%;
   border-radius: 1px;
-  background: currentColor;
+  /* Green even when paused: the bars are what say "this is the music button". */
+  background: var(--color-mint);
   transition: height 0.3s ease, background-color 0.3s ease;
 }
 
+/* Idle, the button breathes just enough to be found on a dark page. */
+.music:not(.playing) {
+  animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 1.5s backwards,
+             musicpulse 3.2s ease-in-out 2.2s infinite;
+}
+
+@keyframes musicpulse {
+  0%,
+  100% {
+    box-shadow: 0 0 16px -6px var(--color-mint);
+  }
+  50% {
+    box-shadow: 0 0 22px -2px var(--color-mint);
+  }
+}
+
 .playing {
-  border-color: color-mix(in srgb, var(--color-rose) 55%, transparent);
+  border-color: var(--color-mint);
   color: var(--color-bone);
 }
 
 .playing .eq-bar {
-  background: var(--color-rose);
+  background: var(--color-mint);
   animation: eq 1.2s ease-in-out infinite;
 }
 
@@ -244,6 +261,7 @@
   .hint,
   .done,
   .music,
+  .music:not(.playing),
   .count,
   .plumb,
   .halo,

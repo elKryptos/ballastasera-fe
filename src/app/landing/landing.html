@@ -41,7 +41,7 @@
       <!-- On phones the pin is sized in dvh so it gives ground on short screens
            instead of pushing the form and its note past the fold. -->
       <div
-        class="stage relative order-1 flex h-[17dvh] max-h-47.5 min-h-24 items-center justify-center lg:order-2 lg:h-auto lg:max-h-none lg:min-h-85">
+        class="stage relative order-1 flex h-[13dvh] max-h-47.5 min-h-20 items-center justify-center lg:order-2 lg:h-auto lg:max-h-none lg:min-h-85">
         <div class="halo absolute aspect-square w-[62%] rounded-full"></div>
         <svg viewBox="0 0 200 210" role="img" aria-label="ballastasera"
           class="pinbig relative h-full w-auto max-w-full drop-shadow-[0_24px_44px_rgba(126,32,138,0.5)] lg:h-auto lg:w-[44%] lg:max-w-72.5 lg:min-w-32.5">
@@ -65,18 +65,18 @@
            the first screenful; on large screens it goes back to the end. -->
       <div class="order-2 flex flex-col lg:order-1">
         <p
-          class="eyebrow order-1 mb-3 font-mono text-[0.7rem] tracking-[0.22em] text-amber uppercase sm:mb-6 sm:text-[0.78rem]">
+          class="eyebrow order-1 mb-2 font-mono text-[0.7rem] tracking-[0.22em] text-amber uppercase sm:mb-6 sm:text-[0.78rem]">
           La scena latina d'Italia
         </p>
 
         <h1
-          class="order-2 mb-3.5 font-display text-[clamp(2.15rem,8.8vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance sm:mb-7">
+          class="order-2 mb-3 font-display text-[clamp(1.95rem,8.6vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance sm:mb-7">
           <span class="line block">Dove si</span>
           <span class="line block text-rose">balla stasera?</span>
         </h1>
 
         <p
-          class="lead order-4 mb-5 max-w-[46ch] text-[clamp(0.9rem,3.6vw,1.15rem)] leading-snug text-lead sm:mb-8 sm:leading-relaxed">
+          class="lead order-4 mb-4 max-w-[46ch] text-[clamp(0.85rem,3.5vw,1.15rem)] leading-[1.35] text-lead sm:mb-8 sm:leading-relaxed">
           Salsa, bachata e molto altro: ogni serata d'Italia in un posto solo, aggiornata
           giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano.
         </p>
@@ -115,7 +115,7 @@
         <!-- Starts the video wherever it is on the page, sound on. Pressing it
              again pauses it where it is, it does not start over. -->
         <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video"
-          class="music group order-3 mb-5 inline-flex sm:mb-8 cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-rose/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
+          class="music group order-3 mb-4 inline-flex sm:mb-8 cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-rose/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
           [ngClass]="videoOpen() 
             ? 'border border-rose bg-rose/10 text-bone shadow-[0_0_15px_rgba(var(--tw-colors-rose),0.15)]' 
             : 'border border-line bg-bone/3 text-muted hover:border-rose/60 hover:bg-bone/10 hover:text-bone'"

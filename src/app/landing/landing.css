@@ -39,6 +39,14 @@
   animation: drop 1s cubic-bezier(0.22, 1.4, 0.4, 1) backwards, float 2.8s ease-in-out 1.4s infinite;
 }
 
+/* On a very short screen — an old small phone, or any phone held sideways —
+   the pin is what gives way, so the form and its note stay in the first view. */
+@media (max-height: 520px) {
+  .stage {
+    display: none;
+  }
+}
+
 /* ---------- the count ---------- */
 
 .bar {

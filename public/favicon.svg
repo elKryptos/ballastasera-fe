@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ballastasera">
+  <defs>
+    <linearGradient id="g" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#ffb454"/>
+      <stop offset="0.55" stop-color="#ff2e63"/>
+      <stop offset="1" stop-color="#7e208a"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#17061c"/>
+  <g transform="translate(0,-1.6) scale(0.32)">
+    <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="url(#g)"/>
+    <g fill="#17061c">
+      <rect x="74" y="66" width="13" height="30" rx="6.5"/>
+      <rect x="93" y="54" width="13" height="54" rx="6.5"/>
+      <rect x="112" y="62" width="13" height="38" rx="6.5"/>
+    </g>
+  </g>
+</svg>

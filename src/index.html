@@ -2,15 +2,94 @@
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <title>ballastasera — Dove si balla stasera?</title>
+  <title>ballastasera — Dove si balla stasera? Salsa e bachata in Italia</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Salsa, bachata e kizomba: ogni serata latina d'Italia in un posto solo. Stiamo costruendo il sito. Si parte da Milano.">
+  <meta name="description" content="Salsa, bachata e kizomba: ogni serata latina d'Italia in un posto solo, aggiornata giorno per giorno. Stiamo costruendo il sito — si parte da Milano.">
+
+  <!-- Crawling -->
+  <link rel="canonical" href="https://ballastasera.it/">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="author" content="ballastasera">
+
+  <!-- Open Graph (WhatsApp, Facebook, LinkedIn, Telegram) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ballastasera">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:url" content="https://ballastasera.it/">
+  <meta property="og:title" content="ballastasera — Dove si balla stasera?">
+  <meta property="og:description" content="Salsa, bachata e kizomba: ogni serata latina d'Italia in un posto solo. Stiamo costruendo il sito — si parte da Milano.">
+  <meta property="og:image" content="https://ballastasera.it/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ballastasera — Dove si balla stasera?">
+
+  <!-- X / Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ballastasera — Dove si balla stasera?">
+  <meta name="twitter:description" content="Salsa, bachata e kizomba: ogni serata latina d'Italia in un posto solo. Si parte da Milano.">
+  <meta name="twitter:image" content="https://ballastasera.it/og-image.png">
+  <meta name="twitter:image:alt" content="ballastasera — Dove si balla stasera?">
+
+  <!-- Icons: the .ico is what Google shows next to the search result. -->
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#17061C">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="apple-mobile-web-app-title" content="ballastasera">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..600&family=DM+Mono:wght@400;500&display=swap">
+
+  <!-- Structured data: this is what feeds the logo and the site name in Google. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://ballastasera.it/#organization",
+        "name": "ballastasera",
+        "alternateName": "balla stasera",
+        "url": "https://ballastasera.it/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://ballastasera.it/icon-512.png",
+          "width": 512,
+          "height": 512,
+          "caption": "ballastasera"
+        },
+        "image": "https://ballastasera.it/og-image.png",
+        "description": "La scena latina d'Italia: salsa, bachata e kizomba, ogni serata in un posto solo.",
+        "areaServed": { "@type": "Country", "name": "Italia" },
+        "sameAs": ["https://www.instagram.com/hans.manci/"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://ballastasera.it/#website",
+        "url": "https://ballastasera.it/",
+        "name": "ballastasera",
+        "alternateName": "ballastasera.it",
+        "inLanguage": "it-IT",
+        "publisher": { "@id": "https://ballastasera.it/#organization" }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://ballastasera.it/#webpage",
+        "url": "https://ballastasera.it/",
+        "name": "ballastasera — Dove si balla stasera?",
+        "description": "Salsa, bachata e kizomba: ogni serata latina d'Italia in un posto solo. Si parte da Milano.",
+        "inLanguage": "it-IT",
+        "isPartOf": { "@id": "https://ballastasera.it/#website" },
+        "about": { "@id": "https://ballastasera.it/#organization" },
+        "primaryImageOfPage": "https://ballastasera.it/og-image.png"
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <app-root></app-root>

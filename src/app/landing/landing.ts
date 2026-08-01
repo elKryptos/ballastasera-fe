@@ -90,6 +90,17 @@ export class Landing {
    */
   protected readonly partners: PartnerCard[] = [
     {
+      art: 'events',
+      video: '/social/eventi.webm',
+      poster: '/social/eventi.jpg',
+      reel: 'DbEFvfVMo7N',
+      reelTitle: 'Un evento, raccontato bene',
+      creditName: 'MILATINO Milano',
+      creditHandle: 'milatino2.0',
+      label: 'Organizzatori e social',
+      copy: 'Social, festival e one night: un posto solo dove finiscono tutte le date.',
+    },
+    {
       art: 'venue',
       video: '/social/locali.webm',
       poster: '/social/locali.jpg',
@@ -110,17 +121,6 @@ export class Landing {
       creditHandle: 'noeliaoterobs',
       label: 'Scuole e maestri',
       copy: 'Corsi, stage e prove aperte, davanti a chi ha appena deciso di iniziare.',
-    },
-    {
-      art: 'events',
-      video: '/social/eventi.webm',
-      poster: '/social/eventi.jpg',
-      reel: 'DbEFvfVMo7N',
-      reelTitle: 'Un evento, raccontato bene',
-      creditName: 'MILATINO Milano',
-      creditHandle: 'milatino2.0',
-      label: 'Organizzatori e social',
-      copy: 'Social, festival e one night: un posto solo dove finiscono tutte le date.',
     },
   ];
 

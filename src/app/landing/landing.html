@@ -268,7 +268,7 @@
         <div class="p-2 pb-0">
           <video class="aspect-9/16 w-full rounded-[14px] border border-line bg-ink-2 object-cover" controls
             preload="metadata" [poster]="partner.poster ?? ''" (error)="onVideoError(i)">
-            <source [src]="partner.video" type="video/mp4" />
+            <source [src]="partner.video" type="video/webm" />
           </video>
         </div>
         } @else if (partner.reel) {

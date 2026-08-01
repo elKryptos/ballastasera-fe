@@ -47,30 +47,36 @@
   transform: scaleY(0.18);
   opacity: 0.3;
   /* steps(1) so each beat strikes and drops — no easing mush between hits. */
-  animation: step 2.4s steps(1, end) infinite;
+  animation: step 4s steps(1, end) infinite;
 }
 
+/* The tap sustains instead of striking: full height, amber, and a glow that
+   decays across the beat — so 4 and 8 read as different, not just as another hit. */
 .held .bar {
   background: var(--color-amber);
   animation-name: hold;
+  animation-timing-function: ease-out;
 }
 
 .num {
   color: var(--color-muted);
 }
 
-.held .num {
-  color: color-mix(in srgb, var(--color-amber) 55%, transparent);
+.held .num,
+.held .cue {
+  color: var(--color-amber);
 }
 
-.beat:nth-child(1) .bar { animation-delay: 0s; }
-.beat:nth-child(2) .bar { animation-delay: 0.3s; }
-.beat:nth-child(3) .bar { animation-delay: 0.6s; }
-.beat:nth-child(4) .bar { animation-delay: 0.9s; }
-.beat:nth-child(5) .bar { animation-delay: 1.2s; }
-.beat:nth-child(6) .bar { animation-delay: 1.5s; }
-.beat:nth-child(7) .bar { animation-delay: 1.8s; }
-.beat:nth-child(8) .bar { animation-delay: 2.1s; }
+/* Keyed off the beat itself, not the position: the two halves of the bar live
+   in separate columns, so nth-child would restart the count at 5. */
+.beat[data-beat="1"] .bar { animation-delay: 0s; }
+.beat[data-beat="2"] .bar { animation-delay: 0.5s; }
+.beat[data-beat="3"] .bar { animation-delay: 1s; }
+.beat[data-beat="4"] .bar { animation-delay: 1.5s; }
+.beat[data-beat="5"] .bar { animation-delay: 2s; }
+.beat[data-beat="6"] .bar { animation-delay: 2.5s; }
+.beat[data-beat="7"] .bar { animation-delay: 3s; }
+.beat[data-beat="8"] .bar { animation-delay: 3.5s; }
 
 /* ---------- motion ---------- */
 
@@ -87,16 +93,24 @@
   }
 }
 
-/* Beats 4 and 8 are held, so they swell rather than strike. */
+/* Beats 4 and 8 are held: they hit full height like a step, then fade out over
+   the beat rather than dropping, which is what makes the tap stand out. */
 @keyframes hold {
   0% {
-    transform: scaleY(0.34);
-    opacity: 0.9;
+    transform: scaleY(1);
+    opacity: 1;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--color-amber) 70%, transparent);
   }
-  12.5%,
+  12.5% {
+    transform: scaleY(0.85);
+    opacity: 0.95;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--color-amber) 45%, transparent);
+  }
+  25%,
   100% {
     transform: scaleY(0.18);
-    opacity: 0.22;
+    opacity: 0.35;
+    box-shadow: 0 0 0 transparent;
   }
 }
 
@@ -181,7 +195,7 @@
   }
 }
 
-/* The intro lands on the beat: one step every 0.3s, the tempo of the count. */
+/* The intro cascades in its own tempo, one step every 0.3s. */
 .eyebrow,
 .line,
 .lead,
@@ -231,8 +245,9 @@
     animation: none;
   }
 
-  /* Hold the count on beat 1 so the idea still reads without movement. */
-  .beat:first-child .bar {
+  /* Hold the first beat of each half so the idea still reads without movement. */
+  .beat[data-beat="1"] .bar,
+  .beat[data-beat="5"] .bar {
     transform: scaleY(1);
     opacity: 1;
   }

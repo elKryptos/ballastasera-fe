@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EmbedKind, MediaEmbed } from '../media-embed/media-embed';
+import { NgClass } from '@angular/common';
 
 type FormState = 'idle' | 'error' | 'done';
 
@@ -18,7 +19,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [FormsModule, MediaEmbed],
+  imports: [FormsModule, MediaEmbed, NgClass],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -34,14 +35,20 @@ export class Landing {
     {
       kind: 'youtube',
       mediaId: 'MMfmLVvVTzg',
-      title: 'Guarda com’è una serata',
+      title: 'Guarda come si balla la bachata',
       credit: '@ballastasera',
       hint: 'Premi play — parte con l’audio',
     },
   ];
 
-  /** One bar of salsa. Beats 4 and 8 are held, not stepped. */
-  protected readonly beats = [1, 2, 3, 4, 5, 6, 7, 8];
+  /**
+   * One bar of bachata, split the way it is danced: four beats travelling right,
+   * four travelling left. Beats 4 and 8 are the tap, not a step.
+   */
+  protected readonly phrases = [
+    { direction: 'destra', beats: [1, 2, 3, 4] },
+    { direction: 'sinistra', beats: [5, 6, 7, 8] },
+  ];
 
   protected readonly year = new Date().getFullYear();
 

@@ -3,7 +3,7 @@
 
 <div class="relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-8 px-5 pt-6 pb-5 sm:gap-10 sm:px-8 sm:pt-7">
   <header class="flex items-center justify-between gap-5">
-    <a href="/" aria-label="ballastasera — home" class="flex items-center gap-3 no-underline">
+    <a href="/" aria-label="ballastasera — home" class="flex items-center gap-0.5 no-underline">
       <svg viewBox="0 0 200 210" aria-hidden="true"
         class="h-7 w-6.5 shrink-0 drop-shadow-[0_6px_14px_rgba(255,46,99,0.45)]">
         <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
@@ -11,23 +11,26 @@
         <g fill="var(--color-ink)">
           <rect x="74" y="66" width="13" height="30" rx="6.5" />
           <rect x="93" y="54" width="13" height="54" rx="6.5" />
-          <rect x="112" y="62" width="13" height="38" rx="6.5" />
+          <rect x="112" y="62" width="13" height="3" rx="6.5" />
         </g>
       </svg>
       <span class="font-display text-lg font-bold tracking-[-0.02em]">balla<span class="text-rose">stasera</span></span>
     </a>
 
-    <p
-      class="hidden items-center gap-2 rounded-full border border-line px-4 py-1.75 font-mono text-[0.7rem] tracking-[0.16em] text-muted uppercase sm:flex">
-      <!-- A plumb line: the builder's tool that also keeps time like a metronome.
-           It swings on the same 2.4s bar as the count below. -->
-      <svg viewBox="0 0 24 24" class="plumb size-4 shrink-0" aria-hidden="true">
-        <circle cx="12" cy="2.4" r="1.6" fill="var(--color-amber)" />
-        <line x1="12" y1="3.6" x2="12" y2="14" stroke="var(--color-amber)" stroke-width="1" opacity="0.55" />
-        <path d="M12 13.4 15 16.6 12 22.2 9 16.6Z" fill="var(--color-amber)" />
+    <span
+      class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.8rem] font-bold tracking-[0.06em] uppercase"
+      style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-blue) 10%, transparent));
+        border:1.5px solid var(--color-border);">
+      <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 animate-spin" fill="none" stroke="currentColor" stroke-width="2"
+        aria-hidden="true">
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        <path
+          d="M9.5 2.5l.5 2M14.5 2.5l-.5 2M2.5 9.5l2 .5M2.5 14.5l2-.5M21.5 9.5l-2 .5M21.5 14.5l-2-.5M9.5 21.5l.5-2M14.5 21.5l-.5-2" />
       </svg>
-      Sito in costruzione
-    </p>
+      Work in progress
+    </span>
   </header>
 
   <main class="flex flex-1 items-center">
@@ -65,7 +68,7 @@
         </h1>
 
         <p class="lead mb-8 max-w-[46ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-relaxed text-lead">
-          Salsa, bachata e kizomba: ogni serata d'Italia in un posto solo, aggiornata
+          Salsa, bachata e molto altro: ogni serata d'Italia in un posto solo, aggiornata
           giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano.
         </p>
 
@@ -100,36 +103,65 @@
         }
 
         <!-- Starts the video wherever it is on the page, sound on. -->
-        <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video" class="music mt-7 inline-flex cursor-pointer items-center gap-3 rounded-full border border-line
-                 bg-bone/3 py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] text-muted uppercase
-                 transition-colors duration-200 hover:border-rose/60 hover:text-bone" [class.playing]="videoOpen()">
+        <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video"
+          class="group mt-7 inline-flex cursor-pointer items-center gap-3 rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-rose/50 focus:ring-offset-2"
+          [ngClass]="videoOpen() 
+            ? 'border border-rose bg-rose/10 text-bone shadow-[0_0_15px_rgba(var(--tw-colors-rose),0.15)]' 
+            : 'border border-line bg-bone/3 text-muted hover:border-rose/60 hover:bg-bone/10 hover:text-bone'"
+          [class.playing]="videoOpen()">
+
           <span class="eq flex h-3.5 items-end gap-0.75" aria-hidden="true">
             <span class="eq-bar"></span>
             <span class="eq-bar"></span>
             <span class="eq-bar"></span>
           </span>
+
           {{ videoOpen() ? 'Musica accesa' : 'Metti la musica' }}
         </button>
       </div>
     </div>
   </main>
 
-  <!-- The salsa count: you step on 1·2·3 and 5·6·7. Beats 4 and 8 are held. -->
-  <section class="count flex flex-col gap-3.5 border-t border-line pt-5">
-    <div class="beats flex h-14 items-end gap-[clamp(6px,1.4vw,16px)] sm:h-17" aria-hidden="true">
-      @for (beat of beats; track beat) {
-      <div class="beat flex flex-1 flex-col items-center gap-2" [class.held]="isHeld(beat)">
-        <span class="bar h-10 w-full rounded-sm sm:h-11.5"></span>
-        <span class="num font-mono text-[0.68rem] tabular-nums">{{ beat }}</span>
+  <!-- The bachata count: three steps then a tap, once to the right, once to the left.
+      The bars run on a 4s loop — one beat every 0.5s. -->
+  <section class="count flex flex-col gap-4 border-t border-line pt-5">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+      <h2 class="font-display text-lg font-bold tracking-[-0.02em]">Come si conta la bachata</h2>
+      <p class="font-mono text-[0.7rem] tracking-[0.16em] text-muted uppercase">
+        Otto tempi, poi si ricomincia
+      </p>
+    </div>
+
+    <div class="beats grid grid-cols-2 gap-x-[clamp(16px,5vw,52px)]" aria-hidden="true">
+      @for (phrase of phrases; track phrase.direction) {
+      <div class="flex flex-col gap-2">
+        <span class="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
+          Verso {{ phrase.direction }}
+        </span>
+        <div class="flex items-end gap-[clamp(5px,1.2vw,14px)]">
+          @for (beat of phrase.beats; track beat) {
+          <div class="beat flex flex-1 flex-col items-center gap-1.5" [attr.data-beat]="beat"
+            [class.held]="isHeld(beat)">
+            <span class="bar h-9 w-full rounded-sm sm:h-12"></span>
+            <span class="num font-mono text-[0.72rem] font-medium tabular-nums">{{ beat }}</span>
+            <span class="cue font-mono text-[0.56rem] tracking-[0.08em] uppercase sm:text-[0.6rem]">
+              {{ isHeld(beat) ? 'tap' : 'passo' }}
+            </span>
+          </div>
+          }
+        </div>
       </div>
       }
     </div>
-    <p class="font-mono text-[0.72rem] text-muted">
-      La bachata si balla seguendo <b class="font-medium text-bone">8 tempi</b>:
-      fai tre passi su <b class="font-medium text-bone">1·2·3</b>, una piccola pausa sul
-      <b class="font-medium text-amber">4</b>, poi ripeti su
-      <b class="font-medium text-bone">5·6·7</b> con una pausa sull'<b class="font-medium text-amber">8</b>.
-      Il segreto? Seguire il ritmo e muoversi insieme alla musica.
+
+    <p class="text-[0.85rem] leading-relaxed text-muted">
+      La musica va a <b class="font-medium text-bone">gruppi di otto tempi</b>, uguali per tutto il brano.
+      Sui primi quattro ti sposti <b class="font-medium text-bone">verso destra</b>: un passo su
+      <b class="font-medium text-bone">1, 2 e 3</b>, e sul <b class="font-medium text-amber">4</b> non fai un passo
+      ma un <b class="font-medium text-amber">tap</b> — appoggi il piede accanto all'altro, senza caricarci il peso,
+      ed è lì che nasce il movimento dell'anca. Sugli altri quattro rifai tutto
+      <b class="font-medium text-bone">verso sinistra</b>: passi su <b class="font-medium text-bone">5, 6 e 7</b>,
+      tap sull'<b class="font-medium text-amber">8</b>. Ginocchia morbide, conta a tempo, e sei già in pista.
     </p>
   </section>
 
@@ -143,7 +175,7 @@
       </p>
     </div>
 
-    <div class="grid gap-4" [class]="media.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'max-w-4xl'">
+    <div class="grid gap-4" [class]="media.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'max-w-6xl'">
       @for (item of media; track item.mediaId) {
       <app-media-embed [class]="item.kind === 'youtube' ? 'aspect-video' : 'aspect-4/5'" [kind]="item.kind"
         [mediaId]="item.mediaId" [title]="item.title" [credit]="item.credit" [hint]="item.hint ?? ''"
@@ -162,7 +194,8 @@
     <span class="tracking-[0.04em]">ballastasera.it · ballastasera.com</span>
     <span class="hidden tracking-[0.04em] sm:inline">Milano — Italia</span>
     <nav class="flex gap-4.5" aria-label="Social">
-      <a href="#" class="no-underline transition-colors hover:text-rose">Instagram</a>
+      <a href="https://www.instagram.com/hans.manci/" target="_blank" rel="noopener noreferrer"
+        class="no-underline transition-colors hover:text-green-500">Instagram</a>
       <a href="#" class="no-underline transition-colors hover:text-rose">TikTok</a>
     </nav>
   </footer>

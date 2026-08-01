@@ -170,6 +170,43 @@
   }
 }
 
+/* ---------- partners: the teaser map ---------- */
+
+.map {
+  background-image:
+    radial-gradient(120% 90% at 20% 0%, color-mix(in srgb, var(--color-violet) 30%, transparent), transparent 60%),
+    radial-gradient(90% 80% at 90% 100%, color-mix(in srgb, var(--color-rose) 16%, transparent), transparent 60%);
+}
+
+/* The halo under each pin, so the map looks live rather than printed. */
+.ping {
+  background: color-mix(in srgb, var(--color-rose) 40%, transparent);
+  animation: ping 2.6s ease-out infinite;
+}
+
+.pin:nth-child(3) .ping { animation-delay: 0.5s; }
+.pin:nth-child(4) .ping { animation-delay: 1s; }
+.pin:nth-child(5) .ping { animation-delay: 1.5s; }
+.pin:nth-child(6) .ping { animation-delay: 2s; }
+
+@keyframes ping {
+  0% {
+    transform: translate(-50%, 50%) scale(0.35);
+    opacity: 0.65;
+  }
+  70%,
+  100% {
+    transform: translate(-50%, 50%) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* The card drawings share the map's light, minus the pins. */
+.art {
+  background-image: radial-gradient(85% 120% at 50% 0%,
+      color-mix(in srgb, var(--color-violet) 32%, transparent), transparent 65%);
+}
+
 /* ---------- music toggle ---------- */
 
 .eq-bar {
@@ -267,8 +304,14 @@
   .halo,
   .pinbig,
   .eq-bar,
-  .bar {
+  .bar,
+  .ping {
     animation: none;
+  }
+
+  /* Static, the halo would sit on top of the pin at full size. */
+  .ping {
+    display: none;
   }
 
   /* Hold the first beat of each half so the idea still reads without movement. */

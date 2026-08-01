@@ -1,1 +1,47 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+/* Design tokens. Tailwind turns these into utilities: bg-ink, text-rose,
+   font-display, border-line, and so on. */
+@theme {
+  /* Ground: near-black biased toward violet, so it reads as chosen. */
+  --color-ink: #17061c;
+  --color-ink-2: #241030;
+
+  /* One accent. Everything loud is this colour. */
+  --color-rose: #ff2e63;
+  --color-rose-lit: #ff5480;
+  /* Secondary, reserved for the held beats and the build status. */
+  --color-amber: #ffb454;
+  --color-violet: #7e208a;
+
+  --color-bone: #f6ecef;
+  --color-lead: #e4d3e2;
+  --color-muted: #b79bb8;
+  --color-line: rgba(246, 236, 239, 0.14);
+
+  --font-display: "Bricolage Grotesque", "Arial Black", sans-serif;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-bone);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    color-scheme: dark;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}

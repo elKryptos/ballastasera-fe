@@ -1,0 +1,244 @@
+/* Only what utilities can't express: atmosphere, the beat choreography,
+   and the intro sequence. Everything else is Tailwind, in the template. */
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* ---------- atmosphere ---------- */
+
+.glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(48vmax 48vmax at 82% 4%, rgba(255, 46, 99, 0.28), transparent 62%),
+    radial-gradient(42vmax 42vmax at 6% 96%, rgba(126, 32, 138, 0.34), transparent 64%);
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.halo {
+  background: radial-gradient(circle, rgba(255, 46, 99, 0.42), transparent 62%);
+  filter: blur(26px);
+  animation: breathe 3.6s ease-in-out 1.4s infinite;
+}
+
+.pinbig {
+  animation: drop 1s cubic-bezier(0.22, 1.4, 0.4, 1) backwards, float 2.8s ease-in-out 1.4s infinite;
+}
+
+/* ---------- the count ---------- */
+
+.bar {
+  background: var(--color-rose);
+  transform-origin: bottom;
+  transform: scaleY(0.18);
+  opacity: 0.3;
+  /* steps(1) so each beat strikes and drops — no easing mush between hits. */
+  animation: step 2.4s steps(1, end) infinite;
+}
+
+.held .bar {
+  background: var(--color-amber);
+  animation-name: hold;
+}
+
+.num {
+  color: var(--color-muted);
+}
+
+.held .num {
+  color: color-mix(in srgb, var(--color-amber) 55%, transparent);
+}
+
+.beat:nth-child(1) .bar { animation-delay: 0s; }
+.beat:nth-child(2) .bar { animation-delay: 0.3s; }
+.beat:nth-child(3) .bar { animation-delay: 0.6s; }
+.beat:nth-child(4) .bar { animation-delay: 0.9s; }
+.beat:nth-child(5) .bar { animation-delay: 1.2s; }
+.beat:nth-child(6) .bar { animation-delay: 1.5s; }
+.beat:nth-child(7) .bar { animation-delay: 1.8s; }
+.beat:nth-child(8) .bar { animation-delay: 2.1s; }
+
+/* ---------- motion ---------- */
+
+/* A stepped beat: strike, then fall back and wait for the next bar. */
+@keyframes step {
+  0% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  12.5%,
+  100% {
+    transform: scaleY(0.18);
+    opacity: 0.3;
+  }
+}
+
+/* Beats 4 and 8 are held, so they swell rather than strike. */
+@keyframes hold {
+  0% {
+    transform: scaleY(0.34);
+    opacity: 0.9;
+  }
+  12.5%,
+  100% {
+    transform: scaleY(0.18);
+    opacity: 0.22;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(-130px) rotate(-14deg);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+/* The plumb line hangs from its pivot and swings on the bar, like a metronome. */
+.plumb {
+  transform-origin: 50% 10%;
+  animation: swing 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes swing {
+  from {
+    transform: rotate(-11deg);
+  }
+  to {
+    transform: rotate(11deg);
+  }
+}
+
+/* ---------- music toggle ---------- */
+
+.eq-bar {
+  width: 3px;
+  height: 34%;
+  border-radius: 1px;
+  background: currentColor;
+  transition: height 0.3s ease, background-color 0.3s ease;
+}
+
+.playing {
+  border-color: color-mix(in srgb, var(--color-rose) 55%, transparent);
+  color: var(--color-bone);
+}
+
+.playing .eq-bar {
+  background: var(--color-rose);
+  animation: eq 1.2s ease-in-out infinite;
+}
+
+.playing .eq-bar:nth-child(2) { animation-delay: 0.18s; }
+.playing .eq-bar:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes eq {
+  0%,
+  100% {
+    height: 28%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+
+/* The intro lands on the beat: one step every 0.3s, the tempo of the count. */
+.eyebrow,
+.line,
+.lead,
+.signup,
+.hint,
+.done,
+.music,
+.count {
+  animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.eyebrow { animation-delay: 0.3s; }
+.line:nth-child(1) { animation-delay: 0.45s; }
+.line:nth-child(2) { animation-delay: 0.75s; }
+.lead { animation-delay: 1.05s; }
+.signup,
+.done { animation-delay: 1.25s; }
+.hint { animation-delay: 1.35s; }
+.music { animation-delay: 1.5s; }
+.count { animation-delay: 1.65s; }
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eyebrow,
+  .line,
+  .lead,
+  .signup,
+  .hint,
+  .done,
+  .music,
+  .count,
+  .plumb,
+  .halo,
+  .pinbig,
+  .eq-bar,
+  .bar {
+    animation: none;
+  }
+
+  /* Hold the count on beat 1 so the idea still reads without movement. */
+  .beat:first-child .bar {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  /* Without the dance, the bars still have to say "playing". */
+  .playing .eq-bar {
+    height: 100%;
+  }
+}

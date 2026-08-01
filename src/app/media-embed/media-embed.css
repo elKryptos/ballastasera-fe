@@ -1,0 +1,43 @@
+/* The host is the aspect-ratio box; children fill it absolutely. */
+:host {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--color-line);
+  background: var(--color-ink-2);
+}
+
+/* Poster sits back in the palette until hover, so the type stays readable
+   and the wall of thumbnails doesn't fight the hero for attention. */
+.poster {
+  filter: saturate(0.65) brightness(0.72);
+  transform: scale(1.02);
+  transition: filter 0.45s ease, transform 0.6s ease;
+}
+
+.facade:hover .poster,
+.facade:focus-visible .poster {
+  filter: saturate(1) brightness(0.88);
+  transform: scale(1.06);
+}
+
+.scrim {
+  background: linear-gradient(to top, rgba(23, 6, 28, 0.94) 12%, rgba(23, 6, 28, 0.25) 62%, transparent);
+}
+
+.play {
+  box-shadow: 0 10px 28px rgba(255, 46, 99, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster,
+  .play {
+    transition: none;
+  }
+
+  .facade:hover .poster,
+  .facade:focus-visible .poster {
+    transform: scale(1.02);
+  }
+}

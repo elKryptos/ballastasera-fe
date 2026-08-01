@@ -1,0 +1,169 @@
+<div class="glow" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-8 px-5 pt-6 pb-5 sm:gap-10 sm:px-8 sm:pt-7">
+  <header class="flex items-center justify-between gap-5">
+    <a href="/" aria-label="ballastasera — home" class="flex items-center gap-3 no-underline">
+      <svg viewBox="0 0 200 210" aria-hidden="true"
+        class="h-7 w-6.5 shrink-0 drop-shadow-[0_6px_14px_rgba(255,46,99,0.45)]">
+        <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
+          fill="var(--color-rose)" />
+        <g fill="var(--color-ink)">
+          <rect x="74" y="66" width="13" height="30" rx="6.5" />
+          <rect x="93" y="54" width="13" height="54" rx="6.5" />
+          <rect x="112" y="62" width="13" height="38" rx="6.5" />
+        </g>
+      </svg>
+      <span class="font-display text-lg font-bold tracking-[-0.02em]">balla<span class="text-rose">stasera</span></span>
+    </a>
+
+    <p
+      class="hidden items-center gap-2 rounded-full border border-line px-4 py-1.75 font-mono text-[0.7rem] tracking-[0.16em] text-muted uppercase sm:flex">
+      <!-- A plumb line: the builder's tool that also keeps time like a metronome.
+           It swings on the same 2.4s bar as the count below. -->
+      <svg viewBox="0 0 24 24" class="plumb size-4 shrink-0" aria-hidden="true">
+        <circle cx="12" cy="2.4" r="1.6" fill="var(--color-amber)" />
+        <line x1="12" y1="3.6" x2="12" y2="14" stroke="var(--color-amber)" stroke-width="1" opacity="0.55" />
+        <path d="M12 13.4 15 16.6 12 22.2 9 16.6Z" fill="var(--color-amber)" />
+      </svg>
+      Sito in costruzione
+    </p>
+  </header>
+
+  <main class="flex flex-1 items-center">
+    <div class="grid w-full items-center gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
+      <!-- The mark, at size. Map pin + equaliser: where, and what's playing. -->
+      <div class="stage relative order-1 flex min-h-47.5 items-center justify-center lg:order-2 lg:min-h-85">
+        <div class="halo absolute aspect-square w-[62%] rounded-full"></div>
+        <svg viewBox="0 0 200 210" role="img" aria-label="ballastasera"
+          class="pinbig relative w-[44%] max-w-72.5 min-w-32.5 drop-shadow-[0_24px_44px_rgba(126,32,138,0.5)]">
+          <defs>
+            <linearGradient id="pingrad" x1="0.1" y1="0" x2="0.9" y2="1">
+              <stop offset="0" stop-color="var(--color-amber)" />
+              <stop offset="0.55" stop-color="var(--color-rose)" />
+              <stop offset="1" stop-color="var(--color-violet)" />
+            </linearGradient>
+          </defs>
+          <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="url(#pingrad)" />
+          <g fill="var(--color-ink)">
+            <rect x="74" y="66" width="13" height="30" rx="6.5" />
+            <rect x="93" y="54" width="13" height="54" rx="6.5" />
+            <rect x="112" y="62" width="13" height="38" rx="6.5" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="order-2 lg:order-1">
+        <p class="eyebrow mb-6 font-mono text-[0.78rem] tracking-[0.22em] text-amber uppercase">
+          La scena latina d'Italia
+        </p>
+
+        <h1
+          class="mb-7 font-display text-[clamp(3rem,9.6vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance">
+          <span class="line block">Dove si</span>
+          <span class="line block text-rose">balla stasera?</span>
+        </h1>
+
+        <p class="lead mb-8 max-w-[46ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-relaxed text-lead">
+          Salsa, bachata e kizomba: ogni serata d'Italia in un posto solo, aggiornata
+          giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano.
+        </p>
+
+        @if (state() === 'done') {
+        <p class="done max-w-117.5 border-l-2 border-amber pl-4 text-lg leading-normal" role="status">
+          Ci sei. <strong class="font-semibold text-amber">Ti avvisiamo noi</strong> il giorno in cui apriamo.
+        </p>
+        } @else {
+        <form (ngSubmit)="submit()" novalidate class="signup flex w-full max-w-117.5 flex-wrap gap-2.5">
+          <label class="sr-only" for="email">La tua email</label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email"
+            placeholder="la-tua@email.com" [(ngModel)]="email" [attr.aria-invalid]="state() === 'error'"
+            aria-describedby="hint" class="min-w-52.5 flex-1 rounded-xl border border-line bg-bone/5 px-4 py-3.75 text-base text-bone
+                    transition-[border-color,background-color,box-shadow] duration-200
+                  placeholder:text-muted/85
+                  focus:border-rose focus:bg-bone/8 focus:shadow-[0_0_0_4px_rgba(255,46,99,0.16)] focus:outline-none
+                  aria-invalid:border-amber" />
+          <button type="submit" class="cursor-pointer rounded-xl bg-rose px-6 py-3.75 text-base font-semibold text-ink
+                    transition-[background-color,transform] duration-200 hover:bg-rose-lit active:translate-y-px">
+            Avvisami
+          </button>
+        </form>
+
+        <p id="hint" role="status" class="hint mt-3 max-w-117.5 text-sm" [class.text-muted]="state() !== 'error'"
+          [class.text-amber]="state() === 'error'">
+          @if (state() === 'error') {
+          Serve un indirizzo completo, tipo nome&#64;dominio.it
+          } @else {
+          Zero spam. Una sola email, il giorno dell'apertura.
+          }
+        </p>
+        }
+
+        <!-- Starts the video wherever it is on the page, sound on. -->
+        <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video" class="music mt-7 inline-flex cursor-pointer items-center gap-3 rounded-full border border-line
+                 bg-bone/3 py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] text-muted uppercase
+                 transition-colors duration-200 hover:border-rose/60 hover:text-bone" [class.playing]="videoOpen()">
+          <span class="eq flex h-3.5 items-end gap-0.75" aria-hidden="true">
+            <span class="eq-bar"></span>
+            <span class="eq-bar"></span>
+            <span class="eq-bar"></span>
+          </span>
+          {{ videoOpen() ? 'Musica accesa' : 'Metti la musica' }}
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- The salsa count: you step on 1·2·3 and 5·6·7. Beats 4 and 8 are held. -->
+  <section class="count flex flex-col gap-3.5 border-t border-line pt-5">
+    <div class="beats flex h-14 items-end gap-[clamp(6px,1.4vw,16px)] sm:h-17" aria-hidden="true">
+      @for (beat of beats; track beat) {
+      <div class="beat flex flex-1 flex-col items-center gap-2" [class.held]="isHeld(beat)">
+        <span class="bar h-10 w-full rounded-sm sm:h-11.5"></span>
+        <span class="num font-mono text-[0.68rem] tabular-nums">{{ beat }}</span>
+      </div>
+      }
+    </div>
+    <p class="font-mono text-[0.72rem] text-muted">
+      La bachata si balla seguendo <b class="font-medium text-bone">8 tempi</b>:
+      fai tre passi su <b class="font-medium text-bone">1·2·3</b>, una piccola pausa sul
+      <b class="font-medium text-amber">4</b>, poi ripeti su
+      <b class="font-medium text-bone">5·6·7</b> con una pausa sull'<b class="font-medium text-amber">8</b>.
+      Il segreto? Seguire il ritmo e muoversi insieme alla musica.
+    </p>
+  </section>
+
+  <!-- Nothing is fetched from YouTube or Instagram until the visitor presses play. -->
+  @if (media.length) {
+  <section id="video" class="social flex flex-col gap-5 border-t border-line pt-8">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+      <h2 class="font-display text-2xl font-bold tracking-[-0.02em]">Si balla così</h2>
+      <p class="font-mono text-[0.7rem] tracking-[0.16em] text-amber uppercase">
+        Alza il volume
+      </p>
+    </div>
+
+    <div class="grid gap-4" [class]="media.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'max-w-4xl'">
+      @for (item of media; track item.mediaId) {
+      <app-media-embed [class]="item.kind === 'youtube' ? 'aspect-video' : 'aspect-4/5'" [kind]="item.kind"
+        [mediaId]="item.mediaId" [title]="item.title" [credit]="item.credit" [hint]="item.hint ?? ''"
+        [poster]="item.poster ?? ''" [(open)]="videoOpen" />
+      }
+    </div>
+
+    <p class="font-mono text-[0.7rem] text-muted">
+      Niente parte da solo: il video si carica da YouTube quando premi play.
+    </p>
+  </section>
+  }
+
+  <footer class="flex flex-wrap items-center justify-between gap-x-7 gap-y-3 font-mono text-[0.72rem] text-muted">
+    <span>© {{ year }} ballastasera</span>
+    <span class="tracking-[0.04em]">ballastasera.it · ballastasera.com</span>
+    <span class="hidden tracking-[0.04em] sm:inline">Milano — Italia</span>
+    <nav class="flex gap-4.5" aria-label="Social">
+      <a href="#" class="no-underline transition-colors hover:text-rose">Instagram</a>
+      <a href="#" class="no-underline transition-colors hover:text-rose">TikTok</a>
+    </nav>
+  </footer>
+</div>

@@ -1,0 +1,48 @@
+@if (open()) {
+  <iframe
+    class="frame absolute inset-0 h-full w-full border-0"
+    [src]="embedUrl()"
+    [title]="title()"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+  ></iframe>
+} @else {
+  <button
+    type="button"
+    (click)="load()"
+    class="facade group absolute inset-0 flex w-full cursor-pointer flex-col justify-end
+           overflow-hidden border-0 bg-ink-2 p-4 text-left"
+  >
+    @if (posterUrl()) {
+      <img
+        class="poster absolute inset-0 h-full w-full object-cover"
+        [src]="posterUrl()"
+        (error)="nextPoster()"
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    }
+
+    <span class="scrim absolute inset-0"></span>
+
+    <span
+      class="play relative mb-3 flex size-14 items-center justify-center rounded-full bg-rose
+             transition-transform duration-300 group-hover:scale-110"
+    >
+      <svg viewBox="0 0 24 24" class="ml-1 size-6 fill-ink" aria-hidden="true">
+        <path d="M8 5.5v13l11-6.5z" />
+      </svg>
+    </span>
+
+    <span class="relative block font-display text-base font-bold text-bone">{{ title() }}</span>
+
+    <span class="relative mt-1 block font-mono text-[0.68rem] text-muted">
+      @if (credit()) {
+        {{ credit() }} ·
+      }
+      {{ hintLine() }}
+    </span>
+  </button>
+}

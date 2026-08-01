@@ -1,7 +1,7 @@
 <div class="glow" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
-<div class="relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-8 px-5 pt-6 pb-5 sm:gap-10 sm:px-8 sm:pt-7">
+<div class="relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pt-4 pb-5 sm:gap-10 sm:px-8 sm:pt-7">
   <header class="flex items-center justify-between gap-[clamp(0.5rem,2vw,1.25rem)]">
     <a href="/" aria-label="ballastasera — home" class="flex shrink-0 items-center gap-0.5 no-underline">
       <svg viewBox="0 0 200 210" aria-hidden="true"
@@ -36,12 +36,15 @@
   </header>
 
   <main class="flex flex-1 items-center">
-    <div class="grid w-full items-center gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
+    <div class="grid w-full items-center gap-4 sm:gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
       <!-- The mark, at size. Map pin + equaliser: where, and what's playing. -->
-      <div class="stage relative order-1 flex min-h-47.5 items-center justify-center lg:order-2 lg:min-h-85">
+      <!-- On phones the pin is sized in dvh so it gives ground on short screens
+           instead of pushing the form and its note past the fold. -->
+      <div
+        class="stage relative order-1 flex h-[17dvh] max-h-47.5 min-h-24 items-center justify-center lg:order-2 lg:h-auto lg:max-h-none lg:min-h-85">
         <div class="halo absolute aspect-square w-[62%] rounded-full"></div>
         <svg viewBox="0 0 200 210" role="img" aria-label="ballastasera"
-          class="pinbig relative w-[44%] max-w-72.5 min-w-32.5 drop-shadow-[0_24px_44px_rgba(126,32,138,0.5)]">
+          class="pinbig relative h-full w-auto max-w-full drop-shadow-[0_24px_44px_rgba(126,32,138,0.5)] lg:h-auto lg:w-[44%] lg:max-w-72.5 lg:min-w-32.5">
           <defs>
             <linearGradient id="pingrad" x1="0.1" y1="0" x2="0.9" y2="1">
               <stop offset="0" stop-color="var(--color-amber)" />
@@ -61,17 +64,19 @@
       <!-- Mobile puts the music button straight under the headline, so it is in
            the first screenful; on large screens it goes back to the end. -->
       <div class="order-2 flex flex-col lg:order-1">
-        <p class="eyebrow order-1 mb-6 font-mono text-[0.78rem] tracking-[0.22em] text-amber uppercase">
+        <p
+          class="eyebrow order-1 mb-3 font-mono text-[0.7rem] tracking-[0.22em] text-amber uppercase sm:mb-6 sm:text-[0.78rem]">
           La scena latina d'Italia
         </p>
 
         <h1
-          class="order-2 mb-5 font-display text-[clamp(2.6rem,9.6vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance sm:mb-7">
+          class="order-2 mb-3.5 font-display text-[clamp(2.15rem,8.8vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance sm:mb-7">
           <span class="line block">Dove si</span>
           <span class="line block text-rose">balla stasera?</span>
         </h1>
 
-        <p class="lead order-4 mb-8 max-w-[46ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-relaxed text-lead">
+        <p
+          class="lead order-4 mb-5 max-w-[46ch] text-[clamp(0.9rem,3.6vw,1.15rem)] leading-snug text-lead sm:mb-8 sm:leading-relaxed">
           Salsa, bachata e molto altro: ogni serata d'Italia in un posto solo, aggiornata
           giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano.
         </p>
@@ -86,18 +91,18 @@
           <label class="sr-only" for="email">La tua email</label>
           <input id="email" name="email" type="email" inputmode="email" autocomplete="email"
             placeholder="la-tua@email.com" [(ngModel)]="email" [attr.aria-invalid]="state() === 'error'"
-            aria-describedby="hint" class="min-w-52.5 flex-1 rounded-xl border border-line bg-bone/5 px-4 py-3.75 text-base text-bone
+            aria-describedby="hint" class="min-w-52.5 flex-1 rounded-xl border border-line bg-bone/5 px-4 py-3 text-base sm:py-3.75 text-bone
                     transition-[border-color,background-color,box-shadow] duration-200
                   placeholder:text-muted/85
                   focus:border-rose focus:bg-bone/8 focus:shadow-[0_0_0_4px_rgba(255,46,99,0.16)] focus:outline-none
                   aria-invalid:border-amber" />
-          <button type="submit" class="cursor-pointer rounded-xl bg-rose px-6 py-3.75 text-base font-semibold text-ink
+          <button type="submit" class="cursor-pointer rounded-xl bg-rose px-6 py-3 text-base font-semibold text-ink sm:py-3.75
                     transition-[background-color,transform] duration-200 hover:bg-rose-lit active:translate-y-px">
             Avvisami
           </button>
         </form>
 
-        <p id="hint" role="status" class="hint order-6 mt-3 max-w-117.5 text-sm" [class.text-muted]="state() !== 'error'"
+        <p id="hint" role="status" class="hint order-6 mt-2 max-w-117.5 text-[0.8rem] sm:mt-3 sm:text-sm" [class.text-muted]="state() !== 'error'"
           [class.text-amber]="state() === 'error'">
           @if (state() === 'error') {
           Serve un indirizzo completo, tipo nome&#64;dominio.it
@@ -110,7 +115,7 @@
         <!-- Starts the video wherever it is on the page, sound on. Pressing it
              again pauses it where it is, it does not start over. -->
         <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video"
-          class="music group order-3 mb-8 inline-flex cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-rose/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
+          class="music group order-3 mb-5 inline-flex sm:mb-8 cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-rose/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
           [ngClass]="videoOpen() 
             ? 'border border-rose bg-rose/10 text-bone shadow-[0_0_15px_rgba(var(--tw-colors-rose),0.15)]' 
             : 'border border-line bg-bone/3 text-muted hover:border-rose/60 hover:bg-bone/10 hover:text-bone'"

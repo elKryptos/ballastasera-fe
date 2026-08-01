@@ -11,7 +11,7 @@ interface PartnerCard {
   label: string;
   copy: string;
   /**
-   * Self-hosted clip in public/social/, e.g. '/social/locali.webm'. Takes over
+   * Self-hosted clip in public/social/, e.g. '/social/locali.mp4'. Takes over
    * from `reel` the moment it's set — drop the file at that exact path and the
    * card switches on its own, no other change needed.
    */
@@ -85,13 +85,13 @@ export class Landing {
    * Who the "stiamo arrivando" pitch is addressed to, one card each.
    *
    * The clips are friends' content, used with their permission — the credit
-   * under each card links to their real profile, not ours. Until the webms
+   * under each card links to their real profile, not ours. Until the mp4s
    * below exist on disk, each card falls back to the live Instagram embed.
    */
   protected readonly partners: PartnerCard[] = [
     {
       art: 'events',
-      video: '/social/eventi.webm',
+      video: '/social/eventi.mp4',
       poster: '/social/eventi.jpg',
       reel: 'DbEFvfVMo7N',
       reelTitle: 'Un evento, raccontato bene',
@@ -102,7 +102,7 @@ export class Landing {
     },
     {
       art: 'venue',
-      video: '/social/locali.webm',
+      video: '/social/locali.mp4',
       poster: '/social/locali.jpg',
       reel: 'DbgIhnLiFAH',
       reelTitle: 'Una serata in pista',
@@ -113,7 +113,7 @@ export class Landing {
     },
     {
       art: 'school',
-      video: '/social/scuole.webm',
+      video: '/social/scuole.mp4',
       poster: '/social/scuole.jpg',
       reel: 'DW1MUthDGAb',
       reelTitle: 'Una lezione, da vicino',

@@ -58,28 +58,31 @@
         </svg>
       </div>
 
-      <div class="order-2 lg:order-1">
-        <p class="eyebrow mb-6 font-mono text-[0.78rem] tracking-[0.22em] text-amber uppercase">
+      <!-- Mobile puts the music button straight under the headline, so it is in
+           the first screenful; on large screens it goes back to the end. -->
+      <div class="order-2 flex flex-col lg:order-1">
+        <p class="eyebrow order-1 mb-6 font-mono text-[0.78rem] tracking-[0.22em] text-amber uppercase">
           La scena latina d'Italia
         </p>
 
         <h1
-          class="mb-7 font-display text-[clamp(3rem,9.6vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance">
+          class="order-2 mb-5 font-display text-[clamp(2.6rem,9.6vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance sm:mb-7">
           <span class="line block">Dove si</span>
           <span class="line block text-rose">balla stasera?</span>
         </h1>
 
-        <p class="lead mb-8 max-w-[46ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-relaxed text-lead">
+        <p class="lead order-4 mb-8 max-w-[46ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-relaxed text-lead">
           Salsa, bachata e molto altro: ogni serata d'Italia in un posto solo, aggiornata
           giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano.
         </p>
 
         @if (state() === 'done') {
-        <p class="done max-w-117.5 border-l-2 border-amber pl-4 text-lg leading-normal" role="status">
+        <p class="done order-5 max-w-117.5 border-l-2 border-amber pl-4 text-lg leading-normal" role="status">
           Ci sei. <strong class="font-semibold text-amber">Ti avvisiamo noi</strong> il giorno in cui apriamo.
         </p>
         } @else {
-        <form (ngSubmit)="submit()" novalidate class="signup flex w-full max-w-117.5 flex-wrap gap-2.5">
+        <form (ngSubmit)="submit()" novalidate
+          class="signup order-5 flex w-full max-w-117.5 flex-wrap gap-2.5">
           <label class="sr-only" for="email">La tua email</label>
           <input id="email" name="email" type="email" inputmode="email" autocomplete="email"
             placeholder="la-tua@email.com" [(ngModel)]="email" [attr.aria-invalid]="state() === 'error'"
@@ -94,7 +97,7 @@
           </button>
         </form>
 
-        <p id="hint" role="status" class="hint mt-3 max-w-117.5 text-sm" [class.text-muted]="state() !== 'error'"
+        <p id="hint" role="status" class="hint order-6 mt-3 max-w-117.5 text-sm" [class.text-muted]="state() !== 'error'"
           [class.text-amber]="state() === 'error'">
           @if (state() === 'error') {
           Serve un indirizzo completo, tipo nome&#64;dominio.it
@@ -104,9 +107,10 @@
         </p>
         }
 
-        <!-- Starts the video wherever it is on the page, sound on. -->
+        <!-- Starts the video wherever it is on the page, sound on. Pressing it
+             again pauses it where it is, it does not start over. -->
         <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video"
-          class="group mt-7 inline-flex cursor-pointer items-center gap-3 rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:outline-none focus:ring-2 focus:ring-rose/50 focus:ring-offset-2"
+          class="music group order-3 mb-8 inline-flex cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-rose/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
           [ngClass]="videoOpen() 
             ? 'border border-rose bg-rose/10 text-bone shadow-[0_0_15px_rgba(var(--tw-colors-rose),0.15)]' 
             : 'border border-line bg-bone/3 text-muted hover:border-rose/60 hover:bg-bone/10 hover:text-bone'"
@@ -191,7 +195,8 @@
   </section>
   }
 
-  <footer class="flex flex-wrap items-center justify-between gap-x-7 gap-y-3 font-mono text-[0.72rem] text-muted">
+  <footer
+    class="flex flex-col items-center gap-x-7 gap-y-3 text-center font-mono text-[0.72rem] text-muted sm:flex-row sm:flex-wrap sm:justify-between sm:text-left">
     <span>© {{ year }} ballastasera</span>
     <span class="tracking-[0.04em]">ballastasera.it · ballastasera.com</span>
     <span class="hidden tracking-[0.04em] sm:inline">Milano — Italia</span>

@@ -1,8 +1,10 @@
-@if (open()) {
+@if (mounted()) {
   <iframe
+    #frame
     class="frame absolute inset-0 h-full w-full border-0"
     [src]="embedUrl()"
     [title]="title()"
+    (load)="onFrameLoad()"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
     referrerpolicy="strict-origin-when-cross-origin"
     allowfullscreen
@@ -20,7 +22,8 @@
         [src]="posterUrl()"
         (error)="nextPoster()"
         alt=""
-        loading="lazy"
+        loading="eager"
+        fetchpriority="high"
         decoding="async"
       />
     }

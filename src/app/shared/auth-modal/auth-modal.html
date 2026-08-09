@@ -66,9 +66,7 @@
         <label class="sr-only" for="authName">Nome</label>
         <input id="authName" name="name" type="text" autocomplete="name" placeholder="Il tuo nome"
           [(ngModel)]="name" [attr.aria-invalid]="nameError()" class="field" />
-        @if (nameError()) {
-        <p class="field-error">Dicci come ti chiami.</p>
-        }
+        <p class="field-error" [class.field-error--visible]="nameError()">Dicci come ti chiami.</p>
       </div>
       }
 
@@ -76,39 +74,37 @@
         <label class="sr-only" for="authEmail">Email</label>
         <input #emailField id="authEmail" name="email" type="email" inputmode="email" autocomplete="email"
           placeholder="la-tua@email.com" [(ngModel)]="email" [attr.aria-invalid]="emailError()" class="field" />
-        @if (emailError()) {
-        <p class="field-error">Serve un indirizzo email valido.</p>
-        }
+        <p class="field-error" [class.field-error--visible]="emailError()">Serve un indirizzo email valido.</p>
       </div>
 
-      <div class="relative">
+      <div>
         <label class="sr-only" for="authPassword">Password</label>
-        <input id="authPassword" name="password" [type]="showPassword() ? 'text' : 'password'"
-          [autocomplete]="tab() === 'signup' ? 'new-password' : 'current-password'" placeholder="Password"
-          [(ngModel)]="password" [attr.aria-invalid]="passwordError()" class="field pr-11" />
-        <button type="button"
-          class="absolute top-1/2 right-2.5 inline-flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-bone/8 hover:text-bone"
-          (click)="showPassword.set(!showPassword())"
-          [attr.aria-label]="showPassword() ? 'Nascondi password' : 'Mostra password'">
-          @if (showPassword()) {
-          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.7"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 3l18 18" />
-            <path
-              d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6 0 9.6 5.5 10.5 7-.34.57-1.14 1.72-2.36 2.9M6.3 6.3C4 7.8 2.3 10 1.5 12c.9 1.5 2.5 4.1 5.4 5.9A10.6 10.6 0 0 0 12 19c1.06 0 2.06-.15 3-.42" />
-            <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
-          </svg>
-          } @else {
-          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.7"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-          }
-        </button>
-        @if (passwordError()) {
-        <p class="field-error">Minimo 8 caratteri.</p>
-        }
+        <div class="relative">
+          <input id="authPassword" name="password" [type]="showPassword() ? 'text' : 'password'"
+            [autocomplete]="tab() === 'signup' ? 'new-password' : 'current-password'" placeholder="Password"
+            [(ngModel)]="password" [attr.aria-invalid]="passwordError()" class="field pr-11" />
+          <button type="button"
+            class="absolute top-1/2 right-2.5 inline-flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-bone/8 hover:text-bone"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'Nascondi password' : 'Mostra password'">
+            @if (showPassword()) {
+            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 3l18 18" />
+              <path
+                d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6 0 9.6 5.5 10.5 7-.34.57-1.14 1.72-2.36 2.9M6.3 6.3C4 7.8 2.3 10 1.5 12c.9 1.5 2.5 4.1 5.4 5.9A10.6 10.6 0 0 0 12 19c1.06 0 2.06-.15 3-.42" />
+              <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+            </svg>
+            } @else {
+            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            }
+          </button>
+        </div>
+        <p class="field-error" [class.field-error--visible]="passwordError()">Minimo 8 caratteri.</p>
       </div>
 
       <button type="submit" class="submit-btn mt-1.5">

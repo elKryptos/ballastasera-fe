@@ -71,10 +71,20 @@
   border-color: var(--color-amber);
 }
 
+/* Always in the DOM, at fixed height, so a field turning invalid never
+   pushes the fields below it — only its opacity switches. */
 .field-error {
   margin-top: 0.4rem;
+  min-height: 1rem;
   font-size: 0.76rem;
+  line-height: 1rem;
   color: var(--color-amber);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.field-error--visible {
+  opacity: 1;
 }
 
 /* ---------- buttons ---------- */

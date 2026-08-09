@@ -67,6 +67,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "development-staging": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -78,7 +89,7 @@
               "buildTarget": "ballastasera-fe:build:production"
             },
             "staging": {
-              "buildTarget": "ballastasera-fe:build:staging"
+              "buildTarget": "ballastasera-fe:build:development-staging"
             },
             "development": {
               "buildTarget": "ballastasera-fe:build:development"

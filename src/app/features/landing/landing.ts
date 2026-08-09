@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
+import { Navbar } from '../../shared/navbar/navbar';
+import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { NgClass } from '@angular/common';
 
 type FormState = 'idle' | 'error' | 'done';
@@ -50,11 +52,16 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [FormsModule, MediaEmbed, NgClass],
+  imports: [FormsModule, MediaEmbed, Navbar, NgClass],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
 export class Landing {
+  // Keeps the redesigned navbar + login/signup dialog off the public site
+  // until it's signed off on staging — see environment.staging.ts. The
+  // production header below stays byte-for-byte what already shipped.
+  protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled('navbarAuth');
+
   /**
    * Empty this array and the "Si balla così" section drops out of the page.
    *

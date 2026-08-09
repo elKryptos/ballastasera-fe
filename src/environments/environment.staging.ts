@@ -6,5 +6,6 @@ export const environment = {
   production: false,
   featureFlags: {
     stagingDemo: true,
+    navbarAuth: true,
   } as Record<string, boolean>,
 };

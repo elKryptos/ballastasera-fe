@@ -1,0 +1,36 @@
+/* Plain flow element — the fixed positioning lives on .nav-bar below, not
+   here. A `backdrop-filter` on this host would give the auth dialog (its
+   sibling in the DOM, `<app-auth-modal>`) a new containing block, since
+   filters do that to fixed-position descendants same as `transform` does —
+   the dialog's `fixed inset-0` would then resolve against this ~3rem-tall
+   bar instead of the viewport, and never be visible. */
+:host {
+  display: block;
+}
+
+/* Pinned from the first frame, edge to edge — not sticky (which would
+   travel with the page briefly before catching). The matching top padding
+   that reserves this height lives on landing's own wrapper, since that's
+   the only place this component is used today. */
+.nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  height: var(--header-h);
+  background: color-mix(in srgb, var(--color-ink) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.login-btn {
+  border-color: var(--color-line);
+  background: color-mix(in srgb, var(--color-bone) 5%, transparent);
+  color: var(--color-bone);
+}
+
+.login-btn:hover {
+  border-color: var(--color-rose);
+  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
+}

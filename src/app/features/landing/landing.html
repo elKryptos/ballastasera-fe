@@ -1,24 +1,9 @@
 <div class="glow" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
-<div class="relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pt-4 pb-5 sm:gap-10 sm:px-8 sm:pt-7">
-  <header class="flex items-center justify-between gap-[clamp(0.5rem,2vw,1.25rem)]">
-    <a href="/" aria-label="ballastasera — home" class="flex shrink-0 items-center gap-0.5 no-underline">
-      <svg viewBox="0 0 200 210" aria-hidden="true"
-        class="w-[clamp(1.25rem,5vw,1.625rem)] shrink-0 drop-shadow-[0_6px_14px_rgba(255,46,99,0.45)]">
-        <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
-          fill="var(--color-rose)" />
-        <g fill="var(--color-ink)">
-          <rect x="74" y="66" width="13" height="30" rx="6.5" />
-          <rect x="93" y="54" width="13" height="54" rx="6.5" />
-          <rect x="112" y="62" width="13" height="3" rx="6.5" />
-        </g>
-      </svg>
-      <span
-        class="font-display text-[clamp(0.9rem,3.6vw,1.125rem)] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
-          class="text-rose">stasera</span></span>
-    </a>
-
+<div class="page relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pb-5 sm:gap-10 sm:px-8">
+  @if (showNewNavbar) {
+  <app-navbar>
     <span
       class="inline-flex shrink-0 items-center gap-[clamp(0.25rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.55rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
       style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
@@ -33,7 +18,44 @@
       </svg>
       Work in progress
     </span>
+  </app-navbar>
+  } @else {
+  <header class="sticky-header fixed inset-x-0 top-0 z-30">
+    <div
+      class="mx-auto flex h-full max-w-295 items-center justify-between gap-[clamp(0.5rem,2vw,1.25rem)] px-6 sm:px-10 lg:px-14">
+      <a href="/" aria-label="ballastasera — home" class="flex shrink-0 items-center gap-0.5 no-underline">
+        <svg viewBox="0 0 200 210" aria-hidden="true"
+          class="w-[clamp(1.25rem,5vw,1.625rem)] shrink-0 drop-shadow-[0_6px_14px_rgba(255,46,99,0.45)]">
+          <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
+            fill="var(--color-rose)" />
+          <g fill="var(--color-ink)">
+            <rect x="74" y="66" width="13" height="30" rx="6.5" />
+            <rect x="93" y="54" width="13" height="54" rx="6.5" />
+            <rect x="112" y="62" width="13" height="3" rx="6.5" />
+          </g>
+        </svg>
+        <span
+          class="font-display text-[clamp(0.9rem,3.6vw,1.125rem)] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
+            class="text-rose">stasera</span></span>
+      </a>
+
+      <span
+        class="inline-flex shrink-0 items-center gap-[clamp(0.25rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.55rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
+        style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
+          border:1.5px solid var(--color-line);">
+        <svg viewBox="0 0 24 24" class="size-[clamp(0.75rem,3vw,1.125rem)] shrink-0 animate-spin" fill="none"
+          stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          <path
+            d="M9.5 2.5l.5 2M14.5 2.5l-.5 2M2.5 9.5l2 .5M2.5 14.5l2-.5M21.5 9.5l-2 .5M21.5 14.5l-2-.5M9.5 21.5l.5-2M14.5 21.5l-.5-2" />
+        </svg>
+        Work in progress
+      </span>
+    </div>
   </header>
+  }
 
   <main class="flex flex-1 items-center">
     <div class="grid w-full items-center gap-4 sm:gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">

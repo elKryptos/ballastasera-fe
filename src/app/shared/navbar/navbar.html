@@ -1,0 +1,36 @@
+<header class="nav-bar">
+  <div
+    class="mx-auto flex h-full max-w-330 items-center justify-between gap-[clamp(0.5rem,2vw,1.25rem)] px-6 sm:px-10 lg:px-14">
+    <a href="/" aria-label="ballastasera — home" class="flex shrink-0 items-center gap-0.5 no-underline">
+      <svg viewBox="0 0 200 210" aria-hidden="true"
+        class="w-[clamp(1.25rem,5vw,1.625rem)] shrink-0 drop-shadow-[0_6px_14px_rgba(255,46,99,0.45)]">
+        <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
+          fill="var(--color-rose)" />
+        <g fill="var(--color-ink)">
+          <rect x="74" y="66" width="13" height="30" rx="6.5" />
+          <rect x="93" y="54" width="13" height="54" rx="6.5" />
+          <rect x="112" y="62" width="13" height="3" rx="6.5" />
+        </g>
+      </svg>
+      <span
+        class="font-display text-[clamp(0.9rem,3.6vw,1.125rem)] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
+          class="text-rose">stasera</span></span>
+    </a>
+
+    <div class="flex shrink-0 items-center gap-[clamp(0.4rem,1.6vw,0.75rem)]">
+      <ng-content></ng-content>
+
+      <button type="button" (click)="openAuth('login')"
+        class="login-btn inline-flex shrink-0 cursor-pointer items-center gap-[clamp(0.3rem,1.2vw,0.45rem)] rounded-full border px-[clamp(0.7rem,2.6vw,1.1rem)] py-[clamp(0.4rem,1.4vw,0.55rem)] text-[clamp(0.68rem,2.4vw,0.82rem)] font-semibold whitespace-nowrap transition-all duration-200 active:translate-y-px">
+        <svg viewBox="0 0 24 24" class="size-[clamp(0.85rem,3vw,1.05rem)] shrink-0" fill="none" stroke="currentColor"
+          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+          <circle cx="12" cy="7.5" r="3.75" />
+        </svg>
+        <span>Accedi</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<app-auth-modal [(open)]="authOpen" [mode]="authMode()" />

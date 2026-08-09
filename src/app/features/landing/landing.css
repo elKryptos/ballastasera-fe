@@ -7,6 +7,25 @@
   position: relative;
 }
 
+/* ---------- header ---------- */
+
+/* Pinned from the first frame — no travelling-then-catching motion — so it
+   needs a fixed height (the page's top padding, above, reserves exactly this
+   much space) and its own edge-to-edge backdrop, since content now scrolls
+   underneath it rather than pushing it down. */
+.sticky-header {
+  height: var(--header-h);
+  background: color-mix(in srgb, var(--color-ink) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* The page's own top padding, so content clears the fixed header above —
+   kept in lockstep with it via the shared --header-h custom property. */
+.page {
+  padding-top: calc(var(--header-h) + 1rem);
+}
+
 /* ---------- atmosphere ---------- */
 
 .glow {

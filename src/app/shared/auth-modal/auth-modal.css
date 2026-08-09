@@ -63,7 +63,7 @@
 .field:focus {
   border-color: var(--color-rose);
   background: color-mix(in srgb, var(--color-bone) 8%, transparent);
-  box-shadow: 0 0 0 4px rgba(255, 46, 99, 0.16);
+  box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.16);
   outline: none;
 }
 
@@ -80,7 +80,7 @@
 /* ---------- buttons ---------- */
 
 .google-btn:hover {
-  box-shadow: 0 6px 16px -6px rgba(246, 236, 239, 0.35);
+  box-shadow: 0 6px 16px -6px rgba(253, 242, 236, 0.35);
 }
 
 .submit-btn {

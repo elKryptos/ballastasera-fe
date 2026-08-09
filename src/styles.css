@@ -3,23 +3,27 @@
 /* Design tokens. Tailwind turns these into utilities: bg-ink, text-rose,
    font-display, border-line, and so on. */
 @theme {
-  /* Ground: near-black biased toward violet, so it reads as chosen. */
-  --color-ink: #17061c;
-  --color-ink-2: #241030;
+  /* Ground: dark plum, warm rather than cold-violet — the base a city
+     skyline sunset sits on once the sun's down. */
+  --color-ink: #1a0e2e;
+  --color-ink-2: #2a1640;
 
-  /* One accent. Everything loud is this colour. */
-  --color-rose: #ff2e63;
-  --color-rose-lit: #ff5480;
-  /* Secondary, reserved for the held beats and the build status. */
-  --color-amber: #ffb454;
-  --color-violet: #7e208a;
-  /* The music toggle only. Green so it never competes with the signup CTA. */
-  --color-mint: #3ddc97;
+  /* One accent, coral-rose rather than hot-pink — the warm end of the
+     sunset. Everything loud is this colour. */
+  --color-rose: #ff4d6d;
+  --color-rose-lit: #ff6e88;
+  /* Secondary, reserved for the held beats and the build status — the
+     orange half of the sunset gradient. */
+  --color-amber: #ffa24c;
+  --color-violet: #8b5cf6;
+  /* The music toggle only. Turquoise, kept apart from rose/amber/violet so
+     it never competes with the signup CTA. */
+  --color-mint: #2dd4bf;
 
-  --color-bone: #f6ecef;
-  --color-lead: #e4d3e2;
-  --color-muted: #b79bb8;
-  --color-line: rgba(246, 236, 239, 0.14);
+  --color-bone: #fdf2ec;
+  --color-lead: #ead6dc;
+  --color-muted: #c2a0ae;
+  --color-line: rgba(253, 242, 236, 0.14);
 
   --font-display: "Bricolage Grotesque", "Arial Black", sans-serif;
   --font-body: "Instrument Sans", system-ui, sans-serif;

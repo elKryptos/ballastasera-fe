@@ -34,8 +34,8 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(48vmax 48vmax at 82% 4%, rgba(255, 46, 99, 0.28), transparent 62%),
-    radial-gradient(42vmax 42vmax at 6% 96%, rgba(126, 32, 138, 0.34), transparent 64%);
+    radial-gradient(48vmax 48vmax at 82% 4%, rgba(255, 77, 109, 0.28), transparent 62%),
+    radial-gradient(42vmax 42vmax at 6% 96%, rgba(139, 92, 246, 0.32), transparent 64%);
 }
 
 .grain {
@@ -49,7 +49,7 @@
 }
 
 .halo {
-  background: radial-gradient(circle, rgba(255, 46, 99, 0.42), transparent 62%);
+  background: radial-gradient(circle, rgba(255, 77, 109, 0.42), transparent 62%);
   filter: blur(26px);
   animation: breathe 3.6s ease-in-out 1.4s infinite;
 }

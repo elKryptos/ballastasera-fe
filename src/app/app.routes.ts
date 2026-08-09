@@ -1,16 +1,17 @@
 import { Routes } from '@angular/router';
+import { featureFlagGuard } from './core/guards/feature-flag.guard';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./features/landing/landing').then((m) => m.Landing) },
 
-  // Features in development go here, gated behind a flag so they only render
-  // where that flag is on (see src/environments). Example:
-  // import { featureFlagGuard } from './core/guards/feature-flag.guard';
-  // {
-  //   path: 'app',
-  //   canMatch: [featureFlagGuard('appShell')],
-  //   loadChildren: () => import('./features/app-shell/app-shell.routes').then((m) => m.routes),
-  // },
+  // Demo: only matches (and only its chunk downloads) when 'stagingDemo' is
+  // on — see src/environments. Delete this block once you build a real one.
+  {
+    path: 'staging-demo',
+    canMatch: [featureFlagGuard('stagingDemo')],
+    loadComponent: () =>
+      import('./features/staging-demo/staging-demo').then((m) => m.StagingDemo),
+  },
 
   { path: '**', redirectTo: '' },
 ];

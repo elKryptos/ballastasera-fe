@@ -4,5 +4,7 @@
  */
 export const environment = {
   production: false,
-  featureFlags: {} as Record<string, boolean>,
+  featureFlags: {
+    stagingDemo: true,
+  } as Record<string, boolean>,
 };

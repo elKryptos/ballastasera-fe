@@ -4,5 +4,7 @@
  */
 export const environment = {
   production: true,
-  featureFlags: {} as Record<string, boolean>,
+  featureFlags: {
+    navbarAuth: true
+  } as Record<string, boolean>,
 };

@@ -12,5 +12,14 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  // `wrangler deploy --env staging` ships the same worker under a separate
+  // name/URL, meant to sit behind Cloudflare Access so only you can reach it.
+  // Build it first with `pnpm run build:staging` so the staging environment
+  // file (with flags flipped on) is what actually gets bundled.
+  "env": {
+    "staging": {
+      "name": "ballastasera-fe-staging"
+    }
+  }
 }

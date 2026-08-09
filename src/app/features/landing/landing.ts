@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { EmbedKind, MediaEmbed } from '../media-embed/media-embed';
+import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { NgClass } from '@angular/common';
 
 type FormState = 'idle' | 'error' | 'done';

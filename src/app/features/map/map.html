@@ -1,0 +1,145 @@
+<app-navbar />
+
+<main class="relative h-screen pt-(--header-h)">
+  <div class="relative h-full w-full sm:flex">
+    <aside
+      class="fixed inset-x-0 bottom-0 z-1101 flex max-h-[75vh] flex-col gap-5 overflow-y-auto rounded-t-2xl border-t border-line bg-ink-2 p-4 shadow-2xl transition-transform duration-300 ease-out sm:static sm:z-auto sm:h-full sm:w-70 sm:max-h-none sm:translate-y-0 sm:rounded-none sm:border-t-0 sm:border-r sm:shadow-none"
+      [class.translate-y-full]="!filtersOpen()"
+      [class.translate-y-0]="filtersOpen()"
+      aria-label="Filtri"
+    >
+      <div class="flex items-center justify-between sm:hidden">
+        <h2 class="font-display text-lg font-bold">Filtri</h2>
+        <button
+          type="button"
+          class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-muted hover:bg-bone/8 hover:text-bone"
+          (click)="toggleFilters()"
+          aria-label="Chiudi filtri"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="font-mono text-xs tracking-[0.08em] text-muted uppercase">Città</span>
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+            [class.bg-rose]="selectedCityId() === null"
+            [class.border-rose]="selectedCityId() === null"
+            [class.text-ink]="selectedCityId() === null"
+            (click)="selectCity(null)"
+          >
+            Tutte
+          </button>
+          @for (city of cities(); track city.id) {
+            <button
+              type="button"
+              class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+              [class.bg-rose]="selectedCityId() === city.id"
+              [class.border-rose]="selectedCityId() === city.id"
+              [class.text-ink]="selectedCityId() === city.id"
+              (click)="selectCity(city.id)"
+            >
+              {{ city.name }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="font-mono text-xs tracking-[0.08em] text-muted uppercase">Stile</span>
+        <div class="flex flex-wrap gap-1.5">
+          @for (style of danceStyles(); track style.id) {
+            <button
+              type="button"
+              class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+              [class.bg-violet]="selectedStyleSlug() === style.slug"
+              [class.border-violet]="selectedStyleSlug() === style.slug"
+              (click)="selectStyle(style.slug)"
+            >
+              {{ style.name }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (loading()) {
+        <p class="text-sm text-muted">Caricamento eventi…</p>
+      } @else if (error()) {
+        <p class="text-sm text-rose-lit">Impossibile caricare gli eventi.</p>
+      } @else {
+        <p class="text-sm text-muted">{{ filteredEvents().length }} eventi in questa zona</p>
+      }
+    </aside>
+
+    @if (filtersOpen()) {
+      <div
+        class="fixed inset-0 z-1100 bg-ink/60 sm:hidden"
+        (click)="toggleFilters()"
+        aria-hidden="true"
+      ></div>
+    }
+
+    <div class="relative h-full flex-1">
+      <div #mapContainer class="absolute inset-0"></div>
+
+      <button
+        type="button"
+        class="absolute right-4 bottom-4 z-1000 inline-flex cursor-pointer items-center gap-2 rounded-full border border-line bg-ink-2 px-4 py-2 text-sm font-semibold shadow-lg sm:hidden"
+        (click)="toggleFilters()"
+      >
+        Filtri
+        @if (selectedCityId() !== null || selectedStyleSlug() !== null) {
+          <span class="inline-flex size-2 rounded-full bg-rose"></span>
+        }
+      </button>
+
+      @if (selectedEvent(); as event) {
+        <section
+          class="absolute right-4 bottom-20 left-4 z-1000 max-w-90 overflow-hidden rounded-xl border border-line bg-ink-2 shadow-2xl sm:bottom-4 sm:left-4 sm:right-auto"
+          aria-live="polite"
+        >
+          <button
+            type="button"
+            class="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-bone"
+            (click)="closeDetail()"
+            aria-label="Chiudi"
+          >
+            ✕
+          </button>
+
+          @if (event.flyerUrl) {
+            <img class="aspect-video w-full object-cover" [src]="event.flyerUrl" [alt]="event.title" />
+          }
+
+          <div class="flex flex-col gap-1.5 p-4">
+            @if (event.liveNow) {
+              <span class="font-mono text-xs text-rose-lit">● In corso ora</span>
+            }
+            <h2 class="font-display text-lg">{{ event.title }}</h2>
+            <p class="text-sm text-lead">{{ formatStart(event) }}</p>
+            @if (event.venueName) {
+              <p class="text-sm text-lead">{{ event.venueName }} — {{ event.address }}</p>
+            }
+            @if (event.organizer) {
+              <p class="text-sm text-lead">a cura di {{ event.organizer.name }}</p>
+            }
+
+            <div class="mt-1 flex flex-wrap gap-1.5">
+              @for (style of event.danceStyles; track style) {
+                <span class="rounded-full bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
+              }
+            </div>
+
+            <div class="mt-2 flex justify-between font-mono text-sm text-amber">
+              <span>{{ event.free ? 'Gratis' : (event.price ?? '') + ' ' + (event.currency ?? '') }}</span>
+              <span>{{ event.goingCount }} vanno</span>
+            </div>
+          </div>
+        </section>
+      }
+    </div>
+  </div>
+</main>

@@ -11,6 +11,9 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../core/services/auth.service';
+import { FeatureFlagService } from '../../core/services/feature-flag.service';
+import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 
 export type AuthMode = 'login' | 'signup';
 type Step = 'form' | 'done';
@@ -28,6 +31,8 @@ type Step = 'form' | 'done';
 })
 export class AuthModal {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly auth = inject(AuthService);
+  private readonly featureFlags = inject(FeatureFlagService);
 
   /** Two-way: the opener (the navbar's "Accedi" button) toggles this. */
   readonly open = model(false);
@@ -84,10 +89,15 @@ export class AuthModal {
   }
 
   protected continueWithGoogle(): void {
-    // TODO: wire real Google OAuth (e.g. Google Identity Services) once the
-    // backend can accept the token. For now this is an honest waiting-list
-    // signal, not a fake sign-in.
-    this.step.set('done');
+    if (!this.featureFlags.isEnabled(FEATURE_FLAGS.googleAuth)) {
+      // Backend not live yet on this environment — honest waiting-list signal.
+      this.step.set('done');
+      return;
+    }
+
+    // Full-page redirect to the backend's OAuth2 flow — it lands back on
+    // /oauth2/callback with our JWT once Google confirms the login.
+    this.auth.loginWithGoogle();
   }
 
   protected submit(): void {

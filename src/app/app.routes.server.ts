@@ -7,12 +7,10 @@ export const serverRoutes: ServerRoute[] = [
   // routes that are meant to be public. Everything else (including
   // flag-gated routes) renders per-request on the server, where canMatch
   // actually runs.
-  {
-    path: '',
-    renderMode: RenderMode.Prerender,
-  },
-  {
-    path: '**',
-    renderMode: RenderMode.Server,
-  },
+  { path: '', renderMode: RenderMode.Prerender },
+  // Reads ?token= from the OAuth2 redirect and writes it to localStorage —
+  // needs the browser, so it must never run through SSR (which has no
+  // localStorage and would silently drop the token before the client sees it).
+  { path: 'oauth2/callback', renderMode: RenderMode.Client },
+  { path: '**', renderMode: RenderMode.Server },
 ];

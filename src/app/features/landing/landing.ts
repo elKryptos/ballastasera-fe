@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { Navbar } from '../../shared/navbar/navbar';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
+import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { NgClass } from '@angular/common';
 
 type FormState = 'idle' | 'error' | 'done';
@@ -60,7 +61,7 @@ export class Landing {
   // Keeps the redesigned navbar + login/signup dialog off the public site
   // until it's signed off on staging — see environment.staging.ts. The
   // production header below stays byte-for-byte what already shipped.
-  protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled('navbarAuth');
+  protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.navbarAuth);
 
   /**
    * Empty this array and the "Si balla così" section drops out of the page.

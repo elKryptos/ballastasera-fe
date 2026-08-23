@@ -1,5 +1,6 @@
 import { Directive, effect, inject, input, TemplateRef, ViewContainerRef } from '@angular/core';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
+import { FeatureFlag } from '../../core/config/feature-flags';
 
 /**
  * Structural directive to gate a chunk of template behind a flag, for a
@@ -14,7 +15,7 @@ export class FeatureFlagDirective {
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly flags = inject(FeatureFlagService);
 
-  readonly appFeature = input.required<string>();
+  readonly appFeature = input.required<FeatureFlag>();
 
   constructor() {
     effect(() => {

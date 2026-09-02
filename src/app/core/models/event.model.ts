@@ -1,3 +1,6 @@
+/** Mirrors EventType in the backend. */
+export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
+
 export interface OrganizerSummaryDto {
   id: string;
   name: string;
@@ -12,6 +15,7 @@ export interface EventCardDto {
   slug: string;
   title: string;
   flyerUrl: string | null;
+  eventType: EventType;
   startAt: string;
   endAt: string;
   liveNow: boolean;

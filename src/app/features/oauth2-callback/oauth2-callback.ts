@@ -1,6 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { FeatureFlagService } from '../../core/services/feature-flag.service';
+import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 
 /**
  * Landing spot for the backend's post-Google redirect (see
@@ -16,6 +18,7 @@ export class Oauth2Callback implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly featureFlags = inject(FeatureFlagService);
 
   ngOnInit(): void {
     const token = this.route.snapshot.queryParamMap.get('token');
@@ -27,7 +30,11 @@ export class Oauth2Callback implements OnInit {
 
     this.auth.setToken(token);
     this.auth.restoreSession().subscribe({
-      complete: () => this.router.navigateByUrl('/'),
+      complete: () => this.router.navigateByUrl(this.postLoginUrl()),
     });
+  }
+
+  private postLoginUrl(): string {
+    return this.featureFlags.isEnabled(FEATURE_FLAGS.mapPage) ? '/mappa' : '/';
   }
 }

@@ -17,7 +17,10 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 30;
+  /* Above every overlay the map page stacks (see --z-index-* in
+     styles.css) — otherwise the login/account controls end up hidden
+     behind the map UI. */
+  z-index: var(--z-index-header);
   height: var(--header-h);
   background: color-mix(in srgb, var(--color-ink) 92%, transparent);
   backdrop-filter: blur(12px);

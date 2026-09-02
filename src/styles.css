@@ -28,6 +28,18 @@
   --font-display: "Bricolage Grotesque", "Arial Black", sans-serif;
   --font-body: "Instrument Sans", system-ui, sans-serif;
   --font-mono: "DM Mono", ui-monospace, monospace;
+
+  /* Shared stacking scale, low-to-high, one step per layer that can end up
+     fighting another — instead of ad-hoc numbers picked to "clearly win".
+     Generates z-map-content etc. utilities; components outside a template
+     (plain .css files) read the same value via var(--z-index-*). */
+  --z-index-map-content: 10; /* Floating button/card drawn over the map itself */
+  --z-index-map-sheet-backdrop: 20; /* Mobile filters sheet's full-screen scrim */
+  --z-index-map-sheet: 21; /* The mobile filters sheet, above its own scrim */
+  --z-index-header: 30; /* Fixed site header — above in-page content, incl. the map sheet */
+  --z-index-header-menu-backdrop: 31; /* Account dropdown's click-outside-to-close layer */
+  --z-index-header-menu: 32; /* The account dropdown panel itself */
+  --z-index-modal: 40; /* Login/signup dialog — always topmost */
 }
 
 :root {

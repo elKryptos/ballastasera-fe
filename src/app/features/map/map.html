@@ -84,8 +84,8 @@
 
     <div class="relative h-full flex-1">
       <!-- isolate: Leaflet's own panes (tiles/markers/popups) carry z-index
-           up to 700, which would otherwise leak out and out-stack the
-           Filtri button and event card next to it (both z-map-content:10). -->
+          up to 700, which would otherwise leak out and out-stack the
+          Filtri button and event card next to it (both z-map-content:10). -->
       <div #mapContainer class="absolute inset-0 isolate"></div>
 
       <button
@@ -118,13 +118,21 @@
           }
 
           <div class="flex flex-col gap-1.5 p-4">
-            @if (event.liveNow) {
+            @if (isLiveNow(event)) {
               <span class="font-mono text-xs text-rose-lit">● In corso ora</span>
+            } @else if (startsInMinutes(event); as minutes) {
+              <span class="font-mono text-xs text-amber">● Inizia tra {{ minutes }} min</span>
             }
             <h2 class="font-display text-lg">{{ event.title }}</h2>
             <p class="text-sm text-lead">{{ formatStart(event) }}</p>
-            @if (event.venueName) {
-              <p class="text-sm text-lead">{{ event.venueName }} — {{ event.address }}</p>
+            @if (event.venueName || event.address) {
+              <p class="text-sm text-lead">
+                @if (event.venueName) {
+                  {{ event.venueName }} — {{ event.address }}
+                } @else {
+                  {{ event.address }}
+                }
+              </p>
             }
             @if (event.organizer) {
               <p class="text-sm text-lead">a cura di {{ event.organizer.name }}</p>

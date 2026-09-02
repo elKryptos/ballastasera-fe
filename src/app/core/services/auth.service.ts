@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { UserDto } from '../models/user.model';
 import { TokenStorageService } from './token-storage.service';
 import { endpoints } from '../api/endpoints';
+import { Router } from '@angular/router';
 
 /**
  * Session state, backed by the JWT the backend hands out after Google OAuth2
@@ -14,6 +15,7 @@ import { endpoints } from '../api/endpoints';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly tokenStorage = inject(TokenStorageService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
@@ -55,6 +57,7 @@ export class AuthService {
       tap(() => {
         this.tokenStorage.clear();
         this.currentUserSignal.set(null);
+        this.router.navigateByUrl('');
       }),
     );
   }

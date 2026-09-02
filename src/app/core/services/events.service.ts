@@ -2,6 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { EventCardDto } from '../models/event.model';
+import { Observable } from 'rxjs';
+import { endpoints } from '../api/endpoints';
 
 export interface MapBounds {
   minLat: number;
@@ -13,10 +15,10 @@ export interface MapBounds {
 @Injectable({ providedIn: 'root' })
 export class EventsService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/rest/events`;
+  private readonly baseUrl = `${environment.apiUrl}${endpoints.events.mapEvents}`;
 
   /** Published events, live or upcoming, inside the visible map bounding box. */
-  getMapEvents(bounds: MapBounds, cityId?: number) {
+  getMapEvents(bounds: MapBounds, cityId?: number): Observable<EventCardDto[]> {
     let params = new HttpParams()
       .set('minLat', bounds.minLat)
       .set('maxLat', bounds.maxLat)

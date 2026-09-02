@@ -5,6 +5,7 @@ import { catchError, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { UserDto } from '../models/user.model';
 import { TokenStorageService } from './token-storage.service';
+import { endpoints } from '../api/endpoints';
 
 /**
  * Session state, backed by the JWT the backend hands out after Google OAuth2
@@ -23,7 +24,7 @@ export class AuthService {
   /** Sends the browser to Google's consent screen; the backend redirects back to /oauth2/callback. */
   loginWithGoogle(): void {
     if (!this.isBrowser) return;
-    window.location.href = `${environment.apiUrl}/oauth2/authorization/google`;
+    window.location.href = `${environment.apiUrl}${endpoints.auth.googleLogin}`;
   }
 
   /** Called once by the /oauth2/callback route after it extracts ?token= from the redirect. */
@@ -38,7 +39,7 @@ export class AuthService {
       return of(null);
     }
 
-    return this.http.get<UserDto>(`${environment.apiUrl}/rest/auth/me`).pipe(
+    return this.http.get<UserDto>(`${environment.apiUrl}${endpoints.auth.me}`).pipe(
       tap((user) => this.currentUserSignal.set(user)),
       catchError(() => {
         this.tokenStorage.clear();
@@ -49,7 +50,7 @@ export class AuthService {
   }
 
   logout() {
-    return this.http.post<void>(`${environment.apiUrl}/rest/auth/logout`, {}).pipe(
+    return this.http.post<void>(`${environment.apiUrl}${endpoints.auth.logout}`, {}).pipe(
       catchError(() => of(void 0)),
       tap(() => {
         this.tokenStorage.clear();

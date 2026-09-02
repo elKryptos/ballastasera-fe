@@ -9,7 +9,8 @@ import { AuthService } from '../../core/services/auth.service';
  */
 @Component({
   selector: 'app-oauth2-callback',
-  template: `<p class="oauth2-callback">Accesso in corso…</p>`,
+  templateUrl: './oauth2-callback.html',
+  styleUrl: './oauth2-callback.css',
 })
 export class Oauth2Callback implements OnInit {
   private readonly route = inject(ActivatedRoute);

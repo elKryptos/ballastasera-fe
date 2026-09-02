@@ -13,13 +13,13 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, debounceTime } from 'rxjs';
+import { Subject, debounceTime, interval } from 'rxjs';
 import type { Map as LeafletMap, Marker } from 'leaflet';
 import { Navbar } from '../../shared/navbar/navbar';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { CitiesService } from '../../core/services/cities.service';
 import { DanceStylesService } from '../../core/services/dance-styles.service';
-import { EventCardDto } from '../../core/models/event.model';
+import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 
@@ -30,6 +30,52 @@ const DEFAULT_ZOOM = 12;
 /** Waits for panning/zooming to settle before hitting the API, so a burst of
  * scroll-wheel zoom steps triggers one request instead of one per step. */
 const MOVE_DEBOUNCE_MS = 400;
+
+/** An event pulses on the map once it's this close to starting, even before
+ * the backend flags it as liveNow. */
+const STARTING_SOON_MS = 30 * 60 * 1000;
+
+/** Re-evaluates pin pulse state on a timer, since an event can cross into
+ * "starting soon" or "live" purely by the clock ticking, with no new fetch. */
+const PULSE_REFRESH_MS = 30 * 1000;
+
+type PulseState = 'live' | 'soon' | null;
+
+/** Pin colour per EventType, reusing the brand accents from styles.css so the
+ * map stays inside the same palette as the rest of the UI. */
+const PIN_COLORS: Record<EventType, string> = {
+  EVENT: '#ff4d6d', // rose
+  SCHOOL: '#8b5cf6', // violet
+  CLUB: '#2dd4bf', // mint
+  BAR: '#ffa24c', // amber
+};
+
+/** Outer pin outline per EventType — colour alone isn't enough to
+ * distinguish them (colourblindness, greyscale printouts), so the shape
+ * itself changes too. Each path fills a 24x32 viewBox, tip at (12, 32). */
+const PIN_SHAPES: Record<EventType, string> = {
+  // Classic teardrop.
+  EVENT: 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z',
+  // Shield.
+  SCHOOL: 'M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z',
+  // Hexagon on a point.
+  CLUB: 'M12 0 23 7v14L12 32 1 21V7z',
+  // Rounded square on a point.
+  BAR: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
+};
+
+/** Inner glyph per EventType, drawn in white centred around (12, 12). */
+const PIN_GLYPHS: Record<EventType, string> = {
+  // Star.
+  EVENT: 'M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z',
+  // Graduation cap.
+  SCHOOL:
+    'M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z',
+  // Music note.
+  CLUB: 'M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z',
+  // Cocktail glass.
+  BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',
+};
 
 @Component({
   selector: 'app-map',
@@ -70,6 +116,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
   private map: LeafletMap | null = null;
   private markers: Marker[] = [];
   private leaflet: typeof import('leaflet') | null = null;
+  private readonly pinIconCache = new Map<string, import('leaflet').DivIcon>();
   private readonly moveEnd$ = new Subject<void>();
 
   constructor() {
@@ -97,6 +144,14 @@ export class MapPage implements AfterViewInit, OnDestroy {
       this.filteredEvents();
       this.drawMarkers();
     });
+
+    // Pulse state depends on the clock, not just on the data — an event can
+    // tip into "starting soon" or "live" with the events list untouched.
+    if (this.isBrowser) {
+      interval(PULSE_REFRESH_MS)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.drawMarkers());
+    }
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -115,14 +170,6 @@ export class MapPage implements AfterViewInit, OnDestroy {
   private initMap(L: typeof import('leaflet')): void {
     const container = this.mapContainer()?.nativeElement;
     if (!container) return;
-
-    // Vite/Angular bundles leaflet's marker images under a hashed path that
-    // the default icon URLs can't find — point them at the CDN instead.
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    });
 
     // Scroll-wheel and pinch zoom stay on; the on-screen +/- control is
     // redundant with those and was competing for corner space with our own UI.
@@ -169,10 +216,62 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
     this.markers.forEach((marker) => marker.remove());
     this.markers = this.filteredEvents().map((event) => {
-      const marker = L.marker([event.latitude, event.longitude]).addTo(this.map!);
+      const marker = L.marker([event.latitude, event.longitude], {
+        icon: this.getPinIcon(L, event.eventType, this.pulseState(event)),
+      }).addTo(this.map!);
       marker.on('click', () => this.selectedEvent.set(event));
       return marker;
     });
+  }
+
+  /** event.liveNow is a snapshot from whenever the event list was last
+   * fetched (map pan/filter change, not on a timer), so it goes stale the
+   * moment an event starts without a new fetch — read the clock instead. */
+  protected isLiveNow(event: EventCardDto): boolean {
+    const now = Date.now();
+    return now >= new Date(event.startAt).getTime() && now <= new Date(event.endAt).getTime();
+  }
+
+  private pulseState(event: EventCardDto): PulseState {
+    if (this.isLiveNow(event)) return 'live';
+    if (this.startsInMinutes(event) !== null) return 'soon';
+    return null;
+  }
+
+  /** Minutes to start, only while inside the "starting soon" window; null
+   * once the event is live (isLiveNow covers that) or too far out to flag. */
+  protected startsInMinutes(event: EventCardDto): number | null {
+    const msToStart = new Date(event.startAt).getTime() - Date.now();
+    if (msToStart <= 0 || msToStart > STARTING_SOON_MS) return null;
+    return Math.max(1, Math.round(msToStart / 60000));
+  }
+
+  private getPinIcon(
+    L: typeof import('leaflet'),
+    eventType: EventType,
+    pulse: PulseState,
+  ): import('leaflet').DivIcon {
+    const cacheKey = `${eventType}:${pulse ?? 'idle'}`;
+    const cached = this.pinIconCache.get(cacheKey);
+    if (cached) return cached;
+
+    const pulseClass = pulse ? ` map-pin-wrap--${pulse}` : '';
+    const icon = L.divIcon({
+      className: 'map-pin',
+      html: `<span class="map-pin-wrap${pulseClass}" style="color:${PIN_COLORS[eventType]}">
+        <span class="map-pin-pulse" style="background:${PIN_COLORS[eventType]}"></span>
+        <svg viewBox="0 0 24 32" width="24" height="32" xmlns="http://www.w3.org/2000/svg">
+          <path d="${PIN_SHAPES[eventType]}" fill="${PIN_COLORS[eventType]}"/>
+          <path d="${PIN_GLYPHS[eventType]}" fill="#fff"/>
+        </svg>
+      </span>`,
+      iconSize: [24, 32],
+      iconAnchor: [12, 32],
+      popupAnchor: [0, -32],
+    });
+
+    this.pinIconCache.set(cacheKey, icon);
+    return icon;
   }
 
   protected selectCity(cityId: number | null): void {

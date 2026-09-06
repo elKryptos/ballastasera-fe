@@ -71,6 +71,15 @@
           </a>
           }
 
+          <a *appRole="'ADMIN'" routerLink="/admin/pending-organizers" (click)="closeMenu()" role="menuitem"
+            class="menu-item flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.82rem] font-medium text-lead no-underline transition-colors hover:bg-bone/8 hover:text-bone">
+            <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7l8-4z" />
+            </svg>
+            <span>Admin</span>
+          </a>
+
           <button #logoutMenuItem type="button" (click)="logout()" role="menuitem"
             class="menu-item logout-item flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.82rem] font-medium transition-colors">
             <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"

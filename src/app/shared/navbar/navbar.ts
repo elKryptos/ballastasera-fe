@@ -4,6 +4,7 @@ import { AuthMode, AuthModal } from '../auth-modal/auth-modal';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
+import { RoleDirective } from '../directives/role.directive';
 
 /**
  * Site header: brand mark + name, an optional projected badge (e.g. the
@@ -12,7 +13,7 @@ import { FEATURE_FLAGS } from '../../core/config/feature-flags';
  */
 @Component({
   selector: 'app-navbar',
-  imports: [AuthModal, RouterLink],
+  imports: [AuthModal, RouterLink, RoleDirective],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })

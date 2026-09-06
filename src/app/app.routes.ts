@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { featureFlagGuard } from './core/guards/feature-flag.guard';
 import { FEATURE_FLAGS } from './core/config/feature-flags';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./features/landing/landing').then((m) => m.Landing) },
@@ -25,6 +26,13 @@ export const routes: Routes = [
     canMatch: [featureFlagGuard(FEATURE_FLAGS.stagingDemo)],
     loadComponent: () =>
       import('./features/staging-demo/staging-demo').then((m) => m.StagingDemo),
+  },
+
+  {
+    path: 'admin/pending-organizers',
+    canMatch: [roleGuard('ADMIN')],
+    loadComponent: () =>
+      import('./features/admin/pending-organizers/pending-organizers').then((m) => m.PendingOrganizers),
   },
 
   { path: '**', redirectTo: '' },

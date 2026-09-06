@@ -23,17 +23,19 @@
       @if (isAuthenticated()) {
       <div class="account relative shrink-0" (keydown.escape)="closeMenu()">
         <button #avatarButton type="button" (click)="toggleMenu()"
-          class="avatar-btn block cursor-pointer rounded-full" [class.active]="menuOpen()"
+          class="avatar-btn flex min-w-0 cursor-pointer items-center gap-2 rounded-full sm:border sm:border-line sm:bg-bone/5 sm:py-1 sm:pr-3 sm:pl-1"
+          [class.active]="menuOpen()"
           [attr.aria-expanded]="menuOpen()" aria-haspopup="menu" [attr.aria-label]="'Account di ' + currentUser()?.displayName">
           @if (currentUser()?.avatarUrl) {
           <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
-            class="avatar-img size-[clamp(1.8rem,6vw,2.2rem)] rounded-full object-cover" />
+            class="avatar-img size-[clamp(1.8rem,6vw,2.2rem)] shrink-0 rounded-full object-cover" />
           } @else {
           <span
-            class="avatar-fallback flex size-[clamp(1.8rem,6vw,2.2rem)] items-center justify-center rounded-full text-[clamp(0.75rem,2.6vw,0.9rem)] font-semibold">
+            class="avatar-fallback flex size-[clamp(1.8rem,6vw,2.2rem)] shrink-0 items-center justify-center rounded-full text-[clamp(0.75rem,2.6vw,0.9rem)] font-semibold">
             {{ initial() }}
           </span>
           }
+          <span class="user-name hidden max-w-28 truncate text-[0.82rem] font-semibold text-bone sm:inline">{{ currentUser()?.displayName }}</span>
         </button>
 
         @if (menuOpen()) {

@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { EventCardDto } from '../models/event.model';
 import { Observable } from 'rxjs';
@@ -12,7 +12,7 @@ export interface MapBounds {
   maxLng: number;
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class EventsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}${endpoints.events.mapEvents}`;

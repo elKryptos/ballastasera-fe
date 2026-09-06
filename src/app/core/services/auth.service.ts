@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { PLATFORM_ID, Service, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { catchError, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
  * Session state, backed by the JWT the backend hands out after Google OAuth2
  * (see OAuth2LoginSuccessHandler) and read here from localStorage.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);

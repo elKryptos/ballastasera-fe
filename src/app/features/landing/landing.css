@@ -10,8 +10,8 @@
 /* ---------- header ---------- */
 
 /* Pinned from the first frame — no travelling-then-catching motion — so it
-   needs a fixed height (the page's top padding, above, reserves exactly this
-   much space) and its own edge-to-edge backdrop, since content now scrolls
+  needs a fixed height (the page's top padding, above, reserves exactly this
+  much space) and its own edge-to-edge backdrop, since content now scrolls
    underneath it rather than pushing it down. */
 .sticky-header {
   height: var(--header-h);
@@ -276,6 +276,42 @@
   }
 }
 
+/* ---------- support: the coffee button ---------- */
+
+/* A slowly travelling rainbow, plus a gentle bob so the button reads as
+   "alive" without ever demanding attention the way a loop-and-flash would. */
+.coffee-btn {
+  background: linear-gradient(120deg,
+      var(--color-amber), var(--color-rose) 40%, var(--color-violet) 72%, var(--color-mint));
+  background-size: 300% 300%;
+  animation: coffeegradient 2.5s ease-in-out infinite;
+}
+
+@keyframes coffeegradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.coffee-bounce {
+  animation: coffeebounce 1.2s ease-in-out infinite;
+}
+
+@keyframes coffeebounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-3px);
+  }
+}
+
 /* The intro cascades in its own tempo, one step every 0.3s. */
 .eyebrow,
 .line,
@@ -324,7 +360,9 @@
   .pinbig,
   .eq-bar,
   .bar,
-  .ping {
+  .ping,
+  .coffee-btn,
+  .coffee-bounce {
     animation: none;
   }
 

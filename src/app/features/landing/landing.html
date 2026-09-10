@@ -365,31 +365,37 @@
     </div>
   </section>
 
-  <!-- A short, honest note before the footer: who is actually building this,
-    and a low-key way to chip in. No pressure copy, no popups. -->
-  <section
-    class="support flex flex-col items-center gap-4 border-t border-line pt-8 text-center sm:flex-row sm:justify-between sm:gap-6 sm:text-left">
-    <div class="flex max-w-[52ch] flex-col gap-1.5">
-      <span class="font-mono text-[0.68rem] tracking-[0.16em] text-amber uppercase">Dietro le quinte</span>
-      <p class="text-[0.9rem] leading-relaxed text-lead">
-        Ballastasera lo stiamo costruendo <b class="font-medium text-bone">in due</b>, la sera, tra un lavoro e
-        l'altro — perché in pista ci balliamo anche noi, e un posto così non c'era ancora. Se il progetto ti piace,
-        offrici un caffè: ci aiuta a tenerlo vivo.
-      </p>
-    </div>
-    <a href="https://www.paypal.me/ballastasera/3" target="_blank" rel="noopener noreferrer"
-      class="coffee-btn group inline-flex shrink-0 cursor-pointer items-center gap-2 self-center rounded-full px-6 py-3 font-mono text-[0.72rem] font-bold tracking-[0.16em] text-white uppercase no-underline
-        shadow-[0_8px_22px_-6px_rgba(255,77,109,0.5)] transition-transform duration-200 hover:scale-105 active:scale-95 sm:self-auto">
-      <span class="coffee-bounce inline-flex items-center gap-2">
-        <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 transition-transform duration-300 group-hover:-rotate-12" fill="none" stroke="currentColor" stroke-width="1.8"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z" />
-          <path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17" />
-          <path d="M8 4c0 1-1 1-1 2M12 4c0 1-1 1-1 2M16 4c0 1-1 1-1 2" />
-        </svg>
-        Offrici un caffè
+  <!-- A short, honest note from the two of us, deliberately styled apart from
+    the structured sections above it — a postcard, not another feature block. -->
+  <section class="support-wrap flex justify-center pt-4">
+    <div
+      class="support relative flex w-full max-w-4xl flex-col items-center gap-5 rounded-[1.75rem] border border-dashed border-amber/45 bg-bone/[0.035] p-6 text-center backdrop-blur-sm sm:flex-row sm:justify-between sm:gap-6 sm:p-8 sm:text-left">
+      <span
+        class="pointer-events-none absolute -top-3 left-6 rounded-full border border-line bg-ink px-3 py-1 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase sm:left-8">
+        Dietro le quinte
       </span>
-    </a>
+
+      <div class="flex max-w-[52ch] flex-col gap-1.5">
+        <p class="text-[0.9rem] leading-relaxed text-lead">
+          Ballastasera lo stiamo costruendo <b class="font-medium text-bone">in due</b>, la sera, tra un lavoro e
+          l'altro — perché in pista ci balliamo anche noi, e un posto così non c'era ancora. Se il progetto ti piace,
+          offrici un caffè: ci aiuta a tenerlo vivo.
+        </p>
+      </div>
+      <a href="https://www.paypal.me/ballastasera/3" target="_blank" rel="noopener noreferrer"
+        class="coffee-btn group inline-flex shrink-0 cursor-pointer items-center gap-2 self-center rounded-full px-6 py-3 font-mono text-[0.72rem] font-bold tracking-[0.16em] text-white uppercase no-underline
+          shadow-[0_8px_22px_-6px_rgba(255,77,109,0.5)] transition-transform duration-200 hover:scale-105 active:scale-95 sm:self-auto">
+        <span class="coffee-bounce inline-flex items-center gap-2">
+          <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 transition-transform duration-300 group-hover:-rotate-12" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z" />
+            <path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17" />
+            <path d="M8 4c0 1-1 1-1 2M12 4c0 1-1 1-1 2M16 4c0 1-1 1-1 2" />
+          </svg>
+          Offrici un caffè
+        </span>
+      </a>
+    </div>
   </section>
 
   <footer

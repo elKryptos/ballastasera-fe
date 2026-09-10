@@ -44,11 +44,9 @@ export class AuthModal {
   protected readonly step = signal<Step>('form');
   protected readonly showPassword = signal(false);
 
-  protected readonly name = signal('');
   protected readonly email = signal('');
   protected readonly password = signal('');
 
-  protected readonly nameError = signal(false);
   protected readonly emailError = signal(false);
   protected readonly passwordError = signal(false);
 
@@ -83,7 +81,6 @@ export class AuthModal {
   }
 
   private resetErrors(): void {
-    this.nameError.set(false);
     this.emailError.set(false);
     this.passwordError.set(false);
   }
@@ -101,16 +98,13 @@ export class AuthModal {
   }
 
   protected submit(): void {
-    const isSignup = this.tab() === 'signup';
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(this.email().trim());
     const passwordValid = this.password().length >= 8;
-    const nameValid = !isSignup || this.name().trim().length > 1;
 
     this.emailError.set(!emailValid);
     this.passwordError.set(!passwordValid);
-    this.nameError.set(!nameValid);
 
-    if (!emailValid || !passwordValid || !nameValid) return;
+    if (!emailValid || !passwordValid) return;
 
     // TODO: POST to the auth endpoint once the backend exists.
     this.step.set('done');

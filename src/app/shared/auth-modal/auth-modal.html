@@ -61,15 +61,6 @@
     </div>
 
     <form (ngSubmit)="submit()" novalidate class="flex flex-col gap-3.5">
-      @if (tab() === 'signup') {
-      <div>
-        <label class="sr-only" for="authName">Nome</label>
-        <input id="authName" name="name" type="text" autocomplete="name" placeholder="Il tuo nome"
-          [(ngModel)]="name" [attr.aria-invalid]="nameError()" class="field" />
-        <p class="field-error" [class.field-error--visible]="nameError()">Dicci come ti chiami.</p>
-      </div>
-      }
-
       <div>
         <label class="sr-only" for="authEmail">Email</label>
         <input #emailField id="authEmail" name="email" type="email" inputmode="email" autocomplete="email"

@@ -1,23 +1,27 @@
-@import "tailwindcss";
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
 
+@import '@spartan-ng/brain/hlm-tailwind-preset.css';
 /* Design tokens. Tailwind turns these into utilities: bg-ink, text-rose,
-   font-display, border-line, and so on. */
+font-display, border-line, and so on. */
 @theme {
   /* Ground: dark plum, warm rather than cold-violet — the base a city
-     skyline sunset sits on once the sun's down. */
+skyline sunset sits on once the sun's down. */
   --color-ink: #1a0e2e;
   --color-ink-2: #2a1640;
 
   /* One accent, coral-rose rather than hot-pink — the warm end of the
-     sunset. Everything loud is this colour. */
+sunset. Everything loud is this colour. */
   --color-rose: #ff4d6d;
   --color-rose-lit: #ff6e88;
   /* Secondary, reserved for the held beats and the build status — the
-     orange half of the sunset gradient. */
+orange half of the sunset gradient. */
   --color-amber: #ffa24c;
   --color-violet: #8b5cf6;
   /* The music toggle only. Turquoise, kept apart from rose/amber/violet so
-     it never competes with the signup CTA. */
+it never competes with the signup CTA. */
   --color-mint: #2dd4bf;
 
   --color-bone: #fdf2ec;
@@ -25,14 +29,14 @@
   --color-muted: #c2a0ae;
   --color-line: rgba(253, 242, 236, 0.14);
 
-  --font-display: "Bricolage Grotesque", "Arial Black", sans-serif;
-  --font-body: "Instrument Sans", system-ui, sans-serif;
-  --font-mono: "DM Mono", ui-monospace, monospace;
+  --font-display: 'Bricolage Grotesque', 'Arial Black', sans-serif;
+  --font-body: 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
 
   /* Shared stacking scale, low-to-high, one step per layer that can end up
-     fighting another — instead of ad-hoc numbers picked to "clearly win".
-     Generates z-map-content etc. utilities; components outside a template
-     (plain .css files) read the same value via var(--z-index-*). */
+fighting another — instead of ad-hoc numbers picked to "clearly win".
+Generates z-map-content etc. utilities; components outside a template
+(plain .css files) read the same value via var(--z-index-*). */
   --z-index-map-content: 10; /* Floating button/card drawn over the map itself */
   --z-index-map-sheet-backdrop: 20; /* Mobile filters sheet's full-screen scrim */
   --z-index-map-sheet: 21; /* The mobile filters sheet, above its own scrim */
@@ -44,8 +48,8 @@
 
 :root {
   /* Height of the fixed header (see navbar.css / landing.css). Kept here so
-     the header's own height and the page's compensating top padding can't
-     drift apart from each other. */
+the header's own height and the page's compensating top padding can't
+drift apart from each other. */
   --header-h: 3rem;
 }
 
@@ -78,8 +82,8 @@
 }
 
 /* Map pin pulse (live/starting-soon events). Global, not component-scoped:
-   Leaflet injects marker markup straight into the DOM outside Angular's
-   view, so component styles never reach it. */
+Leaflet injects marker markup straight into the DOM outside Angular's
+view, so component styles never reach it. */
 .map-pin-wrap {
   position: relative;
   display: block;
@@ -108,7 +112,7 @@
 }
 
 /* The pin itself breathes along with the ring, and glows so it stays
-   readable against busy tiles even between pulses. */
+readable against busy tiles even between pulses. */
 .map-pin-wrap--live svg,
 .map-pin-wrap--soon svg {
   animation: map-pin-bounce 1.6s ease-in-out infinite;
@@ -137,5 +141,45 @@
   }
   50% {
     transform: scale(1.08);
+  }
+}
+
+/* Spartan/helm theme tokens, mapped onto our own palette above instead of
+the library's default gray/white so shadcn-style components (button,
+dialog, etc.) render in the site's ink/rose/amber theme. */
+:root {
+  --radius: 0.625rem;
+
+  --background: var(--color-ink);
+  --foreground: var(--color-bone);
+  --card: var(--color-ink-2);
+  --card-foreground: var(--color-bone);
+  --popover: var(--color-ink-2);
+  --popover-foreground: var(--color-bone);
+  --primary: var(--color-rose);
+  --primary-foreground: var(--color-ink);
+  --secondary: var(--color-ink-2);
+  --secondary-foreground: var(--color-bone);
+  --muted: var(--color-ink-2);
+  --muted-foreground: var(--color-muted);
+  --accent: var(--color-violet);
+  --accent-foreground: var(--color-bone);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-amber);
+  --sidebar: var(--color-ink-2);
+  --sidebar-foreground: var(--color-bone);
+  --sidebar-primary: var(--color-rose);
+  --sidebar-primary-foreground: var(--color-ink);
+  --sidebar-accent: var(--color-violet);
+  --sidebar-accent-foreground: var(--color-bone);
+  --sidebar-border: var(--color-line);
+  --sidebar-ring: var(--color-amber);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
 }

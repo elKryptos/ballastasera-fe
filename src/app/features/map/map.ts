@@ -87,7 +87,7 @@ const PIN_GLYPHS: Record<EventType, string> = {
 const PIN_LABELS: Record<EventType, string> = {
   EVENT: 'Evento',
   SCHOOL: 'Scuola',
-  CLUB: 'Club',
+  CLUB: 'Discoteca',
   BAR: 'Bar',
 };
 

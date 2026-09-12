@@ -220,6 +220,16 @@
   }
 }
 
+/* ---------- map teaser: the live pin ---------- */
+
+/* .map-pin-wrap is fixed at 24x32px globally (styles.css), sized for a real
+   map marker — scaled up here as one block so the pulse ring stays centred
+   on the pin instead of drifting off if the box dimensions were overridden
+   individually. */
+.teaser-pin {
+  transform: scale(2.6);
+}
+
 /* The card drawings share the map's light, minus the pins. */
 .art {
   background-image: radial-gradient(85% 120% at 50% 0%,
@@ -320,6 +330,7 @@
 .hint,
 .done,
 .music,
+.map-teaser,
 .count {
   animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
@@ -332,7 +343,8 @@
 .done { animation-delay: 1.25s; }
 .hint { animation-delay: 1.35s; }
 .music { animation-delay: 1.5s; }
-.count { animation-delay: 1.65s; }
+.map-teaser { animation-delay: 1.65s; }
+.count { animation-delay: 1.8s; }
 
 @keyframes rise {
   from {
@@ -366,6 +378,7 @@
   .done,
   .music,
   .music:not(.playing),
+  .map-teaser,
   .count,
   .plumb,
   .halo,

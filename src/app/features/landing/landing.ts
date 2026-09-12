@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { Navbar } from '../../shared/navbar/navbar';
@@ -57,11 +57,50 @@ interface MediaItem {
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
-export class Landing {
+export class Landing implements AfterViewInit, OnDestroy {
   // Keeps the redesigned navbar + login/signup dialog off the public site
   // until it's signed off on staging — see environment.staging.ts. The
   // production header below stays byte-for-byte what already shipped.
   protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.navbarAuth);
+
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private revealObserver?: IntersectionObserver;
+
+  /**
+   * The hero's "rise" cascade only plays on load, so anything below the fold
+   * — reached by scrolling, not by that initial timer — never got it. This
+   * mirrors the same entrance for every `.reveal` section as it comes into view.
+   */
+  ngAfterViewInit(): void {
+    const host = this.elementRef.nativeElement as HTMLElement;
+    const targets: NodeListOf<HTMLElement> = host.querySelectorAll('.reveal');
+    if (!targets.length || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      targets.forEach((el) => el.classList.add('in-view'));
+      return;
+    }
+
+    this.revealObserver = new IntersectionObserver(
+      (entries, observer) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0, rootMargin: '0px 0px -5% 0px' },
+    );
+
+    targets.forEach((el) => this.revealObserver!.observe(el));
+  }
+
+  ngOnDestroy(): void {
+    this.revealObserver?.disconnect();
+  }
 
   /**
    * Empty this array and the "Si balla così" section drops out of the page.

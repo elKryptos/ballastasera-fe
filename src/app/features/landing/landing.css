@@ -345,6 +345,18 @@
   }
 }
 
+/* Below-the-fold sections don't get the hero's load-time cascade — they get
+   this instead, playing the same "rise" entrance the moment each one scrolls
+   into view, so the appear effect isn't limited to just the first screenful. */
+.reveal {
+  opacity: 0;
+  transform: translateY(0.4em);
+}
+
+.reveal.in-view {
+  animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .eyebrow,
   .line,
@@ -362,8 +374,14 @@
   .bar,
   .ping,
   .coffee-btn,
-  .coffee-bounce {
+  .coffee-bounce,
+  .reveal.in-view {
     animation: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 
   /* Static, the halo would sit on top of the pin at full size. */

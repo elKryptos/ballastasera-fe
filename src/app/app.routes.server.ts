@@ -12,5 +12,11 @@ export const serverRoutes: ServerRoute[] = [
   // needs the browser, so it must never run through SSR (which has no
   // localStorage and would silently drop the token before the client sees it).
   { path: 'oauth2/callback', renderMode: RenderMode.Client },
+  // roleGuard reads AuthService.currentUser(), which comes from a JWT stored
+  // in localStorage — unreadable during SSR, so on the server the guard always
+  // sees a logged-out user and redirects away. A hard refresh on any admin
+  // route must render client-side, where the token actually resolves.
+  { path: 'admin', renderMode: RenderMode.Client },
+  { path: 'admin/**', renderMode: RenderMode.Client },
   { path: '**', renderMode: RenderMode.Server },
 ];

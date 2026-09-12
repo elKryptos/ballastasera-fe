@@ -58,6 +58,40 @@
   animation: drop 1s cubic-bezier(0.22, 1.4, 0.4, 1) backwards, float 2.8s ease-in-out 1.4s infinite;
 }
 
+/* "stasera" = tonight — a scatter of tiny stars over the word itself
+   (positions are % of its own box, so they never spill outside it), each
+   pulsing on its own offset so they don't all blink in sync. */
+.night {
+  position: relative;
+  display: inline-block;
+}
+
+.night::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(2px 2px at 6% 15%, #fff, transparent),
+    radial-gradient(2.4px 2.4px at 14% 70%, var(--color-amber), transparent),
+    radial-gradient(1.6px 1.6px at 24% 35%, #cfe4ff, transparent),
+    radial-gradient(2px 2px at 34% 80%, #ffe9b8, transparent),
+    radial-gradient(2.4px 2.4px at 44% 20%, var(--color-violet), transparent),
+    radial-gradient(1.6px 1.6px at 54% 60%, #fff, transparent),
+    radial-gradient(2px 2px at 64% 10%, #cfe4ff, transparent),
+    radial-gradient(2.4px 2.4px at 74% 75%, var(--color-amber), transparent),
+    radial-gradient(1.6px 1.6px at 84% 30%, #fff, transparent),
+    radial-gradient(2px 2px at 94% 55%, var(--color-mint), transparent);
+  animation: twinkle 2.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
 /* On a very short screen — an old small phone, or any phone held sideways —
    the pin is what gives way, so the form and its note stay in the first view. */
 @media (max-height: 520px) {
@@ -388,6 +422,7 @@
   .ping,
   .coffee-btn,
   .coffee-bounce,
+  .night::after,
   .reveal.in-view {
     animation: none;
   }

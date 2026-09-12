@@ -45,10 +45,25 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
+    loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),
+  },
+
+  {
     path: 'admin/pending-organizers',
     canMatch: [featureFlagGuard(FEATURE_FLAGS.pendingOrganizersPage), roleGuard('ADMIN')],
     loadComponent: () =>
       import('./features/admin/pending-organizers/pending-organizers').then((m) => m.PendingOrganizers),
+  },
+
+  {
+    path: 'admin/create-unclaimed-organizer',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.createUnclaimedOrganizerPage), roleGuard('ADMIN')],
+    loadComponent: () =>
+      import('./features/admin/create-unclaimed-organizer/create-unclaimed-organizer').then(
+        (m) => m.CreateUnclaimedOrganizer,
+      ),
   },
 
   { path: '**', redirectTo: '' },

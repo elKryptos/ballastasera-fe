@@ -17,6 +17,10 @@ export const FEATURE_FLAGS = {
   stagingDemo: 'stagingDemo',
   /** /admin/pending-organizers route (also gated on the ADMIN role). */
   pendingOrganizersPage: 'pendingOrganizersPage',
+  /** /admin route, hub with links to the admin pages below (also gated on the ADMIN role). */
+  adminHomePage: 'adminHomePage',
+  /** /admin/create-unclaimed-organizer route (also gated on the ADMIN role). */
+  createUnclaimedOrganizerPage: 'createUnclaimedOrganizerPage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

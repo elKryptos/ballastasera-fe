@@ -7,7 +7,9 @@ import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 /**
  * Landing spot for the backend's post-Google redirect (see
  * OAuth2LoginSuccessHandler, which appends `?token=<jwt>`). Stores the token,
- * refreshes the session, then sends the visitor back to the map.
+ * refreshes the session, then sends first-time visitors to the welcome page
+ * and everyone else straight to the menu — the map is no longer a post-login
+ * redirect target, it's reached from the menu or the welcome page's own CTA.
  */
 @Component({
   selector: 'app-oauth2-callback',
@@ -35,6 +37,16 @@ export class Oauth2Callback implements OnInit {
   }
 
   private postLoginUrl(): string {
-    return this.featureFlags.isEnabled(FEATURE_FLAGS.mapPage) ? '/mappa' : '/';
+    if (!this.featureFlags.isEnabled(FEATURE_FLAGS.welcomePage)) {
+      return '/';
+    }
+
+    // `hasSeenWelcome` doesn't exist on the backend yet (see UserDto), so
+    // this is always falsy for now and every login lands on /benvenuto —
+    // that's fine while the page is still being reviewed. Once the backend
+    // sends the field (and Welcome.enter() marks it seen via a PATCH), this
+    // starts sending returning users straight to /menu, unchanged.
+    const hasSeenWelcome = this.auth.currentUser()?.hasSeenWelcome ?? false;
+    return hasSeenWelcome ? '/menu' : '/benvenuto';
   }
 }

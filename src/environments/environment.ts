@@ -11,8 +11,11 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   // Off until apiUrl above points at a real backend — see the TODO.
   googleAuth: false,
   mapPage: false,
+  welcomePage: false,
+  menuPage: false,
   oauth2Callback: false,
   stagingDemo: false,
+  pendingOrganizersPage: false,
 };
 
 export const environment = {
@@ -20,4 +23,6 @@ export const environment = {
   // TODO: point at the real API host once the backend has a public prod URL.
   apiUrl: 'https://api.ballastasera.it',
   featureFlags,
+  // Free key from https://carto.com/basemaps/apikey/ — 5M tile requests/month fair-use limit.
+  cartoApiKey: 'cb1_3ie6_1_e078712b029a513ed802a563',
 };

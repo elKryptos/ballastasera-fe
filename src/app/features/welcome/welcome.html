@@ -1,0 +1,124 @@
+<app-navbar />
+
+<main class="pt-(--header-h)">
+  <div
+    class="page relative flex min-h-[calc(100dvh-var(--header-h))] flex-col items-center justify-center overflow-hidden px-6 text-center">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <div class="relative z-10 flex w-full max-w-2xl flex-col items-center">
+      <!-- Animated mini map: the four pin types from the interactive map, dropping in one after another -->
+      <div class="stage relative mb-8 flex h-36 w-64 items-end justify-center" aria-hidden="true">
+        <div class="mapglow absolute inset-0"></div>
+        <!-- EVENT: teardrop + star -->
+        <span class="pin pin--a absolute bottom-3 left-0">
+          <span class="pin-ring pin-ring--rose"></span>
+          <svg viewBox="0 0 24 32" class="h-10 w-10">
+            <path
+              d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z"
+              fill="var(--color-rose)" />
+            <path
+              d="M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z"
+              fill="var(--color-ink)" />
+          </svg>
+        </span>
+        <!-- SCHOOL: shield + graduation cap -->
+        <span class="pin pin--b absolute bottom-12 left-18">
+          <span class="pin-ring pin-ring--violet"></span>
+          <svg viewBox="0 0 24 32" class="h-12 w-12">
+            <path d="M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z" fill="var(--color-violet)" />
+            <path
+              d="M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z"
+              fill="var(--color-ink)" />
+          </svg>
+        </span>
+        <!-- CLUB: hexagon + music note -->
+        <span class="pin pin--c absolute bottom-5 left-38">
+          <span class="pin-ring pin-ring--mint"></span>
+          <svg viewBox="0 0 24 32" class="h-10 w-10">
+            <path d="M12 0 23 7v14L12 32 1 21V7z" fill="var(--color-mint)" />
+            <path d="M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z" fill="var(--color-ink)" />
+          </svg>
+        </span>
+        <!-- BAR: rounded square + cocktail glass -->
+        <span class="pin pin--d absolute right-0 bottom-0">
+          <span class="pin-ring pin-ring--amber"></span>
+          <svg viewBox="0 0 24 32" class="h-9 w-9">
+            <path
+              d="M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z"
+              fill="var(--color-amber)" />
+            <path d="M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z" fill="var(--color-ink)" />
+          </svg>
+        </span>
+      </div>
+
+      <p class="eyebrow font-mono text-xs tracking-[0.25em] text-rose uppercase">Prima di iniziare</p>
+
+      <h1 class="line mt-3 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 font-display text-3xl leading-tight font-bold tracking-[-0.02em] text-bone sm:text-4xl">
+        <span>Benvenuto su</span>
+        <span class="inline-flex items-center gap-1">
+          <svg viewBox="0 0 200 210" aria-hidden="true" class="h-[0.85em] w-[0.85em] shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
+            <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="var(--color-rose)" />
+            <g fill="var(--color-ink)">
+              <rect x="74" y="66" width="13" height="30" rx="6.5" />
+              <rect x="93" y="54" width="13" height="54" rx="6.5" />
+              <rect x="112" y="62" width="13" height="38" rx="6.5" />
+            </g>
+          </svg>
+          balla<span class="text-rose">stasera</span>
+        </span>
+      </h1>
+
+      <p class="lead mt-4 max-w-lg text-balance text-lead">
+        Il posto dove trovare <strong class="text-bone">tutti</strong> gli eventi di ballo latino di
+        Milano — salsa, bachata, kizomba e social — raccolti in un solo posto e visibili sulla
+        mappa interattiva. Segui quello che ti interessa e sai sempre dove andare stasera.
+      </p>
+
+      <div class="cards mt-10 grid w-full gap-4 sm:grid-cols-3">
+        @for (feature of features; track feature.title) {
+        <div class="card accent-{{ feature.accent }} group relative overflow-hidden rounded-2xl border border-line bg-ink-2/60 p-5 text-left backdrop-blur-sm">
+          <span class="sheen absolute inset-0" aria-hidden="true"></span>
+          <div class="icon-glow absolute -top-6 -left-6 h-20 w-20 rounded-full" aria-hidden="true"></div>
+          <div class="icon relative flex h-10 w-10 items-center justify-center rounded-full bg-ink">
+            @switch (feature.icon) {
+            @case ('pins') {
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12Z" />
+              <circle cx="12" cy="9" r="2.4" />
+            </svg>
+            }
+            @case ('map') {
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z" />
+              <path d="M9 4v14M15 6v14" />
+            </svg>
+            }
+            @case ('bell') {
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M6 8a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6.5H4c.5-1 2-2.5 2-6.5Z" />
+              <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
+            </svg>
+            }
+            }
+          </div>
+          <h2 class="relative mt-3 font-display text-base text-bone">{{ feature.title }}</h2>
+          <p class="relative mt-1.5 text-sm text-muted">{{ feature.copy }}</p>
+        </div>
+        }
+      </div>
+
+      <button type="button"
+        class="cta group mt-10 inline-flex items-center gap-2 rounded-full bg-rose px-7 py-3 font-display text-ink shadow-[0_10px_30px_-8px_rgba(255,77,109,0.55)]"
+        (click)="enter()">
+        Continua
+        <svg viewBox="0 0 24 24" class="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </button>
+
+      <p class="hint mt-4 text-xs text-muted">Puoi tornare qui in qualsiasi momento dal menu.</p>
+    </div>
+  </div>
+</main>

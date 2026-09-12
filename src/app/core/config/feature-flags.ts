@@ -6,14 +6,17 @@
 export const FEATURE_FLAGS = {
   /** Redesigned navbar + login/signup dialog — see auth-modal. */
   navbarAuth: 'navbarAuth',
-  /** /mappa route. */
   mapPage: 'mapPage',
+  welcomePage: 'welcomePage',
+  menuPage: 'menuPage',
   /** /oauth2/callback route, landed on after Google confirms login. */
   oauth2Callback: 'oauth2Callback',
   /** Google button in auth-modal does a real backend redirect instead of the waiting-list message. */
   googleAuth: 'googleAuth',
   /** /staging-demo route. Delete this flag once staging-demo is deleted. */
   stagingDemo: 'stagingDemo',
+  /** /admin/pending-organizers route (also gated on the ADMIN role). */
+  pendingOrganizersPage: 'pendingOrganizersPage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

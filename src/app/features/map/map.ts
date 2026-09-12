@@ -14,7 +14,7 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, debounceTime, interval } from 'rxjs';
-import type { Map as LeafletMap, Marker } from 'leaflet';
+import type { Map as LeafletMap, Marker, Point } from 'leaflet';
 import { Navbar } from '../../shared/navbar/navbar';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { CitiesService } from '../../core/services/cities.service';
@@ -22,10 +22,11 @@ import { DanceStylesService } from '../../core/services/dance-styles.service';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
+import { environment } from '../../../environments/environment';
 
 /** Fallback view when there's no city yet to centre on: Milano, zoomed to city level. */
 const DEFAULT_CENTER: [number, number] = [45.4642, 9.19];
-const DEFAULT_ZOOM = 12;
+const DEFAULT_ZOOM = 14;
 
 /** Waits for panning/zooming to settle before hitting the API, so a burst of
  * scroll-wheel zoom steps triggers one request instead of one per step. */
@@ -38,6 +39,11 @@ const STARTING_SOON_MS = 30 * 60 * 1000;
 /** Re-evaluates pin pulse state on a timer, since an event can cross into
  * "starting soon" or "live" purely by the clock ticking, with no new fetch. */
 const PULSE_REFRESH_MS = 30 * 1000;
+
+/** Fraction of the map's height at which a selected pin should sit once
+ * centred — low enough that its card (anchored above it) has room to
+ * breathe above the fold, which matters most on short mobile viewports. */
+const SELECTED_PIN_VERTICAL_RATIO = 0.68;
 
 type PulseState = 'live' | 'soon' | null;
 
@@ -77,10 +83,21 @@ const PIN_GLYPHS: Record<EventType, string> = {
   BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',
 };
 
+/** Italian label per EventType, shown in the map legend. */
+const PIN_LABELS: Record<EventType, string> = {
+  EVENT: 'Evento',
+  SCHOOL: 'Scuola',
+  CLUB: 'Club',
+  BAR: 'Bar',
+};
+
+const LEGEND_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
+
 @Component({
   selector: 'app-map',
   imports: [Navbar],
   templateUrl: './map.html',
+  styleUrl: './map.css',
 })
 export class MapPage implements AfterViewInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
@@ -102,9 +119,25 @@ export class MapPage implements AfterViewInit, OnDestroy {
   protected readonly loading = signal(false);
   protected readonly error = signal(false);
   protected readonly selectedEvent = signal<EventCardDto | null>(null);
+  /** Screen-space position (relative to the map container) of the pin behind
+   * the selected event, so its card can be anchored right above it instead
+   * of sitting in a fixed spot on the screen. Recomputed as the map pans or
+   * zooms so the card keeps tracking the pin. */
+  protected readonly selectedPinPoint = signal<{ x: number; y: number } | null>(null);
 
   /** Filters live in a bottom-sheet on mobile so the map keeps the full screen by default. */
   protected readonly filtersOpen = signal(false);
+
+  protected readonly legendOpen = signal(false);
+
+  /** What each pin looks like on the map, for the legend popover. */
+  protected readonly legendItems = LEGEND_TYPES.map((type) => ({
+    type,
+    label: PIN_LABELS[type],
+    color: PIN_COLORS[type],
+    shape: PIN_SHAPES[type],
+    glyph: PIN_GLYPHS[type],
+  }));
 
   protected readonly filteredEvents = computed(() => {
     const style = this.selectedStyleSlug();
@@ -123,7 +156,6 @@ export class MapPage implements AfterViewInit, OnDestroy {
     this.moveEnd$
       .pipe(debounceTime(MOVE_DEBOUNCE_MS), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.fetchEventsInView());
-
 
     // Client-only: the HTTP transfer cache isn't picking these up, so
     // fetching them during SSR too just means fetching them twice (see
@@ -175,12 +207,22 @@ export class MapPage implements AfterViewInit, OnDestroy {
     // redundant with those and was competing for corner space with our own UI.
     this.map = L.map(container, { zoomControl: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19,
-    }).addTo(this.map);
+    // CARTO Voyager: closer to Google Maps' look than plain OSM tiles.
+    // Free, but requires an API key (carto.com/basemaps/apikey) — 5M tile
+    // requests/month fair-use limit.
+    L.tileLayer(
+      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${environment.cartoApiKey}`,
+      {
+        attribution: '© OpenStreetMap contributors © CARTO',
+        maxZoom: 20,
+        subdomains: 'abcd',
+      },
+    ).addTo(this.map);
 
     this.map.on('moveend', () => this.moveEnd$.next());
+    // 'move' fires continuously during pan/zoom animations, so the card
+    // stays glued to its pin instead of lagging behind until the gesture ends.
+    this.map.on('move', () => this.updateSelectedPinPoint());
     this.fetchEventsInView();
   }
 
@@ -219,9 +261,38 @@ export class MapPage implements AfterViewInit, OnDestroy {
       const marker = L.marker([event.latitude, event.longitude], {
         icon: this.getPinIcon(L, event.eventType, this.pulseState(event)),
       }).addTo(this.map!);
-      marker.on('click', () => this.selectedEvent.set(event));
+      marker.on('click', () => this.selectEvent(event, marker));
       return marker;
     });
+  }
+
+  private selectEvent(event: EventCardDto, marker: Marker): void {
+    this.selectedEvent.set(event);
+    const currentPoint = this.map!.latLngToContainerPoint(marker.getLatLng());
+    this.selectedPinPoint.set(currentPoint);
+    this.centerOnPoint(currentPoint);
+  }
+
+  /** Pans (doesn't zoom) so the pin lands lower in the viewport rather than
+   * dead centre, leaving space above it for the card that just opened. */
+  private centerOnPoint(currentPoint: Point): void {
+    const L = this.leaflet;
+    if (!L || !this.map) return;
+
+    const size = this.map.getSize();
+    const targetPoint = L.point(size.x / 2, size.y * SELECTED_PIN_VERTICAL_RATIO);
+    this.map.panBy(currentPoint.subtract(targetPoint), { animate: true });
+  }
+
+  /** Re-derives the selected pin's screen position from its (unchanged)
+   * lat/lng after the map moves — cheap, and keeps this in sync without
+   * having to hold onto the marker instance separately. */
+  private updateSelectedPinPoint(): void {
+    const event = this.selectedEvent();
+    if (!event || !this.map) return;
+    this.selectedPinPoint.set(
+      this.map.latLngToContainerPoint([event.latitude, event.longitude]),
+    );
   }
 
   /** event.liveNow is a snapshot from whenever the event list was last
@@ -267,7 +338,6 @@ export class MapPage implements AfterViewInit, OnDestroy {
       </span>`,
       iconSize: [24, 32],
       iconAnchor: [12, 32],
-      popupAnchor: [0, -32],
     });
 
     this.pinIconCache.set(cacheKey, icon);
@@ -293,8 +363,13 @@ export class MapPage implements AfterViewInit, OnDestroy {
     this.filtersOpen.update((open) => !open);
   }
 
+  protected toggleLegend(): void {
+    this.legendOpen.update((open) => !open);
+  }
+
   protected closeDetail(): void {
     this.selectedEvent.set(null);
+    this.selectedPinPoint.set(null);
   }
 
   protected formatStart(event: EventCardDto): string {

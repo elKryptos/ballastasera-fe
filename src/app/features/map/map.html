@@ -99,57 +99,108 @@
         }
       </button>
 
-      @if (selectedEvent(); as event) {
-        <section
-          class="absolute right-4 bottom-20 left-4 z-map-content max-w-90 overflow-hidden rounded-xl border border-line bg-ink-2 shadow-2xl sm:bottom-4 sm:left-4 sm:right-auto"
-          aria-live="polite"
-        >
-          <button
-            type="button"
-            class="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-bone"
-            (click)="closeDetail()"
-            aria-label="Chiudi"
-          >
-            ✕
-          </button>
+      <button
+        type="button"
+        class="absolute bottom-4 left-4 z-map-content inline-flex size-10 origin-bottom-left items-center justify-center rounded-full border border-line bg-ink-2 shadow-lg transition-all duration-200 ease-out"
+        [class.scale-50]="legendOpen()"
+        [class.opacity-0]="legendOpen()"
+        [class.pointer-events-none]="legendOpen()"
+        [class.cursor-pointer]="!legendOpen()"
+        [attr.inert]="legendOpen() ? '' : null"
+        (click)="toggleLegend()"
+        aria-label="Legenda"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 8v.01M11 11h1v5h1" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
 
-          @if (event.flyerUrl) {
-            <img class="aspect-video w-full object-cover" [src]="event.flyerUrl" [alt]="event.title" />
+      <section
+        class="absolute bottom-4 left-4 z-map-content w-24 origin-bottom-left overflow-hidden rounded-xl border border-line bg-ink-2/90 p-3 shadow-2xl backdrop-blur-md transition-all duration-200 ease-out"
+        [class.scale-50]="!legendOpen()"
+        [class.opacity-0]="!legendOpen()"
+        [class.pointer-events-none]="!legendOpen()"
+        [class.cursor-pointer]="legendOpen()"
+        [attr.inert]="!legendOpen() ? '' : null"
+        aria-label="Legenda dei pin, premi per chiudere"
+        (click)="toggleLegend()"
+      >
+        <ul class="flex flex-col gap-2">
+          @for (item of legendItems; track item.type; let i = $index) {
+            <li class="flex items-center gap-2 text-sm">
+              <svg
+                [class.legend-icon]="legendOpen()"
+                viewBox="0 0 24 32"
+                width="16"
+                height="22"
+                [style.color]="item.color"
+                [style.animation-delay.ms]="i * 40"
+              >
+                <path [attr.d]="item.shape" fill="currentColor" />
+                <path [attr.d]="item.glyph" fill="#fff" />
+              </svg>
+              {{ item.label }}
+            </li>
           }
+        </ul>
+      </section>
 
-          <div class="flex flex-col gap-1.5 p-4">
-            @if (isLiveNow(event)) {
-              <span class="font-mono text-xs text-rose-lit">● In corso ora</span>
-            } @else if (startsInMinutes(event); as minutes) {
-              <span class="font-mono text-xs text-amber">● Inizia tra {{ minutes }} min</span>
-            }
-            <h2 class="font-display text-lg">{{ event.title }}</h2>
-            <p class="text-sm text-lead">{{ formatStart(event) }}</p>
-            @if (event.venueName || event.address) {
-              <p class="text-sm text-lead">
-                @if (event.venueName) {
-                  {{ event.venueName }} — {{ event.address }}
-                } @else {
-                  {{ event.address }}
-                }
-              </p>
-            }
-            @if (event.organizer) {
-              <p class="text-sm text-lead">a cura di {{ event.organizer.name }}</p>
+      @if (selectedEvent(); as event) {
+        @if (selectedPinPoint(); as point) {
+          <section
+            class="absolute z-map-content w-90 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-[calc(100%+36px)] overflow-hidden rounded-xl border border-line bg-ink-2 shadow-2xl"
+            [style.left.px]="point.x"
+            [style.top.px]="point.y"
+            aria-live="polite"
+          >
+            <button
+              type="button"
+              class="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-bone"
+              (click)="closeDetail()"
+              aria-label="Chiudi"
+            >
+              ✕
+            </button>
+
+            @if (event.flyerUrl) {
+              <img class="aspect-video w-full object-cover" [src]="event.flyerUrl" [alt]="event.title" />
             }
 
-            <div class="mt-1 flex flex-wrap gap-1.5">
-              @for (style of event.danceStyles; track style) {
-                <span class="rounded-full bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
+            <div class="flex flex-col gap-1.5 p-4">
+              @if (isLiveNow(event)) {
+                <span class="font-mono text-xs text-rose-lit">● In corso ora</span>
+              } @else if (startsInMinutes(event); as minutes) {
+                <span class="font-mono text-xs text-amber">● Inizia tra {{ minutes }} min</span>
               }
-            </div>
+              <h2 class="font-display text-lg">{{ event.title }}</h2>
+              <p class="text-sm text-lead">{{ formatStart(event) }}</p>
+              @if (event.venueName || event.address) {
+                <p class="text-sm text-lead">
+                  @if (event.venueName) {
+                    {{ event.venueName }} — {{ event.address }}
+                  } @else {
+                    {{ event.address }}
+                  }
+                </p>
+              }
+              @if (event.organizer) {
+                <p class="text-sm text-lead">a cura di {{ event.organizer.name }}</p>
+              }
 
-            <div class="mt-2 flex justify-between font-mono text-sm text-amber">
-              <span>{{ event.free ? 'Gratis' : (event.price ?? '') + ' ' + (event.currency ?? '') }}</span>
-              <span>{{ event.goingCount }} vanno</span>
+              <div class="mt-1 flex flex-wrap gap-1.5">
+                @for (style of event.danceStyles; track style) {
+                  <span class="rounded-full bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
+                }
+              </div>
+
+              <div class="mt-2 flex justify-between font-mono text-sm text-amber">
+                <span>{{ event.free ? 'Gratis' : (event.price ?? '') + ' ' + (event.currency ?? '') }}</span>
+                <span>{{ event.goingCount }} vanno</span>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        }
       }
     </div>
   </div>

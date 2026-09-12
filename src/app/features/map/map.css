@@ -1,0 +1,16 @@
+/* Each legend icon pops in with a slight overshoot, staggered per row via
+an inline animation-delay set from the template. */
+.legend-icon {
+  animation: legend-icon-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes legend-icon-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

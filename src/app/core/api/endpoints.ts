@@ -10,7 +10,7 @@ export const endpoints = {
   admin: {
     pendingOrganizers: '/rest/admin/organizers/pending',
     verifyOrganizer: (id: string) => `/rest/admin/organizers/${id}/verify`,
-    createUnclaimedOrganizer: '/rest/organizers/unclaimed',
+    createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed',
     claimOrganizer: (id: string) => `/rest/organizers/${id}/claim`,
     createEvent: '/rest/admin/events',
     updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,

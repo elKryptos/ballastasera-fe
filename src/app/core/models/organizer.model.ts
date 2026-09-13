@@ -15,3 +15,15 @@ export interface OrganizerDetailDto {
   verified: boolean;
   claimed: boolean;
 }
+
+export interface OrganizerCreateDto {
+  name: string;
+  type: OrganizerType;
+  description: string;
+  logoUrl: string;
+  website: string;
+  phone: string;
+  contactEmail: string;
+  instagram: string;
+  facebook: string;
+}

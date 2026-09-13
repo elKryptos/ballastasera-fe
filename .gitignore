@@ -49,3 +49,8 @@ Thumbs.db
 !.dev.vars.example
 .env*
 !.env.example
+
+# rodri
+/.agents/*
+AGENTS.md
+skills-lock.json

@@ -10,8 +10,8 @@ export const endpoints = {
   admin: {
     pendingOrganizers: '/rest/admin/organizers/pending',
     verifyOrganizer: (id: string) => `/rest/admin/organizers/${id}/verify`,
-    createUnclaimedOrganizer: '/rest/organizers/unclaimed',
-    claimOrganizer: (id: string) => `/rest/organizers/${id}/claim`,
+    createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed',
+    claimOrganizer: (id: string) => `/rest/admin/organizers/${id}/claim`,
     createEvent: '/rest/admin/events',
     updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
@@ -27,7 +27,7 @@ export const endpoints = {
 
   cities: {
     list: '/rest/cities',
-    detail: (id: number) => `rest/cities/${id}`,
+    detail: (id: number) => `/rest/cities/${id}`,
   },
 
   danceStyles: {

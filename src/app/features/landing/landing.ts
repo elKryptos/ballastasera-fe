@@ -131,7 +131,7 @@ export class Landing implements AfterViewInit, OnDestroy {
   protected readonly media: MediaItem[] = [
     {
       kind: 'youtube',
-      mediaId: 'MMfmLVvVTzg',
+      mediaId: 'p_pU5sSRSPA',  
       title: 'Guarda come si balla la bachata',
       credit: '@ballastasera',
       hint: 'Premi play — parte con l’audio',

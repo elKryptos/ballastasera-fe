@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { Navbar } from '../../shared/navbar/navbar';
+import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { NgClass } from '@angular/common';
@@ -39,6 +40,24 @@ interface MapPin {
   style: string;
 }
 
+/** One pin kind from the real map's legend, reproduced here so visitors
+ * already recognise the shapes and colours once the map itself opens. */
+interface PinLegendItem {
+  label: string;
+  color: string;
+  shape: string;
+  glyph: string;
+}
+
+/** One pin kind from the real map's legend, reproduced here so visitors
+ * already recognise the shapes and colours once the map itself opens. */
+interface PinLegendItem {
+  label: string;
+  color: string;
+  shape: string;
+  glyph: string;
+}
+
 interface MediaItem {
   kind: EmbedKind;
   /** YouTube video id, or the Instagram shortcode from instagram.com/p/<shortcode>/. */
@@ -53,15 +72,54 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [FormsModule, MediaEmbed, Navbar, NgClass],
+  imports: [FormsModule, MediaEmbed, Navbar, AuthModal, NgClass],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
-export class Landing {
+export class Landing implements AfterViewInit, OnDestroy {
   // Keeps the redesigned navbar + login/signup dialog off the public site
   // until it's signed off on staging — see environment.staging.ts. The
   // production header below stays byte-for-byte what already shipped.
   protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.navbarAuth);
+
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private revealObserver?: IntersectionObserver;
+
+  /**
+   * The hero's "rise" cascade only plays on load, so anything below the fold
+   * — reached by scrolling, not by that initial timer — never got it. This
+   * mirrors the same entrance for every `.reveal` section as it comes into view.
+   */
+  ngAfterViewInit(): void {
+    const host = this.elementRef.nativeElement as HTMLElement;
+    const targets: NodeListOf<HTMLElement> = host.querySelectorAll('.reveal');
+    if (!targets.length || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      targets.forEach((el) => el.classList.add('in-view'));
+      return;
+    }
+
+    this.revealObserver = new IntersectionObserver(
+      (entries, observer) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0, rootMargin: '0px 0px -5% 0px' },
+    );
+
+    targets.forEach((el) => this.revealObserver!.observe(el));
+  }
+
+  ngOnDestroy(): void {
+    this.revealObserver?.disconnect();
+  }
 
   /**
    * Empty this array and the "Si balla così" section drops out of the page.
@@ -73,7 +131,7 @@ export class Landing {
   protected readonly media: MediaItem[] = [
     {
       kind: 'youtube',
-      mediaId: 'MMfmLVvVTzg',
+      mediaId: 'p_pU5sSRSPA',  
       title: 'Guarda come si balla la bachata',
       credit: '@ballastasera',
       hint: 'Premi play — parte con l’audio',
@@ -164,6 +222,42 @@ export class Landing {
 
   /** Shared with the embed, so the hero button can start it from off-screen. */
   protected readonly videoOpen = signal(false);
+
+  /** Opened by the "Accedi con Google" CTA in the live-map teaser section. */
+  protected readonly mapAuthOpen = signal(false);
+
+  /**
+   * Same colour, outline and glyph per type as `PIN_COLORS` / `PIN_SHAPES` /
+   * `PIN_GLYPHS` in map.ts — kept in sync by hand since the two features
+   * don't share a module. Each shape fills a 24x32 viewBox, tip at (12, 32);
+   * each glyph is drawn in white centred around (12, 12).
+   */
+  protected readonly legendPins: PinLegendItem[] = [
+    {
+      label: 'Evento',
+      color: 'var(--color-rose)',
+      shape: 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z',
+      glyph: 'M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z',
+    },
+    {
+      label: 'Scuola',
+      color: 'var(--color-violet)',
+      shape: 'M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z',
+      glyph: 'M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z',
+    },
+    {
+      label: 'Discoteca',
+      color: 'var(--color-mint)',
+      shape: 'M12 0 23 7v14L12 32 1 21V7z',
+      glyph: 'M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z',
+    },
+    {
+      label: 'Bar',
+      color: 'var(--color-amber)',
+      shape: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
+      glyph: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',
+    },
+  ];
 
   protected toggleMusic(): void {
     this.videoOpen.update((open) => !open);

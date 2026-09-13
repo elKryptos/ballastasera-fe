@@ -1,0 +1,19 @@
+<app-navbar />
+
+<main class="pt-(--header-h)">
+  <div class="mx-auto max-w-4xl px-6 py-4">
+    <h1 class="font-display text-2xl font-bold">Admin</h1>
+
+    <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      @for (option of options; track option.routerLink) {
+        <a
+          [routerLink]="option.routerLink"
+          class="flex flex-col gap-1 rounded-xl border border-line p-4 transition-colors hover:border-rose"
+        >
+          <p class="font-semibold">{{ option.title }}</p>
+          <p class="text-sm text-lead">{{ option.description }}</p>
+        </a>
+      }
+    </div>
+  </div>
+</main>

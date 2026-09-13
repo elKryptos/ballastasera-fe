@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
-import { OrganizerDetailDto } from '../models/organizer.model';
+import { OrganizerCreateDto, OrganizerDetailDto } from '../models/organizer.model';
 import { PageDto } from '../models/page.model';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
@@ -17,5 +17,9 @@ export class AdminService {
 
   verifyOrganizer(id: string): Observable<OrganizerDetailDto> {
     return this.http.patch<OrganizerDetailDto>(`${environment.apiUrl}${endpoints.admin.verifyOrganizer(id)}`, {})
+  }
+
+  createUnclaimedOrganizer(body: OrganizerCreateDto): Observable<OrganizerCreateDto> {
+    return this.http.post<OrganizerCreateDto>(`${environment.apiUrl}${endpoints.admin.createUnclaimedOrganizer}`, body);
   }
 }

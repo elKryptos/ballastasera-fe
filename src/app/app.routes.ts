@@ -7,6 +7,22 @@ export const routes: Routes = [
   { path: '', loadComponent: () => import('./features/landing/landing').then((m) => m.Landing) },
 
   {
+    // Landed on right after a user's first login (see Oauth2Callback). Not
+    // yet gated on a per-user "already seen it" flag — that needs a
+    // `hasSeenWelcome`-style field on the backend user first — so for now
+    // every login goes here whenever the flag below is on.
+    path: 'benvenuto',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.welcomePage)],
+    loadComponent: () => import('./features/welcome/welcome').then((m) => m.Welcome),
+  },
+
+  {
+    path: 'menu',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.menuPage)],
+    loadComponent: () => import('./features/menu/menu').then((m) => m.Menu),
+  },
+
+  {
     path: 'mappa',
     canMatch: [featureFlagGuard(FEATURE_FLAGS.mapPage)],
     loadComponent: () => import('./features/map/map').then((m) => m.MapPage),
@@ -29,10 +45,25 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
+    loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),
+  },
+
+  {
     path: 'admin/pending-organizers',
-    canMatch: [roleGuard('ADMIN')],
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.pendingOrganizersPage), roleGuard('ADMIN')],
     loadComponent: () =>
       import('./features/admin/pending-organizers/pending-organizers').then((m) => m.PendingOrganizers),
+  },
+
+  {
+    path: 'admin/create-unclaimed-organizer',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.createUnclaimedOrganizerPage), roleGuard('ADMIN')],
+    loadComponent: () =>
+      import('./features/admin/create-unclaimed-organizer/create-unclaimed-organizer').then(
+        (m) => m.CreateUnclaimedOrganizer,
+      ),
   },
 
   { path: '**', redirectTo: '' },

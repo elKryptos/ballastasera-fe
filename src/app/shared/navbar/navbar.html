@@ -14,7 +14,7 @@
       </svg>
       <span
         class="font-display text-[clamp(0.9rem,3.6vw,1.125rem)] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
-          class="text-rose">stasera</span></span>
+          class="night text-rose">stasera</span></span>
     </a>
 
     <div class="flex shrink-0 items-center gap-[clamp(0.4rem,1.6vw,0.75rem)]">
@@ -61,17 +61,17 @@
           <div class="menu-divider"></div>
 
           @if (mapEnabled()) {
-          <a #mapMenuItem routerLink="/mappa" (click)="closeMenu()" role="menuitem"
+          <a #mapMenuItem routerLink="/menu" (click)="closeMenu()" role="menuitem"
             class="menu-item mt-1 flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.82rem] font-medium text-lead no-underline transition-colors hover:bg-bone/8 hover:text-bone">
             <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4m0 0L9 6" />
             </svg>
-            <span>Mappa</span>
+            <span>Menu</span>
           </a>
           }
 
-          <a *appRole="'ADMIN'" routerLink="/admin/pending-organizers" (click)="closeMenu()" role="menuitem"
+          <a *appRole="'ADMIN'" routerLink="/admin" (click)="closeMenu()" role="menuitem"
             class="menu-item flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.82rem] font-medium text-lead no-underline transition-colors hover:bg-bone/8 hover:text-bone">
             <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

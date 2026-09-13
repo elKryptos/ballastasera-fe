@@ -1,1 +1,110 @@
-<p>create-unclaimed-organizer works!</p>
+<app-navbar />
+
+<main class="pt-(--header-h)">
+  @if (!createdOrganizer()) {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-xl md:max-w-2xl p-6 space-y-6" novalidate>
+    <h1 class="text-xl font-semibold">Crea organizzatore non rivendicato</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-1 md:col-span-2 relative">
+        <label for="name" class="text-sm font-medium">Nome *</label>
+        <input id="name" type="text" formControlName="name" class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched" />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+        <p class="absolute top-full left-0 text-sm text-red-600">Nome obbligatorio (max 120 caratteri).</p>
+        }
+      </div>
+
+      <div class="space-y-1 md:col-span-2 relative">
+        <label class="text-sm font-medium">Tipo *</label>
+        <hlm-select class="block" formControlName="type">
+          <hlm-select-trigger class="w-full">
+            <hlm-select-value placeholder="Seleziona tipo" />
+          </hlm-select-trigger>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (t of organizerTypes; track t.value) {
+              <hlm-select-item [value]="t.value">{{ t.label }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+        @if (form.controls.type.invalid && form.controls.type.touched) {
+        <p class="absolute top-full left-0 text-sm text-red-600">Seleziona un tipo.</p>
+        }
+      </div>
+
+      <div class="space-y-1 md:col-span-2">
+        <label for="description" class="text-sm font-medium">Descrizione</label>
+        <textarea id="description" formControlName="description" rows="3"
+          class="w-full rounded border px-3 py-2"></textarea>
+      </div>
+
+      <div class="space-y-1">
+        <label for="logoUrl" class="text-sm font-medium">Logo URL</label>
+        <input id="logoUrl" type="url" formControlName="logoUrl" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1">
+        <label for="website" class="text-sm font-medium">Sito web</label>
+        <input id="website" type="url" formControlName="website" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1">
+        <label for="phone" class="text-sm font-medium">Telefono</label>
+        <input id="phone" type="tel" formControlName="phone" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1">
+        <label for="contactEmail" class="text-sm font-medium">Email di contatto</label>
+        <input id="contactEmail" type="email" formControlName="contactEmail" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1">
+        <label for="instagram" class="text-sm font-medium">Instagram</label>
+        <input id="instagram" type="text" formControlName="instagram" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1">
+        <label for="facebook" class="text-sm font-medium">Facebook</label>
+        <input id="facebook" type="text" formControlName="facebook" class="w-full rounded border px-3 py-2" />
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+    <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+    }
+
+    <div class="flex justify-end">
+      <button type="submit" [disabled]="submitting()"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50">
+        @if (submitting()) {
+        <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+        }
+        {{ submitting() ? 'Creazione...' : 'Crea organizzatore' }}
+      </button>
+    </div>
+  </form>
+  } @else {
+  <div class="mx-auto max-w-xl p-6 space-y-4 text-center">
+    <div class="mx-auto size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+      ✓
+    </div>
+    <h1 class="text-xl font-semibold">Organizzatore creato</h1>
+    <p class="text-sm text-muted-foreground">
+      <strong>{{ createdOrganizer()!.name }}</strong> ({{ createdOrganizer()!.type }}) è stato creato come non
+      rivendicato, in attesa di verifica.
+    </p>
+    <div class="flex justify-center gap-3 pt-2">
+      <button type="button" (click)="createAnother()"
+        class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent">
+        Crea un altro
+      </button>
+      <button type="button" (click)="backToAdmin()"
+        class="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90">
+        Torna alla home admin
+      </button>
+    </div>
+  </div>
+  }
+</main>

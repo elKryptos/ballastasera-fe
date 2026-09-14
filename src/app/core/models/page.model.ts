@@ -5,3 +5,13 @@ export interface PageDto<T> {
   number: number;
   size: number;
 }
+
+export interface SpringPage<T> {
+  content: T[];
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
+}

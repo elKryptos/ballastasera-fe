@@ -27,3 +27,25 @@ export interface OrganizerCreateDto {
   instagram: string;
   facebook: string;
 }
+
+export interface OrganizerUpdateDto {
+  name: string;
+  type: OrganizerType;
+  description: string;
+  logoUrl: string;
+  website: string;
+  phone: string;
+  contactEmail: string;
+  instagram: string;
+  facebook: string;
+}
+
+export interface OrganizerSummaryDto {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  instagram: string | null;
+  type: OrganizerType;
+  verified: boolean;
+}

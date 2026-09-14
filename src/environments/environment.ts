@@ -15,9 +15,11 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   menuPage: false,
   oauth2Callback: false,
   stagingDemo: false,
-  pendingOrganizersPage: false,
   adminHomePage: false,
   createUnclaimedOrganizerPage: false,
+  verifiedOrganizersPage: false,
+  pendingOrganizersPage: false,
+  updateOrganizerPage: false,
 };
 
 export const environment = {

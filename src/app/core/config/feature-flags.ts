@@ -15,12 +15,16 @@ export const FEATURE_FLAGS = {
   googleAuth: 'googleAuth',
   /** /staging-demo route. Delete this flag once staging-demo is deleted. */
   stagingDemo: 'stagingDemo',
-  /** /admin/pending-organizers route (also gated on the ADMIN role). */
-  pendingOrganizersPage: 'pendingOrganizersPage',
   /** /admin route, hub with links to the admin pages below (also gated on the ADMIN role). */
   adminHomePage: 'adminHomePage',
   /** /admin/create-unclaimed-organizer route (also gated on the ADMIN role). */
   createUnclaimedOrganizerPage: 'createUnclaimedOrganizerPage',
+  /** /admin/pending-organizers route (also gated on the ADMIN role). */
+  pendingOrganizersPage: 'pendingOrganizersPage',
+  /** /admin/verified-organizers route (also gated on the ADMIN role). */
+  verifiedOrganizersPage: 'verifiedOrganizersPage',
+  /** /admin/update-organizer route (also gated on the ADMIN role). */
+  updateOrganizerPage: 'updateOrganizerPage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

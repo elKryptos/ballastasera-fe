@@ -18,5 +18,9 @@ export const serverRoutes: ServerRoute[] = [
   // route must render client-side, where the token actually resolves.
   { path: 'admin', renderMode: RenderMode.Client },
   { path: 'admin/**', renderMode: RenderMode.Client },
+  // Same problem as admin/**: roleGuard reads the JWT from localStorage, so
+  // organizer routes must render client-side only. There is no bare
+  // 'organizer' route — the wildcard covers organizer/events/*.
+  { path: 'organizer/**', renderMode: RenderMode.Client },
   { path: '**', renderMode: RenderMode.Server },
 ];

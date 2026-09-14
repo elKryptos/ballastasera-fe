@@ -12,6 +12,8 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
+      "@/*": ["./src/app/*"],
+      "@env/*": ["./src/environments/*"],
       "@spartan-ng/helm/select": ["./src/app/shared/ui/select/src/index.ts"],
       "@spartan-ng/helm/utils": ["./src/app/shared/ui/utils/src/index.ts"],
       "@spartan-ng/helm/input": ["./src/app/shared/ui/input/src/index.ts"],

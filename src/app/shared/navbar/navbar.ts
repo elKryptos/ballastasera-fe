@@ -28,6 +28,9 @@ export class Navbar {
   protected readonly currentUser = this.auth.currentUser;
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly mapEnabled = computed(() => this.featureFlags.isEnabled(FEATURE_FLAGS.mapPage));
+  protected readonly createEventEnabled = computed(() =>
+    this.featureFlags.isEnabled(FEATURE_FLAGS.createEventPage),
+  );
 
   protected readonly initial = computed(() => this.currentUser()?.displayName.trim().charAt(0).toUpperCase() ?? '');
 

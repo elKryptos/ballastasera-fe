@@ -19,8 +19,8 @@ El backend impone dos límites que moldean el diseño: `POST /rest/events` fuerz
 
 **In:**
 
-- Ruta `/organizzatore/eventi/nuovo` (etapa 1: datos del evento) protegida por `featureFlagGuard('createEventPage')` + `roleGuard('ORGANIZER')`.
-- Ruta `/organizzatore/eventi/:id/pubblica` (etapa 2: flyer opcional + publicación) con los mismos guards.
+- Ruta `/organizer/events/new` (etapa 1: datos del evento) protegida por `featureFlagGuard('createEventPage')` + `roleGuard('ORGANIZER')`.
+- Ruta `/organizer/events/:id/publish` (etapa 2: flyer opcional + publicación) con los mismos guards.
 - Feature flag nuevo `createEventPage` en `feature-flags.ts` y los tres environment files.
 - Enlace `Crea evento` en el navbar, visible solo con `*appRole="'ORGANIZER'"`.
 - Selector de organizadores propios verificados (`GET /rest/organizers/me`, filtra `verified === true`). Bloquea el formulario con mensaje si no hay ninguno; preselecciona si hay uno solo.
@@ -147,7 +147,7 @@ Convenciones: el formulario trabaja con `datetime-local` y convierte a `OffsetDa
 1. Añadir la flag `createEventPage` a `src/app/core/config/feature-flags.ts` y a los tres environment files (`true` en development y staging, `false` en producción). Verificación manual: el typecheck no reporta la flag nueva como faltante.
 2. Ampliar `src/app/core/models/event.model.ts` con `EventStatus`, `FlyerStatus`, `EventDetailDto`, `EventCreateDto`, `EventStatusUpdateDto` y crear `src/app/core/models/venue.model.ts` con `VenuesSummaryDto`.
 3. Crear `src/app/core/services/organizers.service.ts` (`getMyOrganizers()` → `OrganizerDetailDto[]`), `src/app/core/services/venues.service.ts` (`listByCity(cityId)` → `VenuesSummaryDto[]`) y ampliar `src/app/core/services/events.service.ts` con `getEventDetail(id)`, `createEvent(dto)`, `updateEventStatus(id, status)`, `updateFlyer(id, file)` (FormData, sin `Content-Type` manual) y `deleteEvent(id)`.
-4. Registrar en `src/app/app.routes.ts` las rutas `organizzatore/eventi/nuovo` y `organizzatore/eventi/:id/pubblica` con `featureFlagGuard(FEATURE_FLAGS.createEventPage)` + `roleGuard('ORGANIZER')`, y añadir `{ path: 'organizzatore', renderMode: RenderMode.Client }` + `{ path: 'organizzatore/**', renderMode: RenderMode.Client }` en `src/app/app.routes.server.ts`.
+4. Registrar en `src/app/app.routes.ts` las rutas `organizer/events/new` y `organizer/events/:id/publish` con `featureFlagGuard(FEATURE_FLAGS.createEventPage)` + `roleGuard('ORGANIZER')`, y añadir `{ path: 'organizer/**', renderMode: RenderMode.Client }` en `src/app/app.routes.server.ts`.
 5. Implementar la etapa 1 en `features/events/create-event/` (reemplaza el scaffold): carga paralela de organizadores/ciudades/estilos, selector de verificados, formulario reactivo con validaciones (título requerido, `endAt > startAt`, precio ≥ 0 si no es gratuito, dirección requerida sin venue), y `POST` + navegación a la etapa 2. Reutilizar `HlmButton`, `HlmSelectImports`, `hlmInput`, `hlmLabel`.
 6. Implementar la etapa 2 (`pubblica`): recuperación por `GET /rest/events/{id}`, upload de flyer con validación y polling de `flyerStatus`, botón `Pubblica`, `Annulla` con `HlmAlertDialog` + `DELETE`, y pantalla final de confirmación con `Crea un altro` y `Vai alla mappa`.
 7. Añadir el enlace `Crea evento` en `shared/navbar/navbar.html` + `navbar.ts`, envuelto en el directive `*appRole` existente.
@@ -157,7 +157,7 @@ Convenciones: el formulario trabaja con `datetime-local` y convierte a `OffsetDa
 
 ## Criterios de aceptación
 
-- [ ] `/organizzatore/eventi/nuovo` y `/organizzatore/eventi/:id/pubblica` solo cargan para rol `ORGANIZER`; un `USER` o anónimo cae al redirect `**`.
+- [ ] `/organizer/events/new` y `/organizer/events/:id/publish` solo cargan para rol `ORGANIZER`; un `USER` o anónimo cae al redirect `**`.
 - [ ] Con `createEventPage` en `false` en un environment, ninguna de las dos rutas matchea.
 - [ ] El selector muestra únicamente organizers con `verified === true`; si no hay ninguno, se muestra un mensaje y no hay formulario.
 - [ ] Con un solo organizer verificado, este queda preseleccionado sin interacción.
@@ -166,22 +166,24 @@ Convenciones: el formulario trabaja con `datetime-local` y convierte a `OffsetDa
 - [ ] `startAt` y `endAt` se envían como ISO OffsetDateTime y `endAt > startAt`; el formulario bloquea el envío en caso contrario.
 - [ ] Un evento de pago envía `price >= 0` y `currency: 'EUR'`; uno gratuito envía `free: true` y `price: null`.
 - [ ] El JSON enviado usa la clave `free` (nunca `isFree`) y no incluye `flyerUrl`, `seriesId`.
-- [ ] Tras un `POST` exitoso la URL cambia a `/organizzatore/eventi/{id}/pubblica`; recargar esa URL recupera el evento con `GET /rest/events/{id}`.
+- [ ] Tras un `POST` exitoso la URL cambia a `/organizer/events/{id}/publish`; recargar esa URL recupera el evento con `GET /rest/events/{id}`.
 - [ ] El flyer es opcional: se puede publicar sin subirlo; acepta JPEG/PNG/WebP y rechaza otros tipos o > 10 MB con mensaje en italiano.
 - [ ] Si el upload falla, se puede reintentar sin que se ejecute un segundo `POST /rest/events`.
 - [ ] `Pubblica` envía exactamente `PATCH /rest/events/{id}/status` con body `{ "status": "PUBLISHED" }`; tras el 200 se muestra la confirmación.
 - [ ] `Annulla` tras crear pregunta con un alert dialog y, al confirmar, ejecuta `DELETE /rest/events/{id}` y vuelve a la etapa 1.
 - [ ] La pantalla final ofrece `Crea un altro` (vuelve a etapa 1 vacía) y `Vai alla mappa` (navega a `/mappa`).
-- [ ] `organizzatore/**` está en `RenderMode.Client` en `app.routes.server.ts`.
-- [ ] `pnpm build` (production) compila y el test `pnpm test --watch=false --filter "create-event"` pasa.
+- [ ] `organizer/**` está en `RenderMode.Client` en `app.routes.server.ts` (no hay ruta `organizer` suelta).
+- [ ] `pnpm build` (production) compila y el test `pnpm test --watch=false --filter "CreateEvent"` pasa.
 
 ---
 
 ## Decisiones
 
-- **Sí:** flujo por etapas con ruta con ID (`/{id}/pubblica`). Es la única forma de sobrevivir a una recarga, dado que no existe listado de eventos propios.
+- **Sí:** flujo por etapas con ruta con ID (`/{id}/publish`). Es la única forma de sobrevivir a una recarga, dado que no existe listado de eventos propios.
 - **Sí:** `Annulla` elimina el evento PENDING. Evita huérfanos inalcanzables; se confirma con alert dialog.
 - **Sí:** selector solo con organizers verificados. El backend rechaza con `403` cualquier otra opción; mostrarlos sería un error garantizado.
+- **Sí:** rutas en inglés (`/organizer/events/new`, `/organizer/events/:id/publish`), sin italiano ni español. El copy de la UI sigue siendo italiano; las URLs no.
+- **Sí:** imports con alias `@/*` (`@/core/...`, `@/shared/...`) en vez de cadenas de `../..`. Mapeado en `tsconfig.json`.
 - **Sí:** flyer opcional. El backend permite publicar sin flyer y la conversión WebP es asíncrona.
 - **Sí:** reintento de flyer/publicación conservando el ID. Repetir el `POST` crearía duplicados.
 - **Sí:** moneda fija `EUR`. El producto está orientado a Italia; un selector añade superficie sin valor.
@@ -189,8 +191,10 @@ Convenciones: el formulario trabaja con `datetime-local` y convierte a `OffsetDa
 - **No:** creación/edición de venues. Falta `GET /rest/venues/{id}` para hidratar una edición; va en otra spec cuando el BE lo soporte.
 - **No:** edición de eventos ni listado de PENDING/DRAFT. `EventDetailDto` no expone `status` ni los IDs necesarios; requiere cambios de backend primero.
 - **No:** mini-mapa para coordenadas del evento. El geocoding del backend cubre el caso; el mapa solo tiene sentido para venues.
-- **No:** tocar `/admin/**`, flags admin ni `endpoints.ts`. El trabajo admin es del compañero y todas las rutas necesarias ya están declaradas.
+- **No:** tocar `/admin/**`, flags admin ni `endpoints.ts`. El trabajo admin es del compañero y todas las rutas necesarias ya están declaradas. (Excepción: las 2 flags faltantes de `environment.development.ts`, ver abajo.)
 - **No:** event series, favoritos, asistencia, detalle público. Cada uno merece spec propia.
+- **Sí:** reparar `environment.development.ts` durante la implementación (2 flags admin que faltaban). Las decisiones del plan decían dejarlo fuera, pero `pnpm test` compila ese archivo y sin reparación ningún test pasa. Notado para coordinar con el compañero.
+- **Sí:** `--filter` de Vitest matchea el título del suite (componente), no el nombre del archivo: el criterio usa `--filter "CreateEvent"`.
 
 ---
 
@@ -201,7 +205,7 @@ Convenciones: el formulario trabaja con `datetime-local` y convierte a `OffsetDa
 | `EventDetailDto` no devuelve `status`; tras publicar no se puede confirmar leyendo el evento | La UI considera publicado cuando `PATCH /status` responde 200; nunca muestra un badge de estado leído del backend |
 | Un PENDING puede quedar huérfano si el usuario abandona sin publicar ni cancelar | Ruta con ID recuperable + `Annulla` con borrado; el riesgo residual se documenta, no se resuelve en FE |
 | El polling del flyer puede no terminar (procesamiento lento) | Timeout de 60 s y botón manual de refresco; `FAILED` permite reintentar |
-| `environment.development.ts` actualmente no compila por flags admin faltantes (trabajo del compañero) | Esta spec solo añade su flag; la reparación de las ajenas queda fuera. El build de verificación es `pnpm build` production, que no usa ese archivo |
+| `environment.development.ts` no compilaba por flags admin faltantes (trabajo del compañero) | Se añadieron `verifiedOrganizersPage`/`updateOrganizerPage` en `true` durante la implementación: `pnpm test` compila ese archivo y el criterio de tests lo exigía. Cambio mecánico de 2 líneas, sin lógica |
 | `roleGuard` lee el JWT de localStorage, invisible en SSR | Las rutas nuevas van en `RenderMode.Client`, como ya hace `admin/**` |
 | CORS del backend solo permite `PATCH` con `Authorization`/`Content-Type` | El multipart se envía como `FormData` sin fijar `Content-Type` manual |
 

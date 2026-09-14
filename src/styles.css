@@ -164,7 +164,7 @@ dialog, etc.) render in the site's ink/rose/amber theme. */
   --muted-foreground: var(--color-muted);
   --accent: var(--color-violet);
   --accent-foreground: var(--color-bone);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: var(--color-rose);
   --border: var(--color-line);
   --input: var(--color-line);
   --ring: var(--color-amber);

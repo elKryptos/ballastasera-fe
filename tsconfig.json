@@ -15,7 +15,9 @@
       "@spartan-ng/helm/select": ["./src/app/shared/ui/select/src/index.ts"],
       "@spartan-ng/helm/utils": ["./src/app/shared/ui/utils/src/index.ts"],
       "@spartan-ng/helm/input": ["./src/app/shared/ui/input/src/index.ts"],
-      "@spartan-ng/helm/label": ["./src/app/shared/ui/label/src/index.ts"]
+      "@spartan-ng/helm/label": ["./src/app/shared/ui/label/src/index.ts"],
+      "@spartan-ng/helm/alert-dialog": ["./src/app/shared/ui/alert-dialog/src/index.ts"],
+      "@spartan-ng/helm/button": ["./src/app/shared/ui/button/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

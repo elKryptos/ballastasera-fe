@@ -66,5 +66,23 @@ export const routes: Routes = [
       ),
   },
 
+  {
+    path: 'admin/verified-organizers-list',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.verifiedOrganizersPage), roleGuard('ADMIN')],
+    loadComponent: () =>
+      import('./features/admin/verified-organizer-list/verified-organizer-list').then(
+        (m) => m.VerifiedOrganizerList,
+      ),
+  },
+
+  {
+    path: 'admin/update-organizer/:id',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.updateOrganizerPage), roleGuard('ADMIN')],
+    loadComponent: () =>
+      import('./features/admin/update-organizer/update-organizer').then(
+        (m) => m.UpdateOrganizer,
+      ),
+  },
+
   { path: '**', redirectTo: '' },
 ];

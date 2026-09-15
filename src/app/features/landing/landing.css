@@ -26,6 +26,14 @@
   padding-top: calc(var(--header-h) + 1rem);
 }
 
+/* Language switcher: fixed top-right, just under the navbar (not inside
+   it, so it stays put regardless of which header variant is shown) — same
+   position on mobile, tied to --header-h like everything else up here. */
+.lang-switch-float {
+  top: calc(var(--header-h) + 0.6rem);
+  right: clamp(0.75rem, 3vw, 2rem);
+}
+
 /* ---------- atmosphere ---------- */
 
 .glow {

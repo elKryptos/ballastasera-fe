@@ -1,6 +1,28 @@
 <div class="glow" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
+<div class="lang-switch-float fixed z-header inline-flex shrink-0 rounded-full border border-line bg-ink/85 p-0.5 backdrop-blur-sm"
+  role="group" aria-label="Lingua / Language">
+  <button type="button" (click)="setLang('it')" [attr.aria-pressed]="isActiveLang('it')"
+    class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
+    [class.bg-rose]="isActiveLang('it')" [class.text-ink]="isActiveLang('it')"
+    [class.text-muted]="!isActiveLang('it')">
+    IT
+  </button>
+  <button type="button" (click)="setLang('en')" [attr.aria-pressed]="isActiveLang('en')"
+    class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
+    [class.bg-rose]="isActiveLang('en')" [class.text-ink]="isActiveLang('en')"
+    [class.text-muted]="!isActiveLang('en')">
+    EN
+  </button>
+  <button type="button" (click)="setLang('es')" [attr.aria-pressed]="isActiveLang('es')"
+    class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
+    [class.bg-rose]="isActiveLang('es')" [class.text-ink]="isActiveLang('es')"
+    [class.text-muted]="!isActiveLang('es')">
+    ES
+  </button>
+</div>
+
 <div class="page relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pb-5 sm:gap-10 sm:px-8">
   @if (showNewNavbar) {
   <app-navbar>
@@ -86,33 +108,34 @@
       <!-- Mobile puts the music button straight under the headline, so it is in
         the first screenful; on large screens it goes back to the end. -->
       <div class="order-2 flex flex-col lg:order-1">
-        <p
-          class="eyebrow order-1 mb-2 font-mono text-[0.7rem] tracking-[0.22em] text-amber uppercase sm:mb-6 sm:text-[0.78rem]">
-          La scena latina d'Italia
+        <p class="eyebrow order-1 mb-2 font-mono text-[0.7rem] tracking-[0.22em] text-amber uppercase sm:mb-6 sm:text-[0.78rem]">
+          {{ 'hero.eyebrow' | transloco }}
         </p>
 
         <h1
           class="order-2 mb-3 font-display text-[clamp(1.95rem,8.6vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.035em] text-balance sm:mb-7">
-          <span class="line block">Dove si</span>
-          <span class="line block whitespace-nowrap">balla<span class="night text-rose">stasera?</span></span>
+          <span class="line block">{{ 'hero.titleLine1' | transloco }}</span>
+          <span class="line block whitespace-nowrap">{{ 'hero.titleLine2Plain' | transloco }}<span
+              class="night text-rose">{{ 'hero.titleLine2Highlight' | transloco }}</span></span>
         </h1>
 
         <p
           class="lead order-4 mb-4 max-w-[46ch] text-[clamp(0.85rem,3.5vw,1.15rem)] leading-[1.35] text-lead sm:mb-8 sm:leading-relaxed">
-          Salsa, bachata e molto altro: ogni serata d'Italia in un posto solo, aggiornata
-          giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano.
+          {{ 'hero.lead' | transloco }}
         </p>
 
         @if (state() === 'done') {
         <p class="done order-5 max-w-117.5 border-l-2 border-amber pl-4 text-lg leading-normal" role="status">
-          Ci sei. <strong class="font-semibold text-amber">Ti avvisiamo noi</strong> il giorno in cui apriamo.
+          {{ 'hero.doneText' | transloco }}
+          <strong class="font-semibold text-amber">{{ 'hero.doneStrong' | transloco }}</strong>
+          {{ 'hero.doneSuffix' | transloco }}
         </p>
         } @else {
         <form (ngSubmit)="submit()" novalidate
           class="signup order-5 flex w-full max-w-117.5 flex-wrap gap-2.5">
-          <label class="sr-only" for="email">La tua email</label>
+          <label class="sr-only" for="email">{{ 'hero.emailLabel' | transloco }}</label>
           <input id="email" name="email" type="email" inputmode="email" autocomplete="email"
-            placeholder="la-tua@email.com" [(ngModel)]="email" [attr.aria-invalid]="state() === 'error'"
+            [placeholder]="'hero.emailPlaceholder' | transloco" [(ngModel)]="email" [attr.aria-invalid]="state() === 'error'"
             aria-describedby="hint" class="min-w-52.5 flex-1 rounded-xl border border-line bg-bone/5 px-4 py-3 text-base sm:py-3.75 text-bone
                     transition-[border-color,background-color,box-shadow] duration-200
                   placeholder:text-muted/85
@@ -120,16 +143,16 @@
                   aria-invalid:border-amber" />
           <button type="submit" class="cursor-pointer rounded-xl bg-rose px-6 py-3 text-base font-semibold text-ink sm:py-3.75
                     transition-[background-color,transform] duration-200 hover:bg-rose-lit active:translate-y-px">
-            Avvisami
+            {{ 'hero.submit' | transloco }}
           </button>
         </form>
 
         <p id="hint" role="status" class="hint order-6 mt-2 max-w-117.5 text-[0.8rem] sm:mt-3 sm:text-sm" [class.text-muted]="state() !== 'error'"
           [class.text-amber]="state() === 'error'">
           @if (state() === 'error') {
-          Serve un indirizzo completo, tipo nome&#64;dominio.it
+          {{ 'hero.errorHint' | transloco }}
           } @else {
-          Zero spam. Una sola email, il giorno dell'apertura.
+          {{ 'hero.hint' | transloco }}
           }
         </p>
         }
@@ -149,7 +172,7 @@
             <span class="eq-bar"></span>
           </span>
 
-          {{ videoOpen() ? 'Musica accesa' : 'Metti la musica' }}
+          {{ (videoOpen() ? 'hero.musicOn' : 'hero.musicOff') | transloco }}
         </button>
       </div>
     </div>
@@ -161,10 +184,10 @@
   <section class="map-teaser flex flex-col gap-6 border-t border-line pt-8">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 class="font-display text-2xl font-bold tracking-[-0.02em] text-balance">
-        In arrivo: la mappa <span class="text-mint">in tempo reale</span>
+        {{ 'mapTeaser.titlePrefix' | transloco }} <span class="text-mint">{{ 'mapTeaser.titleHighlight' | transloco }}</span>
       </h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-amber uppercase">
-        Anteprima Milano
+        {{ 'mapTeaser.badge' | transloco }}
       </p>
     </div>
 
@@ -185,11 +208,8 @@
       </div>
 
       <div class="flex flex-col gap-4">
-        <p class="max-w-[60ch] text-[clamp(0.9rem,3.2vw,1.05rem)] leading-relaxed text-lead">
-          Stiamo per abilitare la mappa che mostrerà <b class="font-semibold text-bone">dove si balla proprio
-            stasera</b>, serata per serata, in tempo reale. Per aprirla basterà accedere — sarà possibile farlo
-          <b class="font-semibold text-bone">con il tuo account Google</b> — e all'inizio coprirà
-          <b class="font-semibold text-bone">solo Milano</b>: la apriamo città dopo città.
+        <p class="max-w-[60ch] text-[clamp(0.9rem,3.2vw,1.05rem)] leading-relaxed text-lead"
+          [innerHTML]="'mapTeaser.description' | transloco">
         </p>
 
         <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -206,10 +226,10 @@
               <path fill="#1976D2"
                 d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
             </svg>
-            Accedi con Google
+            {{ 'mapTeaser.googleCta' | transloco }}
           </button>
           <p class="font-mono text-[0.7rem] text-muted">
-            Così sei tra i primi ad avere la mappa, appena apre.
+            {{ 'mapTeaser.hint' | transloco }}
           </p>
         </div>
 
@@ -220,7 +240,7 @@
               <path [attr.d]="pin.shape" [attr.fill]="pin.color" />
               <path [attr.d]="pin.glyph" fill="#fff" />
             </svg>
-            <span class="font-mono text-[0.66rem] tracking-widest text-muted uppercase">{{ pin.label }}</span>
+            <span class="font-mono text-[0.66rem] tracking-widest text-muted uppercase">{{ pin.label | transloco }}</span>
           </div>
           }
         </div>
@@ -234,9 +254,9 @@
       The bars run on a 4s loop — one beat every 0.5s. -->
   <section class="count flex flex-col gap-4 border-t border-line pt-5">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-      <h2 class="font-display text-lg font-bold tracking-[-0.02em]">Come si balla la bachata</h2>
+      <h2 class="font-display text-lg font-bold tracking-[-0.02em]">{{ 'count.title' | transloco }}</h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-muted uppercase">
-        Quattro tempi, poi si ricomincia
+        {{ 'count.subtitle' | transloco }}
       </p>
     </div>
 
@@ -244,7 +264,7 @@
       @for (phrase of phrases; track phrase.direction) {
       <div class="flex flex-col gap-2">
         <span class="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
-          Verso {{ phrase.direction }}
+          {{ 'count.towards' | transloco }} {{ phrase.direction | transloco }}
         </span>
         <div class="flex items-end gap-[clamp(5px,1.2vw,14px)]">
           @for (beat of phrase.beats; track beat) {
@@ -253,7 +273,7 @@
             <span class="bar h-9 w-full rounded-sm sm:h-12"></span>
             <span class="num font-mono text-[0.72rem] font-medium tabular-nums">{{ beat }}</span>
             <span class="cue font-mono text-[0.56rem] tracking-[0.08em] uppercase sm:text-[0.6rem]">
-              {{ isHeld(beat) ? 'tap' : 'passo' }}
+              {{ (isHeld(beat) ? 'count.tap' : 'count.step') | transloco }}
             </span>
           </div>
           }
@@ -262,37 +282,29 @@
       }
     </div>
 
-    <p class="text-[0.85rem] leading-relaxed text-muted">
-      La musica va a <b class="font-medium text-bone">gruppi di quattro tempi</b>, uguali per tutto il brano.
-      Sui primi quattro ti sposti <b class="font-medium text-bone">verso destra</b>: un passo su
-      <b class="font-medium text-bone">1, 2 e 3</b>, e sul <b class="font-medium text-amber">4</b> non fai un passo
-      ma un <b class="font-medium text-amber">tap</b> — appoggi il piede accanto all'altro, senza caricarci il peso,
-      ed è lì che nasce il movimento dell'anca. Sugli altri quattro rifai tutto
-      <b class="font-medium text-bone">verso sinistra</b>: passi su <b class="font-medium text-bone">5, 6 e 7</b>,
-      tap sull'<b class="font-medium text-amber">8</b>. Ginocchia morbide, conta a tempo, e sei già in pista.
-    </p>
+    <p class="text-[0.85rem] leading-relaxed text-muted" [innerHTML]="'count.explanation' | transloco"></p>
   </section>
 
   <!-- Nothing is fetched from YouTube or Instagram until the visitor presses play. -->
   @if (media.length) {
   <section id="video" class="social reveal flex flex-col gap-5 border-t border-line pt-8">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-      <h2 class="font-display text-2xl font-bold tracking-[-0.02em]">Si balla così</h2>
+      <h2 class="font-display text-2xl font-bold tracking-[-0.02em]">{{ 'social.title' | transloco }}</h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-amber uppercase">
-        Alza il volume
+        {{ 'social.badge' | transloco }}
       </p>
     </div>
 
     <div class="grid gap-4" [class]="media.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'max-w-6xl'">
       @for (item of media; track item.mediaId) {
       <app-media-embed [class]="item.kind === 'youtube' ? 'aspect-video' : 'aspect-4/5'" [kind]="item.kind"
-        [mediaId]="item.mediaId" [title]="item.title" [credit]="item.credit" [hint]="item.hint ?? ''"
-        [poster]="item.poster ?? ''" [(open)]="videoOpen" />
+        [mediaId]="item.mediaId" [title]="'social.videoTitle' | transloco" [credit]="item.credit"
+        [hint]="'social.videoHint' | transloco" [poster]="item.poster ?? ''" [(open)]="videoOpen" />
       }
     </div>
 
     <p class="font-mono text-[0.7rem] text-muted">
-      Niente parte da solo: il video si carica da YouTube quando premi play.
+      {{ 'social.note' | transloco }}
     </p>
   </section>
   }
@@ -301,17 +313,15 @@
   <section class="partners reveal flex flex-col gap-6 border-t border-line pt-8">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 class="font-display text-2xl font-bold tracking-[-0.02em] text-balance">
-        Organizzi serate latine? <span class="text-amber">Abbiamo una bella novità per te.</span>
+        {{ 'partners.titleQuestion' | transloco }} <span class="text-amber">{{ 'partners.titleHighlight' | transloco }}</span>
       </h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-muted uppercase">
-        Stiamo arrivando
+        {{ 'partners.badge' | transloco }}
       </p>
     </div>
 
-    <p class="max-w-[62ch] text-[clamp(0.9rem,3.2vw,1.05rem)] leading-relaxed text-lead">
-      Locali, scuole, maestri, organizzatori di social ed eventi: stiamo costruendo
-      qualcosa <b class="font-semibold text-bone">pensato per voi</b> — per farvi trovare
-      da chi stasera vuole ballare e non sa ancora dove. Ancora poco e ci siamo.
+    <p class="max-w-[62ch] text-[clamp(0.9rem,3.2vw,1.05rem)] leading-relaxed text-lead"
+      [innerHTML]="'partners.intro' | transloco">
     </p>
 
     <!-- A drawing of what the map will do. Nothing is fetched, no real venue is
@@ -349,11 +359,11 @@
 
         <span
           class="absolute bottom-3 left-3 rounded-full border border-line bg-ink/80 px-3 py-1.5 font-mono text-[0.6rem] tracking-[0.14em] text-muted uppercase">
-          Milano — anteprima
+          {{ 'partners.mapBadge' | transloco }}
         </span>
       </div>
       <figcaption class="font-mono text-[0.68rem] text-muted">
-        Mappa d'esempio, il resultato finale sarà più chiaro e leggibile. I pin sono inventati, non rappresentano locali reali.
+        {{ 'partners.mapCaption' | transloco }}
       </figcaption>
     </figure>
 
@@ -373,7 +383,7 @@
           Instagram is only contacted once the visitor presses play. -->
         <div class="p-2 pb-0">
           <app-media-embed class="aspect-9/16" kind="instagram" [mediaId]="partner.reel"
-            [title]="partner.reelTitle ?? partner.label" hint="Guarda su Instagram" />
+            [title]="(partner.reelTitle ?? partner.label) | transloco" [hint]="'partners.watchOnInstagram' | transloco" />
         </div>
         } @else {
         <div class="art m-2 mb-0 flex aspect-9/16 items-center justify-center rounded-[14px] border border-line">
@@ -406,9 +416,9 @@
 
         <div class="flex flex-col gap-2 p-4 sm:p-5">
           <span class="font-mono text-[0.68rem] tracking-[0.14em] text-amber uppercase">
-            {{ partner.label }}
+            {{ partner.label | transloco }}
           </span>
-          <span class="text-[0.9rem] leading-relaxed text-lead">{{ partner.copy }}</span>
+          <span class="text-[0.9rem] leading-relaxed text-lead">{{ partner.copy | transloco }}</span>
 
           @if (partner.creditHandle) {
           <a [href]="'https://www.instagram.com/' + partner.creditHandle + '/'" target="_blank"
@@ -432,10 +442,10 @@
       <a href="https://www.instagram.com/hans.manci/" target="_blank" rel="noopener noreferrer"
         class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-amber/50 bg-amber/10 px-5 py-3 font-mono text-[0.72rem] tracking-[0.16em] text-bone uppercase no-underline
           transition-[background-color,border-color,transform] duration-200 hover:border-amber hover:bg-amber/20 active:translate-y-px">
-        Scrivici su Instagram
+        {{ 'partners.instagramCta' | transloco }}
       </a>
       <p class="font-mono text-[0.7rem] text-muted">
-        Vuoi essere tra i primi? Scrivici: partiamo da Milano.
+        {{ 'partners.instagramHint' | transloco }}
       </p>
     </div>
   </section>
@@ -447,15 +457,11 @@
       class="support relative flex w-full max-w-4xl flex-col items-center gap-5 rounded-[1.75rem] border border-dashed border-amber/45 bg-bone/[0.035] p-6 text-center backdrop-blur-sm sm:flex-row sm:justify-between sm:gap-6 sm:p-8 sm:text-left">
       <span
         class="pointer-events-none absolute -top-3 left-6 rounded-full border border-line bg-ink px-3 py-1 font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase sm:left-8">
-        Dietro le quinte
+        {{ 'support.badge' | transloco }}
       </span>
 
       <div class="flex max-w-[52ch] flex-col gap-1.5">
-        <p class="text-[0.9rem] leading-relaxed text-lead">
-          Ballastasera lo stiamo costruendo <b class="font-medium text-bone">in due</b>, la sera, tra un lavoro e
-          l'altro — perché in pista ci balliamo anche noi, e un posto così non c'era ancora. Se il progetto ti piace,
-          offrici un caffè: ci aiuta a tenerlo vivo.
-        </p>
+        <p class="text-[0.9rem] leading-relaxed text-lead" [innerHTML]="'support.text' | transloco"></p>
       </div>
       <a href="https://www.paypal.me/ballastasera/3" target="_blank" rel="noopener noreferrer"
         class="coffee-btn group inline-flex shrink-0 cursor-pointer items-center gap-2 self-center rounded-full px-6 py-3 font-mono text-[0.72rem] font-bold tracking-[0.16em] text-white uppercase no-underline
@@ -467,7 +473,7 @@
             <path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17" />
             <path d="M8 4c0 1-1 1-1 2M12 4c0 1-1 1-1 2M16 4c0 1-1 1-1 2" />
           </svg>
-          Offrici un caffè
+          {{ 'support.coffeeCta' | transloco }}
         </span>
       </a>
     </div>
@@ -477,7 +483,7 @@
     class="reveal flex flex-col items-center gap-x-7 gap-y-3 text-center font-mono text-[0.72rem] text-muted sm:flex-row sm:flex-wrap sm:justify-between sm:text-left">
     <span>© {{ year }} ballastasera</span>
     <span class="tracking-[0.04em]">ballastasera.it · ballastasera.com</span>
-    <span class="hidden tracking-[0.04em] sm:inline">Milano — Italia</span>
+    <span class="hidden tracking-[0.04em] sm:inline">{{ 'footer.location' | transloco }}</span>
     <nav class="flex gap-4.5" aria-label="Social">
       <a href="https://www.instagram.com/hans.manci/" target="_blank" rel="noopener noreferrer"
         class="no-underline transition-colors hover:text-green-500">Instagram</a>

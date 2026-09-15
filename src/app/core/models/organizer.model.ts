@@ -46,6 +46,7 @@ export interface OrganizerSummaryDto {
   slug: string;
   logoUrl: string | null;
   instagram: string | null;
+  whatsapp: string | null;
   type: OrganizerType;
   verified: boolean;
 }

@@ -67,6 +67,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin/create-event',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventPage), roleGuard('ADMIN')],
+    loadComponent: () =>
+      import('./features/admin/create-event/create-event').then((m) => m.CreateEvent),
+  },
+
+  {
     path: 'admin/verified-organizers-list',
     canMatch: [featureFlagGuard(FEATURE_FLAGS.verifiedOrganizersPage), roleGuard('ADMIN')],
     loadComponent: () =>

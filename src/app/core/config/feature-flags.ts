@@ -25,6 +25,8 @@ export const FEATURE_FLAGS = {
   verifiedOrganizersPage: 'verifiedOrganizersPage',
   /** /admin/update-organizer route (also gated on the ADMIN role). */
   updateOrganizerPage: 'updateOrganizerPage',
+  /** /admin/create-event route (also gated on the ADMIN role). */
+  createEventPage: 'createEventPage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

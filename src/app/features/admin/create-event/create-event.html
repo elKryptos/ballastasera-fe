@@ -1,0 +1,213 @@
+<app-navbar />
+
+<main class="pt-(--header-h)">
+  @if (!createdEvent()) {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-xl md:max-w-2xl p-6 space-y-6" novalidate>
+    <h1 class="text-xl font-semibold">Crea evento</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Organizzatore *</label>
+        <hlm-autocomplete class="block" formControlName="organizerId" [itemToString]="organizerItemToString"
+          [search]="organizerSearch()" (searchChange)="organizerSearch.set($event)">
+          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca organizzatore..."
+            class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @for (o of filteredOrganizers(); track o.id) {
+                <hlm-autocomplete-item [value]="o.id">{{ o.name }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.organizerId.invalid && form.controls.organizerId.touched) {
+          <span class="text-red-600">Seleziona un organizzatore.</span>
+          } @else if (selectedOrganizer(); as organizer) {
+          <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{ organizer.id }}</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Città *</label>
+        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
+          <button type="button" brnSelectTrigger class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Seleziona città"></span>
+            <span class="text-muted-foreground">▾</span>
+          </button>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (c of cities(); track c.id) {
+              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
+          <span class="text-red-600">Seleziona una città.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 md:col-span-2">
+        <label for="title" class="text-sm font-medium">Titolo *</label>
+        <input id="title" type="text" formControlName="title" placeholder="Es. Serata Salsa Bachata"
+          class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched" />
+        <p class="min-h-5 text-sm">
+          @if (form.controls.title.invalid && form.controls.title.touched) {
+          <span class="text-red-600">Titolo obbligatorio (max 150 caratteri).</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 relative">
+        <label class="text-sm font-medium">Tipo *</label>
+        <hlm-select class="block" formControlName="eventType">
+          <button type="button" brnSelectTrigger class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Che tipo di evento è?"></span>
+            <span class="text-muted-foreground">▾</span>
+          </button>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (t of eventTypes; track t.value) {
+              <hlm-select-item [value]="t.value">{{ t.label }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="flyerUrl" class="text-sm font-medium">Flyer URL</label>
+        <input id="flyerUrl" type="url" formControlName="flyerUrl" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 md:col-span-2 mb-4">
+        <label for="description" class="text-sm font-medium">Descrizione</label>
+        <textarea id="description" formControlName="description" rows="2" placeholder="Racconta l'evento in 2 righe..."
+          class="w-full rounded border px-3 py-2"></textarea>
+      </div>
+
+      <div class="space-y-1 gap-y-2 mb-4">
+        <label for="instagramUrl" class="text-sm font-medium">Instagram URL</label>
+        <input id="instagramUrl" type="url" formControlName="instagramUrl" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="whatsappUrl" class="text-sm font-medium">WhatsApp URL</label>
+        <input id="whatsappUrl" type="url" formControlName="whatsappUrl" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="startAt" class="text-sm font-medium">Inizio *</label>
+        <input id="startAt" type="datetime-local" formControlName="startAt" class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.startAt.invalid && form.controls.startAt.touched" />
+        @if (form.controls.startAt.invalid && form.controls.startAt.touched) {
+        <p class="absolute top-full left-0 text-sm text-red-600">Data di inizio obbligatoria.</p>
+        }
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="endAt" class="text-sm font-medium">Fine *</label>
+        <input id="endAt" type="datetime-local" formControlName="endAt" class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.endAt.invalid && form.controls.endAt.touched" />
+        @if (form.controls.endAt.invalid && form.controls.endAt.touched) {
+        <p class="absolute top-full left-0 text-sm text-red-600">Data di fine obbligatoria.</p>
+        }
+      </div>
+
+      <div class="space-y-1 md:col-span-2 mb-4">
+        <label class="flex items-center gap-2 text-sm font-medium">
+          <input type="checkbox" formControlName="isFree" class="size-4 rounded border" />
+          Evento gratuito
+        </label>
+      </div>
+
+      @if (!form.controls.isFree.value) {
+      <div class="space-y-1 mb-2">
+        <label for="price" class="text-sm font-medium">Prezzo</label>
+        <input id="price" type="number" min="0" step="0.01" formControlName="price"
+          class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="currency" class="text-sm font-medium">Valuta</label>
+        <input id="currency" type="text" formControlName="currency" class="w-full rounded border px-3 py-2" />
+      </div>
+      }
+
+      <div class="space-y-1 md:col-span-2 mb-4">
+        <label for="address" class="text-sm font-medium">Indirizzo *</label>
+        <input id="address" type="text" formControlName="address" class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched" />
+        @if (form.controls.address.invalid && form.controls.address.touched) {
+        <p class="absolute top-full left-0 text-sm text-red-600">Indirizzo obbligatorio.</p>
+        }
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="latitude" class="text-sm font-medium">Latitudine</label>
+        <input id="latitude" type="number" step="any" formControlName="latitude" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="longitude" class="text-sm font-medium">Longitudine</label>
+        <input id="longitude" type="number" step="any" formControlName="longitude" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-2 md:col-span-2">
+        <label class="text-sm font-medium">Stili di danza</label>
+        <div class="flex flex-wrap gap-3 mt-4">
+          @for (style of danceStyles(); track style.id) {
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" class="size-4 rounded border" [checked]="selectedDanceStyleIds().has(style.id)"
+              (change)="toggleDanceStyle(style.id)" />
+            {{ style.name }}
+          </label>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+    <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+    }
+
+    <div class="flex justify-end">
+      <button type="submit" [disabled]="submitting()"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50">
+        @if (submitting()) {
+        <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+        }
+        {{ submitting() ? 'Creazione...' : 'Crea evento' }}
+      </button>
+    </div>
+  </form>
+  } @else {
+  <div class="mx-auto max-w-xl p-6 space-y-4 text-center">
+    <div class="mx-auto size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+      ✓
+    </div>
+    <h1 class="text-xl font-semibold">Evento creato</h1>
+    <p class="text-sm text-muted-foreground">
+      <strong>{{ createdEvent()!.title }}</strong> è stato creato con successo.
+    </p>
+    <div class="flex justify-center gap-3 pt-2">
+      <button type="button" (click)="createAnother()"
+        class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent">
+        Crea un altro
+      </button>
+      <button type="button" (click)="backToAdmin()"
+        class="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90">
+        Torna alla home admin
+      </button>
+    </div>
+  </div>
+  }
+</main>

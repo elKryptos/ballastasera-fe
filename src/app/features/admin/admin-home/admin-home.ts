@@ -22,12 +22,12 @@ export class AdminHome {
       routerLink: '/admin/create-unclaimed-organizer', 
     },
     {
-      title: 'Aggiorna dati organizzatore (DA IMPLEMENTARE)',
-      description: 'Aggiorna le informazioni relative a un organizzatore.',
-      routerLink: '/admin/',
+      title: 'Crea evento',
+      description: 'Aggiungi un nuovo evento.',
+      routerLink: '/admin/create-event',
     },
     {
-      title: 'Lista organizzatori verificati (DA IMPLEMENTARE)',
+      title: 'Elenco organizzatori verificati, possibilita di aggiornamento e eliminazione',
       description: 'Lista degli organizzatori che hanno completato il processo di verifica.',
       routerLink: '/admin/verified-organizers-list', 
     },

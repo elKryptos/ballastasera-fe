@@ -1,47 +1,79 @@
 <div class="glow" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
-<div class="lang-switch-float fixed z-header inline-flex shrink-0 rounded-full border border-line bg-ink/85 p-0.5 backdrop-blur-sm"
-  role="group" aria-label="Lingua / Language">
-  <button type="button" (click)="setLang('it')" [attr.aria-pressed]="isActiveLang('it')"
-    class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
-    [class.bg-rose]="isActiveLang('it')" [class.text-ink]="isActiveLang('it')"
-    [class.text-muted]="!isActiveLang('it')">
-    IT
-  </button>
-  <button type="button" (click)="setLang('en')" [attr.aria-pressed]="isActiveLang('en')"
-    class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
-    [class.bg-rose]="isActiveLang('en')" [class.text-ink]="isActiveLang('en')"
-    [class.text-muted]="!isActiveLang('en')">
-    EN
-  </button>
-  <button type="button" (click)="setLang('es')" [attr.aria-pressed]="isActiveLang('es')"
-    class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
-    [class.bg-rose]="isActiveLang('es')" [class.text-ink]="isActiveLang('es')"
-    [class.text-muted]="!isActiveLang('es')">
-    ES
-  </button>
+<div class="top-right-float fixed z-header inline-flex shrink-0 items-center gap-2.5"
+  [class.sidebar-layout]="showNewNavbar">
+  @if (showNewNavbar) {
+  <!-- app-navbar no longer carries this — pinned here instead, next to the
+       language switcher, at every width. -->
+  <span
+    class="inline-flex shrink-0 items-center gap-[clamp(0.25rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.55rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
+    style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
+      border:1.5px solid var(--color-line);">
+    <svg viewBox="0 0 24 24" class="size-[clamp(0.75rem,3vw,1.125rem)] shrink-0 animate-spin" fill="none"
+      stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path
+        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+      <path
+        d="M9.5 2.5l.5 2M14.5 2.5l-.5 2M2.5 9.5l2 .5M2.5 14.5l2-.5M21.5 9.5l-2 .5M21.5 14.5l-2-.5M9.5 21.5l.5-2M14.5 21.5l-.5-2" />
+    </svg>
+    Work in progress
+  </span>
+  }
+
+  <div class="lang-switch-float inline-flex shrink-0 rounded-full border border-line bg-ink/85 p-0.5 backdrop-blur-sm"
+    role="group" aria-label="Lingua / Language">
+    <button type="button" (click)="setLang('it')" [attr.aria-pressed]="isActiveLang('it')"
+      class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
+      [class.bg-rose]="isActiveLang('it')" [class.text-ink]="isActiveLang('it')"
+      [class.text-muted]="!isActiveLang('it')">
+      IT
+    </button>
+    <button type="button" (click)="setLang('en')" [attr.aria-pressed]="isActiveLang('en')"
+      class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
+      [class.bg-rose]="isActiveLang('en')" [class.text-ink]="isActiveLang('en')"
+      [class.text-muted]="!isActiveLang('en')">
+      EN
+    </button>
+    <button type="button" (click)="setLang('es')" [attr.aria-pressed]="isActiveLang('es')"
+      class="cursor-pointer rounded-full px-3 py-1 font-mono text-[0.68rem] font-bold tracking-wider uppercase transition-colors"
+      [class.bg-rose]="isActiveLang('es')" [class.text-ink]="isActiveLang('es')"
+      [class.text-muted]="!isActiveLang('es')">
+      ES
+    </button>
+  </div>
 </div>
 
-<div class="page relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pb-5 sm:gap-10 sm:px-8">
-  @if (showNewNavbar) {
-  <app-navbar>
-    <span
-      class="inline-flex shrink-0 items-center gap-[clamp(0.25rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.55rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
-      style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
-        border:1.5px solid var(--color-line);">
-      <svg viewBox="0 0 24 24" class="size-[clamp(0.75rem,3vw,1.125rem)] shrink-0 animate-spin" fill="none"
-        stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="12" cy="12" r="3" />
-        <path
-          d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-        <path
-          d="M9.5 2.5l.5 2M14.5 2.5l-.5 2M2.5 9.5l2 .5M2.5 14.5l2-.5M21.5 9.5l-2 .5M21.5 14.5l-2-.5M9.5 21.5l.5-2M14.5 21.5l-.5-2" />
-      </svg>
-      Work in progress
-    </span>
-  </app-navbar>
-  } @else {
+@if (showNewNavbar) {
+<!-- Desktop only: app-navbar's sidebar rail is nav-only for now, so the
+     logo is pinned here instead. Mobile still gets it from app-navbar's
+     own top bar below. -->
+<a routerLink="/" aria-label="ballastasera — home"
+  class="brand-float fixed z-header hidden shrink-0 items-center gap-1.5 no-underline md:flex">
+  <svg viewBox="0 0 200 210" aria-hidden="true" class="w-6 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
+    <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="var(--color-rose)" />
+    <g fill="var(--color-ink)">
+      <rect x="74" y="66" width="13" height="30" rx="6.5" />
+      <rect x="93" y="54" width="13" height="54" rx="6.5" />
+      <rect x="112" y="62" width="13" height="38" rx="6.5" />
+    </g>
+  </svg>
+  <span class="font-display text-[1rem] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
+      class="night text-rose">stasera</span></span>
+</a>
+
+<!-- Sibling of .page, not nested inside it (like every other page's
+     <app-navbar />) — .page's own `relative z-10` makes it a stacking
+     context, which would otherwise trap the sidebar and its backdrop
+     below top-right-float/brand-float (z-header) and stop the blur from
+     ever covering them. -->
+<app-navbar />
+}
+
+<div class="page relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pb-5 sm:gap-10 sm:px-8"
+  [class.sidebar-layout]="showNewNavbar">
+  @if (!showNewNavbar) {
   <header class="sticky-header fixed inset-x-0 top-0 z-30">
     <div
       class="mx-auto flex h-full max-w-295 items-center justify-between gap-[clamp(0.5rem,2vw,1.25rem)] px-6 sm:px-10 lg:px-14">
@@ -79,30 +111,36 @@
   </header>
   }
 
-  <main class="flex flex-1 items-center">
+  <main class="flex flex-1 items-center mt-14 md:ml-4 lg:ml-4">
     <div class="grid w-full items-center gap-4 sm:gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
       <!-- The mark, at size. Map pin + equaliser: where, and what's playing. -->
       <!-- On phones the pin is sized in dvh so it gives ground on short screens
         instead of pushing the form and its note past the fold. -->
-      <div
-        class="stage relative order-1 flex h-[13dvh] max-h-47.5 min-h-20 items-center justify-center lg:order-2 lg:h-auto lg:max-h-none lg:min-h-85">
-        <div class="halo absolute aspect-square w-[62%] rounded-full"></div>
-        <svg viewBox="0 0 200 210" role="img" aria-label="ballastasera"
-          class="pinbig relative h-full w-auto max-w-full drop-shadow-[0_24px_44px_rgba(139,92,246,0.5)] lg:h-auto lg:w-[44%] lg:max-w-72.5 lg:min-w-32.5">
-          <defs>
-            <linearGradient id="pingrad" x1="0.1" y1="0" x2="0.9" y2="1">
-              <stop offset="0" stop-color="var(--color-amber)" />
-              <stop offset="0.55" stop-color="var(--color-rose)" />
-              <stop offset="1" stop-color="var(--color-violet)" />
-            </linearGradient>
-          </defs>
-          <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="url(#pingrad)" />
-          <g fill="var(--color-ink)">
-            <rect x="74" y="66" width="13" height="30" rx="6.5" />
-            <rect x="93" y="54" width="13" height="54" rx="6.5" />
-            <rect x="112" y="62" width="13" height="38" rx="6.5" />
-          </g>
-        </svg>
+      <div class="order-1 flex flex-col items-center gap-2 lg:order-2">
+        <div class="stage relative flex h-[13dvh] max-h-47.5 min-h-20 items-center justify-center lg:h-auto lg:max-h-none lg:min-h-85">
+          <div class="halo absolute aspect-square w-[62%] rounded-full"></div>
+          <svg viewBox="0 0 200 210" role="img" aria-label="ballastasera"
+            class="pinbig relative h-full w-auto max-w-full drop-shadow-[0_24px_44px_rgba(139,92,246,0.5)] lg:h-auto lg:w-[44%] lg:max-w-72.5 lg:min-w-32.5">
+            <defs>
+              <linearGradient id="pingrad" x1="0.1" y1="0" x2="0.9" y2="1">
+                <stop offset="0" stop-color="var(--color-amber)" />
+                <stop offset="0.55" stop-color="var(--color-rose)" />
+                <stop offset="1" stop-color="var(--color-violet)" />
+              </linearGradient>
+            </defs>
+            <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="url(#pingrad)" />
+            <g fill="var(--color-ink)">
+              <rect x="74" y="66" width="13" height="30" rx="6.5" />
+              <rect x="93" y="54" width="13" height="54" rx="6.5" />
+              <rect x="112" y="62" width="13" height="38" rx="6.5" />
+            </g>
+          </svg>
+        </div>
+
+        <!-- Brand name, always in Italian regardless of active language —
+          it's the product's name, not copy to translate. -->
+        <span class="font-display text-[1.05rem] font-bold tracking-[-0.02em] whitespace-nowrap sm:text-[1.25rem]">balla<span
+            class="night text-rose">stasera</span></span>
       </div>
 
       <!-- Mobile puts the music button straight under the headline, so it is in

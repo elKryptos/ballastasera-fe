@@ -43,7 +43,12 @@ Generates z-map-content etc. utilities; components outside a template
   --z-index-header: 30; /* Fixed mobile top bar — above in-page content, incl. the map sheet */
   --z-index-sidebar-backdrop: 31; /* Desktop sidebar's own scrim when expanded — above the map sheet/header */
   --z-index-sidebar: 32; /* The desktop sidebar rail/panel itself, above its own scrim */
-  --z-index-modal: 40; /* Login/signup dialog — always topmost, incl. over an open sidebar */
+  /* Above 1000, not part of the 0-40 scale above: Angular CDK's overlay
+  container (e.g. the mobile sidebar's sheet) is always z-index 1000, a
+  fixed constant of CDK's own, not ours — so anything that must stay
+  visible over it, like the fixed mobile top bar, has to clear that first. */
+  --z-index-mobile-bar: 1001; /* Fixed mobile top bar — above CDK's overlay container */
+  --z-index-modal: 1010; /* Login/signup dialog — always topmost, incl. above the mobile bar */
 }
 
 :root {
@@ -151,6 +156,49 @@ readable against busy tiles even between pulses. */
   }
   50% {
     transform: scale(1.08);
+  }
+}
+
+/* "stasera" = tonight — a scatter of tiny stars over the word itself
+(positions are % of its own box, so they never spill outside it), each
+pulsing on its own offset so they don't all blink in sync. Shared between
+the landing hero and the navbar's own logo, which just wants a smaller
+scatter — hence the size knob rather than two copies of the gradient list. */
+.night {
+  position: relative;
+  display: inline-block;
+}
+
+.night::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-repeat: no-repeat;
+  --night-star-size: 1;
+  background-image:
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 6% 15%, #fff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1.2px) calc(var(--night-star-size) * 1.2px) at 14% 70%, var(--color-amber), transparent),
+    radial-gradient(calc(var(--night-star-size) * 0.8px) calc(var(--night-star-size) * 0.8px) at 24% 35%, #cfe4ff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 34% 80%, #ffe9b8, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1.2px) calc(var(--night-star-size) * 1.2px) at 44% 20%, var(--color-violet), transparent),
+    radial-gradient(calc(var(--night-star-size) * 0.8px) calc(var(--night-star-size) * 0.8px) at 54% 60%, #fff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 64% 10%, #cfe4ff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1.2px) calc(var(--night-star-size) * 1.2px) at 74% 75%, var(--color-amber), transparent),
+    radial-gradient(calc(var(--night-star-size) * 0.8px) calc(var(--night-star-size) * 0.8px) at 84% 30%, #fff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 94% 55%, var(--color-mint), transparent);
+  animation: twinkle 2.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .night::after {
+    animation: none;
   }
 }
 

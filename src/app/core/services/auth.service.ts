@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID, Service, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, of, tap, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { UserDto } from '../models/user.model';
 import { TokenStorageService } from './token-storage.service';
@@ -42,6 +42,11 @@ export class AuthService {
     }
 
     return this.http.get<UserDto>(`${environment.apiUrl}${endpoints.auth.me}`).pipe(
+      // The whole app's bootstrap blocks on this (see provideAppInitializer
+      // in app.config.ts) — an unreachable/slow API must not hang it
+      // indefinitely, e.g. a stale token left over once apiUrl points at a
+      // backend that isn't live yet.
+      timeout(5000),
       tap((user) => this.currentUserSignal.set(user)),
       catchError(() => {
         this.tokenStorage.clear();

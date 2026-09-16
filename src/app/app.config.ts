@@ -5,7 +5,7 @@ import { provideTransloco } from '@jsverse/transloco';
 import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 
 import { routes } from './app.routes';
-import { provideClientHydration } from '@angular/platform-browser';
+import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
@@ -24,7 +24,10 @@ export const appConfig: ApplicationConfig = {
       sidebarWidthIcon: '3rem',
       closeMobileSidebarOnMenuButtonClick: true,
     }),
-    provideClientHydration(),
+    // Without this, HttpClient calls made during SSR (incl. the i18n JSON
+    // the transloco loader fetches) aren't reused on the client — it just
+    // re-fetches everything from scratch right after hydration.
+    provideClientHydration(withHttpTransferCacheOptions({})),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideTransloco({
       config: {

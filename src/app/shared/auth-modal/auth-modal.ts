@@ -64,7 +64,12 @@ export class AuthModal {
         this.step.set('form');
         this.resetErrors();
         document.body.style.overflow = 'hidden';
-        queueMicrotask(() => this.emailField()?.nativeElement.focus());
+        // Only on a precise pointer (mouse/trackpad): on a touchscreen this
+        // would pop the on-screen keyboard the instant the dialog opens,
+        // before the person has actually chosen to type anything.
+        if (window.matchMedia('(pointer: fine)').matches) {
+          queueMicrotask(() => this.emailField()?.nativeElement.focus());
+        }
       } else {
         document.body.style.overflow = '';
       }

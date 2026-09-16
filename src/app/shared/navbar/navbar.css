@@ -23,9 +23,11 @@
   right: 0;
   z-index: var(--z-index-mobile-bar);
   height: var(--header-h);
-  background: color-mix(in srgb, var(--color-ink) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* Flat, not blended with transparent — has to match the Android status
+     bar above it exactly (theme-color in index.html/site.webmanifest, both
+     --color-ink), and any translucency would read as a visible seam
+     between the two. */
+  background: var(--color-ink);
 }
 
 /* "stasera" = tonight — same tiny star scatter as the landing headline,

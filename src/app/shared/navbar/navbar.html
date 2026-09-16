@@ -1,15 +1,14 @@
 <!-- The sidebar renders nothing on screen on mobile until its sheet is
-     opened, so this small bar keeps the logo visible at all times below
-     md: trigger on the left to open the drawer, logo centered, account
-     entry point on the right. -->
+    opened, so this small bar keeps the logo visible at all times below
+    md: trigger on the left to open the drawer, logo centered, account
+    entry point on the right. -->
 <header class="mobile-bar md:hidden">
   <div class="relative flex h-full items-center justify-between px-3">
     <button hlmSidebarTrigger type="button" class="shrink-0" srOnlyText="Apri il menu"></button>
 
     <a routerLink="/" aria-label="ballastasera — home"
       class="absolute left-1/2 flex -translate-x-1/2 items-center gap-1 no-underline">
-      <svg viewBox="0 0 200 210" aria-hidden="true"
-        class="w-6 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
+      <svg viewBox="0 0 200 210" aria-hidden="true" class="w-6 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
         <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
           fill="var(--color-rose)" />
         <g fill="var(--color-ink)">
@@ -51,9 +50,9 @@
 
 <hlm-sidebar side="left" collapsible="icon">
   <!-- No brand mark here for now — on desktop the logo (and the WIP badge)
-       live pinned in the page itself, next to the language switcher (see
-       landing.html); the sidebar rail is nav-only. Mobile still gets both
-       from the top bar above. -->
+      live pinned in the page itself, next to the language switcher (see
+      landing.html); the sidebar rail is nav-only. Mobile still gets both
+      from the top bar above. -->
   <div hlmSidebarHeader>
     <button hlmSidebarTrigger type="button" srOnlyText="Comprimi/espandi il menu"></button>
   </div>
@@ -97,8 +96,8 @@
         {{ initial() }}
       </span>
       }
-      <span
-        class="truncate text-[0.82rem] font-semibold text-bone group-data-[collapsible=icon]:hidden">{{ currentUser()?.displayName }}</span>
+      <span class="truncate text-[0.82rem] font-semibold text-bone group-data-[collapsible=icon]:hidden">{{
+        currentUser()?.displayName }}</span>
     </div>
 
     <ul hlmSidebarMenu>

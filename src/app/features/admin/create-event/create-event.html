@@ -26,29 +26,31 @@
           @if (form.controls.organizerId.invalid && form.controls.organizerId.touched) {
           <span class="text-red-600">Seleziona un organizzatore.</span>
           } @else if (selectedOrganizer(); as organizer) {
-          <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{ organizer.id }}</span>
+          <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{
+            organizer.id }}</span>
           }
         </p>
       </div>
 
       <div class="space-y-1">
-        <label class="text-sm font-medium">Città *</label>
-        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
-          <button type="button" brnSelectTrigger class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
-            <span brnSelectValue placeholder="Seleziona città"></span>
+        <label class="text-sm font-medium">Tipo *</label>
+        <hlm-select class="block" formControlName="eventType">
+          <button type="button" brnSelectTrigger
+            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Che tipo di evento è?"></span>
             <span class="text-muted-foreground">▾</span>
           </button>
           <ng-template hlmSelectPortal>
             <hlm-select-content>
-              @for (c of cities(); track c.id) {
-              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
+              @for (t of eventTypes; track t.value) {
+              <hlm-select-item [value]="t.value">{{ t.label }}</hlm-select-item>
               }
             </hlm-select-content>
           </ng-template>
         </hlm-select>
         <p class="min-h-5 text-sm">
-          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
-          <span class="text-red-600">Seleziona una città.</span>
+          @if (form.controls.eventType.invalid && form.controls.eventType.touched) {
+          <span class="text-red-600">Seleziona un tipo di evento.</span>
           }
         </p>
       </div>
@@ -63,100 +65,6 @@
           <span class="text-red-600">Titolo obbligatorio (max 150 caratteri).</span>
           }
         </p>
-      </div>
-
-      <div class="space-y-1 relative">
-        <label class="text-sm font-medium">Tipo *</label>
-        <hlm-select class="block" formControlName="eventType">
-          <button type="button" brnSelectTrigger class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
-            <span brnSelectValue placeholder="Che tipo di evento è?"></span>
-            <span class="text-muted-foreground">▾</span>
-          </button>
-          <ng-template hlmSelectPortal>
-            <hlm-select-content>
-              @for (t of eventTypes; track t.value) {
-              <hlm-select-item [value]="t.value">{{ t.label }}</hlm-select-item>
-              }
-            </hlm-select-content>
-          </ng-template>
-        </hlm-select>
-      </div>
-
-      <div class="space-y-1 mb-4">
-        <label class="text-sm font-medium">Flyer</label>
-        @if (createdEvent(); as event_) {
-        <div hlmAttachment [state]="flyerState()" class="w-full">
-          <div hlmAttachmentMedia [variant]="flyerImageUrl() ? 'image' : 'icon'">
-            @switch (flyerState()) {
-            @case ('uploading') { <hlm-spinner /> }
-            @case ('processing') { <hlm-spinner /> }
-            @default {
-            @if (flyerImageUrl()) {
-            <img [src]="flyerImageUrl()" alt="Flyer" />
-            } @else if (flyerState() === 'error') {
-            <ng-icon name="lucideFileWarning" />
-            } @else {
-            <ng-icon name="lucideImage" />
-            }
-            }
-            }
-          </div>
-          <div hlmAttachmentContent>
-            <span hlmAttachmentTitle>
-              @switch (flyerState()) {
-              @case ('uploading') { Caricamento in corso... }
-              @case ('processing') { Elaborazione in corso... }
-              @case ('error') { Errore nel caricamento }
-              @case ('done') { Flyer caricato }
-              @default { {{ flyerFile()?.name ?? 'Nessun flyer caricato' }} }
-              }
-            </span>
-            <span hlmAttachmentDescription>
-              @switch (flyerState()) {
-              @case ('uploading') { Invio del file al server }
-              @case ('processing') { Il server sta elaborando l'immagine }
-              @case ('error') { {{ flyerError() }} }
-              @case ('done') { Clicca per aprire a schermo intero }
-              @default { {{ flyerFile() ? 'Pronto per il caricamento' : 'PNG, JPG o WEBP' }} }
-              }
-            </span>
-          </div>
-          <div hlmAttachmentActions class="gap-1">
-            @if (!flyerBusy()) {
-            <button hlmAttachmentAction type="button" (click)="openFlyerPicker()" aria-label="Scegli file">
-              <ng-icon name="lucideImage" />
-            </button>
-            }
-            @if (flyerState() === 'error') {
-            <button hlmAttachmentAction type="button" (click)="uploadFlyer()" aria-label="Riprova il caricamento"
-              class="text-green-600 hover:text-green-700 hover:bg-green-600/10">
-              <ng-icon name="lucideRefreshCw" />
-            </button>
-            } @else if (flyerFile() && !flyerBusy()) {
-            <button hlmAttachmentAction type="button" (click)="uploadFlyer()" aria-label="Carica flyer"
-              class="text-green-600 hover:text-green-700 hover:bg-green-600/10">
-              <ng-icon name="lucideUpload" />
-            </button>
-            }
-          </div>
-          @if (!flyerBusy() && event_.flyerUrl) {
-          <a hlmAttachmentTrigger [type]="null" [href]="event_.flyerUrl" target="_blank" rel="noreferrer"
-            aria-label="Apri flyer"></a>
-          }
-        </div>
-        <input #flyerFileInput type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
-          (change)="onFlyerFileSelected($event)" />
-        } @else {
-        <div hlmAttachment state="idle" class="pointer-events-none w-full opacity-60">
-          <div hlmAttachmentMedia>
-            <ng-icon name="lucideImage" />
-          </div>
-          <div hlmAttachmentContent>
-            <span hlmAttachmentTitle>Carica flyer</span>
-            <span hlmAttachmentDescription>Disponibile dopo il salvataggio dell'evento</span>
-          </div>
-        </div>
-        }
       </div>
 
       <div class="space-y-1 md:col-span-2 mb-4">
@@ -175,7 +83,7 @@
         <input id="whatsappUrl" type="url" formControlName="whatsappUrl" class="w-full rounded border px-3 py-2" />
       </div>
 
-      <div class="space-y-1 mb-4">
+      <div class="space-y-1 mb-4 relative">
         <label for="startAt" class="text-sm font-medium">Inizio *</label>
         <input id="startAt" type="datetime-local" formControlName="startAt" class="w-full rounded border px-3 py-2"
           [attr.aria-invalid]="form.controls.startAt.invalid && form.controls.startAt.touched" />
@@ -184,7 +92,7 @@
         }
       </div>
 
-      <div class="space-y-1 mb-4">
+      <div class="space-y-1 mb-4 relative">
         <label for="endAt" class="text-sm font-medium">Fine *</label>
         <input id="endAt" type="datetime-local" formControlName="endAt" class="w-full rounded border px-3 py-2"
           [attr.aria-invalid]="form.controls.endAt.invalid && form.controls.endAt.touched" />
@@ -193,43 +101,79 @@
         }
       </div>
 
-      <div class="space-y-1 md:col-span-2 mb-4">
-        <label class="flex items-center gap-2 text-sm font-medium">
-          <input type="checkbox" formControlName="isFree" class="size-4 rounded border" />
-          Evento gratuito
+      <div
+        class="md:col-span-2 mb-4 rounded-lg border overflow-hidden transition-colors has-checked:border-green-600 not-has-checked:border-yellow-600">
+        <label
+          class="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer transition-colors has-checked:bg-green-600/10 not-has-checked:bg-yellow-600/10">
+          <span class="flex flex-col gap-0.5">
+            <span class="text-sm font-medium">Evento gratuito</span>
+            <span class="text-sm text-muted-foreground">Nessun biglietto o contributo richiesto per partecipare</span>
+          </span>
+          <input type="checkbox" formControlName="isFree"
+            class="size-5 shrink-0 rounded border accent-red-600 checked:accent-green-600" />
         </label>
+
+        @if (!form.controls.isFree.value) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 border-t border-yellow-600/30 bg-yellow-600/5 p-4">
+          <div class="space-y-1">
+            <label for="price" class="text-sm font-medium">Prezzo</label>
+            <input id="price" type="number" min="0" step="0.01" formControlName="price"
+              class="w-full rounded border px-3 py-2" />
+          </div>
+
+          <div class="space-y-1">
+            <label for="currency" class="text-sm font-medium">Valuta</label>
+            <input id="currency" type="text" formControlName="currency" class="w-full rounded border px-3 py-2" />
+          </div>
+        </div>
+        }
       </div>
 
-      @if (!form.controls.isFree.value) {
-      <div class="space-y-1 mb-2">
-        <label for="price" class="text-sm font-medium">Prezzo</label>
-        <input id="price" type="number" min="0" step="0.01" formControlName="price"
-          class="w-full rounded border px-3 py-2" />
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Città *</label>
+        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
+          <button type="button" brnSelectTrigger
+            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Seleziona città"></span>
+            <span class="text-muted-foreground">▾</span>
+          </button>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (c of cities(); track c.id) {
+              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
+          <span class="text-red-600">Seleziona una città.</span>
+          }
+        </p>
       </div>
 
-      <div class="space-y-1 mb-4">
-        <label for="currency" class="text-sm font-medium">Valuta</label>
-        <input id="currency" type="text" formControlName="currency" class="w-full rounded border px-3 py-2" />
-      </div>
-      }
-
-      <div class="space-y-1 md:col-span-2 mb-4">
+      <div class="space-y-1 mb-4 relative">
         <label for="address" class="text-sm font-medium">Indirizzo *</label>
         <input id="address" type="text" formControlName="address" class="w-full rounded border px-3 py-2"
           [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched" />
-        @if (form.controls.address.invalid && form.controls.address.touched) {
-        <p class="absolute top-full left-0 text-sm text-red-600">Indirizzo obbligatorio.</p>
-        }
+        <p class="min-h-5 text-sm">
+          @if (form.controls.address.invalid && form.controls.address.touched) {
+          <span class="abosule text-sm text-red-600">Indirizzo obbligatorio.</span>
+          }
+        </p>
+
       </div>
 
       <div class="space-y-1 mb-4">
         <label for="latitude" class="text-sm font-medium">Latitudine</label>
-        <input id="latitude" type="number" step="any" formControlName="latitude" class="w-full rounded border px-3 py-2" />
+        <input id="latitude" type="number" step="any" formControlName="latitude"
+          class="w-full rounded border px-3 py-2" />
       </div>
 
       <div class="space-y-1 mb-4">
         <label for="longitude" class="text-sm font-medium">Longitudine</label>
-        <input id="longitude" type="number" step="any" formControlName="longitude" class="w-full rounded border px-3 py-2" />
+        <input id="longitude" type="number" step="any" formControlName="longitude"
+          class="w-full rounded border px-3 py-2" />
       </div>
 
       <div class="space-y-2 md:col-span-2">
@@ -243,6 +187,89 @@
           </label>
           }
         </div>
+      </div>
+
+      <div
+        class="md:col-span-2 mb-4 mt-4 space-y-3 rounded-xl border border-accent/30 bg-linear-to-br from-accent/10 via-primary/5 to-accent/10 p-4">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-1 text-xs font-semibold tracking-wide text-accent">
+          <ng-icon name="lucideImage" class="size-3.5" />
+          FLYER
+        </span>
+
+        @if (createdEvent(); as event_) {
+        <div class="flex flex-col sm:flex-row items-start gap-4">
+          <div
+            class="relative flex w-40 sm:w-56 aspect-square shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted"
+            [class.border-destructive]="flyerState() === 'error'">
+            @switch (flyerState()) {
+            @case ('uploading') { <hlm-spinner /> }
+            @case ('processing') { <hlm-spinner /> }
+            @default {
+            @if (flyerImageUrl()) {
+            <img [src]="flyerImageUrl()" alt="Flyer" class="h-full w-full object-cover" />
+            } @else if (flyerState() === 'error') {
+            <ng-icon name="lucideFileWarning" class="size-8 text-destructive" />
+            } @else {
+            <ng-icon name="lucideImage" class="size-8 text-muted-foreground" />
+            }
+            }
+            }
+          </div>
+
+          <div class="flex flex-1 flex-col gap-2 pt-1">
+            <p class="min-h-5 text-sm">
+              @switch (flyerState()) {
+              @case ('uploading') { <span class="text-accent">Caricamento in corso...</span> }
+              @case ('processing') { <span class="text-accent">Elaborazione in corso...</span> }
+              @case ('error') { <span class="text-red-600">{{ flyerError() }}</span> }
+              @case ('done') { <span class="text-muted-foreground">Flyer caricato</span> }
+              @default { <span class="text-muted-foreground">{{ flyerFile()?.name ?? (event_.flyerUrl ? 'Flyer caricato' :
+                'PNG, JPG o WEBP') }}</span> }
+              }
+            </p>
+
+            <div class="flex flex-wrap gap-2">
+              @if (!flyerBusy()) {
+              <button type="button" (click)="openFlyerPicker()"
+                class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-accent/10">
+                <ng-icon name="lucideImage" class="size-4" />
+                {{ event_.flyerUrl || flyerImageUrl() ? 'Cambia immagine' : 'Scegli immagine' }}
+              </button>
+              }
+
+              @if (flyerState() === 'error') {
+              <button type="button" (click)="uploadFlyer()"
+                class="inline-flex items-center gap-2 rounded-lg bg-destructive/10 text-destructive px-3 py-2 text-sm font-medium hover:bg-destructive/20">
+                <ng-icon name="lucideRefreshCw" class="size-4" />
+                Riprova
+              </button>
+              } @else if (flyerFile() && !flyerBusy()) {
+              <button type="button" (click)="uploadFlyer()"
+                class="inline-flex items-center gap-2 rounded-lg bg-accent text-accent-foreground px-3 py-2 text-sm font-medium hover:bg-accent/90">
+                <ng-icon name="lucideUpload" class="size-4" />
+                {{ event_.flyerUrl ? 'Aggiorna' : 'Carica' }}
+              </button>
+              }
+
+              @if (!flyerBusy() && event_.flyerUrl) {
+              <a [href]="event_.flyerUrl" target="_blank" rel="noreferrer"
+                class="inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium text-accent hover:underline">
+                Apri a schermo intero
+              </a>
+              }
+            </div>
+          </div>
+        </div>
+        <input #flyerFileInput type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
+          (change)="onFlyerFileSelected($event)" />
+        } @else {
+        <div class="flex items-center gap-4 opacity-60">
+          <div class="flex w-40 sm:w-56 aspect-square shrink-0 items-center justify-center rounded-lg border border-dashed bg-muted">
+            <ng-icon name="lucideImage" class="size-8 text-muted-foreground" />
+          </div>
+          <p class="text-sm text-muted-foreground">Disponibile dopo il salvataggio dell'evento</p>
+        </div>
+        }
       </div>
     </div>
 

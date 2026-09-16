@@ -7,7 +7,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocomplete, HlmAutocompleteImports } from '@spartan-ng/helm/autocomplete';
 import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput } from '@spartan-ng/brain/autocomplete';
-import { AttachmentState, HlmAttachmentImports } from '@spartan-ng/helm/attachment';
+import { AttachmentState } from '@spartan-ng/helm/attachment';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFileWarning, lucideImage, lucideRefreshCw, lucideUpload } from '@ng-icons/lucide';
@@ -42,7 +42,6 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
     HlmAutocompleteImports,
     BrnAutocompleteInput,
     BrnAutocompleteAnchor,
-    HlmAttachmentImports,
     HlmSpinnerImports,
     NgIcon,
   ],

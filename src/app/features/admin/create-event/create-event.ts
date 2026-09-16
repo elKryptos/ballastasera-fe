@@ -128,17 +128,19 @@ export class CreateEvent implements OnInit {
   private readonly organizerAutofillEffect = effect(() => {
     const organizer = this.selectedOrganizer();
     this.organizerPhoneSubscription?.unsubscribe();
+
+    this.form.controls.instagramUrl.setValue(
+      organizer?.instagram ? `https://instagram.com/${organizer.instagram}` : '',
+    );
+
     if (!organizer) {
+      this.form.controls.whatsappUrl.setValue('');
       return;
     }
-    if (organizer.instagram) {
-      this.form.controls.instagramUrl.setValue(`https://instagram.com/${organizer.instagram}`);
-    }
+
     this.organizerPhoneSubscription = this.admin.getOrganizer(organizer.id).subscribe((detail) => {
-      if (detail.phone) {
-        const digits = detail.phone.replace(/[^\d+]/g, '');
-        this.form.controls.whatsappUrl.setValue(`https://wa.me/${digits}`);
-      }
+      const digits = detail.phone?.replace(/[^\d+]/g, '');
+      this.form.controls.whatsappUrl.setValue(digits ? `https://wa.me/${digits}` : '');
     });
   });
 

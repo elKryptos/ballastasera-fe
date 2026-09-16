@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core';
+import { ScrollStrategyOptions } from '@angular/cdk/overlay';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { classes, hlm } from '@spartan-ng/helm/utils';
 import type { ClassValue } from 'clsx';
@@ -28,6 +29,7 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
       <hlm-sheet
         [side]="side()"
         [state]="_sidebarService.openMobile() ? 'open' : 'closed'"
+        [scrollStrategy]="_noopScrollStrategy"
         (stateChanged)="_sidebarService.setOpenMobile($event === 'open')"
       >
         <hlm-sheet-content
@@ -77,6 +79,15 @@ export class HlmSidebar {
   protected readonly _sidebarService = inject(HlmSidebarService);
   private readonly _config = injectHlmSidebarConfig();
   public readonly sidebarWidthMobile = input<string>(this._config.sidebarWidthMobile);
+
+  // The mobile sheet's default "block" scroll strategy freezes <html> at
+  // `position: fixed; top: -{scrollY}px` while it's open. Combined with the
+  // backdrop-filter glass on a fixed sheet, that non-zero offset makes some
+  // mobile browsers fail to composite the blur and render the area behind
+  // it blank instead — reproducible by opening the sheet after scrolling
+  // down, and gone again back at the top. A drawer doesn't need to lock
+  // background scroll anyway, so just don't.
+  protected readonly _noopScrollStrategy = inject(ScrollStrategyOptions).noop();
 
   public readonly side = input<'left' | 'right'>('left');
   public readonly variant = input<SidebarVariant>(this._sidebarService.variant());

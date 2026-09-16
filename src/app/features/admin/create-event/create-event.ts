@@ -1,19 +1,28 @@
-import { Component, computed, effect, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription, switchMap, timer } from 'rxjs';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocomplete, HlmAutocompleteImports } from '@spartan-ng/helm/autocomplete';
 import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput } from '@spartan-ng/brain/autocomplete';
+import { AttachmentState, HlmAttachmentImports } from '@spartan-ng/helm/attachment';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideFileWarning, lucideImage, lucideRefreshCw, lucideUpload } from '@ng-icons/lucide';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { AdminService } from '../../../core/services/admin.service';
+import { EventsService } from '../../../core/services/events.service';
 import { CitiesService } from '../../../core/services/cities.service';
 import { DanceStylesService } from '../../../core/services/dance-styles.service';
 import { EventCreateDto, EventDetailDto, EventType } from '../../../core/models/event.model';
 import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
+
+/** Minimum time the flyer widget stays in the "processing" state, so the backend's conversion work is visible even when the response is fast. */
+const FLYER_PROCESSING_MIN_MS = 5000;
 
 const EVENT_TYPES: { value: EventType; label: string }[] = [
   { value: 'EVENT', label: 'Evento' },
@@ -33,13 +42,18 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
     HlmAutocompleteImports,
     BrnAutocompleteInput,
     BrnAutocompleteAnchor,
+    HlmAttachmentImports,
+    HlmSpinnerImports,
+    NgIcon,
   ],
+  providers: [provideIcons({ lucideImage, lucideUpload, lucideRefreshCw, lucideFileWarning })],
   templateUrl: './create-event.html',
   styleUrl: './create-event.css',
 })
 export class CreateEvent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly admin = inject(AdminService);
+  private readonly eventsService = inject(EventsService);
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
   private readonly router = inject(Router);
@@ -73,13 +87,24 @@ export class CreateEvent implements OnInit {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly createdEvent = signal<EventDetailDto | null>(null);
 
+  protected readonly flyerState = signal<AttachmentState>('idle');
+  protected readonly flyerError = signal<string | null>(null);
+  protected readonly flyerFile = signal<File | null>(null);
+  protected readonly flyerPreviewUrl = signal<string | null>(null);
+  /** The local staged preview takes priority; otherwise fall back to the flyer already persisted on the event. */
+  protected readonly flyerImageUrl = computed(() => this.flyerPreviewUrl() ?? this.createdEvent()?.flyerUrl ?? null);
+  protected readonly flyerBusy = computed(() => {
+    const state = this.flyerState();
+    return state === 'uploading' || state === 'processing';
+  });
+  private readonly flyerFileInput = viewChild<ElementRef<HTMLInputElement>>('flyerFileInput');
+
   protected readonly form = this.fb.nonNullable.group({
     organizerId: ['', [Validators.required]],
     cityId: ['' as number | '', [Validators.required]],
     title: ['', [Validators.required, Validators.maxLength(150)]],
     eventType: ['' as EventType | '', [Validators.required]],
     description: ['', [Validators.maxLength(2000)]],
-    flyerUrl: [''],
     instagramUrl: [''],
     whatsappUrl: [''],
     startAt: ['', [Validators.required]],
@@ -99,15 +124,18 @@ export class CreateEvent implements OnInit {
     () => this.organizers().find((o) => o.id === this.selectedOrganizerId()) ?? null,
   );
 
+  private organizerPhoneSubscription?: Subscription;
+
   private readonly organizerAutofillEffect = effect(() => {
     const organizer = this.selectedOrganizer();
+    this.organizerPhoneSubscription?.unsubscribe();
     if (!organizer) {
       return;
     }
     if (organizer.instagram) {
       this.form.controls.instagramUrl.setValue(`https://instagram.com/${organizer.instagram}`);
     }
-    this.admin.getOrganizer(organizer.id).subscribe((detail) => {
+    this.organizerPhoneSubscription = this.admin.getOrganizer(organizer.id).subscribe((detail) => {
       if (detail.phone) {
         const digits = detail.phone.replace(/[^\d+]/g, '');
         this.form.controls.whatsappUrl.setValue(`https://wa.me/${digits}`);
@@ -149,7 +177,7 @@ export class CreateEvent implements OnInit {
       title: value.title,
       eventType: value.eventType as EventType,
       description: value.description || null,
-      flyerUrl: value.flyerUrl || null,
+      flyerUrl: null,
       instagramUrl: value.instagramUrl || null,
       whatsappUrl: value.whatsappUrl || null,
       startAt: this.toIsoString(value.startAt),
@@ -167,19 +195,86 @@ export class CreateEvent implements OnInit {
       next: (event) => {
         this.submitting.set(false);
         this.createdEvent.set(event);
+        this.form.disable();
       },
       error: (err) => {
         this.submitting.set(false);
         this.errorMessage.set(err?.error?.message ?? 'Si è verificato un errore durante la creazione dell\'evento.');
       },
     });
-
   }
 
   protected createAnother(): void {
+    this.form.enable();
     this.form.reset({ eventType: '', isFree: true, currency: 'EUR' });
     this.selectedDanceStyleIds.set(new Set());
     this.createdEvent.set(null);
+    this.flyerState.set('idle');
+    this.flyerError.set(null);
+    this.clearStagedFlyer();
+  }
+
+  protected openFlyerPicker(): void {
+    if (this.flyerBusy()) {
+      return;
+    }
+    this.flyerFileInput()?.nativeElement.click();
+  }
+
+  protected onFlyerFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    this.clearStagedFlyer();
+    this.flyerState.set('idle');
+    this.flyerError.set(null);
+    this.flyerFile.set(file);
+    this.flyerPreviewUrl.set(URL.createObjectURL(file));
+  }
+
+  protected uploadFlyer(): void {
+    const file = this.flyerFile();
+    const event_ = this.createdEvent();
+    if (!file || !event_) {
+      return;
+    }
+
+    this.flyerError.set(null);
+    this.flyerState.set('uploading');
+
+    this.admin
+      .uploadEventFlyer(event_.id, file)
+      .pipe(
+        switchMap(() => {
+          this.flyerState.set('processing');
+          return timer(FLYER_PROCESSING_MIN_MS);
+        }),
+        switchMap(() => this.eventsService.getEventDetail(event_.id)),
+      )
+      .subscribe({
+        next: (updated) => {
+          this.createdEvent.set(updated);
+          this.flyerState.set(updated.flyerStatus === 'FAILED' ? 'error' : 'done');
+          this.clearStagedFlyer();
+        },
+        error: (err) => {
+          this.flyerState.set('error');
+          this.flyerError.set(err?.error?.message ?? 'Caricamento del flyer non riuscito. Riprova.');
+        },
+      });
+  }
+
+  private clearStagedFlyer(): void {
+    const previewUrl = this.flyerPreviewUrl();
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    this.flyerFile.set(null);
+    this.flyerPreviewUrl.set(null);
   }
 
   protected backToAdmin(): void {

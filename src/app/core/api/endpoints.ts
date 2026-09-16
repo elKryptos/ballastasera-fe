@@ -9,15 +9,15 @@ export const endpoints = {
 
   admin: {
     getPendingOrganizers: '/rest/admin/organizers/pending',//Used
-    getVerifiedOrganizers: '/rest/admin/organizers/verified',
+    getVerifiedOrganizers: '/rest/admin/organizers/verified',//Used
     verifyOrganizer: (id: string) => `/rest/admin/organizers/${id}/verify`,
     createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed',//Used
-    getOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
-    updateOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
-    deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
+    getOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
+    updateOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
+    deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
     claimOrganizer: (id: string) => `/rest/organizers/${id}/claim`,
-    createEvent: '/rest/admin/events',
-    updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
+    createEvent: '/rest/admin/events',//Used
+    updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,//Used
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
     createEventSeries: '/rest/admin/event-series',
     createVenue: '/rest/admin/venues',

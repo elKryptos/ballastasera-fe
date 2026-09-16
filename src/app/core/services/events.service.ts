@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { EventCardDto } from '../models/event.model';
+import { EventCardDto, EventDetailDto } from '../models/event.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '../api/endpoints';
 
@@ -28,5 +28,9 @@ export class EventsService {
     if (cityId != null) params = params.set('cityId', cityId);
 
     return this.http.get<EventCardDto[]>(this.baseUrl, { params });
+  }
+
+  getEventDetail(id: string): Observable<EventDetailDto> {
+    return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`);
   }
 }

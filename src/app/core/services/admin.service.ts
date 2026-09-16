@@ -44,4 +44,10 @@ export class AdminService {
   createEvent(body: EventCreateDto): Observable<EventDetailDto> {
     return this.http.post<EventDetailDto>(`${environment.apiUrl}${endpoints.admin.createEvent}`, body);
   }
+
+  uploadEventFlyer(id: string, file: File): Observable<EventDetailDto> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.patch<EventDetailDto>(`${environment.apiUrl}${endpoints.admin.updateEventFlyer(id)}`, formData);
+  }
 }

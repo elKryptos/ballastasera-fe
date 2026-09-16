@@ -30,6 +30,7 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
         [side]="side()"
         [state]="_sidebarService.openMobile() ? 'open' : 'closed'"
         [scrollStrategy]="_noopScrollStrategy"
+        overlayClass="!top-(--header-h)"
         (stateChanged)="_sidebarService.setOpenMobile($event === 'open')"
       >
         <hlm-sheet-content
@@ -37,8 +38,10 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
           data-slot="sidebar"
           data-sidebar="sidebar"
           data-mobile="true"
-          class="bg-transparent backdrop-blur-xl text-sidebar-foreground h-svh w-(--sidebar-width) p-0 [&>button]:hidden"
+          class="bg-transparent backdrop-blur-xl text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
           [style.--sidebar-width]="sidebarWidthMobile()"
+          [style.top]="'var(--header-h)'"
+          [style.height]="'calc(100svh - var(--header-h))'"
         >
           <div class="flex h-full w-full flex-col">
             <ng-container *ngTemplateOutlet="contentContainer" />

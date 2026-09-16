@@ -2,6 +2,7 @@ import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorList
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideTransloco } from '@jsverse/transloco';
+import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
@@ -14,6 +15,15 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    // Starts as an icon-only rail on desktop (matches the md:pl-(--sidebar-width-icon)
+    // gutter every page reserves for it) and closes the mobile drawer as soon
+    // as a nav link inside it is clicked.
+    provideHlmSidebarConfig({
+      defaultOpen: false,
+      sidebarWidth: '13rem',
+      sidebarWidthIcon: '3rem',
+      closeMobileSidebarOnMenuButtonClick: true,
+    }),
     provideClientHydration(),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideTransloco({

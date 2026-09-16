@@ -1,25 +1,22 @@
-/* Plain flow element — the fixed positioning lives on .nav-bar below, not
-   here. A `backdrop-filter` on this host would give the auth dialog (its
-   sibling in the DOM, `<app-auth-modal>`) a new containing block, since
-   filters do that to fixed-position descendants same as `transform` does —
-   the dialog's `fixed inset-0` would then resolve against this ~3rem-tall
-   bar instead of the viewport, and never be visible. */
+/* Plain flow element — the fixed positioning lives on .mobile-bar and on
+   hlm-sidebar's own host below, not here. A `backdrop-filter` on this host
+   would give the auth dialog (its sibling in the DOM, `<app-auth-modal>`) a
+   new containing block, since filters do that to fixed-position descendants
+   same as `transform` does — the dialog's `fixed inset-0` would then
+   resolve against this element instead of the viewport, and never be
+   visible. */
 :host {
   display: block;
 }
 
-/* Pinned from the first frame, edge to edge — not sticky (which would
-   travel with the page briefly before catching). The matching top padding
-   that reserves this height lives on landing's own wrapper, since that's
-   the only place this component is used today. */
-.nav-bar {
+/* Mobile-only top bar: the sidebar itself renders nothing on screen below
+   md until its sheet is opened, so this keeps the logo pinned in view at
+   all times on small screens, edge to edge, above everything but a modal. */
+.mobile-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  /* Above every overlay the map page stacks (see --z-index-* in
-     styles.css) — otherwise the login/account controls end up hidden
-     behind the map UI. */
   z-index: var(--z-index-header);
   height: var(--header-h);
   background: color-mix(in srgb, var(--color-ink) 92%, transparent);
@@ -66,27 +63,6 @@
   }
 }
 
-.login-btn {
-  border-color: var(--color-line);
-  background: color-mix(in srgb, var(--color-bone) 5%, transparent);
-  color: var(--color-bone);
-}
-
-.login-btn:hover {
-  border-color: var(--color-rose);
-  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
-}
-
-.avatar-btn {
-  outline-offset: 2px;
-  transition: box-shadow 0.15s ease;
-}
-
-.avatar-btn.active,
-.avatar-btn:hover {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-rose) 55%, transparent);
-}
-
 .avatar-img,
 .avatar-fallback {
   border: 1.5px solid var(--color-line);
@@ -97,39 +73,31 @@
   color: var(--color-ink);
 }
 
-/* Transparent click-catcher, sits under the menu but above everything
-   else, so a click outside the dropdown closes it without needing a
-   document-level listener. */
-.menu-backdrop {
-  background: transparent;
+.account-trigger,
+.login-trigger {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  outline-offset: 2px;
 }
 
-.user-menu {
-  transform-origin: top right;
-  animation: menu-pop 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+.login-trigger {
+  height: 1.75rem;
+  width: 1.75rem;
+  color: var(--color-bone);
+  border: 1.5px solid var(--color-line);
 }
 
-@keyframes menu-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(-4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.login-trigger:hover {
+  border-color: var(--color-rose);
+  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
 }
 
-.menu-divider {
-  height: 1px;
-  margin: 0 0.25rem;
-  background: var(--color-line);
-}
-
-.menu-item:focus-visible {
-  outline: 2px solid var(--color-rose);
-  outline-offset: -2px;
+.account-trigger:hover .avatar-img,
+.account-trigger:hover .avatar-fallback {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-rose) 55%, transparent);
 }
 
 .logout-item {

@@ -40,17 +40,27 @@ Generates z-map-content etc. utilities; components outside a template
   --z-index-map-content: 10; /* Floating button/card drawn over the map itself */
   --z-index-map-sheet-backdrop: 20; /* Mobile filters sheet's full-screen scrim */
   --z-index-map-sheet: 21; /* The mobile filters sheet, above its own scrim */
-  --z-index-header: 30; /* Fixed site header — above in-page content, incl. the map sheet */
-  --z-index-header-menu-backdrop: 31; /* Account dropdown's click-outside-to-close layer */
-  --z-index-header-menu: 32; /* The account dropdown panel itself */
-  --z-index-modal: 40; /* Login/signup dialog — always topmost */
+  --z-index-header: 30; /* Fixed mobile top bar — above in-page content, incl. the map sheet */
+  --z-index-sidebar-backdrop: 31; /* Desktop sidebar's own scrim when expanded — above the map sheet/header */
+  --z-index-sidebar: 32; /* The desktop sidebar rail/panel itself, above its own scrim */
+  --z-index-modal: 40; /* Login/signup dialog — always topmost, incl. over an open sidebar */
 }
 
 :root {
-  /* Height of the fixed header (see navbar.css / landing.css). Kept here so
-the header's own height and the page's compensating top padding can't
-drift apart from each other. */
+  /* Height of the fixed mobile top bar (see navbar.css / landing.css). Kept
+here so the bar's own height and the page's compensating top padding
+can't drift apart from each other. */
   --header-h: 3rem;
+
+  /* Width of the desktop sidebar (see navbar.html), expanded and
+icon-collapsed. Spartan's own sidebar reads these var names for its
+internal width classes; since app-navbar doesn't use hlm-sidebar-wrapper
+(each page keeps its own <main>, not a shared flex layout), they're
+defined here instead so both the sidebar and every page's compensating
+left padding agree on the same values — see provideHlmSidebarConfig in
+app.config.ts, which must be kept in sync with these. */
+  --sidebar-width: 13rem;
+  --sidebar-width-icon: 3rem;
 }
 
 @media (min-width: 640px) {
@@ -168,12 +178,19 @@ dialog, etc.) render in the site's ink/rose/amber theme. */
   --border: var(--color-line);
   --input: var(--color-line);
   --ring: var(--color-amber);
-  --sidebar: var(--color-ink-2);
+  /* Same tone as the page body, not the ink-2 "elevated panel" used for
+  cards/popovers — that read as a lilac slab running down the whole
+  viewport height, since the rail has nothing else to break it up. The
+  border below carries the separation from page content instead. */
+  --sidebar: var(--color-ink);
   --sidebar-foreground: var(--color-bone);
   --sidebar-primary: var(--color-rose);
   --sidebar-primary-foreground: var(--color-ink);
-  --sidebar-accent: var(--color-violet);
-  --sidebar-accent-foreground: var(--color-bone);
+  /* Hover/active nav-item highlight — the site's loud coral-rose instead
+  of the library default violet, which read as flat/corporate next to a
+  nightlife brand. */
+  --sidebar-accent: var(--color-rose);
+  --sidebar-accent-foreground: var(--color-ink);
   --sidebar-border: var(--color-line);
   --sidebar-ring: var(--color-amber);
 }

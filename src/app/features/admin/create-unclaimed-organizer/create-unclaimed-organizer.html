@@ -1,6 +1,6 @@
 <app-navbar />
 
-<main class="pt-(--header-h)">
+<main class="pt-(--header-h) md:pt-0 md:pl-(--sidebar-width-icon)">
   @if (!createdOrganizer()) {
   <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-xl md:max-w-2xl p-6 space-y-6" novalidate>
     <h1 class="text-xl font-semibold">Crea organizzatore non rivendicato</h1>

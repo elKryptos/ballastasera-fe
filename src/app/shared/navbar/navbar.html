@@ -1,9 +1,15 @@
-<header class="nav-bar">
-  <div
-    class="mx-auto flex h-full max-w-340 items-center justify-between gap-[clamp(0.5rem,2vw,1.25rem)] px-6 sm:px-10 lg:px-14">
-    <a routerLink="/" aria-label="ballastasera — home" class="flex shrink-0 items-center gap-0.5 no-underline">
+<!-- The sidebar renders nothing on screen on mobile until its sheet is
+     opened, so this small bar keeps the logo visible at all times below
+     md: trigger on the left to open the drawer, logo centered, account
+     entry point on the right. -->
+<header class="mobile-bar md:hidden">
+  <div class="relative flex h-full items-center justify-between px-3">
+    <button hlmSidebarTrigger type="button" class="shrink-0" srOnlyText="Apri il menu"></button>
+
+    <a routerLink="/" aria-label="ballastasera — home"
+      class="absolute left-1/2 flex -translate-x-1/2 items-center gap-1 no-underline">
       <svg viewBox="0 0 200 210" aria-hidden="true"
-        class="w-[clamp(1.25rem,5vw,1.625rem)] shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
+        class="w-6 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
         <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
           fill="var(--color-rose)" />
         <g fill="var(--color-ink)">
@@ -12,98 +18,115 @@
           <rect x="112" y="62" width="13" height="38" rx="6.5" />
         </g>
       </svg>
-      <span
-        class="font-display text-[clamp(0.9rem,3.6vw,1.125rem)] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
+      <span class="font-display text-[0.95rem] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
           class="night text-rose">stasera</span></span>
     </a>
 
-    <div class="flex shrink-0 items-center gap-[clamp(0.4rem,1.6vw,0.75rem)]">
-      <ng-content></ng-content>
-
+    <div class="flex shrink-0 items-center gap-2">
       @if (isAuthenticated()) {
-      <div class="account relative shrink-0" (keydown.escape)="closeMenu()">
-        <button #avatarButton type="button" (click)="toggleMenu()"
-          class="avatar-btn flex min-w-0 cursor-pointer items-center gap-2 rounded-full sm:border sm:border-line sm:bg-bone/5 sm:py-1 sm:pr-3 sm:pl-1"
-          [class.active]="menuOpen()"
-          [attr.aria-expanded]="menuOpen()" aria-haspopup="menu" [attr.aria-label]="'Account di ' + currentUser()?.displayName">
-          @if (currentUser()?.avatarUrl) {
-          <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
-            class="avatar-img size-[clamp(1.8rem,6vw,2.2rem)] shrink-0 rounded-full object-cover" />
-          } @else {
-          <span
-            class="avatar-fallback flex size-[clamp(1.8rem,6vw,2.2rem)] shrink-0 items-center justify-center rounded-full text-[clamp(0.75rem,2.6vw,0.9rem)] font-semibold">
-            {{ initial() }}
-          </span>
-          }
-          <span class="user-name hidden max-w-28 truncate text-[0.82rem] font-semibold text-bone sm:inline">{{ currentUser()?.displayName }}</span>
-        </button>
-
-        @if (menuOpen()) {
-        <div class="menu-backdrop fixed inset-0 z-header-menu-backdrop" (click)="closeMenu()"></div>
-        <div class="user-menu absolute top-full right-0 z-header-menu mt-2.5 w-56 rounded-2xl border border-line bg-ink-2 p-1.5 shadow-2xl"
-          role="menu" [attr.aria-label]="'Menu account'">
-          <div class="flex items-center gap-2.5 px-2.5 pt-2 pb-3">
-            @if (currentUser()?.avatarUrl) {
-            <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
-              class="size-9 shrink-0 rounded-full border border-line object-cover" />
-            } @else {
-            <span
-              class="avatar-fallback flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-[0.85rem] font-semibold">
-              {{ initial() }}
-            </span>
-            }
-            <div class="min-w-0">
-              <p class="truncate text-[0.82rem] font-semibold text-bone">{{ currentUser()?.displayName }}</p>
-              <p class="truncate text-[0.72rem] text-lead">{{ currentUser()?.email }}</p>
-            </div>
-          </div>
-
-          <div class="menu-divider"></div>
-
-          @if (mapEnabled()) {
-          <a #mapMenuItem routerLink="/menu" (click)="closeMenu()" role="menuitem"
-            class="menu-item mt-1 flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.82rem] font-medium text-lead no-underline transition-colors hover:bg-bone/8 hover:text-bone">
-            <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4m0 0L9 6" />
-            </svg>
-            <span>Menu</span>
-          </a>
-          }
-
-          <a *appRole="'ADMIN'" routerLink="/admin" (click)="closeMenu()" role="menuitem"
-            class="menu-item flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.82rem] font-medium text-lead no-underline transition-colors hover:bg-bone/8 hover:text-bone">
-            <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7l8-4z" />
-            </svg>
-            <span>Admin</span>
-          </a>
-
-          <button #logoutMenuItem type="button" (click)="logout()" role="menuitem"
-            class="menu-item logout-item flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[0.82rem] font-medium transition-colors">
-            <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8M10 12h11m0 0l-3.5-3.5M21 12l-3.5 3.5" />
-            </svg>
-            <span>Esci</span>
-          </button>
-        </div>
+      <button type="button" (click)="toggleSidebar()" class="account-trigger shrink-0"
+        [attr.aria-label]="'Account di ' + currentUser()?.displayName">
+        @if (currentUser()?.avatarUrl) {
+        <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
+          class="avatar-img size-7 shrink-0 rounded-full object-cover" />
+        } @else {
+        <span
+          class="avatar-fallback flex size-7 shrink-0 items-center justify-center rounded-full text-[0.75rem] font-semibold">
+          {{ initial() }}
+        </span>
         }
-      </div>
+      </button>
       } @else {
-      <button type="button" (click)="openAuth('login')"
-        class="login-btn inline-flex shrink-0 cursor-pointer items-center gap-[clamp(0.3rem,1.2vw,0.45rem)] rounded-full border px-[clamp(0.7rem,2.6vw,1.1rem)] py-[clamp(0.4rem,1.4vw,0.55rem)] text-[clamp(0.68rem,2.4vw,0.82rem)] font-semibold whitespace-nowrap transition-all duration-200 active:translate-y-px">
-        <svg viewBox="0 0 24 24" class="size-[clamp(0.85rem,3vw,1.05rem)] shrink-0" fill="none" stroke="currentColor"
-          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <button type="button" (click)="openAuth('login')" class="login-trigger shrink-0" aria-label="Accedi">
+        <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
           <circle cx="12" cy="7.5" r="3.75" />
         </svg>
-        <span>Accedi</span>
       </button>
       }
     </div>
   </div>
 </header>
+
+<hlm-sidebar side="left" collapsible="icon">
+  <!-- No brand mark here for now — on desktop the logo (and the WIP badge)
+       live pinned in the page itself, next to the language switcher (see
+       landing.html); the sidebar rail is nav-only. Mobile still gets both
+       from the top bar above. -->
+  <div hlmSidebarHeader>
+    <button hlmSidebarTrigger type="button" srOnlyText="Comprimi/espandi il menu"></button>
+  </div>
+
+  <div hlmSidebarContent>
+    <ul hlmSidebarMenu>
+      @if (mapEnabled()) {
+      <li hlmSidebarMenuItem>
+        <a hlmSidebarMenuButton routerLink="/menu" tooltip="Menu">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4m0 0L9 6" />
+          </svg>
+          <span>Menu</span>
+        </a>
+      </li>
+      }
+
+      <li *appRole="'ADMIN'" hlmSidebarMenuItem>
+        <a hlmSidebarMenuButton routerLink="/admin" tooltip="Admin">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7l8-4z" />
+          </svg>
+          <span>Admin</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div hlmSidebarFooter>
+    @if (isAuthenticated()) {
+    <div
+      class="user-id flex items-center gap-2.5 overflow-hidden rounded-md p-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-2">
+      @if (currentUser()?.avatarUrl) {
+      <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
+        class="avatar-img size-7 shrink-0 rounded-full object-cover" />
+      } @else {
+      <span
+        class="avatar-fallback flex size-7 shrink-0 items-center justify-center rounded-full text-[0.75rem] font-semibold">
+        {{ initial() }}
+      </span>
+      }
+      <span
+        class="truncate text-[0.82rem] font-semibold text-bone group-data-[collapsible=icon]:hidden">{{ currentUser()?.displayName }}</span>
+    </div>
+
+    <ul hlmSidebarMenu>
+      <li hlmSidebarMenuItem>
+        <button hlmSidebarMenuButton type="button" (click)="logout()" tooltip="Esci" class="logout-item">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8M10 12h11m0 0l-3.5-3.5M21 12l-3.5 3.5" />
+          </svg>
+          <span>Esci</span>
+        </button>
+      </li>
+    </ul>
+    } @else {
+    <ul hlmSidebarMenu>
+      <li hlmSidebarMenuItem>
+        <button hlmSidebarMenuButton type="button" (click)="openAuth('login')" tooltip="Accedi">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+            <circle cx="12" cy="7.5" r="3.75" />
+          </svg>
+          <span>Accedi</span>
+        </button>
+      </li>
+    </ul>
+    }
+  </div>
+</hlm-sidebar>
 
 <app-auth-modal [(open)]="authOpen" [mode]="authMode()" />

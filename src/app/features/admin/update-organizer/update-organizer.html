@@ -1,6 +1,6 @@
 <app-navbar />
 
-<main class="pt-(--header-h)">
+<main class="pt-(--header-h) md:pt-0 md:pl-(--sidebar-width-icon)">
   @if (loading()) {
   <p class="mx-auto max-w-xl p-6 text-sm text-lead">Caricamento…</p>
   } @else if (!saved()) {

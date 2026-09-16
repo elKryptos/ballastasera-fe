@@ -4,7 +4,8 @@
     entry point on the right. -->
 <header class="mobile-bar md:hidden">
   <div class="relative flex h-full items-center justify-between px-3">
-    <button hlmSidebarTrigger type="button" class="shrink-0" srOnlyText="Apri il menu"></button>
+    <button hlmSidebarTrigger type="button" class="shrink-0"
+      [srOnlyText]="openMobile() ? 'Chiudi il menu' : 'Apri il menu'"></button>
 
     <a routerLink="/" aria-label="ballastasera — home"
       class="absolute left-1/2 flex -translate-x-1/2 items-center gap-1 no-underline">
@@ -53,9 +54,11 @@
       live pinned in the page itself, next to the language switcher (see
       landing.html); the sidebar rail is nav-only. Mobile still gets both
       from the top bar above. -->
+  @if (!isMobile()) {
   <div hlmSidebarHeader>
     <button hlmSidebarTrigger type="button" srOnlyText="Comprimi/espandi il menu"></button>
   </div>
+  }
 
   <div hlmSidebarContent>
     <ul hlmSidebarMenu>

@@ -1,8 +1,16 @@
-import { Component, DestroyRef, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { interval, Subscription, take } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { EventDetailDto, FlyerStatus } from '@/core/models/event.model';
+import { FlyerStatus, OrganizerEventDetailDto } from '@/core/models/event.model';
 import { EventsService } from '@/core/services/events.service';
 import { Navbar } from '@/shared/navbar/navbar';
 import { BrnAlertDialogContent } from '@spartan-ng/brain/alert-dialog';
@@ -32,7 +40,7 @@ export class PublishEvent {
 
   protected readonly loading = signal(true);
   protected readonly loadFailed = signal(false);
-  protected readonly event = signal<EventDetailDto | null>(null);
+  protected readonly event = signal<OrganizerEventDetailDto | null>(null);
 
   protected readonly uploadingFlyer = signal(false);
   protected readonly flyerError = signal<string | null>(null);
@@ -49,14 +57,16 @@ export class PublishEvent {
 
   protected readonly flyerStatus = computed<FlyerStatus>(() => this.event()?.flyerStatus ?? 'NONE');
   protected readonly flyerUrl = computed(() => this.event()?.flyerUrl ?? null);
-  protected readonly flyerReady = computed(() => this.flyerStatus() === 'READY' && !!this.flyerUrl());
+  protected readonly flyerReady = computed(
+    () => this.flyerStatus() === 'READY' && !!this.flyerUrl(),
+  );
   protected readonly startAtLabel = computed(() => this.formatDateTime(this.event()?.startAt));
   protected readonly endAtLabel = computed(() => this.formatDateTime(this.event()?.endAt));
   protected readonly priceLabel = computed(() => {
     const event = this.event();
     if (!event) return '';
     if (event.free) return 'Ingresso gratuito';
-    return event.price != null ? `€ ${event.price}` : event.currency ?? '';
+    return event.price != null ? `€ ${event.price}` : (event.currency ?? '');
   });
 
   constructor() {
@@ -67,7 +77,7 @@ export class PublishEvent {
   protected loadEvent(): void {
     this.loading.set(true);
     this.loadFailed.set(false);
-    this.events.getEventDetail(this.eventId).subscribe({
+    this.events.getManageableEventDetail(this.eventId).subscribe({
       next: (event) => {
         this.event.set(event);
         this.loading.set(false);
@@ -142,7 +152,7 @@ export class PublishEvent {
   protected refreshFlyer(fromPolling = false): void {
     if (this.refreshingFlyer()) return;
     this.refreshingFlyer.set(true);
-    this.events.getEventDetail(this.eventId).subscribe({
+    this.events.getManageableEventDetail(this.eventId).subscribe({
       next: (event) => {
         this.event.set(event);
         this.refreshingFlyer.set(false);
@@ -170,15 +180,14 @@ export class PublishEvent {
     this.publishing.set(true);
     this.errorMessage.set(null);
     this.events.updateEventStatus(this.eventId, 'PUBLISHED').subscribe({
-      next: () => {
+      next: (event) => {
+        this.event.set(event);
         this.publishing.set(false);
         this.published.set(true);
       },
       error: (err) => {
         this.publishing.set(false);
-        this.errorMessage.set(
-          err?.error?.message ?? 'Pubblicazione non riuscita: riprova.',
-        );
+        this.errorMessage.set(err?.error?.message ?? 'Pubblicazione non riuscita: riprova.');
       },
     });
   }
@@ -194,9 +203,7 @@ export class PublishEvent {
       },
       error: (err) => {
         this.deleting.set(false);
-        this.errorMessage.set(
-          err?.error?.message ?? "Impossibile eliminare l'evento. Riprova.",
-        );
+        this.errorMessage.set(err?.error?.message ?? "Impossibile eliminare l'evento. Riprova.");
       },
     });
   }

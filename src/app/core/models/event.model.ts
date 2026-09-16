@@ -1,4 +1,5 @@
 import { OrganizerDetailDto } from './organizer.model';
+import { DanceStyleDto } from './dance-style.model';
 
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
@@ -68,6 +69,18 @@ export interface EventDetailDto {
   interestedCount: number;
 }
 
+/** Private owner payload — mirrors OrganizerEventDetailDto in the backend. */
+export interface OrganizerEventDetailDto extends Omit<EventDetailDto, 'danceStyles'> {
+  status: EventStatus;
+  cityId: number;
+  venueId: string | null;
+  seriesId: string | null;
+  // Valori crudi dell'evento: nessun fallback dai dati dell'organizer.
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+  danceStyles: DanceStyleDto[];
+}
+
 /** Body for POST /rest/events — venueId null se non è stato scelto un venue. */
 export interface EventCreateDto {
   organizerId: string;
@@ -87,6 +100,9 @@ export interface EventCreateDto {
   // Sempre 'EUR'.
   currency: string;
   address: string;
+  // Solo con venue: evita regeocodificare una posizione che ha già coordinate affidabili.
+  latitude?: number;
+  longitude?: number;
   danceStyleIds: number[];
 }
 

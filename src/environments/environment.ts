@@ -27,6 +27,7 @@ export const environment = {
   production: true,
   // TODO: point at the real API host once the backend has a public prod URL.
   apiUrl: 'https://api.ballastasera.it',
+  comuniItaApiUrl: 'https://comuni-ita.nicolorebaioli.dev',
   featureFlags,
   // Free key from https://carto.com/basemaps/apikey/ — 5M tile requests/month fair-use limit.
   cartoApiKey: 'cb1_3ie6_1_e078712b029a513ed802a563',

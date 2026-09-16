@@ -1,5 +1,4 @@
 export const endpoints = {
-
   auth: {
     googleLogin: '/oauth2/authorization/google',
     me: '/rest/auth/me',
@@ -8,10 +7,10 @@ export const endpoints = {
   },
 
   admin: {
-    getPendingOrganizers: '/rest/admin/organizers/pending',//Used
+    getPendingOrganizers: '/rest/admin/organizers/pending', //Used
     getVerifiedOrganizers: '/rest/admin/organizers/verified',
     verifyOrganizer: (id: string) => `/rest/admin/organizers/${id}/verify`,
-    createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed',//Used
+    createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed', //Used
     getOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
     updateOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
     deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
@@ -26,7 +25,7 @@ export const endpoints = {
 
   users: {
     myFavorites: '/rest/users/me/favorites',
-    myAttendance: '/rest/users/me/attendance'
+    myAttendance: '/rest/users/me/attendance',
   },
 
   cities: {
@@ -48,6 +47,7 @@ export const endpoints = {
   events: {
     mapEvents: '/rest/events',
     detail: (id: string) => `/rest/events/${id}`,
+    manage: (id: string) => `/rest/events/${id}/manage`,
     create: '/rest/events',
     update: (id: string) => `/rest/events/${id}`,
     updateStatus: (id: string) => `/rest/events/${id}/status`,
@@ -82,5 +82,4 @@ export const endpoints = {
     eventSeries: (id: string) => `/rest/organizers/${id}/event-series`,
     delete: (id: string) => `/rest/organizers/${id}`,
   },
-
-}
+};

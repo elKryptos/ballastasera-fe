@@ -3,13 +3,14 @@ import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { CityDto } from '@/core/models/city.model';
 import { DanceStyleDto } from '@/core/models/dance-style.model';
-import { EventCreateDto, EventDetailDto } from '@/core/models/event.model';
+import { EventCreateDto, OrganizerEventDetailDto } from '@/core/models/event.model';
 import { OrganizerDetailDto } from '@/core/models/organizer.model';
 import { VenuesSummaryDto } from '@/core/models/venue.model';
 import { CitiesService } from '@/core/services/cities.service';
 import { DanceStylesService } from '@/core/services/dance-styles.service';
 import { EventsService } from '@/core/services/events.service';
 import { OrganizersService } from '@/core/services/organizers.service';
+import { PostalCodesService } from '@/core/services/postal-codes.service';
 import { VenuesService } from '@/core/services/venues.service';
 import { CreateEvent, toOffsetDateTime } from './create-event';
 
@@ -20,6 +21,18 @@ const VENUE: VenuesSummaryDto = {
   cityName: 'Dongo',
   latitude: 46.12,
   longitude: 9.28,
+};
+
+const CITY: CityDto = {
+  id: 1,
+  name: 'Milano',
+  province: 'Milano',
+  region: 'Lombardia',
+  country: 'Italia',
+  latitude: 45.4642,
+  longitude: 9.19,
+  slug: 'milano',
+  isActive: true,
 };
 
 const VERIFIED_ORGANIZER: OrganizerDetailDto = {
@@ -45,7 +58,9 @@ const UNVERIFIED_ORGANIZER: OrganizerDetailDto = {
   verified: false,
 };
 
-const DETAIL: EventDetailDto = { id: 'evt-1' } as unknown as EventDetailDto;
+const DETAIL: OrganizerEventDetailDto = {
+  id: 'evt-1',
+} as unknown as OrganizerEventDetailDto;
 
 /** Il componente usa protected per lo stato di template: nel test si accede via questo cast tipato. */
 interface TestView {
@@ -53,8 +68,10 @@ interface TestView {
   noVerifiedOrganizers: () => boolean;
   loadFailed: () => boolean;
   venues: { set: (venues: VenuesSummaryDto[]) => void };
+  postalCodes: () => string[];
   buildDto: () => EventCreateDto;
   submit: () => void;
+  onCityChange: (cityId: string | null | undefined) => void;
   toggleStyle: (id: number) => void;
   events: { createEvent: ReturnType<typeof vi.fn> };
   router: { navigate: ReturnType<typeof vi.fn> };
@@ -63,8 +80,14 @@ interface TestView {
     invalid: boolean;
     hasError: (code: string) => boolean;
     controls: Record<
-      'organizerId' | 'cityId' | 'venueId' | 'price' | 'address',
-      { value: unknown; valid: boolean; invalid: boolean; setValue: (value: unknown) => void }
+      'organizerId' | 'cityId' | 'venueId' | 'price' | 'address' | 'postalCode' | 'startAt',
+      {
+        value: unknown;
+        valid: boolean;
+        invalid: boolean;
+        setValue: (value: unknown) => void;
+        hasError: (code: string) => boolean;
+      }
     >;
   };
 }
@@ -75,6 +98,8 @@ function asTest(component: CreateEvent): TestView {
 
 interface SetupOptions {
   organizers?: OrganizerDetailDto[];
+  cities?: CityDto[];
+  postalCodes?: string[];
   failLoad?: boolean;
 }
 
@@ -87,7 +112,7 @@ async function setup(options: SetupOptions = {}) {
     },
   });
   TestBed.overrideProvider(CitiesService, {
-    useValue: { getCities: () => of<CityDto[]>([]) },
+    useValue: { getCities: () => of(options.cities ?? []) },
   });
   TestBed.overrideProvider(DanceStylesService, {
     useValue: { getDanceStyles: () => of<DanceStyleDto[]>([]) },
@@ -95,8 +120,11 @@ async function setup(options: SetupOptions = {}) {
   TestBed.overrideProvider(VenuesService, {
     useValue: { listByCity: () => of<VenuesSummaryDto[]>([]) },
   });
+  TestBed.overrideProvider(PostalCodesService, {
+    useValue: { getByMunicipality: () => of(options.postalCodes ?? []) },
+  });
   TestBed.overrideProvider(EventsService, {
-    useValue: { createEvent: vi.fn(() => of(DETAIL)), getEventDetail: vi.fn() },
+    useValue: { createEvent: vi.fn(() => of(DETAIL)), getManageableEventDetail: vi.fn() },
   });
 
   // Spy sul Router reale di provideRouter([]): l'override con un falso
@@ -127,7 +155,7 @@ describe('CreateEvent', () => {
     expect(component.noVerifiedOrganizers()).toBe(true);
   });
 
-  it("segna il caricamento come fallito se gli organizers non arrivano", async () => {
+  it('segna il caricamento come fallito se gli organizers non arrivano', async () => {
     const { component } = await setup({ failLoad: true });
     expect(component.loadFailed()).toBe(true);
   });
@@ -140,6 +168,7 @@ describe('CreateEvent', () => {
       eventType: 'EVENT',
       cityId: '2',
       address: 'Via del Porto 1',
+      postalCode: '20121',
       startAt: '2026-09-20T22:00',
       endAt: '2026-09-21T02:00',
       free: true,
@@ -161,6 +190,7 @@ describe('CreateEvent', () => {
       eventType: 'EVENT',
       cityId: '2',
       address: 'Via del Porto 1',
+      postalCode: '20121',
       startAt: '2026-09-20T22:00',
       endAt: '2026-09-21T02:00',
       free: false,
@@ -173,7 +203,7 @@ describe('CreateEvent', () => {
     expect(dto.endAt > dto.startAt).toBe(true);
   });
 
-  it('il JSON non include mai flyerUrl, seriesId, latitude o longitude', async () => {
+  it('senza venue il JSON non include flyerUrl, seriesId, latitude o longitude', async () => {
     const { component } = await setup();
     const dto = component.buildDto() as unknown as Record<string, unknown>;
     for (const key of ['flyerUrl', 'seriesId', 'latitude', 'longitude']) {
@@ -188,6 +218,8 @@ describe('CreateEvent', () => {
       title: 'Milonga del porto',
       eventType: 'EVENT',
       cityId: '2',
+      address: 'Via del Porto 1',
+      postalCode: '20121',
       startAt: '2026-09-20T22:00',
       endAt: '2026-09-21T02:00',
       free: true,
@@ -196,12 +228,15 @@ describe('CreateEvent', () => {
     component.form.controls.venueId.setValue('');
     const withoutVenue = component.buildDto();
     expect(withoutVenue.venueId).toBeNull();
+    expect(withoutVenue.address).toBe('Via del Porto 1, 20121');
 
     component.venues.set([VENUE]);
     component.form.controls.venueId.setValue(VENUE.id);
     const withVenue = component.buildDto();
     expect(withVenue.venueId).toBe(VENUE.id);
     expect(withVenue.address).toBe(VENUE.address);
+    expect(withVenue.latitude).toBe(VENUE.latitude);
+    expect(withVenue.longitude).toBe(VENUE.longitude);
   });
 
   it("blocca l'invio se endAt non viene dopo startAt", async () => {
@@ -212,12 +247,33 @@ describe('CreateEvent', () => {
       eventType: 'EVENT',
       cityId: '2',
       address: 'Via del Porto 1',
+      postalCode: '20121',
       startAt: '2026-09-20T22:00',
       endAt: '2026-09-20T22:00',
       free: true,
     });
     expect(component.form.invalid).toBe(true);
     expect(component.form.hasError('endBeforeStart')).toBe(true);
+  });
+
+  it("blocca l'invio se startAt non è più nel futuro", async () => {
+    const { component } = await setup();
+    component.form.patchValue({
+      organizerId: 'org-ok',
+      title: 'Milonga del porto',
+      eventType: 'EVENT',
+      cityId: '2',
+      address: 'Via del Porto 1',
+      postalCode: '20121',
+      startAt: '2020-01-01T22:00',
+      endAt: '2020-01-02T02:00',
+      free: true,
+    });
+
+    component.submit();
+
+    expect(component.form.controls.startAt.hasError('future')).toBe(true);
+    expect(component.events.createEvent).not.toHaveBeenCalled();
   });
 
   it("richiede il prezzo quando l'evento è a pagamento", async () => {
@@ -234,6 +290,17 @@ describe('CreateEvent', () => {
     component.venues.set([VENUE]);
     component.form.controls.venueId.setValue(VENUE.id);
     expect(component.form.controls.address.valid).toBe(true);
+    expect(component.form.controls.postalCode.valid).toBe(true);
+  });
+
+  it('propone i CAP del comune selezionato e preseleziona quello unico', async () => {
+    const { component } = await setup({ cities: [CITY], postalCodes: ['20121'] });
+    component.form.controls.cityId.setValue('1');
+
+    component.onCityChange('1');
+
+    expect(component.postalCodes()).toEqual(['20121']);
+    expect(component.form.controls.postalCode.value).toBe('20121');
   });
 
   it("invia il POST con la chiave free e naviga alla fase 2 con l'ID dell'evento", async () => {
@@ -244,6 +311,7 @@ describe('CreateEvent', () => {
       eventType: 'EVENT',
       cityId: '2',
       address: 'Via del Porto 1',
+      postalCode: '20121',
       startAt: '2026-09-20T22:00',
       endAt: '2026-09-21T02:00',
       free: true,
@@ -255,7 +323,12 @@ describe('CreateEvent', () => {
     const sent = component.events.createEvent.mock.calls[0][0] as Record<string, unknown>;
     expect(sent['free']).toBe(true);
     expect(sent['currency']).toBe('EUR');
-    expect(component.router.navigate).toHaveBeenCalledWith(['/organizer/events', 'evt-1', 'publish']);  });
+    expect(component.router.navigate).toHaveBeenCalledWith([
+      '/organizer/events',
+      'evt-1',
+      'publish',
+    ]);
+  });
 
   it('non invia nulla se il form è invalido', async () => {
     const { component } = await setup();

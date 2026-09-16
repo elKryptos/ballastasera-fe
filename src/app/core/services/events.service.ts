@@ -1,7 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '@env/environment';
-import { EventCardDto, EventCreateDto, EventDetailDto, EventStatus, EventStatusUpdateDto } from '@/core/models/event.model';
+import {
+  EventCardDto,
+  EventCreateDto,
+  EventDetailDto,
+  EventStatus,
+  EventStatusUpdateDto,
+  OrganizerEventDetailDto,
+} from '@/core/models/event.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '@/core/api/endpoints';
 
@@ -35,15 +42,25 @@ export class EventsService {
     return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`);
   }
 
+  /** Private owner payload for any event status — GET /rest/events/{id}/manage. */
+  getManageableEventDetail(id: string): Observable<OrganizerEventDetailDto> {
+    return this.http.get<OrganizerEventDetailDto>(
+      `${environment.apiUrl}${endpoints.events.manage(id)}`,
+    );
+  }
+
   /** Creates a PENDING event — POST /rest/events. */
-  createEvent(dto: EventCreateDto): Observable<EventDetailDto> {
-    return this.http.post<EventDetailDto>(this.baseUrl, dto);
+  createEvent(dto: EventCreateDto): Observable<OrganizerEventDetailDto> {
+    return this.http.post<OrganizerEventDetailDto>(this.baseUrl, dto);
   }
 
   /** Publishes / cancels a PENDING event — PATCH /rest/events/{id}/status. */
-  updateEventStatus(id: string, status: EventStatus): Observable<void> {
+  updateEventStatus(id: string, status: EventStatus): Observable<OrganizerEventDetailDto> {
     const body: EventStatusUpdateDto = { status };
-    return this.http.patch<void>(`${environment.apiUrl}${endpoints.events.updateStatus(id)}`, body);
+    return this.http.patch<OrganizerEventDetailDto>(
+      `${environment.apiUrl}${endpoints.events.updateStatus(id)}`,
+      body,
+    );
   }
 
   /**
@@ -51,10 +68,13 @@ export class EventsService {
    * "file" field. No Content-Type is set by hand: the browser must add the
    * boundary, and the backend CORS only allows PATCH with Authorization/Content-Type.
    */
-  updateFlyer(id: string, file: File): Observable<EventDetailDto> {
+  updateFlyer(id: string, file: File): Observable<OrganizerEventDetailDto> {
     const form = new FormData();
     form.set('file', file);
-    return this.http.patch<EventDetailDto>(`${environment.apiUrl}${endpoints.events.updateFlyer(id)}`, form);
+    return this.http.patch<OrganizerEventDetailDto>(
+      `${environment.apiUrl}${endpoints.events.updateFlyer(id)}`,
+      form,
+    );
   }
 
   /** Deletes the event — DELETE /rest/events/{id}. Used by "Annulla" in stage 2. */

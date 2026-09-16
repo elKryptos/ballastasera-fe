@@ -19,6 +19,7 @@ import { CitiesService } from '@/core/services/cities.service';
 import { DanceStylesService } from '@/core/services/dance-styles.service';
 import { EventsService } from '@/core/services/events.service';
 import { OrganizersService } from '@/core/services/organizers.service';
+import { PostalCodesService } from '@/core/services/postal-codes.service';
 import { VenuesService } from '@/core/services/venues.service';
 import { Navbar } from '@/shared/navbar/navbar';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -35,6 +36,12 @@ export const EVENT_TYPE_LABELS: { value: EventType; label: string }[] = [
 ];
 
 const PRICE_MAX = 100000;
+
+/** La data di inizio deve essere ancora futura al momento dell'invio. */
+const futureDateTime: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  if (!control.value) return null;
+  return new Date(control.value).getTime() > Date.now() ? null : { future: true };
+};
 
 /**
  * Converte un valore `datetime-local` (es. "2026-09-20T22:00", già in ora
@@ -55,10 +62,23 @@ export function toOffsetDateTime(value: string): string {
 }
 
 /** L'indirizzo libero è obbligatorio solo quando non è stato scelto un venue. */
-const addressRequiredWithoutVenue: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+const addressRequiredWithoutVenue: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
   const parent = control.parent;
   if (!parent || parent.get('venueId')?.value) return null;
   return typeof control.value === 'string' && control.value.trim() ? null : { required: true };
+};
+
+/** Il CAP è obbligatorio e composto da cinque cifre quando si usa un indirizzo libero. */
+const postalCodeRequiredWithoutVenue: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
+  const parent = control.parent;
+  if (!parent || parent.get('venueId')?.value) return null;
+  const postalCode = typeof control.value === 'string' ? control.value.trim() : '';
+  if (!postalCode) return { required: true };
+  return /^\d{5}$/.test(postalCode) ? null : { pattern: true };
 };
 
 /** Il prezzo è obbligatorio e non negativo solo quando l'evento non è gratuito. */
@@ -66,7 +86,8 @@ const priceRequiredWhenPaid: ValidatorFn = (control: AbstractControl): Validatio
   const parent = control.parent;
   if (!parent || parent.get('free')?.value) return null;
   const price = Number(control.value);
-  if (control.value === null || control.value === '' || Number.isNaN(price)) return { required: true };
+  if (control.value === null || control.value === '' || Number.isNaN(price))
+    return { required: true };
   return price >= 0 && price <= PRICE_MAX ? null : { min: true };
 };
 
@@ -88,6 +109,7 @@ export class CreateEvent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly organizersApi = inject(OrganizersService);
+  private readonly postalCodesApi = inject(PostalCodesService);
   private readonly citiesApi = inject(CitiesService);
   private readonly danceStylesApi = inject(DanceStylesService);
   private readonly venuesApi = inject(VenuesService);
@@ -99,10 +121,13 @@ export class CreateEvent {
   protected readonly cities = signal<CityDto[]>([]);
   protected readonly danceStyles = signal<DanceStyleDto[]>([]);
   protected readonly venues = signal<VenuesSummaryDto[]>([]);
+  protected readonly postalCodes = signal<string[]>([]);
 
   protected readonly loading = signal(true);
   protected readonly loadFailed = signal(false);
   protected readonly venuesLoading = signal(false);
+  protected readonly postalCodesLoading = signal(false);
+  protected readonly postalCodesFailed = signal(false);
   // Segnalto, non computed: il valore di un FormControl non è reattivo.
   protected readonly venueChosen = signal(false);
   protected readonly submitting = signal(false);
@@ -126,7 +151,8 @@ export class CreateEvent {
       cityId: ['', Validators.required],
       venueId: [''],
       address: [''],
-      startAt: ['', Validators.required],
+      postalCode: [''],
+      startAt: ['', [Validators.required, futureDateTime]],
       endAt: ['', Validators.required],
       free: [true],
       price: [null as number | null],
@@ -138,9 +164,11 @@ export class CreateEvent {
 
   constructor() {
     this.form.controls.address.addValidators(addressRequiredWithoutVenue);
+    this.form.controls.postalCode.addValidators(postalCodeRequiredWithoutVenue);
     this.form.controls.price.addValidators(priceRequiredWhenPaid);
     // addValidators non ricalcola la validità da solo: serve un giro esperto.
     this.form.controls.address.updateValueAndValidity();
+    this.form.controls.postalCode.updateValueAndValidity();
     this.form.controls.price.updateValueAndValidity();
     // I validatori cross-field (indirizzo/prezzo) dipendono da un fratello:
     // senza questi hook la loro validità resterebbe vecchia quando il
@@ -148,9 +176,10 @@ export class CreateEvent {
     this.form.controls.free.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.form.controls.price.updateValueAndValidity());
-    this.form.controls.venueId.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.form.controls.address.updateValueAndValidity());
+    this.form.controls.venueId.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.form.controls.address.updateValueAndValidity();
+      this.form.controls.postalCode.updateValueAndValidity();
+    });
     this.load();
   }
 
@@ -181,10 +210,15 @@ export class CreateEvent {
   protected onCityChange(cityId: string | null | undefined): void {
     // Cambiare città invalida il venue scelto: la lista cambia per intero.
     this.form.controls.venueId.setValue('');
+    this.form.controls.postalCode.setValue('');
+    this.postalCodes.set([]);
+    this.postalCodesFailed.set(false);
     if (!cityId) {
       this.venues.set([]);
       return;
     }
+    const city = this.cities().find((candidate) => this.cityValue(candidate) === cityId);
+    if (city) this.loadPostalCodes(cityId, city.name);
     this.venuesLoading.set(true);
     this.venuesApi.listByCity(Number(cityId)).subscribe({
       next: (venues) => {
@@ -194,6 +228,23 @@ export class CreateEvent {
       error: () => {
         this.venues.set([]);
         this.venuesLoading.set(false);
+      },
+    });
+  }
+
+  private loadPostalCodes(cityId: string, cityName: string): void {
+    this.postalCodesLoading.set(true);
+    this.postalCodesApi.getByMunicipality(cityName).subscribe({
+      next: (postalCodes) => {
+        if (this.form.controls.cityId.value !== cityId) return;
+        this.postalCodes.set(postalCodes);
+        this.postalCodesLoading.set(false);
+        if (postalCodes.length === 1) this.form.controls.postalCode.setValue(postalCodes[0]);
+      },
+      error: () => {
+        if (this.form.controls.cityId.value !== cityId) return;
+        this.postalCodesLoading.set(false);
+        this.postalCodesFailed.set(true);
       },
     });
   }
@@ -234,6 +285,8 @@ export class CreateEvent {
   }
 
   protected submit(): void {
+    // Una data valida quando è stata scelta può diventare passata mentre si compila il form.
+    this.form.controls.startAt.updateValueAndValidity();
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -244,13 +297,14 @@ export class CreateEvent {
       next: (event) => {
         this.submitting.set(false);
         // La seconda fase vive su una route con l'ID: una ricarica la recupera
-        // via GET /rest/events/{id}, non c'è bisogno di tenere stato in memoria.
+        // via GET /rest/events/{id}/manage, non c'è bisogno di tenere stato in memoria.
         this.router.navigate(['/organizer/events', event.id, 'publish']);
       },
       error: (err) => {
         this.submitting.set(false);
         this.errorMessage.set(
-          err?.error?.message ?? "Si è verificato un errore durante la creazione dell'evento. Riprova.",
+          err?.error?.message ??
+            "Si è verificato un errore durante la creazione dell'evento. Riprova.",
         );
       },
     });
@@ -274,7 +328,8 @@ export class CreateEvent {
       price: value.free ? null : Number(value.price),
       currency: 'EUR',
       // Senza venue l'indirizzo libero è ciò che il backend geocodifica.
-      address: venue ? venue.address : value.address.trim(),
+      address: venue ? venue.address : `${value.address.trim()}, ${value.postalCode.trim()}`,
+      ...(venue ? { latitude: venue.latitude, longitude: venue.longitude } : {}),
       danceStyleIds: [...this.selectedStyleIds()],
     };
   }

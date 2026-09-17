@@ -114,7 +114,9 @@ export class MapPage implements AfterViewInit, OnDestroy {
   protected readonly cities = signal<CityDto[]>([]);
   protected readonly danceStyles = signal<DanceStyleDto[]>([]);
   protected readonly selectedCityId = signal<number | null>(null);
-  protected readonly selectedStyleSlug = signal<string | null>(null);
+  /** Matched against EventCardDto.danceStyles, which the backend sends as
+   * display names (e.g. "Salsa"), not slugs. */
+  protected readonly selectedStyleNames = signal<ReadonlySet<string>>(new Set());
 
   protected readonly events = signal<EventCardDto[]>([]);
   protected readonly loading = signal(false);
@@ -126,7 +128,9 @@ export class MapPage implements AfterViewInit, OnDestroy {
    * zooms so the card keeps tracking the pin. */
   protected readonly selectedPinPoint = signal<{ x: number; y: number } | null>(null);
 
-  /** Filters live in a bottom-sheet on mobile so the map keeps the full screen by default. */
+  /** Filters live in a floating card on mobile, opened from the Filtri button and
+   * dismissed only via its own close button, so the map keeps the full screen and
+   * stays interactive by default. */
   protected readonly filtersOpen = signal(false);
 
   protected readonly legendOpen = signal(false);
@@ -141,10 +145,10 @@ export class MapPage implements AfterViewInit, OnDestroy {
   }));
 
   protected readonly filteredEvents = computed(() => {
-    const style = this.selectedStyleSlug();
+    const styles = this.selectedStyleNames();
     const list = this.events();
-    if (!style) return list;
-    return list.filter((event) => event.danceStyles.includes(style));
+    if (styles.size === 0) return list;
+    return list.filter((event) => event.danceStyles.some((style) => styles.has(style)));
   });
 
   private map: LeafletMap | null = null;
@@ -356,8 +360,16 @@ export class MapPage implements AfterViewInit, OnDestroy {
     }
   }
 
-  protected selectStyle(slug: string | null): void {
-    this.selectedStyleSlug.set(slug === this.selectedStyleSlug() ? null : slug);
+  protected selectStyle(name: string): void {
+    this.selectedStyleNames.update((names) => {
+      const next = new Set(names);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
   }
 
   protected toggleFilters(): void {

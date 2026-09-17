@@ -38,10 +38,8 @@ fighting another — instead of ad-hoc numbers picked to "clearly win".
 Generates z-map-content etc. utilities; components outside a template
 (plain .css files) read the same value via var(--z-index-*). */
   --z-index-map-content: 10; /* Floating button/card drawn over the map itself */
-  --z-index-map-sheet-backdrop: 20; /* Mobile filters sheet's full-screen scrim */
-  --z-index-map-sheet: 21; /* The mobile filters sheet, above its own scrim */
-  --z-index-header: 30; /* Fixed mobile top bar — above in-page content, incl. the map sheet */
-  --z-index-sidebar-backdrop: 31; /* Desktop sidebar's own scrim when expanded — above the map sheet/header */
+  --z-index-header: 30; /* Fixed mobile top bar — above in-page content */
+  --z-index-sidebar-backdrop: 31; /* Desktop sidebar's own scrim when expanded — above the header */
   --z-index-sidebar: 32; /* The desktop sidebar rail/panel itself, above its own scrim */
   /* Above 1000, not part of the 0-40 scale above: Angular CDK's overlay
   container (e.g. the mobile sidebar's sheet) is always z-index 1000, a

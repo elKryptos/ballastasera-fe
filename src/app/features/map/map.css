@@ -1,3 +1,12 @@
+/* The floating glass panels (filters, legend) sit over map tiles whose
+colour varies underneath the blur — sometimes pale roads, sometimes a dark
+water/park tile — so no single text colour stays legible against all of
+them. A dark halo keeps light text (bone/muted) readable either way,
+inherited by every descendant instead of tuning each element's colour. */
+.glass-panel-text {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
 /* Each legend icon pops in with a slight overshoot, staggered per row via
 an inline animation-delay set from the template. */
 .legend-icon {

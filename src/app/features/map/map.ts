@@ -133,6 +133,37 @@ export class MapPage implements AfterViewInit, OnDestroy {
    * stays interactive by default. */
   protected readonly filtersOpen = signal(false);
 
+  /** Desktop-only: the floating filters card can shrink down to just its
+   * active filters via the collapse arrow, freeing up map space without
+   * closing it outright. Starts collapsed so the map is unobstructed on
+   * load. Never toggled from mobile, which uses filtersOpen instead — but
+   * combine it with isDesktop() before trusting it for anything visual,
+   * since mobile never resets it back to false. */
+  protected readonly filtersCollapsed = signal(true);
+
+  /** Tracks the sm: breakpoint (640px) so the filters card's collapsed
+   * summary — a desktop-only affordance — never renders on mobile even
+   * though filtersCollapsed defaults true there too. */
+  protected readonly isDesktop = signal(false);
+
+  protected readonly filtersSummaryMode = computed(() => this.isDesktop() && this.filtersCollapsed());
+
+  /** The filters card's size/chrome depends on whether it's showing the full
+   * list or just the collapsed summary, which Tailwind's opacity-modifier
+   * class names (e.g. "bg-ink/10") can't cleanly express as `[class.x]`
+   * bindings — so this returns the whole combination as one string instead.
+   * Open looks the same on mobile and on the desktop-expanded state, on
+   * purpose — same glass tint everywhere the full filter list is showing. */
+  protected readonly filtersCardStateClass = computed(() =>
+    this.filtersSummaryMode() ? 'w-auto p-2 bg-neutral-800/15 text-ink' : 'w-72 p-4 border shadow-2xl bg-neutral-800/15 text-bone',
+  );
+
+  /** Pinned near the top corner while the full filter list is showing, but
+   * centred on the single row of chips once collapsed to the summary. */
+  protected readonly filtersToggleButtonClass = computed(() =>
+    this.filtersSummaryMode() ? 'top-1/2 -translate-y-1/2' : 'top-3',
+  );
+
   protected readonly legendOpen = signal(false);
 
   /** What each pin looks like on the map, for the legend popover. */
@@ -150,6 +181,18 @@ export class MapPage implements AfterViewInit, OnDestroy {
     if (styles.size === 0) return list;
     return list.filter((event) => event.danceStyles.some((style) => styles.has(style)));
   });
+
+  protected readonly activeCityName = computed(() => {
+    const id = this.selectedCityId();
+    if (id === null) return null;
+    return this.cities().find((city) => city.id === id)?.name ?? null;
+  });
+
+  protected readonly activeStyleNames = computed(() => Array.from(this.selectedStyleNames()));
+
+  protected readonly hasActiveFilters = computed(
+    () => this.selectedCityId() !== null || this.selectedStyleNames().size > 0,
+  );
 
   private map: LeafletMap | null = null;
   private markers: Marker[] = [];
@@ -174,6 +217,15 @@ export class MapPage implements AfterViewInit, OnDestroy {
         next: (styles) => this.danceStyles.set(styles),
         error: () => this.error.set(true),
       });
+
+      // Tailwind's sm: breakpoint — kept in sync via matchMedia rather than
+      // read once, since the filters card's collapsed summary must stop
+      // rendering the moment the viewport narrows past it.
+      const desktopQuery = window.matchMedia('(min-width: 640px)');
+      this.isDesktop.set(desktopQuery.matches);
+      const handleDesktopChange = (event: MediaQueryListEvent) => this.isDesktop.set(event.matches);
+      desktopQuery.addEventListener('change', handleDesktopChange);
+      this.destroyRef.onDestroy(() => desktopQuery.removeEventListener('change', handleDesktopChange));
     }
 
     // Re-draw markers whenever the style filter or the fetched events change.
@@ -374,6 +426,10 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
   protected toggleFilters(): void {
     this.filtersOpen.update((open) => !open);
+  }
+
+  protected toggleFiltersCollapsed(): void {
+    this.filtersCollapsed.update((collapsed) => !collapsed);
   }
 
   protected toggleLegend(): void {

@@ -1,113 +1,112 @@
 <app-navbar />
 
 <main appSidebarPush class="relative h-screen pt-(--header-h) md:pt-0">
-  <div class="relative h-full w-full sm:flex">
+  <div class="relative h-full w-full">
     <aside
-      class="fixed right-4 bottom-4 z-map-content w-72 max-w-[calc(100vw-2rem)] origin-bottom-right flex max-h-[75vh] flex-col gap-5 overflow-y-auto rounded-2xl border border-line bg-ink/10 p-4 text-ink shadow-2xl backdrop-blur-sm transition-all duration-200 ease-out sm:static sm:z-auto sm:h-full sm:w-70 sm:max-w-none sm:max-h-none sm:scale-100 sm:opacity-100 sm:pointer-events-auto sm:rounded-none sm:border-t-0 sm:border-r sm:border-b-0 sm:border-l-0 sm:bg-ink-2 sm:text-bone sm:backdrop-blur-none sm:shadow-none"
-      [class.scale-50]="!filtersOpen()"
-      [class.opacity-0]="!filtersOpen()"
-      [class.pointer-events-none]="!filtersOpen()"
-      aria-label="Filtri"
-    >
-      <div class="flex items-center justify-between sm:hidden">
-        <h2 class="font-display text-lg font-bold">Filtri</h2>
-        <button
-          type="button"
-          class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-ink/60 hover:bg-ink/8 hover:text-ink"
-          (click)="toggleFilters()"
-          aria-label="Chiudi filtri"
-        >
-          ✕
-        </button>
-      </div>
+      class="glass-panel-text absolute right-4 bottom-4 z-map-content max-w-[calc(100vw-2rem)] max-h-[75vh] origin-bottom-right flex flex-col gap-5 overflow-y-auto rounded-2xl border-line backdrop-blur-sm transition-all duration-200 ease-out sm:top-4 sm:left-4 sm:right-auto sm:bottom-auto sm:max-w-none sm:max-h-[calc(100%-2rem)] sm:origin-top-left sm:scale-100 sm:opacity-100 sm:pointer-events-auto"
+      [class]="filtersCardStateClass()" [class.scale-50]="!filtersOpen()" [class.opacity-0]="!filtersOpen()"
+      [class.pointer-events-none]="!filtersOpen()" aria-label="Filtri">
+      <!-- Desktop-only: the collapse arrow is hidden on mobile, but
+          filtersCollapsed defaults true everywhere and mobile never resets
+          it — filtersSummaryMode() (== isDesktop() && filtersCollapsed())
+          is what actually gates the collapsed layout below. -->
+      <button type="button"
+        class="absolute right-1.5 hidden size-6 cursor-pointer items-center justify-center rounded-full border border-line bg-ink-2/80 text-bone shadow sm:inline-flex"
+        [class]="filtersToggleButtonClass()" (click)="toggleFiltersCollapsed()"
+        [attr.aria-label]="filtersCollapsed() ? 'Espandi filtri' : 'Comprimi filtri'"
+        [attr.aria-expanded]="!filtersCollapsed()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+          class="transition-transform duration-200" [class.rotate-180]="filtersCollapsed()">
+          <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
 
+      <button type="button"
+        class="absolute top-3 font-extrabold right-3 inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-red-500 hover:bg-bone/8 hover:text-red-400 sm:hidden"
+        (click)="toggleFilters()" aria-label="Chiudi filtri">
+        ✕
+      </button>
+
+      @if (filtersSummaryMode()) {
+      <div class="flex flex-wrap items-center gap-1.5 pr-6">
+        @if (hasActiveFilters()) {
+        @if (activeCityName(); as cityName) {
+        <span class="rounded-full bg-rose px-2.5 py-1 text-xs text-white">{{ cityName }}</span>
+        }
+        @for (name of activeStyleNames(); track name) {
+        <span class="rounded-full bg-violet px-2.5 py-1 text-xs text-white">{{ name }}</span>
+        }
+        } @else {
+        <span class="mr-1 rounded-full border border-line px-2.5 py-1 text-xs text-white bg-gray-600">Filtri</span>
+        }
+      </div>
+      } @else {
       <div class="flex flex-col gap-2">
-        <span class="font-mono text-xs tracking-[0.08em] text-ink/60 uppercase sm:text-muted">Città</span>
+        <span class="font-mono text-xs tracking-[0.08em] text-white uppercase">Città</span>
         <div class="flex flex-wrap gap-1.5">
-          <button
-            type="button"
+          <button type="button"
             class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
-            [class.bg-rose]="selectedCityId() === null"
-            [class.border-rose]="selectedCityId() === null"
-            [class.text-ink]="selectedCityId() === null"
-            (click)="selectCity(null)"
-          >
+            [class.bg-rose]="selectedCityId() === null" [class.border-rose]="selectedCityId() === null"
+            [class.bg-gray-600]="selectedCityId() !== null" (click)="selectCity(null)">
             Tutte
           </button>
           @for (city of cities(); track city.id) {
-            <button
-              type="button"
-              class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
-              [class.bg-rose]="selectedCityId() === city.id"
-              [class.border-rose]="selectedCityId() === city.id"
-              [class.text-ink]="selectedCityId() === city.id"
-              (click)="selectCity(city.id)"
-            >
-              {{ city.name }}
-            </button>
+          <button type="button"
+            class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+            [class.bg-rose]="selectedCityId() === city.id" [class.border-rose]="selectedCityId() === city.id"
+            [class.bg-gray-600]="selectedCityId() !== city.id" (click)="selectCity(city.id)">
+            {{ city.name }}
+          </button>
           }
         </div>
       </div>
 
       <div class="flex flex-col gap-2">
-        <span class="font-mono text-xs tracking-[0.08em] text-ink/60 uppercase sm:text-muted">Stile</span>
+        <span class="font-mono text-xs tracking-[0.08em] text-white uppercase">Stile</span>
         <div class="flex flex-wrap gap-1.5">
           @for (style of danceStyles(); track style.id) {
-            <button
-              type="button"
-              class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
-              [class.bg-violet]="selectedStyleNames().has(style.name)"
-              [class.border-violet]="selectedStyleNames().has(style.name)"
-              (click)="selectStyle(style.name)"
-            >
-              {{ style.name }}
-            </button>
+          <button type="button"
+            class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+            [class.bg-violet]="selectedStyleNames().has(style.name)"
+            [class.border-violet]="selectedStyleNames().has(style.name)"
+            [class.bg-gray-600]="!selectedStyleNames().has(style.name)" (click)="selectStyle(style.name)">
+            {{ style.name }}
+          </button>
           }
         </div>
       </div>
 
       @if (loading()) {
-        <p class="text-sm text-ink/60 sm:text-muted">Caricamento eventi…</p>
+      <p class="text-sm text-bone/70">Caricamento eventi…</p>
       } @else if (error()) {
-        <p class="text-sm text-rose-lit">Impossibile caricare gli eventi.</p>
+      <p class="text-sm text-rose-lit">Impossibile caricare gli eventi.</p>
       } @else {
-        <p class="text-sm text-ink/60 sm:text-muted">{{ filteredEvents().length }} eventi in questa zona</p>
+      <p class="text-sm text-white">{{ filteredEvents().length }} eventi in questa zona</p>
+      }
       }
     </aside>
 
-    <div class="relative h-full flex-1">
+    <div class="relative h-full w-full">
       <!-- isolate: Leaflet's own panes (tiles/markers/popups) carry z-index
           up to 700, which would otherwise leak out and out-stack the
           Filtri button and event card next to it (both z-map-content:10). -->
       <div #mapContainer class="absolute inset-0 isolate"></div>
 
-      <button
-        type="button"
+      <button type="button"
         class="absolute right-4 bottom-4 z-map-content origin-bottom-right inline-flex items-center gap-2 rounded-full border border-line bg-ink-2 px-4 py-2 text-sm font-semibold shadow-lg transition-all duration-200 ease-out sm:hidden"
-        [class.scale-50]="filtersOpen()"
-        [class.opacity-0]="filtersOpen()"
-        [class.pointer-events-none]="filtersOpen()"
-        [class.cursor-pointer]="!filtersOpen()"
-        [attr.inert]="filtersOpen() ? '' : null"
-        (click)="toggleFilters()"
-      >
+        [class.scale-50]="filtersOpen()" [class.opacity-0]="filtersOpen()" [class.pointer-events-none]="filtersOpen()"
+        [class.cursor-pointer]="!filtersOpen()" [attr.inert]="filtersOpen() ? '' : null" (click)="toggleFilters()">
         Filtri
-        @if (selectedCityId() !== null || selectedStyleNames().size > 0) {
-          <span class="inline-flex size-2 rounded-full bg-rose"></span>
+        @if (hasActiveFilters()) {
+        <span class="inline-flex size-2 rounded-full bg-rose"></span>
         }
       </button>
 
-      <button
-        type="button"
+      <button type="button"
         class="absolute bottom-4 left-4 z-map-content inline-flex size-10 origin-bottom-left items-center justify-center rounded-full border border-line bg-ink-2 shadow-lg transition-all duration-200 ease-out"
-        [class.scale-50]="legendOpen()"
-        [class.opacity-0]="legendOpen()"
-        [class.pointer-events-none]="legendOpen()"
-        [class.cursor-pointer]="!legendOpen()"
-        [attr.inert]="legendOpen() ? '' : null"
-        (click)="toggleLegend()"
-        aria-label="Legenda"
-      >
+        [class.scale-50]="legendOpen()" [class.opacity-0]="legendOpen()" [class.pointer-events-none]="legendOpen()"
+        [class.cursor-pointer]="!legendOpen()" [attr.inert]="legendOpen() ? '' : null" (click)="toggleLegend()"
+        aria-label="Legenda">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="9" />
           <path d="M12 8v.01M11 11h1v5h1" stroke-linecap="round" stroke-linejoin="round" />
@@ -115,90 +114,73 @@
       </button>
 
       <section
-        class="absolute bottom-4 left-4 z-map-content w-30 origin-bottom-left overflow-hidden rounded-xl border border-line bg-ink/10 p-3 text-ink shadow-2xl backdrop-blur-sm transition-all duration-200 ease-out"
-        [class.scale-50]="!legendOpen()"
-        [class.opacity-0]="!legendOpen()"
-        [class.pointer-events-none]="!legendOpen()"
-        [class.cursor-pointer]="legendOpen()"
-        [attr.inert]="!legendOpen() ? '' : null"
-        aria-label="Legenda dei pin, premi per chiudere"
-        (click)="toggleLegend()"
-      >
+        class="glass-panel-text absolute bottom-4 left-4 z-map-content w-30 origin-bottom-left overflow-hidden rounded-xl border border-line bg-neutral-800/15 p-3 text-white shadow-2xl backdrop-blur-sm transition-all duration-200 ease-out"
+        [class.scale-50]="!legendOpen()" [class.opacity-0]="!legendOpen()" [class.pointer-events-none]="!legendOpen()"
+        [class.cursor-pointer]="legendOpen()" [attr.inert]="!legendOpen() ? '' : null"
+        aria-label="Legenda dei pin, premi per chiudere" (click)="toggleLegend()">
         <ul class="flex flex-col gap-2">
           @for (item of legendItems; track item.type; let i = $index) {
-            <li class="flex items-center gap-2 text-sm">
-              <svg
-                [class.legend-icon]="legendOpen()"
-                viewBox="0 0 24 32"
-                width="16"
-                height="22"
-                [style.color]="item.color"
-                [style.animation-delay.ms]="i * 40"
-              >
-                <path [attr.d]="item.shape" fill="currentColor" />
-                <path [attr.d]="item.glyph" fill="#fff" />
-              </svg>
-              {{ item.label }}
-            </li>
+          <li class="flex items-center gap-2 text-sm">
+            <svg [class.legend-icon]="legendOpen()" viewBox="0 0 24 32" width="16" height="22"
+              [style.color]="item.color" [style.animation-delay.ms]="i * 40">
+              <path [attr.d]="item.shape" fill="currentColor" />
+              <path [attr.d]="item.glyph" fill="#fff" />
+            </svg>
+            {{ item.label }}
+          </li>
           }
         </ul>
       </section>
 
       @if (selectedEvent(); as event) {
-        @if (selectedPinPoint(); as point) {
-          <section
-            class="absolute z-map-content w-90 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-[calc(100%+36px)] overflow-hidden rounded-xl border border-line bg-ink-2 shadow-2xl"
-            [style.left.px]="point.x"
-            [style.top.px]="point.y"
-            aria-live="polite"
-          >
-            <button
-              type="button"
-              class="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-bone"
-              (click)="closeDetail()"
-              aria-label="Chiudi"
-            >
-              ✕
-            </button>
+      @if (selectedPinPoint(); as point) {
+      <section
+        class="absolute z-map-content w-90 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-[calc(100%+36px)] overflow-hidden rounded-xl border border-line bg-ink-2 shadow-2xl"
+        [style.left.px]="point.x" [style.top.px]="point.y" aria-live="polite">
+        <button type="button"
+          class="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-bone"
+          (click)="closeDetail()" aria-label="Chiudi">
+          ✕
+        </button>
 
-            @if (event.flyerUrl) {
-              <img class="aspect-video w-full object-cover" [src]="event.flyerUrl" [alt]="event.title" />
-            }
-
-            <div class="flex flex-col gap-1.5 p-4">
-              @if (isLiveNow(event)) {
-                <span class="font-mono text-xs text-rose-lit">● In corso ora</span>
-              } @else if (startsInMinutes(event); as minutes) {
-                <span class="font-mono text-xs text-amber">● Inizia tra {{ minutes }} min</span>
-              }
-              <h2 class="font-display text-lg">{{ event.title }}</h2>
-              <p class="text-sm text-lead">{{ formatStart(event) }}</p>
-              @if (event.venueName || event.address) {
-                <p class="text-sm text-lead">
-                  @if (event.venueName) {
-                    {{ event.venueName }} — {{ event.address }}
-                  } @else {
-                    {{ event.address }}
-                  }
-                </p>
-              }
-              @if (event.organizer) {
-                <p class="text-sm text-lead">a cura di {{ event.organizer.name }}</p>
-              }
-
-              <div class="mt-1 flex flex-wrap gap-1.5">
-                @for (style of event.danceStyles; track style) {
-                  <span class="rounded-full bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
-                }
-              </div>
-
-              <div class="mt-2 flex justify-between font-mono text-sm text-amber">
-                <span>{{ event.free ? 'Gratis' : (event.price ?? '') + ' ' + (event.currency ?? '') }}</span>
-                <span>{{ event.goingCount }} vanno</span>
-              </div>
-            </div>
-          </section>
+        @if (event.flyerUrl) {
+        <img class="aspect-video w-full object-cover" [src]="event.flyerUrl" [alt]="event.title" />
         }
+
+        <div class="flex flex-col gap-1.5 p-4">
+          @if (isLiveNow(event)) {
+          <span class="font-mono text-xs text-rose-lit">● In corso ora</span>
+          } @else if (startsInMinutes(event); as minutes) {
+          <span class="font-mono text-xs text-amber">● Inizia tra {{ minutes }} min</span>
+          }
+          <h2 class="font-display text-lg">{{ event.title }}</h2>
+          <p class="text-sm text-lead">{{ formatStart(event) }}</p>
+          @if (event.venueName || event.address) {
+          <p class="text-sm text-lead">
+            @if (event.venueName) {
+            {{ event.venueName }} — {{ event.address }}
+            } @else {
+            {{ event.address }}
+            }
+          </p>
+          }
+          @if (event.organizer) {
+          <p class="text-sm text-lead">a cura di {{ event.organizer.name }}</p>
+          }
+
+          <div class="mt-1 flex flex-wrap gap-1.5">
+            @for (style of event.danceStyles; track style) {
+            <span class="rounded-full bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
+            }
+          </div>
+
+          <div class="mt-2 flex justify-between font-mono text-sm text-amber">
+            <span>{{ event.free ? 'Gratis' : (event.price ?? '') + ' ' + (event.currency ?? '') }}</span>
+            <span>{{ event.goingCount }} vanno</span>
+          </div>
+        </div>
+      </section>
+      }
       }
     </div>
   </div>

@@ -200,6 +200,39 @@ scatter — hence the size knob rather than two copies of the gradient list. */
   }
 }
 
+/* Route change cross-fade, driven by withViewTransitions() in
+app.config.ts. The browser default cuts too abruptly between the old and
+new view, so both snapshots get an explicit fade instead of an instant
+swap. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.28s;
+  animation-timing-function: ease-in-out;
+}
+
+::view-transition-old(root) {
+  animation-name: route-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: route-fade-in;
+}
+
+@keyframes route-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes route-fade-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
 /* Spartan/helm theme tokens, mapped onto our own palette above instead of
 the library's default gray/white so shadcn-style components (button,
 dialog, etc.) render in the site's ink/rose/amber theme. */

@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideTransloco } from '@jsverse/transloco';
 import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
@@ -14,7 +14,10 @@ import { environment } from '../environments/environment';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    // Cross-fades route changes via the browser's View Transitions API
+    // instead of the hard cut-over you get by default; see the
+    // ::view-transition-* rules in styles.css for the actual timing/easing.
+    provideRouter(routes, withViewTransitions()),
     // Starts as an icon-only rail on desktop (matches the md:pl-(--sidebar-width-icon)
     // gutter every page reserves for it) and closes the mobile drawer as soon
     // as a nav link inside it is clicked. The desktop rail stays open on

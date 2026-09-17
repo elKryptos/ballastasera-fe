@@ -1,10 +1,10 @@
 <app-navbar />
 
-<main class="pt-(--header-h) md:pt-0 md:pl-(--sidebar-width-icon)">
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
   @if (loading()) {
   <p class="mx-auto max-w-xl p-6 text-sm text-lead">Caricamento…</p>
   } @else if (!saved()) {
-  <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-xl md:max-w-2xl p-6 space-y-6" novalidate>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-4xl px-6 py-4" novalidate>
     <h1 class="text-xl font-semibold">Aggiorna organizzatore</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

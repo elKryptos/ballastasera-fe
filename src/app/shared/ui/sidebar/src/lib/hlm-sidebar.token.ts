@@ -10,6 +10,7 @@ export interface HlmSidebarConfig {
   sidebarKeyboardShortcut: string;
   mobileBreakpoint: string;
   closeMobileSidebarOnMenuButtonClick: boolean;
+  closeDesktopSidebarOnMenuButtonClick: boolean;
 }
 
 const defaultConfig: HlmSidebarConfig = {
@@ -22,6 +23,7 @@ const defaultConfig: HlmSidebarConfig = {
   sidebarKeyboardShortcut: 'b',
   mobileBreakpoint: '768px',
   closeMobileSidebarOnMenuButtonClick: false,
+  closeDesktopSidebarOnMenuButtonClick: false,
 };
 
 const HlmSidebarConfigToken = new InjectionToken<HlmSidebarConfig>('HlmSidebarConfig');

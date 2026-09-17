@@ -49,17 +49,6 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
         </hlm-sheet-content>
       </hlm-sheet>
     } @else {
-      <!-- Backdrop behind the expanded desktop rail, same idea as the
-           mobile sheet's own overlay above: dims/blurs the rest of the
-           page while the sidebar is open, and doubles as a click-outside
-           to collapse it again. Stays in the DOM at all times so it can
-           fade with the sidebar instead of popping in/out. -->
-      <div
-        class="fixed inset-0 z-sidebar-backdrop bg-black/25 opacity-0 backdrop-blur-2xl transition-opacity duration-200 pointer-events-none group-data-[state=expanded]:opacity-100 group-data-[state=expanded]:pointer-events-auto"
-        (click)="_sidebarService.setOpen(false)"
-        aria-hidden="true"
-      ></div>
-
       <!-- Sidebar gap on desktop -->
       <div data-slot="sidebar-gap" [class]="_sidebarGapComputedClass()"></div>
       <div

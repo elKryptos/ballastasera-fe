@@ -7,6 +7,7 @@ import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { NgClass } from '@angular/common';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
+import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 
 type FormState = 'idle' | 'error' | 'done';
 
@@ -73,7 +74,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [FormsModule, MediaEmbed, Navbar, AuthModal, NgClass, TranslocoPipe],
+  imports: [FormsModule, MediaEmbed, Navbar, AuthModal, NgClass, TranslocoPipe, SidebarPushDirective],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })

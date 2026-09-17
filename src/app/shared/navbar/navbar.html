@@ -50,17 +50,34 @@
 </header>
 
 <hlm-sidebar side="left" collapsible="icon">
-  <!-- No brand mark here for now — on desktop the logo (and the WIP badge)
-      live pinned in the page itself, next to the language switcher (see
-      landing.html); the sidebar rail is nav-only. Mobile still gets both
-      from the top bar above. -->
+  <!-- Desktop only (this whole block is skipped on mobile, which has its own
+      trigger + centred logo in the top bar above): the collapse/expand
+      trigger, plus the brand mark beside it once the rail is wide enough to
+      show it — the collapsed icon rail (3rem) is already fully spent on the
+      trigger button itself, padding included, so the mark only appears once
+      expanded. -->
   @if (!isMobile()) {
   <div hlmSidebarHeader>
-    <button hlmSidebarTrigger type="button" srOnlyText="Comprimi/espandi il menu"></button>
+    <div class="flex items-center gap-2">
+      <button hlmSidebarTrigger type="button" srOnlyText="Comprimi/espandi il menu"></button>
+      <a routerLink="/" aria-label="ballastasera — home"
+        class="hidden shrink-0 items-center gap-1.5 overflow-hidden no-underline group-data-[state=expanded]:flex">
+        <svg viewBox="0 0 200 210" aria-hidden="true" class="w-5 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
+          <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="var(--color-rose)" />
+          <g fill="var(--color-ink)">
+            <rect x="74" y="66" width="13" height="30" rx="6.5" />
+            <rect x="93" y="54" width="13" height="54" rx="6.5" />
+            <rect x="112" y="62" width="13" height="38" rx="6.5" />
+          </g>
+        </svg>
+        <span class="font-display text-[0.95rem] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
+            class="night text-rose">stasera</span></span>
+      </a>
+    </div>
   </div>
   }
 
-  <div hlmSidebarContent>
+  <div hlmSidebarContent class="md:p-1.5">
     <ul hlmSidebarMenu>
       @if (mapEnabled()) {
       <li hlmSidebarMenuItem>
@@ -88,22 +105,22 @@
 
   <div hlmSidebarFooter>
     @if (isAuthenticated()) {
-    <div
-      class="user-id flex items-center gap-2.5 overflow-hidden rounded-md p-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-2">
-      @if (currentUser()?.avatarUrl) {
-      <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
-        class="avatar-img size-7 shrink-0 rounded-full object-cover" />
-      } @else {
-      <span
-        class="avatar-fallback flex size-7 shrink-0 items-center justify-center rounded-full text-[0.75rem] font-semibold">
-        {{ initial() }}
-      </span>
-      }
-      <span class="truncate text-[0.82rem] font-semibold text-bone group-data-[collapsible=icon]:hidden">{{
-        currentUser()?.displayName }}</span>
-    </div>
-
     <ul hlmSidebarMenu>
+      <li hlmSidebarMenuItem>
+        <button hlmSidebarMenuButton type="button" tabindex="-1" class="user-id"
+          [tooltip]="currentUser()?.displayName ?? ''">
+          @if (currentUser()?.avatarUrl) {
+          <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
+            class="avatar-img size-4 shrink-0 rounded-full object-cover" />
+          } @else {
+          <span
+            class="avatar-fallback flex size-4 shrink-0 items-center justify-center rounded-full text-[0.55rem] font-semibold">
+            {{ initial() }}
+          </span>
+          }
+          <span>{{ currentUser()?.displayName }}</span>
+        </button>
+      </li>
       <li hlmSidebarMenuItem>
         <button hlmSidebarMenuButton type="button" (click)="logout()" tooltip="Esci" class="logout-item">
           <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"

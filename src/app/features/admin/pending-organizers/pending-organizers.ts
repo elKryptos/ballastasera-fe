@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { AdminService } from '../../../core/services/admin.service';
 import { OrganizerDetailDto } from '../../../core/models/organizer.model';
+import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 
 @Component({
   selector: 'app-pending-organizers',
-  imports: [Navbar],
+  imports: [Navbar, SidebarPushDirective],
   templateUrl: './pending-organizers.html',
   styleUrl: './pending-organizers.css',
 })

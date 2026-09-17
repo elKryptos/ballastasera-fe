@@ -75,6 +75,10 @@ export class HlmSidebarMenuButton {
     this._config.closeMobileSidebarOnMenuButtonClick,
     { transform: booleanAttribute },
   );
+  public readonly closeDesktopSidebarOnClick = input<boolean, BooleanInput>(
+    this._config.closeDesktopSidebarOnMenuButtonClick,
+    { transform: booleanAttribute },
+  );
 
   protected readonly _isTooltipHidden = computed(
     () => this._sidebarService.state() !== 'collapsed' || this._sidebarService.isMobile(),
@@ -88,6 +92,9 @@ export class HlmSidebarMenuButton {
   protected onClick(): void {
     if (this.closeMobileSidebarOnClick()) {
       this._sidebarService.setOpenMobile(false);
+    }
+    if (this.closeDesktopSidebarOnClick() && !this._sidebarService.isMobile()) {
+      this._sidebarService.setOpen(false);
     }
   }
 }

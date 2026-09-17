@@ -1,6 +1,6 @@
 <app-navbar />
 
-<main class="pt-(--header-h) md:pt-0 md:pl-(--sidebar-width-icon)">
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
   <div class="mx-auto max-w-4xl px-6 py-4">
     <h1 class="font-display text-2xl font-bold">Admin</h1>
 
@@ -8,7 +8,7 @@
       @for (option of options; track option.routerLink) {
         <a
           [routerLink]="option.routerLink"
-          class="flex flex-col gap-1 rounded-xl border border-line p-4 transition-colors hover:border-rose"
+          class="flex flex-col gap-1 rounded border border-line p-4 transition-colors hover:border-rose"
         >
           <p class="font-semibold text-purple-400">{{ option.title }}</p>
           <p class="text-sm text-lead">{{ option.description }}</p>

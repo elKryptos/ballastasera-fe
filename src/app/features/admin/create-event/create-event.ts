@@ -20,6 +20,7 @@ import { EventCreateDto, EventDetailDto, EventType } from '../../../core/models/
 import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
+import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 
 /** Minimum time the flyer widget stays in the "processing" state, so the backend's conversion work is visible even when the response is fast. */
 const FLYER_PROCESSING_MIN_MS = 5000;
@@ -44,6 +45,7 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
     BrnAutocompleteAnchor,
     HlmSpinnerImports,
     NgIcon,
+    SidebarPushDirective
   ],
   providers: [provideIcons({ lucideImage, lucideUpload, lucideRefreshCw, lucideFileWarning })],
   templateUrl: './create-event.html',

@@ -23,6 +23,7 @@ import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 import { environment } from '../../../environments/environment';
+import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 
 /** Fallback view when there's no city yet to centre on: Milano, zoomed to city level. */
 const DEFAULT_CENTER: [number, number] = [45.4642, 9.19];
@@ -95,7 +96,7 @@ const LEGEND_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
 
 @Component({
   selector: 'app-map',
-  imports: [Navbar],
+  imports: [Navbar, SidebarPushDirective],
   templateUrl: './map.html',
   styleUrl: './map.css',
 })

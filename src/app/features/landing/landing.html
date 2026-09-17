@@ -5,7 +5,7 @@
   [class.sidebar-layout]="showNewNavbar">
   @if (showNewNavbar) {
   <!-- app-navbar no longer carries this — pinned here instead, next to the
-       language switcher, at every width. -->
+      language switcher, at every width. -->
   <span
     class="inline-flex shrink-0 items-center gap-[clamp(0.25rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.55rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
     style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
@@ -47,8 +47,8 @@
 
 @if (showNewNavbar) {
 <!-- Desktop only: app-navbar's sidebar rail is nav-only for now, so the
-     logo is pinned here instead. Mobile still gets it from app-navbar's
-     own top bar below. -->
+    logo is pinned here instead. Mobile still gets it from app-navbar's
+    own top bar below. -->
 <a routerLink="/" aria-label="ballastasera — home"
   class="brand-float fixed z-header hidden shrink-0 items-center gap-1.5 no-underline md:flex">
   <svg viewBox="0 0 200 210" aria-hidden="true" class="w-6 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
@@ -64,15 +64,16 @@
 </a>
 
 <!-- Sibling of .page, not nested inside it (like every other page's
-     <app-navbar />) — .page's own `relative z-10` makes it a stacking
-     context, which would otherwise trap the sidebar and its backdrop
-     below top-right-float/brand-float (z-header) and stop the blur from
-     ever covering them. -->
+    <app-navbar />) — .page's own `relative z-10` makes it a stacking
+    context, which would otherwise trap the sidebar and its backdrop
+    below top-right-float/brand-float (z-header) and stop the blur from
+    ever covering them. -->
 <app-navbar />
 }
 
 <div class="page relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pb-5 sm:gap-10 sm:px-8"
-  [class.sidebar-layout]="showNewNavbar">
+  [class.sidebar-layout]="showNewNavbar"
+  [appSidebarPush]="showNewNavbar">
   @if (!showNewNavbar) {
   <header class="sticky-header fixed inset-x-0 top-0 z-30">
     <div
@@ -88,9 +89,9 @@
             <rect x="112" y="62" width="13" height="38" rx="6.5" />
           </g>
         </svg>
-        <span
-          class="font-display text-[clamp(0.9rem,3.6vw,1.125rem)] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
-            class="text-rose">stasera</span></span>
+        <span class="font-display text-[clamp(0.9rem,3.6vw,1.125rem)] font-bold tracking-[-0.02em] whitespace-nowrap">balla
+          <span class="text-rose">stasera</span>
+        </span>
       </a>
 
       <span
@@ -219,7 +220,7 @@
   <!-- Teaser for the live map: aimed at dancers (not the organiser pitch further
     down), it announces the feature, that it needs a login, and that Milan is
     the only city live so far. -->
-  <section class="map-teaser flex flex-col gap-6 border-t border-line pt-8">
+  <section class="map-teaser flex flex-col gap-6 border-t border-line pt-8 md:ml-4 lg:ml-4">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 class="font-display text-2xl font-bold tracking-[-0.02em] text-balance">
         {{ 'mapTeaser.titlePrefix' | transloco }} <span class="text-mint">{{ 'mapTeaser.titleHighlight' | transloco }}</span>
@@ -290,7 +291,7 @@
 
   <!-- The bachata count: three steps then a tap, once to the right, once to the left.
       The bars run on a 4s loop — one beat every 0.5s. -->
-  <section class="count flex flex-col gap-4 border-t border-line pt-5">
+  <section class="count flex flex-col gap-4 border-t border-line pt-5 md:ml-4 lg:ml-4">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
       <h2 class="font-display text-lg font-bold tracking-[-0.02em]">{{ 'count.title' | transloco }}</h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-muted uppercase">
@@ -325,7 +326,7 @@
 
   <!-- Nothing is fetched from YouTube or Instagram until the visitor presses play. -->
   @if (media.length) {
-  <section id="video" class="social reveal flex flex-col gap-5 border-t border-line pt-8">
+  <section id="video" class="social reveal flex flex-col gap-5 border-t border-line pt-8 md:ml-4 lg:ml-4">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 class="font-display text-2xl font-bold tracking-[-0.02em]">{{ 'social.title' | transloco }}</h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-amber uppercase">
@@ -348,7 +349,7 @@
   }
 
   <!-- For the other side of the page: whoever puts the nights on. -->
-  <section class="partners reveal flex flex-col gap-6 border-t border-line pt-8">
+  <section class="partners reveal flex flex-col gap-6 border-t border-line pt-8 md:ml-4 lg:ml-4">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 class="font-display text-2xl font-bold tracking-[-0.02em] text-balance">
         {{ 'partners.titleQuestion' | transloco }} <span class="text-amber">{{ 'partners.titleHighlight' | transloco }}</span>
@@ -490,7 +491,7 @@
 
   <!-- A short, honest note from the two of us, deliberately styled apart from
     the structured sections above it — a postcard, not another feature block. -->
-  <section class="support-wrap reveal flex justify-center pt-4">
+  <section class="support-wrap reveal flex justify-center pt-4 md:ml-4 lg:ml-4">
     <div
       class="support relative flex w-full max-w-4xl flex-col items-center gap-5 rounded-[1.75rem] border border-dashed border-amber/45 bg-bone/[0.035] p-6 text-center backdrop-blur-sm sm:flex-row sm:justify-between sm:gap-6 sm:p-8 sm:text-left">
       <span
@@ -518,7 +519,7 @@
   </section>
 
   <footer
-    class="reveal flex flex-col items-center gap-x-7 gap-y-3 text-center font-mono text-[0.72rem] text-muted sm:flex-row sm:flex-wrap sm:justify-between sm:text-left">
+    class="reveal flex flex-col items-center gap-x-7 gap-y-3 text-center font-mono text-[0.72rem] text-muted sm:flex-row sm:flex-wrap sm:justify-between sm:text-left md:ml-4 lg:ml-4">
     <span>© {{ year }} ballastasera</span>
     <span class="tracking-[0.04em]">ballastasera.it · ballastasera.com</span>
     <span class="hidden tracking-[0.04em] sm:inline">{{ 'footer.location' | transloco }}</span>

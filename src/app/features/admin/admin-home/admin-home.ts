@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { Navbar } from '../../../shared/navbar/navbar';
 
 interface AdminOption {
@@ -10,7 +11,7 @@ interface AdminOption {
 
 @Component({
   selector: 'app-admin-home',
-  imports: [Navbar, RouterLink],
+  imports: [Navbar, RouterLink, SidebarPushDirective],
   templateUrl: './admin-home.html',
   styleUrl: './admin-home.css',
 })

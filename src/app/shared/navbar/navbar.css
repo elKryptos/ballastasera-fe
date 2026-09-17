@@ -47,16 +47,18 @@
 .account-trigger,
 .login-trigger {
   display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   outline-offset: 2px;
+  padding: 0;
+  border: none;
 }
 
 .login-trigger {
-  height: 1.75rem;
-  width: 1.75rem;
   color: var(--color-bone);
   border: 1.5px solid var(--color-line);
 }

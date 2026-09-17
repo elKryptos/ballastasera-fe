@@ -27,20 +27,19 @@
 }
 
 /* app-navbar's sidebar only shows a fixed top bar (this same --header-h)
-   on phones — on desktop it's a left icon rail instead, so the page needs
-   left padding, not top, from md up. Scoped to .sidebar-layout (set only
-   when showNewNavbar is on) so the legacy fixed header below keeps its
-   own top padding at every width. */
+  on phones — on desktop it's a left icon rail instead, so the page needs
+  left padding, not top, from md up. Scoped to .sidebar-layout (set only
+  when showNewNavbar is on) so the legacy fixed header below keeps its
+  own top padding at every width. */
 @media (min-width: 768px) {
   .page.sidebar-layout {
     padding-top: 0;
-    padding-left: var(--sidebar-width-icon);
   }
 }
 
 /* Language switcher (+ the WIP badge, next to it when the new navbar is
-   on): fixed top-right, just under the navbar (not inside it, so it stays
-   put regardless of which header variant is shown) — same position on
+  on): fixed top-right, just under the navbar (not inside it, so it stays
+  put regardless of which header variant is shown) — same position on
    mobile, tied to --header-h like everything else up here. */
 .top-right-float {
   top: calc(var(--header-h) + 0.6rem);
@@ -54,8 +53,8 @@
 }
 
 /* Desktop-only stand-in for the sidebar's (currently absent) brand mark —
-   pinned at the same height as the language switcher, just past the
-   sidebar's icon rail. Only ever rendered past md (see the md:flex on the
+  pinned at the same height as the language switcher, just past the
+  sidebar's icon rail. Only ever rendered past md (see the md:flex on the
    element itself), so no media query needed here. */
 .brand-float {
   top: 0.6rem;
@@ -265,9 +264,9 @@
 /* ---------- map teaser: the live pin ---------- */
 
 /* .map-pin-wrap is fixed at 24x32px globally (styles.css), sized for a real
-   map marker — scaled up here as one block so the pulse ring stays centred
-   on the pin instead of drifting off if the box dimensions were overridden
-   individually. */
+  map marker — scaled up here as one block so the pulse ring stays centred
+  on the pin instead of drifting off if the box dimensions were overridden
+  individually. */
 .teaser-pin {
   transform: scale(2.6);
 }
@@ -292,7 +291,7 @@
 /* Idle, the button breathes just enough to be found on a dark page. */
 .music:not(.playing) {
   animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 1.5s backwards,
-             musicpulse 3.2s ease-in-out 2.2s infinite;
+  musicpulse 3.2s ease-in-out 2.2s infinite;
 }
 
 @keyframes musicpulse {

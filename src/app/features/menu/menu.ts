@@ -5,6 +5,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 import { AuthService } from '../../core/services/auth.service';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { EventType } from '../../core/models/event.model';
+import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 
 /**
  * Rough bounding box around Milano — wide enough to catch every event in the
@@ -41,7 +42,7 @@ interface MapDot {
   selector: 'app-menu',
   templateUrl: './menu.html',
   styleUrl: './menu.css',
-  imports: [Navbar, RouterLink],
+  imports: [Navbar, RouterLink, SidebarPushDirective],
 })
 export class Menu {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));

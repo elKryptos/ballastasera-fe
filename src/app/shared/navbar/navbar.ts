@@ -52,9 +52,4 @@ export class Navbar {
   protected logout(): void {
     this.auth.logout().subscribe();
   }
-
-  /** Opens/closes the mobile drawer from the top bar's account avatar. */
-  protected toggleSidebar(): void {
-    this.sidebarService.toggleSidebar();
-  }
 }

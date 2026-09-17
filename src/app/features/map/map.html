@@ -3,7 +3,7 @@
 <main appSidebarPush class="relative h-screen pt-(--header-h) md:pt-0">
   <div class="relative h-full w-full">
     <aside
-      class="glass-panel-text absolute right-4 bottom-4 z-map-content max-w-[calc(100vw-2rem)] max-h-[75vh] origin-bottom-right flex flex-col gap-5 overflow-y-auto rounded-2xl border-line backdrop-blur-sm transition-all duration-200 ease-out sm:top-4 sm:left-4 sm:right-auto sm:bottom-auto sm:max-w-none sm:max-h-[calc(100%-2rem)] sm:origin-top-left sm:scale-100 sm:opacity-100 sm:pointer-events-auto"
+      class="glass-panel-text absolute right-4 bottom-4 z-map-content max-w-[calc(100vw-2rem)] max-h-[75vh] origin-bottom-right flex flex-col gap-5 overflow-y-auto rounded-lg border-line backdrop-blur-sm transition-all duration-200 ease-out sm:top-4 sm:left-4 sm:right-auto sm:bottom-auto sm:max-w-none sm:max-h-[calc(100%-2rem)] sm:origin-top-left sm:scale-100 sm:opacity-100 sm:pointer-events-auto"
       [class]="filtersCardStateClass()" [class.scale-50]="!filtersOpen()" [class.opacity-0]="!filtersOpen()"
       [class.pointer-events-none]="!filtersOpen()" aria-label="Filtri">
       <!-- Desktop-only: the collapse arrow is hidden on mobile, but
@@ -11,7 +11,7 @@
           it — filtersSummaryMode() (== isDesktop() && filtersCollapsed())
           is what actually gates the collapsed layout below. -->
       <button type="button"
-        class="absolute right-1.5 hidden size-6 cursor-pointer items-center justify-center rounded-full border border-line bg-ink-2/80 text-bone shadow sm:inline-flex"
+        class="absolute right-1.5 hidden size-6 cursor-pointer items-center justify-center rounded-lg border border-line bg-ink-2/80 text-bone shadow sm:inline-flex"
         [class]="filtersToggleButtonClass()" (click)="toggleFiltersCollapsed()"
         [attr.aria-label]="filtersCollapsed() ? 'Espandi filtri' : 'Comprimi filtri'"
         [attr.aria-expanded]="!filtersCollapsed()">
@@ -22,7 +22,7 @@
       </button>
 
       <button type="button"
-        class="absolute top-3 font-extrabold right-3 inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-red-500 hover:bg-bone/8 hover:text-red-400 sm:hidden"
+        class="absolute top-3 font-extrabold right-3 inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-red-500 hover:bg-bone/8 hover:text-red-400 sm:hidden"
         (click)="toggleFilters()" aria-label="Chiudi filtri">
         ✕
       </button>
@@ -31,13 +31,13 @@
       <div class="flex flex-wrap items-center gap-1.5 pr-6">
         @if (hasActiveFilters()) {
         @if (activeCityName(); as cityName) {
-        <span class="rounded-full bg-rose px-2.5 py-1 text-xs text-white">{{ cityName }}</span>
+        <span class="rounded-sm bg-rose px-2.5 py-1 text-xs text-white">{{ cityName }}</span>
         }
         @for (name of activeStyleNames(); track name) {
-        <span class="rounded-full bg-violet px-2.5 py-1 text-xs text-white">{{ name }}</span>
+        <span class="rounded-sm bg-violet px-2.5 py-1 text-xs text-white">{{ name }}</span>
         }
         } @else {
-        <span class="mr-1 rounded-full border border-line px-2.5 py-1 text-xs text-white bg-gray-600">Filtri</span>
+        <span class="mr-1 rounded-lg border border-line px-2.5 py-1 text-xs text-white bg-gray-600">Filtri</span>
         }
       </div>
       } @else {
@@ -45,14 +45,14 @@
         <span class="font-mono text-xs tracking-[0.08em] text-white uppercase">Città</span>
         <div class="flex flex-wrap gap-1.5">
           <button type="button"
-            class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+            class="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-sm transition-colors"
             [class.bg-rose]="selectedCityId() === null" [class.border-rose]="selectedCityId() === null"
             [class.bg-gray-600]="selectedCityId() !== null" (click)="selectCity(null)">
             Tutte
           </button>
           @for (city of cities(); track city.id) {
           <button type="button"
-            class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+            class="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-sm transition-colors"
             [class.bg-rose]="selectedCityId() === city.id" [class.border-rose]="selectedCityId() === city.id"
             [class.bg-gray-600]="selectedCityId() !== city.id" (click)="selectCity(city.id)">
             {{ city.name }}
@@ -66,7 +66,7 @@
         <div class="flex flex-wrap gap-1.5">
           @for (style of danceStyles(); track style.id) {
           <button type="button"
-            class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
+            class="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-sm transition-colors"
             [class.bg-violet]="selectedStyleNames().has(style.name)"
             [class.border-violet]="selectedStyleNames().has(style.name)"
             [class.bg-gray-600]="!selectedStyleNames().has(style.name)" (click)="selectStyle(style.name)">
@@ -93,7 +93,7 @@
       <div #mapContainer class="absolute inset-0 isolate"></div>
 
       <button type="button"
-        class="absolute right-4 bottom-4 z-map-content origin-bottom-right inline-flex items-center gap-2 rounded-full border border-line bg-ink-2 px-4 py-2 text-sm font-semibold shadow-lg transition-all duration-200 ease-out sm:hidden"
+        class="absolute right-4 bottom-4 z-map-content origin-bottom-right inline-flex items-center gap-2 rounded-lg border border-line bg-ink-2 px-4 py-2 text-sm font-semibold shadow-lg transition-all duration-200 ease-out sm:hidden"
         [class.scale-50]="filtersOpen()" [class.opacity-0]="filtersOpen()" [class.pointer-events-none]="filtersOpen()"
         [class.cursor-pointer]="!filtersOpen()" [attr.inert]="filtersOpen() ? '' : null" (click)="toggleFilters()">
         Filtri
@@ -114,7 +114,7 @@
       </button>
 
       <section
-        class="glass-panel-text absolute bottom-4 left-4 z-map-content w-30 origin-bottom-left overflow-hidden rounded-xl border border-line bg-neutral-800/15 p-3 text-white shadow-2xl backdrop-blur-sm transition-all duration-200 ease-out"
+        class="glass-panel-text absolute bottom-4 left-4 z-map-content w-30 origin-bottom-left overflow-hidden rounded-lg border border-line bg-neutral-800/15 p-3 text-white shadow-2xl backdrop-blur-sm transition-all duration-200 ease-out"
         [class.scale-50]="!legendOpen()" [class.opacity-0]="!legendOpen()" [class.pointer-events-none]="!legendOpen()"
         [class.cursor-pointer]="legendOpen()" [attr.inert]="!legendOpen() ? '' : null"
         aria-label="Legenda dei pin, premi per chiudere" (click)="toggleLegend()">
@@ -135,7 +135,7 @@
       @if (selectedEvent(); as event) {
       @if (selectedPinPoint(); as point) {
       <section
-        class="absolute z-map-content w-90 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-[calc(100%+36px)] overflow-hidden rounded-xl border border-line bg-ink-2 shadow-2xl"
+        class="absolute z-map-content w-90 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-[calc(100%+36px)] overflow-hidden rounded-lg border border-line bg-ink-2 shadow-2xl"
         [style.left.px]="point.x" [style.top.px]="point.y" aria-live="polite">
         <button type="button"
           class="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-bone"
@@ -170,7 +170,7 @@
 
           <div class="mt-1 flex flex-wrap gap-1.5">
             @for (style of event.danceStyles; track style) {
-            <span class="rounded-full bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
+            <span class="rounded-sm bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
             }
           </div>
 

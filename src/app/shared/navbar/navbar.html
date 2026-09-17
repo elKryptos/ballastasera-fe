@@ -1,7 +1,7 @@
 <!-- The sidebar renders nothing on screen on mobile until its sheet is
     opened, so this small bar keeps the logo visible at all times below
-    md: trigger on the left to open the drawer, logo centered, account
-    entry point on the right. -->
+    md: trigger on the left to open the drawer, logo centered, a login
+    button or a read-only account avatar on the right. -->
 <header class="mobile-bar md:hidden">
   <div class="relative flex h-full items-center justify-between px-3">
     <button hlmSidebarTrigger type="button" class="shrink-0"
@@ -24,8 +24,9 @@
 
     <div class="flex shrink-0 items-center gap-2">
       @if (isAuthenticated()) {
-      <button type="button" (click)="toggleSidebar()" class="account-trigger shrink-0"
-        [attr.aria-label]="'Account di ' + currentUser()?.displayName">
+      <!-- Status indicator only, not a control: opening the sidebar is the
+          hamburger trigger's job alone, so this doesn't duplicate it. -->
+      <span class="account-trigger shrink-0" aria-hidden="true">
         @if (currentUser()?.avatarUrl) {
         <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
           class="avatar-img size-7 shrink-0 rounded-full object-cover" />
@@ -35,7 +36,7 @@
           {{ initial() }}
         </span>
         }
-      </button>
+      </span>
       } @else {
       <button type="button" (click)="openAuth('login')" class="login-trigger shrink-0" aria-label="Accedi">
         <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"

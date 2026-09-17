@@ -33,4 +33,24 @@ export class EventsService {
   getEventDetail(id: string): Observable<EventDetailDto> {
     return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`);
   }
+
+  /** "Parteciperò" toggle. Verb choice (PUT/DELETE on the same URL, mirroring
+   * a set/remove pair) follows REST convention since there's no swagger doc
+   * in this repo to confirm against — flip to POST if the backend disagrees. */
+  setAttendance(eventId: string): Observable<void> {
+    return this.http.put<void>(`${environment.apiUrl}${endpoints.events.setAttendance(eventId)}`, {});
+  }
+
+  removeAttendance(eventId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.removeAttendance(eventId)}`);
+  }
+
+  /** "Mi piace" toggle. */
+  addFavorite(eventId: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}${endpoints.events.addFavorite(eventId)}`, {});
+  }
+
+  removeFavorite(eventId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.removeFavorite(eventId)}`);
+  }
 }

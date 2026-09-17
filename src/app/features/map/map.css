@@ -7,6 +7,12 @@ inherited by every descendant instead of tuning each element's colour. */
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
+/* Instagram's actual icon gradient, so the link reads as "Instagram" at a
+glance instead of just another monochrome glyph. */
+.instagram-gradient {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+
 /* Each legend icon pops in with a slight overshoot, staggered per row via
 an inline animation-delay set from the template. */
 .legend-icon {

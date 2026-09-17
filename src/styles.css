@@ -94,9 +94,11 @@ app.config.ts, which must be kept in sync with these. */
   }
 }
 
-/* Map pin pulse (live/starting-soon events). Global, not component-scoped:
-Leaflet injects marker markup straight into the DOM outside Angular's
-view, so component styles never reach it. */
+/* Map pin pulse — only once an event is actually underway. A pin starting
+soon shows plain (no pulse) until it crosses into --live; see pulseState()
+in map.ts. Global, not component-scoped: Leaflet injects marker markup
+straight into the DOM outside Angular's view, so component styles never
+reach it. */
 .map-pin-wrap {
   position: relative;
   display: block;
@@ -115,25 +117,25 @@ view, so component styles never reach it. */
   opacity: 0;
 }
 
-.map-pin-wrap--live .map-pin-pulse,
-.map-pin-wrap--soon .map-pin-pulse {
+.map-pin-wrap--live .map-pin-pulse {
   animation: map-pin-pulse 1.6s ease-out infinite;
-}
-
-.map-pin-wrap--soon .map-pin-pulse {
-  animation-duration: 2.4s;
 }
 
 /* The pin itself breathes along with the ring, and glows so it stays
 readable against busy tiles even between pulses. */
-.map-pin-wrap--live svg,
-.map-pin-wrap--soon svg {
+.map-pin-wrap--live svg {
   animation: map-pin-bounce 1.6s ease-in-out infinite;
   filter: drop-shadow(0 0 3px currentColor);
 }
 
-.map-pin-wrap--soon svg {
-  animation-duration: 2.4s;
+/* Selected pin: its own shape (per event type) is recoloured black in
+getPinIcon rather than styled here, plus a size bump so it still reads as
+the clear visual anchor now that its event card docks at the bottom of the
+screen instead of floating above it. */
+.map-pin-wrap--selected svg {
+  transform: scale(1.2);
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
 }
 
 @keyframes map-pin-pulse {

@@ -4,13 +4,35 @@ water/park tile — so no single text colour stays legible against all of
 them. A dark halo keeps light text (bone/muted) readable either way,
 inherited by every descendant instead of tuning each element's colour. */
 .glass-panel-text {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
 /* Instagram's actual icon gradient, so the link reads as "Instagram" at a
 glance instead of just another monochrome glyph. */
 .instagram-gradient {
   background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+
+/* The three action buttons sit on tinted (rose/mint/violet) backgrounds
+rather than the plain glass panel, so the shared glass-panel-text shadow
+needs an extra, wider halo layer to keep their white text legible against
+the tint. */
+.action-buttons-text {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 3px 10px rgba(0, 0, 0, 0.75);
+}
+
+/* ng-icon only exposes name/size/color/strokeWidth as inputs — there's no
+input for the raw SVG's own fill attribute, so lucideHeart's hardcoded
+fill="none" ignores the [attr.fill] binding set on the <ng-icon> host.
+Overriding fill on the injected <svg> itself is the only thing that
+actually toggles the heart between outline and filled. */
+:host ::ng-deep ng-icon[fill='currentColor'] svg {
+  fill: currentColor;
 }
 
 /* Each legend icon pops in with a slight overshoot, staggered per row via

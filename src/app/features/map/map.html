@@ -138,8 +138,9 @@
       </section>
 
       @if (selectedEvent(); as event) {
+      <!-- Aqui se cambia el colore de la card de detalles al presionar el pin del evento en el mapa. -->
       <section
-        class="glass-panel-text absolute inset-x-4 bottom-4 z-map-content mx-auto flex max-h-[70vh] max-w-[calc(100vw-2rem)] flex-col overflow-y-auto rounded-lg border border-line bg-neutral-800/15 text-white shadow-2xl backdrop-blur-sm sm:inset-x-auto sm:left-1/2 sm:w-md sm:-translate-x-1/2 lg:w-lg"
+        class="glass-panel-text absolute inset-x-4 bottom-4 z-map-content mx-auto flex max-h-[70vh] max-w-[calc(100vw-2rem)] flex-col overflow-y-auto rounded-lg border border-line bg-neutral-800/30 text-white shadow-2xl backdrop-blur-sm sm:inset-x-auto sm:left-1/2 sm:w-md sm:-translate-x-1/2 lg:w-lg"
         aria-live="polite">
         <button type="button"
           class="absolute top-2 right-2 z-10 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white transition-colors hover:bg-ink"
@@ -166,9 +167,10 @@
           </a>
           }
           <div class="flex min-w-0 flex-1 flex-col gap-1.5">
-            <h2 class="font-display text-base leading-tight font-bold text-rose">{{ event.title }}</h2>
+            <h2 class="font-display text-base leading-tight font-bold text-rose min-[380px]:text-lg sm:text-base">
+              {{ event.title }}</h2>
 
-            <p class="flex items-center gap-1.5 text-sm text-white">
+            <p class="flex items-center gap-1.5 text-sm text-white min-[380px]:text-base sm:text-sm">
               <span class="flex size-5 shrink-0 items-center justify-center">
                 <ng-icon name="lucideClock" class="size-3 text-white" />
               </span>
@@ -177,7 +179,7 @@
 
             @if (event.venueName || event.address) {
             <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
-              class="group flex items-start gap-1.5 text-sm text-white">
+              class="group flex items-start gap-1.5 text-sm text-white min-[380px]:text-base sm:text-sm">
               <span class="flex size-5 shrink-0 items-center justify-center">
                 <img src="/icons/google-maps-pin.png" alt="" class="size-4" />
               </span>
@@ -198,13 +200,13 @@
 
             @if (event.organizer.instagram; as handle) {
             <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
-              class="inline-flex w-fit items-center gap-1.5 transition-opacity hover:opacity-80">
+              class="inline-flex w-fit items-center gap-1.5 opacity-80">
               <span class="flex size-5 shrink-0 items-center justify-center">
                 <span class="instagram-gradient flex size-4 items-center justify-center rounded-md">
                   <ng-icon name="lucideInstagram" class="size-2.5 text-white" />
                 </span>
               </span>
-              <span class="text-sm font-medium text-white">&#64;{{ handle }}</span>
+              <span class="text-sm font-medium text-white min-[380px]:text-base sm:text-sm">&#64;{{ handle }}</span>
             </a>
             }
           </div>
@@ -212,16 +214,19 @@
 
         <div class="flex flex-col gap-2 px-3 pb-3">
           <div class="flex flex-wrap items-center gap-1.5">
-            @for (style of event.danceStyles; track style) {
-            <span class="rounded-sm bg-violet px-2 py-0.5 text-[0.65rem] text-white">{{ style }}</span>
+            @for (style of event.danceStyles; track $index) {
+            <span
+              class="rounded-sm bg-violet px-2 py-0.5 text-[0.65rem] text-white min-[380px]:text-xs sm:text-[0.65rem]">{{
+              style }}</span>
             }
           </div>
 
-          <div class="flex items-center justify-between font-mono text-sm text-amber">
-            <span>{{ formatPrice(event) }}</span>
+          <div
+            class="flex items-center justify-between text-sm text-amber tabular-nums min-[380px]:text-base sm:text-sm">
+            <span [class.text-mint]="event.free">{{ formatPrice(event) }}</span>
             <span class="flex items-center gap-3 text-white">
               <span class="flex items-center gap-1">
-                <ng-icon name="lucideHeart" class="size-3.5" [attr.fill]="likeIconFill(event.id)" />
+                <ng-icon name="lucideHeart" class="size-3.5 text-rose" [attr.fill]="likeIconFill(event.id)" />
                 {{ isLiked(event.id) ? 1 : 0 }}
               </span>
               <span class="flex items-center gap-1">
@@ -230,23 +235,23 @@
             </span>
           </div>
 
-          <div class="grid grid-cols-3 gap-1.5">
+          <div class="action-buttons-text grid grid-cols-3 gap-1.5">
             <button type="button"
-              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors"
-              [class]="isGoing(event.id) ? 'border-rose bg-rose text-white' : 'border-line bg-transparent text-white hover:border-rose hover:text-rose'"
+              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
+              [class]="isGoing(event.id) ? 'border-rose bg-rose text-white' : 'bg-rose/15 text-white'"
               [attr.aria-pressed]="isGoing(event.id)" (click)="toggleGoing(event)">
               <ng-icon name="lucideCircleCheck" class="size-4" /> Parteciperò
             </button>
             <button type="button"
-              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors"
-              [class]="isLiked(event.id) ? 'border-mint bg-mint text-ink' : 'border-line bg-transparent text-white hover:border-mint hover:text-mint'"
+              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
+              [class]="isLiked(event.id) ? 'border-mint bg-mint text-white' : 'bg-mint/15 text-white'"
               [attr.aria-pressed]="isLiked(event.id)" (click)="toggleLike(event)">
-              <ng-icon name="lucideHeart" class="size-4" [attr.fill]="likeIconFill(event.id)" />
+              <ng-icon name="lucideHeart" class="size-4 text-rose" [attr.fill]="likeIconFill(event.id)" />
               Mi piace
             </button>
             <button type="button"
-              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors"
-              [class]="isFollowing(event.organizer.id) ? 'border-violet bg-violet text-white' : 'border-line bg-transparent text-white hover:border-violet hover:text-violet'"
+              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
+              [class]="isFollowing(event.organizer.id) ? 'border-violet bg-violet text-white' : 'bg-violet/15 text-white'"
               [attr.aria-pressed]="isFollowing(event.organizer.id)" (click)="toggleFollow(event.organizer.id)">
               <ng-icon [name]="isFollowing(event.organizer.id) ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
               Segui

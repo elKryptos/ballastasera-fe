@@ -158,10 +158,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
    * session. Flipped immediately on click, then reconciled against
    * EventsService.setAttendance/removeAttendance and addFavorite/removeFavorite
    * — reverted if the request fails. There's no follow-organizer endpoint
-   * yet, so followedOrganizerIds stays local-only for now. The like count
-   * shown next to goingCount is derived from this set (0 or 1) rather than a
-   * real aggregate — EventCardDto has no likesCount field yet, so there's
-   * nothing to sum across other users until the backend adds one. */
+   * yet, so followedOrganizerIds stays local-only for now. */
   protected readonly goingEventIds = signal<ReadonlySet<string>>(new Set());
   protected readonly likedEventIds = signal<ReadonlySet<string>>(new Set());
   /** Opens the shared login dialog when a signed-out visitor taps
@@ -247,6 +244,10 @@ export class MapPage implements AfterViewInit, OnDestroy {
   private leaflet: typeof import('leaflet') | null = null;
   private readonly pinIconCache = new Map<string, import('leaflet').DivIcon>();
   private readonly moveEnd$ = new Subject<void>();
+  /** Live/not-live state of every visible pin as of the last drawMarkers()
+   * call — lets the pulse timer skip the full marker teardown/recreate on
+   * ticks where nothing actually crossed the live threshold. */
+  private markerPulseSignature = '';
 
   constructor() {
     this.moveEnd$
@@ -289,7 +290,9 @@ export class MapPage implements AfterViewInit, OnDestroy {
     if (this.isBrowser) {
       interval(PULSE_REFRESH_MS)
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => this.drawMarkers());
+        .subscribe(() => {
+          if (this.pulseSignature() !== this.markerPulseSignature) this.drawMarkers();
+        });
     }
   }
 
@@ -369,11 +372,36 @@ export class MapPage implements AfterViewInit, OnDestroy {
       marker.on('click', () => this.selectEvent(event, marker));
       return marker;
     });
+    this.markerPulseSignature = this.pulseSignature();
+  }
+
+  /** One char per visible event (1 = live, 0 = not) — cheap way to tell the
+   * pulse timer whether a redraw is actually needed. */
+  private pulseSignature(): string {
+    return this.filteredEvents()
+      .map((event) => (this.isLiveNow(event) ? '1' : '0'))
+      .join('');
   }
 
   private selectEvent(event: EventCardDto, marker: Marker): void {
     this.selectedEvent.set(event);
     this.centerOnPoint(this.map!.latLngToContainerPoint(marker.getLatLng()));
+    this.syncFavoriteState(event.id);
+  }
+
+  private syncFavoriteState(eventId: string): void {
+    if (!this.authService.isAuthenticated()) return;
+
+    this.eventsService.isFavorite(eventId).subscribe({
+      next: (isFavorite) => {
+        this.likedEventIds.update((ids) => {
+          const next = new Set(ids);
+          if (isFavorite) next.add(eventId);
+          else next.delete(eventId);
+          return next;
+        });
+      }
+    });
   }
 
   /** Pans (doesn't zoom) so the pin lands higher in the viewport rather than
@@ -541,6 +569,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
       event.id,
       (id) => this.eventsService.addFavorite(id),
       (id) => this.eventsService.removeFavorite(id),
+      (activating) => this.adjustLikesCount(event.id, activating ? 1 : -1),
     );
   }
 
@@ -554,6 +583,12 @@ export class MapPage implements AfterViewInit, OnDestroy {
     return this.isLiked(eventId) ? 'currentColor' : 'none';
   }
 
+  /** White outline when not liked, rose when liked — shared by the count
+   * badge and the "Mi piace" button so the two spots can't drift apart. */
+  protected heartIconClass(eventId: string): string {
+    return this.isLiked(eventId) ? 'text-rose' : 'text-white';
+  }
+
   /** Shared by toggleGoing/toggleLike: flips the local state immediately,
    * fires the matching add/remove request, and rolls back if it fails.
    * Gated on auth first, since both actions require a session server-side. */
@@ -562,6 +597,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
     id: string,
     add: (id: string) => Observable<void>,
     remove: (id: string) => Observable<void>,
+    adjustCount?: (activating: boolean) => void,
   ): void {
     if (!this.authService.isAuthenticated()) {
       this.authOpen.set(true);
@@ -570,11 +606,35 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
     const wasActive = idsSignal().has(id);
     this.toggleId(idsSignal, id);
+    adjustCount?.(!wasActive);
 
     const request = wasActive ? remove(id) : add(id);
     request.subscribe({
-      error: () => this.toggleId(idsSignal, id),
+      error: () => {
+        this.toggleId(idsSignal, id);
+        adjustCount?.(wasActive);
+      },
     });
+  }
+
+  /** Optimistic +1/-1 on the displayed like count, mirrored into both the
+   * events list and the open card (same object reference) so the UI updates
+   * instantly without a getMapEvents refetch. Reversed by toggleOptimistic's
+   * rollback on request failure. */
+  private adjustLikesCount(eventId: string, delta: number): void {
+    let updated: EventCardDto | null = null;
+
+    this.events.update((events) =>
+      events.map((event) => {
+        if (event.id !== eventId) return event;
+        updated = { ...event, likesCount: Math.max(0, event.likesCount + delta) };
+        return updated;
+      }),
+    );
+
+    if (updated && this.selectedEvent()?.id === eventId) {
+      this.selectedEvent.set(updated);
+    }
   }
 
   private toggleId(idsSignal: WritableSignal<ReadonlySet<string>>, id: string): void {

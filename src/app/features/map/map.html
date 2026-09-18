@@ -226,8 +226,9 @@
             <span [class.text-mint]="event.free">{{ formatPrice(event) }}</span>
             <span class="flex items-center gap-3 text-white">
               <span class="flex items-center gap-1">
-                <ng-icon name="lucideHeart" class="size-3.5 text-rose" [attr.fill]="likeIconFill(event.id)" />
-                {{ isLiked(event.id) ? 1 : 0 }}
+                <ng-icon name="lucideHeart" class="size-3.5" [class]="heartIconClass(event.id)"
+                  [attr.fill]="likeIconFill(event.id)" />
+                {{ event.likesCount }}
               </span>
               <span class="flex items-center gap-1">
                 <ng-icon name="lucideUsers" class="size-3.5" /> {{ event.goingCount }}
@@ -246,7 +247,8 @@
               class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
               [class]="isLiked(event.id) ? 'border-mint bg-mint text-white' : 'bg-mint/15 text-white'"
               [attr.aria-pressed]="isLiked(event.id)" (click)="toggleLike(event)">
-              <ng-icon name="lucideHeart" class="size-4 text-rose" [attr.fill]="likeIconFill(event.id)" />
+              <ng-icon name="lucideHeart" class="size-4" [class]="heartIconClass(event.id)"
+                [attr.fill]="likeIconFill(event.id)" />
               Mi piace
             </button>
             <button type="button"

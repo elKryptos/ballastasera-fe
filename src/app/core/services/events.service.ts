@@ -45,6 +45,10 @@ export class EventsService {
     return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.removeAttendance(eventId)}`);
   }
 
+  isFavorite(eventId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isFavorite(eventId)}`);
+  }
+
   /** "Mi piace" toggle. */
   addFavorite(eventId: string): Observable<void> {
     return this.http.post<void>(`${environment.apiUrl}${endpoints.events.addFavorite(eventId)}`, {});

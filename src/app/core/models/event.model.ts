@@ -24,6 +24,7 @@ export interface EventCardDto {
   venueName: string | null;
   danceStyles: string[];
   goingCount: number;
+  likesCount: number;
 }
 
 export interface EventCreateDto {

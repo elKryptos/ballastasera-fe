@@ -156,7 +156,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
   /** Optimistic local state for the popup's Parteciperò/Mi piace toggles,
    * keyed by event id so it survives switching between pins within the same
    * session. Flipped immediately on click, then reconciled against
-   * EventsService.setAttendance/removeAttendance and addFavorite/removeFavorite
+   * EventsService.addAttendance/removeAttendance and addFavorite/removeFavorite
    * — reverted if the request fails. There's no follow-organizer endpoint
    * yet, so followedOrganizerIds stays local-only for now. */
   protected readonly goingEventIds = signal<ReadonlySet<string>>(new Set());
@@ -386,21 +386,25 @@ export class MapPage implements AfterViewInit, OnDestroy {
   private selectEvent(event: EventCardDto, marker: Marker): void {
     this.selectedEvent.set(event);
     this.centerOnPoint(this.map!.latLngToContainerPoint(marker.getLatLng()));
-    this.syncFavoriteState(event.id);
+    this.syncToggleState(event.id, this.likedEventIds, (id) => this.eventsService.isFavorite(id));
+    this.syncToggleState(event.id, this.goingEventIds, (id) => this.eventsService.isGoing(id));
   }
 
-  private syncFavoriteState(eventId: string): void {
+  /** goingEventIds/likedEventIds are only ever flipped locally by
+   * toggleGoing/toggleLike, so they start every page load empty — without
+   * this, a user who's already attending/liking sees the button uncoloured
+   * until they click it, and that click would fire the "add" request again
+   * instead of "remove". */
+  private syncToggleState(
+    eventId: string,
+    idsSignal: WritableSignal<ReadonlySet<string>>,
+    fetchActive: (id: string) => Observable<boolean>,
+  ): void {
     if (!this.authService.isAuthenticated()) return;
 
-    this.eventsService.isFavorite(eventId).subscribe({
-      next: (isFavorite) => {
-        this.likedEventIds.update((ids) => {
-          const next = new Set(ids);
-          if (isFavorite) next.add(eventId);
-          else next.delete(eventId);
-          return next;
-        });
-      }
+    fetchActive(eventId).subscribe({
+      next: (active) => this.setMembership(idsSignal, eventId, active),
+      error: (err) => console.error('Failed to sync toggle state for event', eventId, err),
     });
   }
 
@@ -492,7 +496,11 @@ export class MapPage implements AfterViewInit, OnDestroy {
   }
 
   protected toggleFilters(): void {
-    this.filtersOpen.update((open) => !open);
+    const willOpen = !this.filtersOpen();
+    this.filtersOpen.set(willOpen);
+    if (willOpen) {
+      this.legendOpen.set(false);
+    }
   }
 
   protected toggleFiltersCollapsed(): void {
@@ -500,7 +508,11 @@ export class MapPage implements AfterViewInit, OnDestroy {
   }
 
   protected toggleLegend(): void {
-    this.legendOpen.update((open) => !open);
+    const willOpen = !this.legendOpen();
+    this.legendOpen.set(willOpen);
+    if (willOpen) {
+      this.filtersOpen.set(false);
+    }
   }
 
   protected closeDetail(): void {
@@ -518,7 +530,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
   }
 
   protected formatPrice(event: EventCardDto): string {
-    if (event.free) return 'Gratis';
+    if (event.free) return 'GRATIS';
     if (event.price == null) return 'Prezzo su invito';
     return `${event.price} ${event.currency ?? ''}`.trim();
   }
@@ -558,8 +570,9 @@ export class MapPage implements AfterViewInit, OnDestroy {
     this.toggleOptimistic(
       this.goingEventIds,
       event.id,
-      (id) => this.eventsService.setAttendance(id),
+      (id) => this.eventsService.addAttendance(id),
       (id) => this.eventsService.removeAttendance(id),
+      (activating) => this.adjustCount(event.id, 'goingCount', activating ? 1 : -1),
     );
   }
 
@@ -569,7 +582,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
       event.id,
       (id) => this.eventsService.addFavorite(id),
       (id) => this.eventsService.removeFavorite(id),
-      (activating) => this.adjustLikesCount(event.id, activating ? 1 : -1),
+      (activating) => this.adjustCount(event.id, 'likesCount', activating ? 1 : -1),
     );
   }
 
@@ -587,6 +600,13 @@ export class MapPage implements AfterViewInit, OnDestroy {
    * badge and the "Mi piace" button so the two spots can't drift apart. */
   protected heartIconClass(eventId: string): string {
     return this.isLiked(eventId) ? 'text-rose' : 'text-white';
+  }
+
+  /** Going-count badge colours by the count itself, not by the current
+   * user's own attendance — white while nobody's going yet, rose the moment
+   * it's non-zero, for any viewer. */
+  protected goingCountIconClass(goingCount: number): string {
+    return goingCount > 0 ? 'text-violet' : 'text-white';
   }
 
   /** Shared by toggleGoing/toggleLike: flips the local state immediately,
@@ -617,17 +637,17 @@ export class MapPage implements AfterViewInit, OnDestroy {
     });
   }
 
-  /** Optimistic +1/-1 on the displayed like count, mirrored into both the
-   * events list and the open card (same object reference) so the UI updates
-   * instantly without a getMapEvents refetch. Reversed by toggleOptimistic's
-   * rollback on request failure. */
-  private adjustLikesCount(eventId: string, delta: number): void {
+  /** Optimistic +1/-1 on a displayed count field (likes or going), mirrored
+   * into both the events list and the open card (same object reference) so
+   * the UI updates instantly without a getMapEvents refetch. Reversed by
+   * toggleOptimistic's rollback on request failure. */
+  private adjustCount(eventId: string, field: 'likesCount' | 'goingCount', delta: number): void {
     let updated: EventCardDto | null = null;
 
     this.events.update((events) =>
       events.map((event) => {
         if (event.id !== eventId) return event;
-        updated = { ...event, likesCount: Math.max(0, event.likesCount + delta) };
+        updated = { ...event, [field]: Math.max(0, event[field] + delta) };
         return updated;
       }),
     );
@@ -638,13 +658,14 @@ export class MapPage implements AfterViewInit, OnDestroy {
   }
 
   private toggleId(idsSignal: WritableSignal<ReadonlySet<string>>, id: string): void {
+    this.setMembership(idsSignal, id, !idsSignal().has(id));
+  }
+
+  private setMembership(idsSignal: WritableSignal<ReadonlySet<string>>, id: string, active: boolean): void {
     idsSignal.update((ids) => {
       const next = new Set(ids);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (active) next.add(id);
+      else next.delete(id);
       return next;
     });
   }

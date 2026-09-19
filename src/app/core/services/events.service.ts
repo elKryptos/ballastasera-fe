@@ -34,19 +34,16 @@ export class EventsService {
     return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`);
   }
 
-  /** "Parteciperò" toggle. Verb choice (PUT/DELETE on the same URL, mirroring
-   * a set/remove pair) follows REST convention since there's no swagger doc
-   * in this repo to confirm against — flip to POST if the backend disagrees. */
-  setAttendance(eventId: string): Observable<void> {
-    return this.http.put<void>(`${environment.apiUrl}${endpoints.events.setAttendance(eventId)}`, {});
+  addAttendance(eventId: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}${endpoints.events.addAttendance(eventId)}`, {});
   }
 
   removeAttendance(eventId: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.removeAttendance(eventId)}`);
   }
 
-  isFavorite(eventId: string): Observable<boolean> {
-    return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isFavorite(eventId)}`);
+  isGoing(eventId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isGoing(eventId)}`)
   }
 
   /** "Mi piace" toggle. */
@@ -56,5 +53,9 @@ export class EventsService {
 
   removeFavorite(eventId: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.removeFavorite(eventId)}`);
+  }
+
+  isFavorite(eventId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isFavorite(eventId)}`);
   }
 }

@@ -25,9 +25,9 @@
       </button>
 
       <button type="button"
-        class="absolute top-3 font-extrabold right-3 inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-red-500 hover:bg-bone/8 hover:text-red-400 sm:hidden"
+        class="absolute top-2 right-2 z-10 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white transition-colors hover:bg-ink sm:hidden"
         (click)="toggleFilters()" aria-label="Chiudi filtri">
-        ✕
+        <ng-icon name="lucideX" class="size-4" />
       </button>
 
       @if (filtersSummaryMode()) {
@@ -226,12 +226,13 @@
             <span [class.text-mint]="event.free">{{ formatPrice(event) }}</span>
             <span class="flex items-center gap-3 text-white">
               <span class="flex items-center gap-1">
+                <ng-icon name="lucideUsers" class="size-3.5" [class]="goingCountIconClass(event.goingCount)" />
+                {{ event.goingCount }}
+              </span>
+              <span class="flex items-center gap-1">
                 <ng-icon name="lucideHeart" class="size-3.5" [class]="heartIconClass(event.id)"
                   [attr.fill]="likeIconFill(event.id)" />
                 {{ event.likesCount }}
-              </span>
-              <span class="flex items-center gap-1">
-                <ng-icon name="lucideUsers" class="size-3.5" /> {{ event.goingCount }}
               </span>
             </span>
           </div>
@@ -239,7 +240,7 @@
           <div class="action-buttons-text grid grid-cols-3 gap-1.5">
             <button type="button"
               class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
-              [class]="isGoing(event.id) ? 'border-rose bg-rose text-white' : 'bg-rose/15 text-white'"
+              [class]="isGoing(event.id) ? 'border-violet bg-violet text-white' : 'bg-violet/15 text-white'"
               [attr.aria-pressed]="isGoing(event.id)" (click)="toggleGoing(event)">
               <ng-icon name="lucideCircleCheck" class="size-4" /> Parteciperò
             </button>
@@ -253,7 +254,7 @@
             </button>
             <button type="button"
               class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
-              [class]="isFollowing(event.organizer.id) ? 'border-violet bg-violet text-white' : 'bg-violet/15 text-white'"
+              [class]="isFollowing(event.organizer.id) ? 'border-rose bg-rose text-white' : 'bg-rose/15 text-white'"
               [attr.aria-pressed]="isFollowing(event.organizer.id)" (click)="toggleFollow(event.organizer.id)">
               <ng-icon [name]="isFollowing(event.organizer.id) ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
               Segui
@@ -265,3 +266,5 @@
     </div>
   </div>
 </main>
+
+

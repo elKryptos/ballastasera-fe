@@ -72,6 +72,7 @@ export interface EventDetailDto {
   organizer: OrganizerSummaryDto;
   venueName: string | null;
   danceStyles: string[];
+  likesCount: number;
   goingCount: number;
   interestedCount: number;
 }

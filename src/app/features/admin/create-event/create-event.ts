@@ -6,12 +6,7 @@ import { catchError, debounceTime, distinctUntilChanged, map, of, Subscription, 
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocomplete, HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
-import {
-  BrnAutocomplete,
-  BrnAutocompleteAnchor,
-  BrnAutocompleteInput,
-  BrnAutocompleteSearch,
-} from '@spartan-ng/brain/autocomplete';
+import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput, BrnAutocompleteSearch } from '@spartan-ng/brain/autocomplete';
 import { AttachmentState } from '@spartan-ng/helm/attachment';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -46,18 +41,9 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
 
 @Component({
   selector: 'app-create-event',
-  imports: [
-    ReactiveFormsModule,
-    Navbar,
-    HlmSelectImports,
-    BrnSelectTrigger,
-    BrnSelectValue,
-    HlmAutocompleteImports,
-    BrnAutocompleteInput,
-    BrnAutocompleteAnchor,
-    HlmSpinnerImports,
-    NgIcon,
-    SidebarPushDirective
+  imports: [ 
+    ReactiveFormsModule, Navbar, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
+    BrnAutocompleteInput, BrnAutocompleteAnchor, HlmSpinnerImports, NgIcon, SidebarPushDirective
   ],
   providers: [provideIcons({ lucideImage, lucideUpload, lucideRefreshCw, lucideFileWarning })],
   templateUrl: './create-event.html',

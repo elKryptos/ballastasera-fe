@@ -1,91 +1,38 @@
-/* Plain flow element — the fixed positioning lives on .nav-bar below, not
-   here. A `backdrop-filter` on this host would give the auth dialog (its
-   sibling in the DOM, `<app-auth-modal>`) a new containing block, since
-   filters do that to fixed-position descendants same as `transform` does —
-   the dialog's `fixed inset-0` would then resolve against this ~3rem-tall
-   bar instead of the viewport, and never be visible. */
+/* Plain flow element — the fixed positioning lives on .mobile-bar and on
+   hlm-sidebar's own host below, not here. A `backdrop-filter` on this host
+   would give the auth dialog (its sibling in the DOM, `<app-auth-modal>`) a
+   new containing block, since filters do that to fixed-position descendants
+   same as `transform` does — the dialog's `fixed inset-0` would then
+   resolve against this element instead of the viewport, and never be
+   visible. */
 :host {
   display: block;
 }
 
-/* Pinned from the first frame, edge to edge — not sticky (which would
-   travel with the page briefly before catching). The matching top padding
-   that reserves this height lives on landing's own wrapper, since that's
-   the only place this component is used today. */
-.nav-bar {
+/* Mobile-only top bar: the sidebar itself renders nothing on screen below
+   md until its sheet is opened, so this keeps the logo pinned in view at
+   all times on small screens, edge to edge, above everything but a modal.
+   --z-index-mobile-bar, not the usual --z-index-header (see styles.css):
+   staying above CDK's own overlay container keeps the bar visible while
+   the drawer is open, instead of sitting under the scrim's dim/blur like
+   normal page content does. */
+.mobile-bar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  /* Above every overlay the map page stacks (see --z-index-* in
-     styles.css) — otherwise the login/account controls end up hidden
-     behind the map UI. */
-  z-index: var(--z-index-header);
+  z-index: var(--z-index-mobile-bar);
   height: var(--header-h);
-  background: color-mix(in srgb, var(--color-ink) 92%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* Flat, not blended with transparent — has to match the Android status
+     bar above it exactly (theme-color in index.html/site.webmanifest, both
+     --color-ink), and any translucency would read as a visible seam
+     between the two. */
+  background: var(--color-ink);
 }
 
-/* "stasera" = tonight — same tiny star scatter as the landing headline
-   (landing.css's .night), scaled down for the logo's much smaller type. */
-.night {
-  position: relative;
-  display: inline-block;
-}
-
-.night::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  background-repeat: no-repeat;
-  background-image:
-    radial-gradient(1px 1px at 6% 15%, #fff, transparent),
-    radial-gradient(1.2px 1.2px at 14% 70%, var(--color-amber), transparent),
-    radial-gradient(0.8px 0.8px at 24% 35%, #cfe4ff, transparent),
-    radial-gradient(1px 1px at 34% 80%, #ffe9b8, transparent),
-    radial-gradient(1.2px 1.2px at 44% 20%, var(--color-violet), transparent),
-    radial-gradient(0.8px 0.8px at 54% 60%, #fff, transparent),
-    radial-gradient(1px 1px at 64% 10%, #cfe4ff, transparent),
-    radial-gradient(1.2px 1.2px at 74% 75%, var(--color-amber), transparent),
-    radial-gradient(0.8px 0.8px at 84% 30%, #fff, transparent),
-    radial-gradient(1px 1px at 94% 55%, var(--color-mint), transparent);
-  animation: twinkle 2.2s ease-in-out infinite;
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .night::after {
-    animation: none;
-  }
-}
-
-.login-btn {
-  border-color: var(--color-line);
-  background: color-mix(in srgb, var(--color-bone) 5%, transparent);
-  color: var(--color-bone);
-}
-
-.login-btn:hover {
-  border-color: var(--color-rose);
-  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
-}
-
-.avatar-btn {
-  outline-offset: 2px;
-  transition: box-shadow 0.15s ease;
-}
-
-.avatar-btn.active,
-.avatar-btn:hover {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-rose) 55%, transparent);
-}
+/* "stasera" = tonight — same tiny star scatter as the landing headline,
+   shared globally (styles.css's .night) since it's used by both; the logo
+   here just takes the default (smaller) size. */
 
 .avatar-img,
 .avatar-fallback {
@@ -97,39 +44,28 @@
   color: var(--color-ink);
 }
 
-/* Transparent click-catcher, sits under the menu but above everything
-   else, so a click outside the dropdown closes it without needing a
-   document-level listener. */
-.menu-backdrop {
-  background: transparent;
+.account-trigger,
+.login-trigger {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  outline-offset: 2px;
+  padding: 0;
+  border: none;
 }
 
-.user-menu {
-  transform-origin: top right;
-  animation: menu-pop 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+.login-trigger {
+  color: var(--color-bone);
+  cursor: pointer;
+  border: 1.5px solid var(--color-line);
 }
 
-@keyframes menu-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(-4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.menu-divider {
-  height: 1px;
-  margin: 0 0.25rem;
-  background: var(--color-line);
-}
-
-.menu-item:focus-visible {
-  outline: 2px solid var(--color-rose);
-  outline-offset: -2px;
+.login-trigger:hover {
+  border-color: var(--color-rose);
+  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
 }
 
 .logout-item {

@@ -6,6 +6,8 @@ import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { NgClass } from '@angular/common';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
+import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 
 type FormState = 'idle' | 'error' | 'done';
 
@@ -72,7 +74,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [FormsModule, MediaEmbed, Navbar, AuthModal, NgClass],
+  imports: [FormsModule, MediaEmbed, Navbar, AuthModal, NgClass, TranslocoPipe, SidebarPushDirective],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -81,6 +83,17 @@ export class Landing implements AfterViewInit, OnDestroy {
   // until it's signed off on staging — see environment.staging.ts. The
   // production header below stays byte-for-byte what already shipped.
   protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.navbarAuth);
+
+  private readonly transloco = inject(TranslocoService);
+
+  protected isActiveLang(lang: string): boolean {
+    return this.transloco.getActiveLang() === lang;
+  }
+
+  protected setLang(lang: string): void {
+    this.transloco.setActiveLang(lang);
+    localStorage.setItem('lang', lang);
+  }
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private revealObserver?: IntersectionObserver;
@@ -143,8 +156,8 @@ export class Landing implements AfterViewInit, OnDestroy {
    * four travelling left. Beats 4 and 8 are the tap, not a step.
    */
   protected readonly phrases = [
-    { direction: 'destra', beats: [1, 2, 3, 4] },
-    { direction: 'sinistra', beats: [5, 6, 7, 8] },
+    { direction: 'count.right', beats: [1, 2, 3, 4] },
+    { direction: 'count.left', beats: [5, 6, 7, 8] },
   ];
 
   /**
@@ -160,33 +173,33 @@ export class Landing implements AfterViewInit, OnDestroy {
       video: '/social/eventi.mp4',
       poster: '/social/eventi.jpg',
       reel: 'DbEFvfVMo7N',
-      reelTitle: 'Un evento, raccontato bene',
+      reelTitle: 'partners.events.reelTitle',
       creditName: 'MILATINO Milano',
       creditHandle: 'milatino2.0',
-      label: 'Organizzatori e social',
-      copy: 'Social, festival e one night: un posto solo dove finiscono tutte le date.',
+      label: 'partners.events.label',
+      copy: 'partners.events.copy',
     },
     {
       art: 'venue',
       video: '/social/locali.mp4',
       poster: '/social/locali.jpg',
       reel: 'DbgIhnLiFAH',
-      reelTitle: 'Una serata in pista',
+      reelTitle: 'partners.venue.reelTitle',
       creditName: 'Marisella Maritato',
       creditHandle: 'marisellamaritato',
-      label: 'Locali e discoteche',
-      copy: 'Le tue serate latine sulla mappa di chi le sta cercando, la sera stessa.',
+      label: 'partners.venue.label',
+      copy: 'partners.venue.copy',
     },
     {
       art: 'school',
       video: '/social/scuole.mp4',
       poster: '/social/scuole.jpg',
       reel: 'DW1MUthDGAb',
-      reelTitle: 'Una lezione, da vicino',
+      reelTitle: 'partners.school.reelTitle',
       creditName: 'Noelia Otero',
       creditHandle: 'noeliaoterobs',
-      label: 'Scuole e maestri',
-      copy: 'Corsi, stage e prove aperte, davanti a chi ha appena deciso di iniziare.',
+      label: 'partners.school.label',
+      copy: 'partners.school.copy',
     },
   ];
 
@@ -234,25 +247,25 @@ export class Landing implements AfterViewInit, OnDestroy {
    */
   protected readonly legendPins: PinLegendItem[] = [
     {
-      label: 'Evento',
+      label: 'legend.event',
       color: 'var(--color-rose)',
       shape: 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z',
       glyph: 'M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z',
     },
     {
-      label: 'Scuola',
+      label: 'legend.school',
       color: 'var(--color-violet)',
       shape: 'M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z',
       glyph: 'M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z',
     },
     {
-      label: 'Discoteca',
+      label: 'legend.club',
       color: 'var(--color-mint)',
       shape: 'M12 0 23 7v14L12 32 1 21V7z',
       glyph: 'M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z',
     },
     {
-      label: 'Bar',
+      label: 'legend.bar',
       color: 'var(--color-amber)',
       shape: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
       glyph: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',

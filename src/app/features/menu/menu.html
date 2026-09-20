@@ -1,11 +1,10 @@
 <app-navbar />
 
-<main class="pt-(--header-h)">
-  <div class="page relative min-h-[calc(100dvh-var(--header-h))] overflow-hidden px-6 py-10">
-    <div class="glow" aria-hidden="true"></div>
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <div class="page relative min-h-[calc(100dvh-var(--header-h))] overflow-x-hidden px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:py-10 md:min-h-dvh">    <div class="glow" aria-hidden="true"></div>
     <div class="grain" aria-hidden="true"></div>
 
-    <div class="relative z-10 mx-auto flex w-full max-w-xl flex-col">
+    <div class="relative z-10 mx-auto flex w-full max-w-4xl flex-col ">
       <p class="eyebrow font-mono text-xs tracking-[0.25em] text-rose uppercase">
         Ciao{{ firstName() ? ', ' + firstName() : '' }} 👋
       </p>
@@ -16,7 +15,7 @@
       <!-- Card in evidenza: unica opzione attiva per ora -->
       <a
         routerLink="/mappa"
-        class="hero group relative mt-6 flex h-70 flex-col overflow-hidden rounded-3xl border border-line p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.75 active:-translate-y-0.75">
+        class="hero group relative mt-4 flex min-h-70 flex-col justify-end overflow-hidden rounded-lg border border-line p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.75 active:-translate-y-0.75 sm:mt-6">
         <!-- Sfondo: screenshot statico della mappa, in public/imageMap.webp -->
         <div class="absolute inset-0 bg-[url('/imageMap.webp')] bg-cover bg-center" aria-hidden="true"></div>
 
@@ -69,7 +68,7 @@
 
         @if (liveCount(); as count) {
           @if (count > 0) {
-            <span class="live-badge absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-green-400/70 px-3 py-1 text-sm font-bold text-rose">
+            <span class="live-badge absolute top-4 right-4 z-10 inline-flex items-center gap-1.5 rounded-lg bg-green-400/70 px-3 py-1 text-sm font-bold text-rose">
               <span class="dot" aria-hidden="true"></span>
               {{ count }} live ora
             </span>
@@ -103,8 +102,8 @@
       <!-- Fila secondaria: opzioni non ancora attive -->
       <div class="mt-4 grid grid-cols-3 gap-3">
         @for (item of comingSoon; track item.title) {
-          <div class="relative flex flex-col items-center gap-2 rounded-2xl border border-line bg-ink-2/30 px-3 py-4 text-center opacity-55" aria-disabled="true">
-            <div class="icon flex h-9 w-9 items-center justify-center rounded-full bg-ink text-muted">
+          <div class="relative flex flex-col items-center gap-2 rounded-lg border border-line bg-ink-2/30 px-3 py-4 text-center opacity-55" aria-disabled="true">
+            <div class="icon flex h-9 w-9 items-center justify-center rounded-lg bg-ink text-muted">
               @switch (item.icon) {
                 @case ('calendar') {
                   <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">

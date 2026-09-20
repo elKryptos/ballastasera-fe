@@ -7,16 +7,16 @@ export const endpoints = {
   },
 
   admin: {
-    getPendingOrganizers: '/rest/admin/organizers/pending', //Used
-    getVerifiedOrganizers: '/rest/admin/organizers/verified',
+    getPendingOrganizers: '/rest/admin/organizers/pending',//Used
+    getVerifiedOrganizers: '/rest/admin/organizers/verified',//Used
     verifyOrganizer: (id: string) => `/rest/admin/organizers/${id}/verify`,
-    createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed', //Used
-    getOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
-    updateOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
-    deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,
+    createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed',//Used
+    getOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
+    updateOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
+    deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
     claimOrganizer: (id: string) => `/rest/organizers/${id}/claim`,
-    createEvent: '/rest/admin/events',
-    updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
+    createEvent: '/rest/admin/events',//Used
+    updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,//Used
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
     createEventSeries: '/rest/admin/event-series',
     createVenue: '/rest/admin/venues',
@@ -47,15 +47,15 @@ export const endpoints = {
   events: {
     mapEvents: '/rest/events',
     detail: (id: string) => `/rest/events/${id}`,
-    manage: (id: string) => `/rest/events/${id}/manage`,
     create: '/rest/events',
     update: (id: string) => `/rest/events/${id}`,
     updateStatus: (id: string) => `/rest/events/${id}/status`,
     delete: (id: string) => `/rest/events/${id}`,
     removeVenue: (id: string) => `/rest/events/${id}/venue`,
     attendees: (id: string) => `/rest/events/${id}/attendees`,
-    setAttendance: (id: string) => `/rest/events/${id}/attendance`,
+    addAttendance: (id: string) => `/rest/events/${id}/attendance`,
     removeAttendance: (id: string) => `/rest/events/${id}/attendance`,
+    isGoing: (id:string) => `/rest/events/${id}/going`,
     addFavorite: (id: string) => `/rest/events/${id}/favorite`,
     removeFavorite: (id: string) => `/rest/events/${id}/favorite`,
     isFavorite: (id: string) => `/rest/events/${id}/favorite`,

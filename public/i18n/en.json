@@ -1,0 +1,84 @@
+{
+  "hero": {
+    "eyebrow": "Italy's Latin dance scene",
+    "titleLine1": "Where do you",
+    "titleLine2Plain": "dance",
+    "titleLine2Highlight": "tonight?",
+    "lead": "Salsa, bachata and more: every night out in Italy in one place, updated day by day. We're building it right now — starting from Milan.",
+    "emailLabel": "Your email",
+    "emailPlaceholder": "your@email.com",
+    "submit": "Notify me",
+    "doneText": "You're in.",
+    "doneStrong": "We'll let you know",
+    "doneSuffix": "the day we open.",
+    "errorHint": "You need a full address, like name@domain.com",
+    "hint": "Zero spam. One single email, on opening day.",
+    "musicOn": "Music on",
+    "musicOff": "Play the music"
+  },
+  "mapTeaser": {
+    "titlePrefix": "Coming soon: the map",
+    "titleHighlight": "in real time",
+    "badge": "Milan preview",
+    "description": "We're about to launch the map that shows <b class=\"font-semibold text-bone\">where people are dancing tonight</b>, night by night, in real time. Opening it just takes signing in — you'll be able to do that <b class=\"font-semibold text-bone\">with your Google account</b> — and at first it'll cover <b class=\"font-semibold text-bone\">only Milan</b>: we're opening it city by city.",
+    "googleCta": "Sign in with Google",
+    "hint": "That way you're among the first to get the map, the moment it opens."
+  },
+  "legend": {
+    "event": "Event",
+    "school": "School",
+    "club": "Club",
+    "bar": "Bar"
+  },
+  "count": {
+    "title": "How to dance bachata",
+    "subtitle": "Four beats, then it starts over",
+    "towards": "Towards the",
+    "right": "right",
+    "left": "left",
+    "tap": "tap",
+    "step": "step",
+    "explanation": "The music runs in <b class=\"font-medium text-bone\">groups of four beats</b>, the same throughout the song. On the first four you move <b class=\"font-medium text-bone\">to the right</b>: a step on <b class=\"font-medium text-bone\">1, 2 and 3</b>, and on <b class=\"font-medium text-amber\">4</b> you don't step but do a <b class=\"font-medium text-amber\">tap</b> — you set your foot next to the other one, without shifting weight onto it, and that's where the hip movement comes from. On the next four you do it all again <b class=\"font-medium text-bone\">to the left</b>: steps on <b class=\"font-medium text-bone\">5, 6 and 7</b>, tap on <b class=\"font-medium text-amber\">8</b>. Soft knees, count in time, and you're already on the floor."
+  },
+  "social": {
+    "title": "This is how we dance",
+    "badge": "Turn it up",
+    "note": "Nothing plays on its own: the video loads from YouTube when you press play.",
+    "videoTitle": "Watch how bachata is danced",
+    "videoHint": "Press play — it starts with sound on"
+  },
+  "partners": {
+    "titleQuestion": "Do you run Latin nights?",
+    "titleHighlight": "We've got great news for you.",
+    "badge": "We're coming",
+    "intro": "Venues, schools, instructors, event and social organisers: we're building something <b class=\"font-semibold text-bone\">made for you</b> — to get you found by whoever wants to dance tonight and doesn't yet know where. Not long now.",
+    "mapBadge": "Milan — preview",
+    "mapCaption": "Sample map, the final result will be clearer and easier to read. The pins are made up and don't represent real venues.",
+    "watchOnInstagram": "Watch on Instagram",
+    "instagramCta": "Message us on Instagram",
+    "instagramHint": "Want to be among the first? Message us: we're starting from Milan.",
+    "events": {
+      "label": "Organisers and socials",
+      "copy": "Socials, festivals and one-nighters: one single place where every date ends up.",
+      "reelTitle": "An event, told well"
+    },
+    "venue": {
+      "label": "Venues and clubs",
+      "copy": "Your Latin nights on the map of the people already looking for them, the same evening.",
+      "reelTitle": "A night on the floor"
+    },
+    "school": {
+      "label": "Schools and instructors",
+      "copy": "Courses, workshops and open rehearsals, in front of people who just decided to start.",
+      "reelTitle": "A lesson, up close"
+    }
+  },
+  "support": {
+    "badge": "Behind the scenes",
+    "text": "We're building Ballastasera <b class=\"font-medium text-bone\">as a team of two</b>, in the evenings, between one job and the next — because we dance too, and a place like this didn't exist yet. If you like the project, buy us a coffee: it helps us keep it alive.",
+    "coffeeCta": "Buy us a coffee"
+  },
+  "footer": {
+    "location": "Milan — Italy"
+  }
+}

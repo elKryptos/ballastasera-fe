@@ -1,0 +1,84 @@
+{
+  "hero": {
+    "eyebrow": "La scena latina d'Italia",
+    "titleLine1": "Dove si",
+    "titleLine2Plain": "balla",
+    "titleLine2Highlight": "stasera?",
+    "lead": "Salsa, bachata e molto altro: ogni serata d'Italia in un posto solo, aggiornata giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano.",
+    "emailLabel": "La tua email",
+    "emailPlaceholder": "la-tua@email.com",
+    "submit": "Avvisami",
+    "doneText": "Ci sei.",
+    "doneStrong": "Ti avvisiamo noi",
+    "doneSuffix": "il giorno in cui apriamo.",
+    "errorHint": "Serve un indirizzo completo, tipo nome@dominio.it",
+    "hint": "Zero spam. Una sola email, il giorno dell'apertura.",
+    "musicOn": "Musica accesa",
+    "musicOff": "Metti la musica"
+  },
+  "mapTeaser": {
+    "titlePrefix": "In arrivo: la mappa",
+    "titleHighlight": "in tempo reale",
+    "badge": "Anteprima Milano",
+    "description": "Stiamo per abilitare la mappa che mostrerà <b class=\"font-semibold text-bone\">dove si balla proprio stasera</b>, serata per serata, in tempo reale. Per aprirla basterà accedere — sarà possibile farlo <b class=\"font-semibold text-bone\">con il tuo account Google</b> — e all'inizio coprirà <b class=\"font-semibold text-bone\">solo Milano</b>: la apriamo città dopo città.",
+    "googleCta": "Accedi con Google",
+    "hint": "Così sei tra i primi ad avere la mappa, appena apre."
+  },
+  "legend": {
+    "event": "Evento",
+    "school": "Scuola",
+    "club": "Discoteca",
+    "bar": "Bar"
+  },
+  "count": {
+    "title": "Come si balla la bachata",
+    "subtitle": "Quattro tempi, poi si ricomincia",
+    "towards": "Verso",
+    "right": "destra",
+    "left": "sinistra",
+    "tap": "tap",
+    "step": "passo",
+    "explanation": "La musica va a <b class=\"font-medium text-bone\">gruppi di quattro tempi</b>, uguali per tutto il brano. Sui primi quattro ti sposti <b class=\"font-medium text-bone\">verso destra</b>: un passo su <b class=\"font-medium text-bone\">1, 2 e 3</b>, e sul <b class=\"font-medium text-amber\">4</b> non fai un passo ma un <b class=\"font-medium text-amber\">tap</b> — appoggi il piede accanto all'altro, senza caricarci il peso, ed è lì che nasce il movimento dell'anca. Sugli altri quattro rifai tutto <b class=\"font-medium text-bone\">verso sinistra</b>: passi su <b class=\"font-medium text-bone\">5, 6 e 7</b>, tap sull'<b class=\"font-medium text-amber\">8</b>. Ginocchia morbide, conta a tempo, e sei già in pista."
+  },
+  "social": {
+    "title": "Si balla così",
+    "badge": "Alza il volume",
+    "note": "Niente parte da solo: il video si carica da YouTube quando premi play.",
+    "videoTitle": "Guarda come si balla la bachata",
+    "videoHint": "Premi play — parte con l'audio"
+  },
+  "partners": {
+    "titleQuestion": "Organizzi serate latine?",
+    "titleHighlight": "Abbiamo una bella novità per te.",
+    "badge": "Stiamo arrivando",
+    "intro": "Locali, scuole, maestri, organizzatori di social ed eventi: stiamo costruendo qualcosa <b class=\"font-semibold text-bone\">pensato per voi</b> — per farvi trovare da chi stasera vuole ballare e non sa ancora dove. Ancora poco e ci siamo.",
+    "mapBadge": "Milano — anteprima",
+    "mapCaption": "Mappa d'esempio, il resultato finale sarà più chiaro e leggibile. I pin sono inventati, non rappresentano locali reali.",
+    "watchOnInstagram": "Guarda su Instagram",
+    "instagramCta": "Scrivici su Instagram",
+    "instagramHint": "Vuoi essere tra i primi? Scrivici: partiamo da Milano.",
+    "events": {
+      "label": "Organizzatori e social",
+      "copy": "Social, festival e one night: un posto solo dove finiscono tutte le date.",
+      "reelTitle": "Un evento, raccontato bene"
+    },
+    "venue": {
+      "label": "Locali e discoteche",
+      "copy": "Le tue serate latine sulla mappa di chi le sta cercando, la sera stessa.",
+      "reelTitle": "Una serata in pista"
+    },
+    "school": {
+      "label": "Scuole e maestri",
+      "copy": "Corsi, stage e prove aperte, davanti a chi ha appena deciso di iniziare.",
+      "reelTitle": "Una lezione, da vicino"
+    }
+  },
+  "support": {
+    "badge": "Dietro le quinte",
+    "text": "Ballastasera lo stiamo costruendo <b class=\"font-medium text-bone\">in due</b>, la sera, tra un lavoro e l'altro — perché in pista ci balliamo anche noi, e un posto così non c'era ancora. Se il progetto ti piace, offrici un caffè: ci aiuta a tenerlo vivo.",
+    "coffeeCta": "Offrici un caffè"
+  },
+  "footer": {
+    "location": "Milano — Italia"
+  }
+}

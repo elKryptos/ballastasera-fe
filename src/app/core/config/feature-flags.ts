@@ -25,7 +25,7 @@ export const FEATURE_FLAGS = {
   verifiedOrganizersPage: 'verifiedOrganizersPage',
   /** /admin/update-organizer route (also gated on the ADMIN role). */
   updateOrganizerPage: 'updateOrganizerPage',
-  /** /organizer/events/new + /organizer/events/:id/publish routes (also gated on the ORGANIZER role). */
+  /** /admin/create-event route (also gated on the ADMIN role). */
   createEventPage: 'createEventPage',
 } as const;
 

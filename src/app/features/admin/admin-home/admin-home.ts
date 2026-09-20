@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { Navbar } from '../../../shared/navbar/navbar';
 
 interface AdminOption {
@@ -10,7 +11,7 @@ interface AdminOption {
 
 @Component({
   selector: 'app-admin-home',
-  imports: [Navbar, RouterLink],
+  imports: [Navbar, RouterLink, SidebarPushDirective],
   templateUrl: './admin-home.html',
   styleUrl: './admin-home.css',
 })
@@ -22,12 +23,12 @@ export class AdminHome {
       routerLink: '/admin/create-unclaimed-organizer', 
     },
     {
-      title: 'Aggiorna dati organizzatore (DA IMPLEMENTARE)',
-      description: 'Aggiorna le informazioni relative a un organizzatore.',
-      routerLink: '/admin/',
+      title: 'Crea evento',
+      description: 'Aggiungi un nuovo evento.',
+      routerLink: '/admin/create-event',
     },
     {
-      title: 'Lista organizzatori verificati (DA IMPLEMENTARE)',
+      title: 'Elenco organizzatori verificati, possibilita di aggiornamento e eliminazione',
       description: 'Lista degli organizzatori che hanno completato il processo di verifica.',
       routerLink: '/admin/verified-organizers-list', 
     },

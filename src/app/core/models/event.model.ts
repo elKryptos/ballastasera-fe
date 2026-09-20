@@ -1,22 +1,8 @@
-import { OrganizerDetailDto } from './organizer.model';
-import { DanceStyleDto } from './dance-style.model';
+import { OrganizerSummaryDto } from "./organizer.model";
 
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
-
-/** Mirrors EventStatus in the backend. */
-export type EventStatus = 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'CANCELLED';
-
-/** Mirrors FlyerStatus in the backend — async WebP conversion lifecycle. */
 export type FlyerStatus = 'NONE' | 'PROCESSING' | 'READY' | 'FAILED';
-
-export interface OrganizerSummaryDto {
-  id: string;
-  name: string;
-  slug: string;
-  logoUrl: string | null;
-  verified: boolean;
-}
 
 /** Marker/card payload for the map — mirrors EventCardDto in the backend. */
 export interface EventCardDto {
@@ -38,9 +24,31 @@ export interface EventCardDto {
   venueName: string | null;
   danceStyles: string[];
   goingCount: number;
+  likesCount: number;
 }
 
-/** Full event payload — mirrors EventDetailDto in the backend. */
+export interface EventCreateDto {
+  organizerId: string;
+  venueId: string | null;
+  seriesId: string | null;
+  cityId: number;
+  title: string;
+  eventType: EventType;
+  description: string | null;
+  flyerUrl: string | null;
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+  startAt: string; //ISO OffDateTime
+  endAt: string; //ISO OffDateTime
+  isFree: boolean;
+  price: number | null;
+  currency: string | null;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  danceStyleIds: number[];
+}
+
 export interface EventDetailDto {
   id: string;
   slug: string;
@@ -48,11 +56,10 @@ export interface EventDetailDto {
   eventType: EventType;
   description: string | null;
   flyerUrl: string | null;
-  flyerStatus: FlyerStatus;
+  flyerStatus: FlyerStatus | null;
   startAt: string;
   endAt: string;
   liveNow: boolean;
-  // Il backend serializza "free", non "isFree".
   free: boolean;
   price: number | null;
   currency: string | null;
@@ -62,51 +69,10 @@ export interface EventDetailDto {
   cityName: string;
   instagramUrl: string | null;
   whatsappUrl: string | null;
-  organizer: OrganizerDetailDto;
+  organizer: OrganizerSummaryDto;
   venueName: string | null;
   danceStyles: string[];
+  likesCount: number;
   goingCount: number;
   interestedCount: number;
-}
-
-/** Private owner payload — mirrors OrganizerEventDetailDto in the backend. */
-export interface OrganizerEventDetailDto extends Omit<EventDetailDto, 'danceStyles'> {
-  status: EventStatus;
-  cityId: number;
-  venueId: string | null;
-  seriesId: string | null;
-  // Valori crudi dell'evento: nessun fallback dai dati dell'organizer.
-  instagramUrl: string | null;
-  whatsappUrl: string | null;
-  danceStyles: DanceStyleDto[];
-}
-
-/** Body for POST /rest/events — venueId null se non è stato scelto un venue. */
-export interface EventCreateDto {
-  organizerId: string;
-  venueId: string | null;
-  cityId: number;
-  title: string;
-  eventType: EventType;
-  description: string | null;
-  instagramUrl: string | null;
-  whatsappUrl: string | null;
-  // OffsetDateTime ISO con l'offset locale del browser.
-  startAt: string;
-  endAt: string;
-  free: boolean;
-  // null quando free è true.
-  price: number | null;
-  // Sempre 'EUR'.
-  currency: string;
-  address: string;
-  // Solo con venue: evita regeocodificare una posizione che ha già coordinate affidabili.
-  latitude?: number;
-  longitude?: number;
-  danceStyleIds: number[];
-}
-
-/** Body for PATCH /rest/events/{id}/status. */
-export interface EventStatusUpdateDto {
-  status: EventStatus;
 }

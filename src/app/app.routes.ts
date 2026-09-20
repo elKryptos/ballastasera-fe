@@ -67,6 +67,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin/create-event',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventPage), roleGuard('ADMIN')],
+    loadComponent: () =>
+      import('./features/admin/create-event/create-event').then((m) => m.CreateEvent),
+  },
+
+  {
     path: 'admin/verified-organizers-list',
     canMatch: [featureFlagGuard(FEATURE_FLAGS.verifiedOrganizersPage), roleGuard('ADMIN')],
     loadComponent: () =>
@@ -82,23 +89,6 @@ export const routes: Routes = [
       import('./features/admin/update-organizer/update-organizer').then(
         (m) => m.UpdateOrganizer,
       ),
-  },
-
-  // Stage 1 of event creation: event data. See spec 01.
-  {
-    path: 'organizer/events/new',
-    canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventPage), roleGuard('ORGANIZER')],
-    loadComponent: () =>
-      import('./features/events/create-event/create-event').then((m) => m.CreateEvent),
-  },
-
-  // Stage 2: optional flyer + publish. The :id makes the stage recoverable
-  // after a reload (no list of unpublished events exists to get back).
-  {
-    path: 'organizer/events/:id/publish',
-    canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventPage), roleGuard('ORGANIZER')],
-    loadComponent: () =>
-      import('./features/events/publish-event/publish-event').then((m) => m.PublishEvent),
   },
 
   { path: '**', redirectTo: '' },

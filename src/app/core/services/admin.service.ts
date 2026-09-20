@@ -5,6 +5,7 @@ import { OrganizerCreateDto, OrganizerDetailDto, OrganizerSummaryDto, OrganizerU
 import { PageDto, SpringPage } from '../models/page.model';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
+import { EventCreateDto, EventDetailDto } from '../models/event.model';
 
 @Service()
 export class AdminService {
@@ -38,5 +39,15 @@ export class AdminService {
 
   updateOrganizer(id: string, body: OrganizerUpdateDto): Observable<OrganizerDetailDto> {
     return this.http.patch<OrganizerDetailDto>(`${environment.apiUrl}${endpoints.admin.updateOrganizer(id)}`, body);
+  }
+
+  createEvent(body: EventCreateDto): Observable<EventDetailDto> {
+    return this.http.post<EventDetailDto>(`${environment.apiUrl}${endpoints.admin.createEvent}`, body);
+  }
+
+  uploadEventFlyer(id: string, file: File): Observable<EventDetailDto> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.patch<EventDetailDto>(`${environment.apiUrl}${endpoints.admin.updateEventFlyer(id)}`, formData);
   }
 }

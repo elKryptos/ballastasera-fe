@@ -1,115 +1,116 @@
 <app-navbar />
+<app-auth-modal [(open)]="authOpen" />
 
-<main class="relative h-screen pt-(--header-h)">
-  <div class="relative h-full w-full sm:flex">
+<main appSidebarPush class="relative h-screen pt-(--header-h) md:pt-0">
+  <div class="relative h-full w-full">
     <aside
-      class="fixed inset-x-0 bottom-0 z-map-sheet flex max-h-[75vh] flex-col gap-5 overflow-y-auto rounded-t-2xl border-t border-line bg-ink-2 p-4 shadow-2xl transition-transform duration-300 ease-out sm:static sm:z-auto sm:h-full sm:w-70 sm:max-h-none sm:translate-y-0 sm:rounded-none sm:border-t-0 sm:border-r sm:shadow-none"
-      [class.translate-y-full]="!filtersOpen()"
-      [class.translate-y-0]="filtersOpen()"
-      aria-label="Filtri"
-    >
-      <div class="flex items-center justify-between sm:hidden">
-        <h2 class="font-display text-lg font-bold">Filtri</h2>
-        <button
-          type="button"
-          class="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-muted hover:bg-bone/8 hover:text-bone"
-          (click)="toggleFilters()"
-          aria-label="Chiudi filtri"
-        >
-          ✕
-        </button>
-      </div>
+      class="glass-panel-text absolute right-4 bottom-4 z-map-content max-w-[calc(100vw-2rem)] max-h-[75vh] origin-bottom-right flex flex-col gap-5 overflow-y-auto rounded-lg border-line backdrop-blur-sm transition-all duration-200 ease-out sm:top-4 sm:left-4 sm:right-auto sm:bottom-auto sm:max-w-none sm:max-h-[calc(100%-2rem)] sm:origin-top-left sm:scale-100 sm:opacity-100 sm:pointer-events-auto"
+      [class]="filtersCardStateClass()" [class.scale-50]="!filtersOpen() || hideFabsForCard()"
+      [class.opacity-0]="!filtersOpen() || hideFabsForCard()"
+      [class.pointer-events-none]="!filtersOpen() || hideFabsForCard()" [attr.inert]="hideFabsForCard() ? '' : null"
+      aria-label="Filtri">
+      <!-- Desktop-only: the collapse arrow is hidden on mobile, but
+          filtersCollapsed defaults true everywhere and mobile never resets
+          it — filtersSummaryMode() (== isDesktop() && filtersCollapsed())
+          is what actually gates the collapsed layout below. -->
+      <button type="button"
+        class="absolute right-1.5 hidden size-6 cursor-pointer items-center justify-center rounded-lg border border-line bg-ink-2/80 text-bone shadow sm:inline-flex"
+        [class]="filtersToggleButtonClass()" (click)="toggleFiltersCollapsed()"
+        [attr.aria-label]="filtersCollapsed() ? 'Espandi filtri' : 'Comprimi filtri'"
+        [attr.aria-expanded]="!filtersCollapsed()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+          class="transition-transform duration-200" [class.rotate-180]="filtersCollapsed()">
+          <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
 
+      <button type="button"
+        class="absolute top-2 right-2 z-10 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white transition-colors hover:bg-ink sm:hidden"
+        (click)="toggleFilters()" aria-label="Chiudi filtri">
+        <ng-icon name="lucideX" class="size-4" />
+      </button>
+
+      @if (filtersSummaryMode()) {
+      <div class="flex flex-wrap items-center gap-1.5 pr-6">
+        @if (hasActiveFilters()) {
+        @if (activeCityName(); as cityName) {
+        <span class="rounded-sm bg-rose px-2.5 py-1 text-xs text-white">{{ cityName }}</span>
+        }
+        @for (name of activeStyleNames(); track name) {
+        <span class="rounded-sm bg-violet px-2.5 py-1 text-xs text-white">{{ name }}</span>
+        }
+        } @else {
+        <span class="mr-1 rounded-lg border border-line px-2.5 py-1 text-xs text-white bg-gray-600">Filtri</span>
+        }
+      </div>
+      } @else {
       <div class="flex flex-col gap-2">
-        <span class="font-mono text-xs tracking-[0.08em] text-muted uppercase">Città</span>
+        <span class="font-mono text-xs tracking-[0.08em] text-white uppercase">Città</span>
         <div class="flex flex-wrap gap-1.5">
-          <button
-            type="button"
-            class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
-            [class.bg-rose]="selectedCityId() === null"
-            [class.border-rose]="selectedCityId() === null"
-            [class.text-ink]="selectedCityId() === null"
-            (click)="selectCity(null)"
-          >
+          <button type="button"
+            class="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-sm transition-colors"
+            [class.bg-rose]="selectedCityId() === null" [class.border-rose]="selectedCityId() === null"
+            [class.bg-gray-600]="selectedCityId() !== null" (click)="selectCity(null)">
             Tutte
           </button>
           @for (city of cities(); track city.id) {
-            <button
-              type="button"
-              class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
-              [class.bg-rose]="selectedCityId() === city.id"
-              [class.border-rose]="selectedCityId() === city.id"
-              [class.text-ink]="selectedCityId() === city.id"
-              (click)="selectCity(city.id)"
-            >
-              {{ city.name }}
-            </button>
+          <button type="button"
+            class="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-sm transition-colors"
+            [class.bg-rose]="selectedCityId() === city.id" [class.border-rose]="selectedCityId() === city.id"
+            [class.bg-gray-600]="selectedCityId() !== city.id" (click)="selectCity(city.id)">
+            {{ city.name }}
+          </button>
           }
         </div>
       </div>
 
       <div class="flex flex-col gap-2">
-        <span class="font-mono text-xs tracking-[0.08em] text-muted uppercase">Stile</span>
+        <span class="font-mono text-xs tracking-[0.08em] text-white uppercase">Stile</span>
         <div class="flex flex-wrap gap-1.5">
           @for (style of danceStyles(); track style.id) {
-            <button
-              type="button"
-              class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm transition-colors"
-              [class.bg-violet]="selectedStyleSlug() === style.slug"
-              [class.border-violet]="selectedStyleSlug() === style.slug"
-              (click)="selectStyle(style.slug)"
-            >
-              {{ style.name }}
-            </button>
+          <button type="button"
+            class="cursor-pointer rounded-sm border border-line px-3 py-1.5 text-sm transition-colors"
+            [class.bg-violet]="selectedStyleNames().has(style.name)"
+            [class.border-violet]="selectedStyleNames().has(style.name)"
+            [class.bg-gray-600]="!selectedStyleNames().has(style.name)" (click)="selectStyle(style.name)">
+            {{ style.name }}
+          </button>
           }
         </div>
       </div>
 
       @if (loading()) {
-        <p class="text-sm text-muted">Caricamento eventi…</p>
+      <p class="text-sm text-bone/70">Caricamento eventi…</p>
       } @else if (error()) {
-        <p class="text-sm text-rose-lit">Impossibile caricare gli eventi.</p>
+      <p class="text-sm text-rose-lit">Impossibile caricare gli eventi.</p>
       } @else {
-        <p class="text-sm text-muted">{{ filteredEvents().length }} eventi in questa zona</p>
+      <p class="text-sm text-white">{{ filteredEvents().length }} eventi in questa zona</p>
+      }
       }
     </aside>
 
-    @if (filtersOpen()) {
-      <div
-        class="fixed inset-0 z-map-sheet-backdrop bg-ink/60 sm:hidden"
-        (click)="toggleFilters()"
-        aria-hidden="true"
-      ></div>
-    }
-
-    <div class="relative h-full flex-1">
+    <div class="relative h-full w-full">
       <!-- isolate: Leaflet's own panes (tiles/markers/popups) carry z-index
           up to 700, which would otherwise leak out and out-stack the
           Filtri button and event card next to it (both z-map-content:10). -->
       <div #mapContainer class="absolute inset-0 isolate"></div>
 
-      <button
-        type="button"
-        class="absolute right-4 bottom-4 z-map-content inline-flex cursor-pointer items-center gap-2 rounded-full border border-line bg-ink-2 px-4 py-2 text-sm font-semibold shadow-lg sm:hidden"
-        (click)="toggleFilters()"
-      >
+      <button type="button"
+        class="absolute right-4 bottom-4 z-map-content origin-bottom-right inline-flex items-center gap-2 rounded-lg border border-line bg-ink-2 px-4 py-2 text-sm font-semibold shadow-lg transition-all duration-200 ease-out sm:hidden"
+        [class.scale-50]="filtersOpen() || hideFabsForCard()" [class.opacity-0]="filtersOpen() || hideFabsForCard()"
+        [class.pointer-events-none]="filtersOpen() || hideFabsForCard()" [class.cursor-pointer]="!filtersOpen()"
+        [attr.inert]="filtersOpen() || hideFabsForCard() ? '' : null" (click)="toggleFilters()">
         Filtri
-        @if (selectedCityId() !== null || selectedStyleSlug() !== null) {
-          <span class="inline-flex size-2 rounded-full bg-rose"></span>
+        @if (hasActiveFilters()) {
+        <span class="inline-flex size-2 rounded-full bg-rose"></span>
         }
       </button>
 
-      <button
-        type="button"
+      <button type="button"
         class="absolute bottom-4 left-4 z-map-content inline-flex size-10 origin-bottom-left items-center justify-center rounded-full border border-line bg-ink-2 shadow-lg transition-all duration-200 ease-out"
-        [class.scale-50]="legendOpen()"
-        [class.opacity-0]="legendOpen()"
-        [class.pointer-events-none]="legendOpen()"
-        [class.cursor-pointer]="!legendOpen()"
-        [attr.inert]="legendOpen() ? '' : null"
-        (click)="toggleLegend()"
-        aria-label="Legenda"
-      >
+        [class.scale-50]="legendOpen() || hideFabsForCard()" [class.opacity-0]="legendOpen() || hideFabsForCard()"
+        [class.pointer-events-none]="legendOpen() || hideFabsForCard()" [class.cursor-pointer]="!legendOpen()"
+        [attr.inert]="legendOpen() || hideFabsForCard() ? '' : null" (click)="toggleLegend()" aria-label="Legenda">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="9" />
           <path d="M12 8v.01M11 11h1v5h1" stroke-linecap="round" stroke-linejoin="round" />
@@ -117,91 +118,153 @@
       </button>
 
       <section
-        class="absolute bottom-4 left-4 z-map-content w-24 origin-bottom-left overflow-hidden rounded-xl border border-line bg-ink-2/90 p-3 shadow-2xl backdrop-blur-md transition-all duration-200 ease-out"
-        [class.scale-50]="!legendOpen()"
-        [class.opacity-0]="!legendOpen()"
-        [class.pointer-events-none]="!legendOpen()"
-        [class.cursor-pointer]="legendOpen()"
-        [attr.inert]="!legendOpen() ? '' : null"
-        aria-label="Legenda dei pin, premi per chiudere"
-        (click)="toggleLegend()"
-      >
+        class="glass-panel-text absolute bottom-4 left-4 z-map-content w-30 origin-bottom-left overflow-hidden rounded-lg border border-line bg-neutral-800/15 p-3 text-white shadow-2xl backdrop-blur-sm transition-all duration-200 ease-out"
+        [class.scale-50]="!legendOpen() || hideFabsForCard()" [class.opacity-0]="!legendOpen() || hideFabsForCard()"
+        [class.pointer-events-none]="!legendOpen() || hideFabsForCard()" [class.cursor-pointer]="legendOpen()"
+        [attr.inert]="!legendOpen() || hideFabsForCard() ? '' : null"
+        aria-label="Legenda dei pin, premi per chiudere" (click)="toggleLegend()">
         <ul class="flex flex-col gap-2">
           @for (item of legendItems; track item.type; let i = $index) {
-            <li class="flex items-center gap-2 text-sm">
-              <svg
-                [class.legend-icon]="legendOpen()"
-                viewBox="0 0 24 32"
-                width="16"
-                height="22"
-                [style.color]="item.color"
-                [style.animation-delay.ms]="i * 40"
-              >
-                <path [attr.d]="item.shape" fill="currentColor" />
-                <path [attr.d]="item.glyph" fill="#fff" />
-              </svg>
-              {{ item.label }}
-            </li>
+          <li class="flex items-center gap-2 text-sm">
+            <svg [class.legend-icon]="legendOpen()" viewBox="0 0 24 32" width="16" height="22"
+              [style.color]="item.color" [style.animation-delay.ms]="i * 40">
+              <path [attr.d]="item.shape" fill="currentColor" />
+              <path [attr.d]="item.glyph" fill="#fff" />
+            </svg>
+            {{ item.label }}
+          </li>
           }
         </ul>
       </section>
 
       @if (selectedEvent(); as event) {
-        @if (selectedPinPoint(); as point) {
-          <section
-            class="absolute z-map-content w-90 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-[calc(100%+36px)] overflow-hidden rounded-xl border border-line bg-ink-2 shadow-2xl"
-            [style.left.px]="point.x"
-            [style.top.px]="point.y"
-            aria-live="polite"
-          >
-            <button
-              type="button"
-              class="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-bone"
-              (click)="closeDetail()"
-              aria-label="Chiudi"
-            >
-              ✕
-            </button>
+      <!-- Aqui se cambia el colore de la card de detalles al presionar el pin del evento en el mapa. -->
+      <section
+        class="glass-panel-text absolute inset-x-4 bottom-4 z-map-content mx-auto flex max-h-[70vh] max-w-[calc(100vw-2rem)] flex-col overflow-y-auto rounded-lg border border-line bg-neutral-800/30 text-white shadow-2xl backdrop-blur-sm sm:inset-x-auto sm:left-1/2 sm:w-md sm:-translate-x-1/2 lg:w-lg"
+        aria-live="polite">
+        <button type="button"
+          class="absolute top-2 right-2 z-10 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white transition-colors hover:bg-ink"
+          (click)="closeDetail()" aria-label="Chiudi">
+          <ng-icon name="lucideX" class="size-4" />
+        </button>
 
-            @if (event.flyerUrl) {
-              <img class="aspect-video w-full object-cover" [src]="event.flyerUrl" [alt]="event.title" />
+        <div class="flex gap-3 p-3 pr-10">
+          @if (event.flyerUrl) {
+          <a [href]="event.flyerUrl" target="_blank" rel="noopener noreferrer"
+            class="relative block w-28 min-w-28 min-h-28 shrink-0 self-stretch" aria-label="Apri il flyer completo">
+            <img class="h-full w-full rounded-lg object-cover" [src]="event.flyerUrl" [alt]="event.title" />
+            @if (isLiveNow(event)) {
+            <span
+              class="absolute top-1 left-1 inline-flex items-center gap-1 rounded-sm bg-rose-lit px-1.5 py-0.5 font-mono text-[0.6rem] text-white shadow">
+              <span class="size-1.5 rounded-full bg-white"></span> LIVE
+            </span>
+            } @else if (startsInMinutes(event); as minutes) {
+            <span
+              class="absolute top-1 left-1 inline-flex items-center gap-1 rounded-sm bg-amber px-1.5 py-0.5 font-mono text-[0.6rem] text-ink shadow">
+              {{ minutes }}′
+            </span>
+            }
+          </a>
+          }
+          <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+            <h2 class="font-display text-base leading-tight font-bold text-rose min-[380px]:text-lg sm:text-base">
+              {{ event.title }}</h2>
+
+            <p class="flex items-center gap-1.5 text-sm text-white min-[380px]:text-base sm:text-sm">
+              <span class="flex size-5 shrink-0 items-center justify-center">
+                <ng-icon name="lucideClock" class="size-3 text-white" />
+              </span>
+              {{ formatStart(event) }}
+            </p>
+
+            @if (event.venueName || event.address) {
+            <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
+              class="group flex items-start gap-1.5 text-sm text-white min-[380px]:text-base sm:text-sm">
+              <span class="flex size-5 shrink-0 items-center justify-center">
+                <img src="/icons/google-maps-pin.png" alt="" class="size-4" />
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block">
+                  @if (event.venueName) {
+                  {{ event.venueName }} — {{ addressPrimary(event.address) }}
+                  } @else {
+                  {{ addressPrimary(event.address) }}
+                  }
+                </span>
+                @if (addressSecondary(event.address); as rest) {
+                <span class="block">{{ rest }}</span>
+                }
+              </span>
+            </a>
             }
 
-            <div class="flex flex-col gap-1.5 p-4">
-              @if (isLiveNow(event)) {
-                <span class="font-mono text-xs text-rose-lit">● In corso ora</span>
-              } @else if (startsInMinutes(event); as minutes) {
-                <span class="font-mono text-xs text-amber">● Inizia tra {{ minutes }} min</span>
-              }
-              <h2 class="font-display text-lg">{{ event.title }}</h2>
-              <p class="text-sm text-lead">{{ formatStart(event) }}</p>
-              @if (event.venueName || event.address) {
-                <p class="text-sm text-lead">
-                  @if (event.venueName) {
-                    {{ event.venueName }} — {{ event.address }}
-                  } @else {
-                    {{ event.address }}
-                  }
-                </p>
-              }
-              @if (event.organizer) {
-                <p class="text-sm text-lead">a cura di {{ event.organizer.name }}</p>
-              }
+            @if (event.organizer.instagram; as handle) {
+            <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
+              class="inline-flex w-fit items-center gap-1.5 opacity-80">
+              <span class="flex size-5 shrink-0 items-center justify-center">
+                <span class="instagram-gradient flex size-4 items-center justify-center rounded-md">
+                  <ng-icon name="lucideInstagram" class="size-2.5 text-white" />
+                </span>
+              </span>
+              <span class="text-sm font-medium text-white min-[380px]:text-base sm:text-sm">&#64;{{ handle }}</span>
+            </a>
+            }
+          </div>
+        </div>
 
-              <div class="mt-1 flex flex-wrap gap-1.5">
-                @for (style of event.danceStyles; track style) {
-                  <span class="rounded-full bg-violet px-2.5 py-0.5 text-xs">{{ style }}</span>
-                }
-              </div>
+        <div class="flex flex-col gap-2 px-3 pb-3">
+          <div class="flex flex-wrap items-center gap-1.5">
+            @for (style of event.danceStyles; track $index) {
+            <span
+              class="rounded-sm bg-violet px-2 py-0.5 text-[0.65rem] text-white min-[380px]:text-xs sm:text-[0.65rem]">{{
+              style }}</span>
+            }
+          </div>
 
-              <div class="mt-2 flex justify-between font-mono text-sm text-amber">
-                <span>{{ event.free ? 'Gratis' : (event.price ?? '') + ' ' + (event.currency ?? '') }}</span>
-                <span>{{ event.goingCount }} vanno</span>
-              </div>
-            </div>
-          </section>
-        }
+          <div
+            class="flex items-center justify-between text-sm text-amber tabular-nums min-[380px]:text-base sm:text-sm">
+            <span [class.text-mint]="event.free">{{ formatPrice(event) }}</span>
+            <span class="flex items-center gap-3 text-white">
+              <span class="flex items-center gap-1">
+                <ng-icon name="lucideUsers" class="size-3.5" [class]="goingCountIconClass(event.goingCount)" />
+                {{ event.goingCount }}
+              </span>
+              <span class="flex items-center gap-1">
+                <ng-icon name="lucideHeart" class="size-3.5" [class]="heartIconClass(event.id)"
+                  [attr.fill]="likeIconFill(event.id)" />
+                {{ event.likesCount }}
+              </span>
+            </span>
+          </div>
+
+          <div class="action-buttons-text grid grid-cols-3 gap-1.5">
+            <button type="button"
+              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
+              [class]="isGoing(event.id) ? 'border-violet bg-violet text-white' : 'bg-violet/15 text-white'"
+              [attr.aria-pressed]="isGoing(event.id)" (click)="toggleGoing(event)">
+              <ng-icon name="lucideCircleCheck" class="size-4" /> Parteciperò
+            </button>
+            <button type="button"
+              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
+              [class]="isLiked(event.id) ? 'border-mint bg-mint text-white' : 'bg-mint/15 text-white'"
+              [attr.aria-pressed]="isLiked(event.id)" (click)="toggleLike(event)">
+              <ng-icon name="lucideHeart" class="size-4" [class]="heartIconClass(event.id)"
+                [attr.fill]="likeIconFill(event.id)" />
+              Mi piace
+            </button>
+            <button type="button"
+              class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
+              [class]="isFollowing(event.organizer.id) ? 'border-rose bg-rose text-white' : 'bg-rose/15 text-white'"
+              [attr.aria-pressed]="isFollowing(event.organizer.id)" (click)="toggleFollow(event.organizer.id)">
+              <ng-icon [name]="isFollowing(event.organizer.id) ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
+              Segui
+            </button>
+          </div>
+        </div>
+      </section>
       }
     </div>
   </div>
 </main>
+
+

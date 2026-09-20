@@ -1,16 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
-import { environment } from '@env/environment';
-import {
-  EventCardDto,
-  EventCreateDto,
-  EventDetailDto,
-  EventStatus,
-  EventStatusUpdateDto,
-  OrganizerEventDetailDto,
-} from '@/core/models/event.model';
+import { environment } from '../../../environments/environment';
+import { EventCardDto, EventDetailDto } from '../models/event.model';
 import { Observable } from 'rxjs';
-import { endpoints } from '@/core/api/endpoints';
+import { endpoints } from '../api/endpoints';
 
 export interface MapBounds {
   minLat: number;
@@ -37,48 +30,32 @@ export class EventsService {
     return this.http.get<EventCardDto[]>(this.baseUrl, { params });
   }
 
-  /** Full event payload — GET /rest/events/{id}. */
   getEventDetail(id: string): Observable<EventDetailDto> {
     return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`);
   }
 
-  /** Private owner payload for any event status — GET /rest/events/{id}/manage. */
-  getManageableEventDetail(id: string): Observable<OrganizerEventDetailDto> {
-    return this.http.get<OrganizerEventDetailDto>(
-      `${environment.apiUrl}${endpoints.events.manage(id)}`,
-    );
+  addAttendance(eventId: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}${endpoints.events.addAttendance(eventId)}`, {});
   }
 
-  /** Creates a PENDING event — POST /rest/events. */
-  createEvent(dto: EventCreateDto): Observable<OrganizerEventDetailDto> {
-    return this.http.post<OrganizerEventDetailDto>(this.baseUrl, dto);
+  removeAttendance(eventId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.removeAttendance(eventId)}`);
   }
 
-  /** Publishes / cancels a PENDING event — PATCH /rest/events/{id}/status. */
-  updateEventStatus(id: string, status: EventStatus): Observable<OrganizerEventDetailDto> {
-    const body: EventStatusUpdateDto = { status };
-    return this.http.patch<OrganizerEventDetailDto>(
-      `${environment.apiUrl}${endpoints.events.updateStatus(id)}`,
-      body,
-    );
+  isGoing(eventId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isGoing(eventId)}`)
   }
 
-  /**
-   * Uploads the event flyer — PATCH /rest/events/{id}/flyer, multipart with the
-   * "file" field. No Content-Type is set by hand: the browser must add the
-   * boundary, and the backend CORS only allows PATCH with Authorization/Content-Type.
-   */
-  updateFlyer(id: string, file: File): Observable<OrganizerEventDetailDto> {
-    const form = new FormData();
-    form.set('file', file);
-    return this.http.patch<OrganizerEventDetailDto>(
-      `${environment.apiUrl}${endpoints.events.updateFlyer(id)}`,
-      form,
-    );
+  /** "Mi piace" toggle. */
+  addFavorite(eventId: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}${endpoints.events.addFavorite(eventId)}`, {});
   }
 
-  /** Deletes the event — DELETE /rest/events/{id}. Used by "Annulla" in stage 2. */
-  deleteEvent(id: string): Observable<void> {
-    return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.delete(id)}`);
+  removeFavorite(eventId: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${endpoints.events.removeFavorite(eventId)}`);
+  }
+
+  isFavorite(eventId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isFavorite(eventId)}`);
   }
 }

@@ -5,6 +5,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { Router } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
+import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 
 const ORGANIZER_TYPES: { value: OrganizerType; label: string }[] = [
   { value: 'PERSON', label: 'Persona'},
@@ -16,7 +17,7 @@ const ORGANIZER_TYPES: { value: OrganizerType; label: string }[] = [
 
 @Component({
   selector: 'app-create-unclaimed-organizer',
-  imports: [ReactiveFormsModule, Navbar, HlmSelectImports],
+  imports: [ReactiveFormsModule, Navbar, HlmSelectImports, SidebarPushDirective],
   templateUrl: './create-unclaimed-organizer.html',
   styleUrl: './create-unclaimed-organizer.css',
 })

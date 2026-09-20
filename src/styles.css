@@ -38,19 +38,32 @@ fighting another — instead of ad-hoc numbers picked to "clearly win".
 Generates z-map-content etc. utilities; components outside a template
 (plain .css files) read the same value via var(--z-index-*). */
   --z-index-map-content: 10; /* Floating button/card drawn over the map itself */
-  --z-index-map-sheet-backdrop: 20; /* Mobile filters sheet's full-screen scrim */
-  --z-index-map-sheet: 21; /* The mobile filters sheet, above its own scrim */
-  --z-index-header: 30; /* Fixed site header — above in-page content, incl. the map sheet */
-  --z-index-header-menu-backdrop: 31; /* Account dropdown's click-outside-to-close layer */
-  --z-index-header-menu: 32; /* The account dropdown panel itself */
-  --z-index-modal: 40; /* Login/signup dialog — always topmost */
+  --z-index-header: 30; /* Fixed mobile top bar — above in-page content */
+  --z-index-sidebar-backdrop: 31; /* Desktop sidebar's own scrim when expanded — above the header */
+  --z-index-sidebar: 32; /* The desktop sidebar rail/panel itself, above its own scrim */
+  /* Above 1000, not part of the 0-40 scale above: Angular CDK's overlay
+  container (e.g. the mobile sidebar's sheet) is always z-index 1000, a
+  fixed constant of CDK's own, not ours — so anything that must stay
+  visible over it, like the fixed mobile top bar, has to clear that first. */
+  --z-index-mobile-bar: 1001; /* Fixed mobile top bar — above CDK's overlay container */
+  --z-index-modal: 1010; /* Login/signup dialog — always topmost, incl. above the mobile bar */
 }
 
 :root {
-  /* Height of the fixed header (see navbar.css / landing.css). Kept here so
-the header's own height and the page's compensating top padding can't
-drift apart from each other. */
+  /* Height of the fixed mobile top bar (see navbar.css / landing.css). Kept
+here so the bar's own height and the page's compensating top padding
+can't drift apart from each other. */
   --header-h: 3rem;
+
+  /* Width of the desktop sidebar (see navbar.html), expanded and
+icon-collapsed. Spartan's own sidebar reads these var names for its
+internal width classes; since app-navbar doesn't use hlm-sidebar-wrapper
+(each page keeps its own <main>, not a shared flex layout), they're
+defined here instead so both the sidebar and every page's compensating
+left padding agree on the same values — see provideHlmSidebarConfig in
+app.config.ts, which must be kept in sync with these. */
+  --sidebar-width: 13rem;
+  --sidebar-width-icon: 3rem;
 }
 
 @media (min-width: 640px) {
@@ -81,46 +94,51 @@ drift apart from each other. */
   }
 }
 
-/* Map pin pulse (live/starting-soon events). Global, not component-scoped:
-Leaflet injects marker markup straight into the DOM outside Angular's
-view, so component styles never reach it. */
-.map-pin-wrap {
-  position: relative;
-  display: block;
-  width: 24px;
-  height: 32px;
-}
+/* Map pin pulse — only once an event is actually underway. A pin starting
+soon shows plain (no pulse) until it crosses into --live; see pulseState()
+in map.ts. Global, not component-scoped: Leaflet injects marker markup
+straight into the DOM outside Angular's view, so component styles never
+reach it. In @layer components (not unlayered) so Tailwind utilities
+(e.g. absolute on menu.html's decorative pins) still win the cascade. */
+@layer components {
+  .map-pin-wrap {
+    position: relative;
+    display: block;
+    width: 24px;
+    height: 32px;
+  }
 
-.map-pin-pulse {
-  position: absolute;
-  left: 50%;
-  top: 12px;
-  width: 24px;
-  height: 24px;
-  margin: -12px 0 0 -12px;
-  border-radius: 50%;
-  opacity: 0;
-}
+  .map-pin-pulse {
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border-radius: 50%;
+    opacity: 0;
+  }
 
-.map-pin-wrap--live .map-pin-pulse,
-.map-pin-wrap--soon .map-pin-pulse {
-  animation: map-pin-pulse 1.6s ease-out infinite;
-}
+  .map-pin-wrap--live .map-pin-pulse {
+    animation: map-pin-pulse 1.6s ease-out infinite;
+  }
 
-.map-pin-wrap--soon .map-pin-pulse {
-  animation-duration: 2.4s;
-}
+  /* The pin itself breathes along with the ring, and glows so it stays
+  readable against busy tiles even between pulses. */
+  .map-pin-wrap--live svg {
+    animation: map-pin-bounce 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 0 3px currentColor);
+  }
 
-/* The pin itself breathes along with the ring, and glows so it stays
-readable against busy tiles even between pulses. */
-.map-pin-wrap--live svg,
-.map-pin-wrap--soon svg {
-  animation: map-pin-bounce 1.6s ease-in-out infinite;
-  filter: drop-shadow(0 0 3px currentColor);
-}
-
-.map-pin-wrap--soon svg {
-  animation-duration: 2.4s;
+  /* Selected pin: its own shape (per event type) is recoloured black in
+  getPinIcon rather than styled here, plus a size bump so it still reads as
+  the clear visual anchor now that its event card docks at the bottom of the
+  screen instead of floating above it. */
+  .map-pin-wrap--selected svg {
+    transform: scale(1.2);
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+  }
 }
 
 @keyframes map-pin-pulse {
@@ -141,6 +159,82 @@ readable against busy tiles even between pulses. */
   }
   50% {
     transform: scale(1.08);
+  }
+}
+
+/* "stasera" = tonight — a scatter of tiny stars over the word itself
+(positions are % of its own box, so they never spill outside it), each
+pulsing on its own offset so they don't all blink in sync. Shared between
+the landing hero and the navbar's own logo, which just wants a smaller
+scatter — hence the size knob rather than two copies of the gradient list. */
+.night {
+  position: relative;
+  display: inline-block;
+}
+
+.night::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-repeat: no-repeat;
+  --night-star-size: 1;
+  background-image:
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 6% 15%, #fff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1.2px) calc(var(--night-star-size) * 1.2px) at 14% 70%, var(--color-amber), transparent),
+    radial-gradient(calc(var(--night-star-size) * 0.8px) calc(var(--night-star-size) * 0.8px) at 24% 35%, #cfe4ff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 34% 80%, #ffe9b8, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1.2px) calc(var(--night-star-size) * 1.2px) at 44% 20%, var(--color-violet), transparent),
+    radial-gradient(calc(var(--night-star-size) * 0.8px) calc(var(--night-star-size) * 0.8px) at 54% 60%, #fff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 64% 10%, #cfe4ff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1.2px) calc(var(--night-star-size) * 1.2px) at 74% 75%, var(--color-amber), transparent),
+    radial-gradient(calc(var(--night-star-size) * 0.8px) calc(var(--night-star-size) * 0.8px) at 84% 30%, #fff, transparent),
+    radial-gradient(calc(var(--night-star-size) * 1px) calc(var(--night-star-size) * 1px) at 94% 55%, var(--color-mint), transparent);
+  animation: twinkle 2.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .night::after {
+    animation: none;
+  }
+}
+
+/* Route change cross-fade, driven by withViewTransitions() in
+app.config.ts. The browser default cuts too abruptly between the old and
+new view, so both snapshots get an explicit fade instead of an instant
+swap. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.28s;
+  animation-timing-function: ease-in-out;
+}
+
+::view-transition-old(root) {
+  animation-name: route-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: route-fade-in;
+}
+
+@keyframes route-fade-out {
+  to { opacity: 0; }
+}
+
+@keyframes route-fade-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
 
@@ -168,12 +262,19 @@ dialog, etc.) render in the site's ink/rose/amber theme. */
   --border: var(--color-line);
   --input: var(--color-line);
   --ring: var(--color-amber);
-  --sidebar: var(--color-ink-2);
+  /* Same tone as the page body, not the ink-2 "elevated panel" used for
+  cards/popovers — that read as a lilac slab running down the whole
+  viewport height, since the rail has nothing else to break it up. The
+  border below carries the separation from page content instead. */
+  --sidebar: var(--color-ink);
   --sidebar-foreground: var(--color-bone);
   --sidebar-primary: var(--color-rose);
   --sidebar-primary-foreground: var(--color-ink);
-  --sidebar-accent: var(--color-violet);
-  --sidebar-accent-foreground: var(--color-bone);
+  /* Hover/active nav-item highlight — the site's loud coral-rose instead
+  of the library default violet, which read as flat/corporate next to a
+  nightlife brand. */
+  --sidebar-accent: var(--color-rose);
+  --sidebar-accent-foreground: var(--color-ink);
   --sidebar-border: var(--color-line);
   --sidebar-ring: var(--color-amber);
 }

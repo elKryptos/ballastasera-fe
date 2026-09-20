@@ -150,8 +150,8 @@
 
         <div class="flex gap-3 p-3 pr-10">
           @if (event.flyerUrl) {
-          <a [href]="event.flyerUrl" target="_blank" rel="noopener noreferrer"
-            class="relative block w-28 min-w-28 min-h-28 shrink-0 self-stretch" aria-label="Apri il flyer completo">
+          <a [routerLink]="['/evento', event.id]"
+            class="relative block w-28 min-w-28 min-h-28 shrink-0 self-stretch" aria-label="Vedi i dettagli dell'evento">
             <img class="h-full w-full rounded-lg object-cover" [src]="event.flyerUrl" [alt]="event.title" />
             @if (isLiveNow(event)) {
             <span

@@ -1,0 +1,15 @@
+/* Instagram's actual icon gradient, so the link reads as "Instagram" at a
+glance instead of just another monochrome glyph. Same rule as map.css —
+component styles don't leak across components, so it needs its own copy. */
+.instagram-gradient {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+
+/* ng-icon only exposes name/size/color/strokeWidth as inputs — there's no
+input for the raw SVG's own fill attribute, so lucideHeart's hardcoded
+fill="none" ignores the [attr.fill] binding set on the <ng-icon> host.
+Overriding fill on the injected <svg> itself is the only thing that
+actually toggles the heart between outline and filled. Same rule as map.css. */
+:host ::ng-deep ng-icon[fill='currentColor'] svg {
+  fill: currentColor;
+}

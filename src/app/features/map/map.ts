@@ -13,6 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subject, debounceTime, interval } from 'rxjs';
 import type { Map as LeafletMap, Marker, Point } from 'leaflet';
@@ -33,6 +34,7 @@ import { EventsService, MapBounds } from '../../core/services/events.service';
 import { CitiesService } from '../../core/services/cities.service';
 import { DanceStylesService } from '../../core/services/dance-styles.service';
 import { AuthService } from '../../core/services/auth.service';
+import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
@@ -113,7 +115,7 @@ const LEGEND_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
 
 @Component({
   selector: 'app-map',
-  imports: [Navbar, SidebarPushDirective, NgIcon, AuthModal],
+  imports: [Navbar, SidebarPushDirective, NgIcon, AuthModal, RouterLink],
   templateUrl: './map.html',
   styleUrl: './map.css',
   providers: [
@@ -138,6 +140,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
   private readonly authService = inject(AuthService);
+  private readonly mapViewState = inject(MapViewStateService);
 
   private readonly mapContainer = viewChild<ElementRef<HTMLDivElement>>('mapContainer');
 
@@ -315,7 +318,13 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
     // Scroll-wheel and pinch zoom stay on; the on-screen +/- control is
     // redundant with those and was competing for corner space with our own UI.
-    this.map = L.map(container, { zoomControl: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    // Falls back to DEFAULT_CENTER/DEFAULT_ZOOM the first time this page is
+    // ever visited in the session — mapViewState only has something once a
+    // previous MapPage instance has actually panned/zoomed.
+    this.map = L.map(container, { zoomControl: false }).setView(
+      this.mapViewState.center ?? DEFAULT_CENTER,
+      this.mapViewState.zoom ?? DEFAULT_ZOOM,
+    );
 
     // CARTO Voyager: closer to Google Maps' look than plain OSM tiles.
     // Free, but requires an API key (carto.com/basemaps/apikey) — 5M tile
@@ -329,7 +338,12 @@ export class MapPage implements AfterViewInit, OnDestroy {
       },
     ).addTo(this.map);
 
-    this.map.on('moveend', () => this.moveEnd$.next());
+    this.map.on('moveend', () => {
+      const center = this.map!.getCenter();
+      this.mapViewState.center = [center.lat, center.lng];
+      this.mapViewState.zoom = this.map!.getZoom();
+      this.moveEnd$.next();
+    });
     this.fetchEventsInView();
   }
 
@@ -351,12 +365,34 @@ export class MapPage implements AfterViewInit, OnDestroy {
       next: (events) => {
         this.events.set(events);
         this.loading.set(false);
+        this.restoreSelectedEvent(events);
       },
       error: () => {
         this.loading.set(false);
         this.error.set(true);
       },
     });
+  }
+
+  /** Reopens the card for the pin that was selected before navigating away
+   * (e.g. to /evento/:id) — see mapViewState. Deliberately NOT consumed/nulled
+   * out here: navigating back can momentarily spin up two MapPage instances
+   * in a row (router/view-transition quirk, still under investigation), and
+   * the second one needs the id to still be there since the first's restore
+   * gets wiped out when it's torn down. Only selectEvent()/closeDetail() ever
+   * change it after that. Re-running this on every subsequent pan is cheap —
+   * the already-selected check below skips re-fetching toggle state for a
+   * pin that's already open, so it only actually does anything right after a
+   * fresh MapPage instance mounts. */
+  private restoreSelectedEvent(events: EventCardDto[]): void {
+    const id = this.mapViewState.selectedEventId;
+    if (!id || this.selectedEvent()?.id === id) return;
+
+    const match = events.find((event) => event.id === id);
+    if (!match) return;
+
+    this.selectedEvent.set(match);
+    this.syncAllToggleState(match);
   }
 
   private drawMarkers(): void {
@@ -385,7 +421,14 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
   private selectEvent(event: EventCardDto, marker: Marker): void {
     this.selectedEvent.set(event);
+    this.mapViewState.selectedEventId = event.id;
     this.centerOnPoint(this.map!.latLngToContainerPoint(marker.getLatLng()));
+    this.syncAllToggleState(event);
+  }
+
+  /** Shared by selectEvent/restoreSelectedEvent: fetches both toggle states
+   * for the event that just became the open card's subject. */
+  private syncAllToggleState(event: EventCardDto): void {
     this.syncToggleState(event.id, this.likedEventIds, (id) => this.eventsService.isFavorite(id));
     this.syncToggleState(event.id, this.goingEventIds, (id) => this.eventsService.isGoing(id));
   }
@@ -517,6 +560,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
   protected closeDetail(): void {
     this.selectedEvent.set(null);
+    this.mapViewState.selectedEventId = null;
   }
 
   protected formatStart(event: EventCardDto): string {

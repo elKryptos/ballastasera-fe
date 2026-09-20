@@ -1,12 +1,17 @@
 import { Component, computed, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subscription, switchMap, timer } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, of, Subscription, switchMap, tap, timer } from 'rxjs';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
-import { HlmAutocomplete, HlmAutocompleteImports } from '@spartan-ng/helm/autocomplete';
-import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput } from '@spartan-ng/brain/autocomplete';
+import { HlmAutocomplete, HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
+import {
+  BrnAutocomplete,
+  BrnAutocompleteAnchor,
+  BrnAutocompleteInput,
+  BrnAutocompleteSearch,
+} from '@spartan-ng/brain/autocomplete';
 import { AttachmentState } from '@spartan-ng/helm/attachment';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -16,11 +21,18 @@ import { AdminService } from '../../../core/services/admin.service';
 import { EventsService } from '../../../core/services/events.service';
 import { CitiesService } from '../../../core/services/cities.service';
 import { DanceStylesService } from '../../../core/services/dance-styles.service';
+import { GeocodingService } from '../../../core/services/geocoding.service';
 import { EventCreateDto, EventDetailDto, EventType } from '../../../core/models/event.model';
 import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
+import { AddressSuggestion } from '../../../core/models/geocoding.model';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
+
+/** Photon needs at least this many characters before a search is worth firing. */
+const ADDRESS_SEARCH_MIN_LENGTH = 3;
+/** How long to wait after the last keystroke before querying Photon. */
+const ADDRESS_SEARCH_DEBOUNCE_MS = 300;
 
 /** Minimum time the flyer widget stays in the "processing" state, so the backend's conversion work is visible even when the response is fast. */
 const FLYER_PROCESSING_MIN_MS = 5000;
@@ -57,6 +69,7 @@ export class CreateEvent implements OnInit {
   private readonly eventsService = inject(EventsService);
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
+  private readonly geocodingService = inject(GeocodingService);
   private readonly router = inject(Router);
 
   readonly eventTypes = EVENT_TYPES;
@@ -146,6 +159,47 @@ export class CreateEvent implements OnInit {
     });
   });
 
+  protected readonly addressSearch = signal('');
+  protected readonly addressSearching = signal(false);
+  protected readonly addressSuggestions = toSignal(
+    toObservable(this.addressSearch).pipe(
+      map((term) => term.trim()),
+      debounceTime(ADDRESS_SEARCH_DEBOUNCE_MS),
+      distinctUntilChanged(),
+      switchMap((term) => {
+        if (term.length < ADDRESS_SEARCH_MIN_LENGTH) {
+          this.addressSearching.set(false);
+          return of<AddressSuggestion[]>([]);
+        }
+        this.addressSearching.set(true);
+        return this.geocodingService.searchAddress(term).pipe(
+          catchError(() => of<AddressSuggestion[]>([])),
+          tap(() => this.addressSearching.set(false)),
+        );
+      }),
+    ),
+    { initialValue: [] as AddressSuggestion[] },
+  );
+  protected readonly addressItemToString = (suggestion: AddressSuggestion): string => suggestion.label;
+  private readonly addressAutocomplete = viewChild(HlmAutocompleteSearch, { read: BrnAutocompleteSearch });
+
+  protected openAddressDropdown(): void {
+    this.addressAutocomplete()?.open();
+  }
+
+  /** Fills in lat/lng only when the address matches a fetched suggestion; free typing never clears them. */
+  private readonly addressAutofillEffect = effect(() => {
+    if (this.addressSearching()) {
+      return;
+    }
+    const address = this.addressSearch();
+    const suggestion = this.addressSuggestions().find((s) => s.label === address);
+    if (suggestion) {
+      this.form.controls.latitude.setValue(suggestion.latitude);
+      this.form.controls.longitude.setValue(suggestion.longitude);
+    }
+  });
+
   ngOnInit(): void {
     this.admin.getVerifiedOrganizers(0, 100).subscribe((page) => this.organizers.set(page.content));
     this.citiesService.getCities().subscribe((cities) => this.cities.set(cities));
@@ -211,6 +265,7 @@ export class CreateEvent implements OnInit {
     this.form.enable();
     this.form.reset({ eventType: '', isFree: true, currency: 'EUR' });
     this.selectedDanceStyleIds.set(new Set());
+    this.addressSearch.set('');
     this.createdEvent.set(null);
     this.flyerState.set('idle');
     this.flyerError.set(null);

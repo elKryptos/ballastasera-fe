@@ -154,11 +154,30 @@
 
       <div class="space-y-1 mb-4 relative">
         <label for="address" class="text-sm font-medium">Indirizzo *</label>
-        <input id="address" type="text" formControlName="address" class="w-full rounded border px-3 py-2"
-          [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched" />
+        <hlm-autocomplete-search class="block" formControlName="address" [search]="addressSearch()"
+          (searchChange)="addressSearch.set($event)" [itemToString]="addressItemToString">
+          <input id="address" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca un indirizzo..."
+            class="w-full rounded border px-3 py-2"
+            [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"
+            (click)="openAddressDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @if (addressSearching()) {
+                <hlm-autocomplete-status>Ricerca in corso...</hlm-autocomplete-status>
+                } @else {
+                @for (suggestion of addressSuggestions(); track suggestion.label) {
+                <hlm-autocomplete-item [value]="suggestion">{{ suggestion.label }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun indirizzo trovato</hlm-autocomplete-empty>
+                }
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete-search>
         <p class="min-h-5 text-sm">
           @if (form.controls.address.invalid && form.controls.address.touched) {
-          <span class="abosule text-sm text-red-600">Indirizzo obbligatorio.</span>
+          <span class="text-sm text-red-600">Indirizzo obbligatorio.</span>
           }
         </p>
 

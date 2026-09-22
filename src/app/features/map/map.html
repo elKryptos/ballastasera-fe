@@ -167,7 +167,8 @@
           </a>
           }
           <div class="flex min-w-0 flex-1 flex-col gap-1.5">
-            <h2 class="font-display text-base leading-tight font-bold text-rose min-[380px]:text-lg sm:text-base">
+            <h2 [routerLink]="['/evento', event.id]"
+              class="font-display text-base text-amber leading-tight font-bold min-[380px]:text-lg sm:text-base uppercase cursor-pointer">
               {{ event.title }}</h2>
 
             <p class="flex items-center gap-1.5 text-sm text-white min-[380px]:text-base sm:text-sm">
@@ -181,7 +182,7 @@
             <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
               class="group flex items-start gap-1.5 text-sm text-white min-[380px]:text-base sm:text-sm">
               <span class="flex size-5 shrink-0 items-center justify-center">
-                <img src="/icons/google-maps-pin.png" alt="" class="size-4" />
+                <ng-icon name="lucideMapPin" class="size-3.5 text-white" />
               </span>
               <span class="min-w-0 flex-1">
                 <span class="block">
@@ -202,9 +203,7 @@
             <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
               class="inline-flex w-fit items-center gap-1.5 opacity-80">
               <span class="flex size-5 shrink-0 items-center justify-center">
-                <span class="instagram-gradient flex size-4 items-center justify-center rounded-md">
-                  <ng-icon name="lucideInstagram" class="size-2.5 text-white" />
-                </span>
+                <ng-icon name="lucideInstagram" class="size-2.5 text-white" />
               </span>
               <span class="text-sm font-medium text-white min-[380px]:text-base sm:text-sm">&#64;{{ handle }}</span>
             </a>

@@ -1,232 +1,314 @@
 <app-navbar />
 <app-auth-modal [(open)]="authOpen" />
 
-<!-- Light theme, only on this page: the rest of the app is dark (body sets
-     --color-ink as its background — see styles.css), but landing on a dark
-     page right after the bright map tiles read as a jarring colour switch.
-     bg-bone/text-ink just inverts the app's own dark-mode tokens rather than
-     introducing new colours. min-h-dvh keeps it covering the full viewport
-     even on the short loading/error states below. -->
-<main appSidebarPush class="min-h-dvh bg-bone pt-(--header-h) text-ink md:pt-0">
+<!-- Photo-forward, dark throughout: the hero and body both sit on the
+    blurred flyer over the app's own --color-ink, with content cards raised
+    on --color-ink-2 (the app's standard dark card token) rather than a
+    separate light theme. min-h-dvh keeps it covering the full viewport even
+    on the short loading/error states below. -->
+<!-- @container: the two-column hero+body layout below reacts to how much
+    width is actually left after appSidebarPush's padding, not the raw
+    viewport — without this, the fixed-width hero/aside columns (still keyed
+    to md:/lg: viewport breakpoints) can collide with the sidebar the moment
+    it expands, since the viewport itself never got narrower. -->
+<main appSidebarPush class="@container min-h-dvh pt-(--header-h) md:pt-0">
   @if (loading()) {
-  <p class="px-4 py-16 text-center text-sm text-ink/60">Caricamento evento…</p>
+  <p class="px-4 py-16 text-center text-sm text-bone/60">Caricamento evento…</p>
   } @else if (event(); as event) {
-  <!-- HERO: full-width poster. Flyers are portrait, so object-cover would
-       crop them — the sharp image sits object-contain over a blurred/scaled
-       copy of itself instead, showing the whole flyer, letterbox-free. -->
-  <div class="relative h-[46vh] bg-bone w-full overflow-hidden md:h-[58vh]">
-    @if (event.flyerUrl) {
-    <div class="absolute inset-0 scale-110 bg-cover bg-center opacity-50 blur-2xl"
-      [style.background-image]="'url(' + event.flyerUrl + ')'" aria-hidden="true"></div>
-    <img [src]="event.flyerUrl" [alt]="event.title" class="relative h-full w-full object-contain drop-shadow-2xl" />
-    } @else {
-    <div class="flex h-full w-full items-center justify-center bg-ink-2 text-sm text-muted">
-      Nessun flyer disponibile
-    </div>
-    }
+  <!-- On mobile this is a plain top-to-bottom stack (hero, then body) since
+      flex only activates once @container width hits 768px. On desktop it
+      becomes a row, reversed so the hero (first in the markup, on top for
+      mobile) renders on the right.
+      No `items-start`: default stretch makes the body column match the
+      sticky hero's full height, so its own bg-ink covers the whole row
+      instead of leaving unstyled space below short content. -->
+  <div class="@[768px]:flex @[768px]:flex-row-reverse">
+    <!-- HERO: full-width poster. Flyers are portrait, so object-cover would
+      crop them — the sharp image sits object-contain over a blurred/scaled
+      copy of itself instead, showing the whole flyer, letterbox-free. -->
+    <div
+      class="relative h-[46vh] bg-ink w-full overflow-hidden @[768px]:h-dvh @[768px]:w-95 @[768px]:shrink-0 @[768px]:sticky @[768px]:top-0">
+      @if (event.flyerUrl) {
+      <div class="absolute inset-0 scale-110 bg-cover bg-center opacity-50 blur-xl"
+        [style.background-image]="'url(' + event.flyerUrl + ')'" aria-hidden="true"></div>
+      <button type="button" class="absolute inset-0 h-full w-full cursor-zoom-in" (click)="openFlyer()"
+        aria-label="Ingrandisci il volantino">
+        <img [src]="event.flyerUrl" [alt]="event.title" fetchpriority="high"
+          class="relative h-full w-full object-contain drop-shadow-2xl" />
+      </button>
+      } @else {
+      <div class="flex h-full w-full items-center justify-center bg-ink-2 text-sm text-muted">
+        Nessun volantino disponibile
+      </div>
+      }
 
-    <button type="button"
-      class="absolute top-3 left-3 z-10 inline-flex size-9 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white backdrop-blur-sm transition-colors hover:bg-ink"
-      (click)="goBack()" aria-label="Indietro">
-      <ng-icon name="lucideArrowLeft" class="size-4" />
-    </button>
+      <button type="button"
+        class="absolute top-3 left-3 z-10 inline-flex size-9 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white backdrop-blur-sm transition-colors hover:bg-ink @[768px]:hidden"
+        (click)="goBack()" aria-label="Indietro">
+        <ng-icon name="lucideArrowLeft" class="size-4" />
+      </button>
 
-    <div class="absolute top-3 right-3 z-10 flex items-center gap-2">
       @if (isLiveNow(event)) {
       <span
-        class="inline-flex items-center gap-1.5 rounded-sm bg-rose-lit px-3 py-1.5 font-mono text-xs text-white shadow">
+        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-rose-lit px-3 py-1.5 font-mono text-xs text-white shadow">
         <span class="size-2 rounded-full bg-white"></span> LIVE ORA
       </span>
       } @else if (startsInMinutes(event); as minutes) {
       <span
-        class="inline-flex items-center gap-1.5 rounded-sm bg-amber px-3 py-1.5 font-mono text-xs text-ink shadow">
+        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-amber px-3 py-1.5 font-mono text-xs text-ink shadow">
         Inizia tra {{ minutes }} min
       </span>
       }
-
-      <button type="button"
-        class="inline-flex size-9 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white backdrop-blur-sm transition-colors hover:bg-ink"
-        (click)="share(event)" aria-label="Condividi">
-        <ng-icon [name]="linkCopied() ? 'lucideCheck' : 'lucideShare2'" class="size-4" />
-      </button>
     </div>
-  </div>
 
-  <!-- BODY: single column on mobile, main content + organizer sidebar on
-      desktop — an editorial layout, not the map popup's stacked mini-card. -->
-  <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:px-8 md:py-12">
-    <div class="md:grid md:grid-cols-[1fr_320px] md:items-start md:gap-10">
-      <div class="flex flex-col gap-5">
-        <div>
-          <p class="font-mono text-xs tracking-[0.2em] text-rose uppercase">
-            {{ eventTypeLabel(event) }} · {{ event.cityName }}
-          </p>
-          <h1 class="mt-1 font-display text-3xl leading-tight font-bold text-ink sm:text-4xl">{{ event.title }}</h1>
+    <!-- BODY: single column up to 1024px of @container width, main content +
+      organizer sidebar side by side from there — an editorial layout, not
+      the map popup's stacked mini-card. Kept at 1024 (not 768) since 768 is
+      now shared with the hero column above, and splitting again that early
+      leaves too little room. -->
+    <div class="relative overflow-hidden bg-ink @[768px]:min-w-0 @[768px]:flex-1">
+      <!-- Ambient backdrop: the flyer again, blurred, scoped to this column
+        only (absolute + the parent's overflow-hidden, not fixed) so it can
+        never bleed past this div into the navbar/sidebar. A dark scrim on
+        top keeps text legible regardless of how bright the flyer is, same
+        role bg-ink played on its own before. -->
+      @if (event.flyerUrl) {
+      <div class="absolute inset-0 scale-110 bg-cover bg-center blur-sm"
+        [style.background-image]="'url(' + event.flyerUrl + ')'" aria-hidden="true"></div>
+      <div class="absolute inset-0 bg-ink/60" aria-hidden="true"></div>
+      }
+      <div class="relative mx-auto max-w-5xl px-4 py-8 @[640px]:px-6 @[768px]:px-8 @[768px]:py-12">
+        <div class="@[1024px]:grid @[1024px]:grid-cols-[320px_1fr] @[1024px]:items-start @[1024px]:gap-10">
+          <div class="flex flex-col gap-5 @[1024px]:order-2">
+            <!-- Visible from 768px of @container width up to just below 1024 —
+            the hero no longer carries an overlaid back button there. From
+            1024 on, this copy hides and a second one takes over at the top
+            of the organizer column instead (see the aside below), so it
+            doesn't share this column's row with the title anymore. -->
+            <button type="button"
+              class="hidden w-fit cursor-pointer items-center gap-2 rounded-full border border-white px-3 py-1.5 text-sm font-medium text-white transition-colors @[768px]:inline-flex @[1024px]:hidden"
+              (click)="goBack()" aria-label="Indietro">
+              <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
+            </button>
 
-          <div class="mt-3 flex flex-wrap items-center gap-1.5">
-            @for (style of event.danceStyles; track $index) {
-            <span class="rounded-sm bg-violet px-3 py-1 text-xs font-semibold text-white">{{ style }}</span>
+            <div class="@[1024px]:mt-14">
+              <p class="font-mono text-xs tracking-[0.2em] text-rose uppercase">
+                {{ eventTypeLabel(event) }} · {{ event.cityName }}
+              </p>
+              <div class="mt-1 flex items-start justify-between gap-3">
+                <h1 class="font-display text-3xl leading-tight font-bold text-white @[640px]:text-4xl">{{ event.title }}
+                </h1>
+                <button type="button"
+                  class="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white text-white transition-colors"
+                  (click)="share(event)" aria-label="Condividi">
+                  <ng-icon [name]="linkCopied() ? 'lucideCheck' : 'lucideShare2'" class="size-4" />
+                </button>
+              </div>
+
+              <div class="mt-3 flex flex-wrap items-center gap-1.5">
+                @for (style of event.danceStyles; track $index) {
+                <span class="rounded-sm bg-violet px-3 py-1 text-xs font-semibold text-white">{{ style }}</span>
+                }
+              </div>
+            </div>
+
+            @if (event.venueName || event.address) {
+            <div>
+              <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
+                class="flex items-start gap-3 rounded-2xl bg-[linear-gradient(135deg,rgba(255,77,109,0.18),var(--color-ink-2)_45%,var(--color-ink))] p-4 shadow-lg shadow-rose/25 ring-1 ring-rose/50 transition-all">
+                <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-rose/20">
+                  <img src="/icons/google-maps-pin.png" alt="" class="size-4" />
+                </span>
+                <span class="min-w-0 flex-1">
+                  @if (event.venueName) {
+                  <span class="block font-semibold text-bone">{{ event.venueName }}</span>
+                  }
+                  <span class="block text-sm text-bone/90">{{ addressPrimary(event.address)
+                    }}</span>
+                  @if (addressSecondary(event.address); as rest) {
+                  <span class="block text-sm text-bone/50">{{ rest }}</span>
+                  }
+                </span>
+              </a>
+            </div>
+            }
+
+            <!-- Quick facts -->
+            <div
+              class="flex flex-col gap-5 rounded-2xl bg-[linear-gradient(135deg,rgba(139,92,246,0.16),var(--color-ink-2)_45%,var(--color-ink))] p-5 shadow-lg shadow-violet/10 ring-1 ring-violet/25">
+              <div class="grid grid-cols-2 gap-x-4 gap-y-5 @[640px]:grid-cols-4">
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
+                    <ng-icon name="lucideClock" class="size-3.5" /> Quando
+                  </span>
+                  <span class="text-sm font-medium text-bone/70 capitalize">{{ formatStart(event) }}</span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
+                    <ng-icon name="lucideTicket" class="size-3.5" /> Prezzo
+                  </span>
+                  <span class="text-sm font-medium text-bone tabular-nums" [class.text-mint]="event.free">{{
+                    formatPrice(event) }}</span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
+                    <ng-icon name="lucideUsers" class="size-3.5" [class]="goingCountIconClass(event.goingCount)" />
+                    Partecipano
+                  </span>
+                  <span class="text-sm font-medium text-bone tabular-nums">{{ event.goingCount }}</span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
+                    <ng-icon name="lucideHeart" class="size-3.5" [class]="liked() ? 'text-rose' : 'text-bone/70'"
+                      [attr.fill]="liked() ? 'currentColor' : 'none'" /> Mi piace
+                  </span>
+                  <span class="text-sm font-medium text-bone tabular-nums">{{ event.likesCount }}</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-wrap justify-center gap-3 border-t border-violet/20 pt-5">
+                <button type="button"
+                  class="inline-flex w-40 cursor-pointer items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors"
+                  [class]="pillClass(going(), 'violet')" [attr.aria-pressed]="going()" (click)="toggleGoing()">
+                  <ng-icon name="lucideCircleCheck" class="size-4" />
+                  Parteciperò
+                </button>
+                <button type="button"
+                  class="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors"
+                  [class]="pillClass(liked(), 'mint')" [attr.aria-pressed]="liked()" (click)="toggleLike()">
+                  <ng-icon name="lucideHeart" class="size-4" [class.text-rose]="liked()"
+                    [attr.fill]="liked() ? 'currentColor' : 'none'" />
+                  Mi piace
+                </button>
+              </div>
+            </div>
+
+            @if (event.description; as description) {
+            <div
+              class="rounded-2xl bg-[linear-gradient(135deg,rgba(45,212,191,0.14),var(--color-ink-2)_45%,var(--color-ink))] p-5 shadow-lg shadow-mint/10 ring-1 ring-mint/25">
+              <h2 class="mb-2 font-display text-lg font-bold text-mint">Descrizione</h2>
+              <p class="whitespace-pre-line text-sm leading-relaxed text-bone/70 @[640px]:text-base">{{ description }}
+              </p>
+            </div>
             }
           </div>
-        </div>
 
-        @if (event.venueName || event.address) {
-        <div>
-          <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
-            class="group flex items-start gap-3 rounded-lg bg-white p-4 shadow-sm ring-1 ring-ink/5 transition-colors hover:ring-rose/30">
-            <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-rose/10">
-              <img src="/icons/google-maps-pin.png" alt="" class="size-4" />
-            </span>
-            <span class="min-w-0 flex-1">
-              @if (event.venueName) {
-              <span class="block font-semibold text-ink">{{ event.venueName }}</span>
-              }
-              <span class="block text-sm text-ink/70 group-hover:underline">{{ addressPrimary(event.address) }}</span>
-              @if (addressSecondary(event.address); as rest) {
-              <span class="block text-sm text-ink/50">{{ rest }}</span>
-              }
-            </span>
-          </a>
-        </div>
-        }
-
-        <!-- Quick facts -->
-        <div class="grid grid-cols-2 gap-x-4 gap-y-5 rounded-lg bg-white p-5 shadow-sm ring-1 ring-ink/5 sm:grid-cols-4">
-          <div class="flex flex-col gap-1">
-            <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink/45 uppercase">
-              <ng-icon name="lucideClock" class="size-3.5" /> Quando
-            </span>
-            <span class="text-sm font-medium text-ink capitalize">{{ formatStart(event) }}</span>
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink/45 uppercase">
-              <ng-icon name="lucideTicket" class="size-3.5" /> Prezzo
-            </span>
-            <span class="text-sm font-medium tabular-nums" [class.text-mint]="event.free">{{ formatPrice(event) }}</span>
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink/45 uppercase">
-              <ng-icon name="lucideUsers" class="size-3.5" [class]="goingCountIconClass(event.goingCount)" /> Partecipano
-            </span>
-            <span class="text-sm font-medium text-ink tabular-nums">{{ event.goingCount }}</span>
-          </div>
-
-          <div class="flex flex-col gap-1">
-            <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-ink/45 uppercase">
-              <ng-icon name="lucideHeart" class="size-3.5" [class]="liked() ? 'text-rose' : 'text-ink/40'"
-                [attr.fill]="liked() ? 'currentColor' : 'none'" /> Mi piace
-            </span>
-            <span class="text-sm font-medium text-ink tabular-nums">{{ event.likesCount }}</span>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex flex-wrap gap-3">
+          <!-- Desktop only (1024px+ of @container width): the back button moves
+          here, to the top of the organizer column, instead of beside the
+          title (see the tablet copy above, hidden from 1024 on). Shares the
+          aside's grid cell (col1/row1) — the aside's own @[1024px]:mt-14
+          leaves just enough room above it for this button to sit without
+          overlapping. -->
           <button type="button"
-            class="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors"
-            [class]="pillClass(going(), 'violet')"
-            [attr.aria-pressed]="going()" (click)="toggleGoing()">
-            <ng-icon name="lucideCircleCheck" class="size-4" />
-            {{ going() ? 'Ci sarò' : 'Parteciperò' }}
+            class="hidden w-fit cursor-pointer items-center gap-2 rounded-full border border-white px-3 py-1.5 text-sm font-medium text-white transition-colors @[1024px]:col-start-1 @[1024px]:row-start-1 @[1024px]:inline-flex"
+            (click)="goBack()" aria-label="Indietro">
+            <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
           </button>
-          <button type="button"
-            class="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors"
-            [class]="pillClass(liked(), 'mint')"
-            [attr.aria-pressed]="liked()" (click)="toggleLike()">
-            <ng-icon name="lucideHeart" class="size-4" [attr.fill]="liked() ? 'currentColor' : 'none'" />
-            Mi piace
-          </button>
-        </div>
 
-        @if (event.description; as description) {
-        <div class="rounded-lg bg-white p-5 shadow-sm ring-1 ring-ink/5">
-          <h2 class="mb-2 font-display text-lg font-bold text-emerald-600">Descrizione</h2>
-          <p class="whitespace-pre-line text-sm leading-relaxed text-ink/70 sm:text-base">{{ description }}</p>
+          <!-- Organizer sidebar -->
+          <aside
+            class="mt-8 flex flex-col gap-4 rounded-2xl bg-[linear-gradient(135deg,rgba(255,162,76,0.16),var(--color-ink-2)_45%,var(--color-ink))] p-5 shadow-lg shadow-amber/10 ring-1 ring-amber/25 @[1024px]:col-start-1 @[1024px]:row-start-1 @[1024px]:mt-14">
+            <div class="flex items-center gap-3">
+              @if (event.organizer.logoUrl) {
+              <img [src]="event.organizer.logoUrl" [alt]="event.organizer.name"
+                class="size-12 shrink-0 rounded-full object-cover ring-1 ring-amber/25" />
+              } @else {
+              <div
+                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-violet/15 font-display text-sm font-bold text-violet">
+                {{ organizerInitials(event.organizer) }}
+              </div>
+              }
+              <div class="min-w-0">
+                <p class="flex items-center gap-1 truncate font-display text-base font-bold text-bone">
+                  {{ event.organizer.name }}
+                  @if (event.organizer.verified) {
+                  <ng-icon name="lucideBadgeCheck" class="size-4 shrink-0 text-violet" aria-label="Verificato" />
+                  }
+                </p>
+                <p class="text-xs text-bone/50">{{ organizerTypeLabel(event.organizer) }}</p>
+              </div>
+            </div>
+
+            @if (event.organizer.description; as bio) {
+            <p class="text-sm leading-relaxed text-bone/70">{{ bio }}</p>
+            }
+
+            <button type="button"
+              class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+              [class]="pillClass(following(), 'rose')" [attr.aria-pressed]="following()" (click)="toggleFollow()">
+              <ng-icon [name]="following() ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
+              {{ following() ? 'Segui già' : 'Segui' }}
+            </button>
+
+            @if (event.organizer.instagram || event.whatsappUrl || event.organizer.website) {
+            <div class="flex flex-col gap-2 border-t border-amber/20 pt-4 text-sm">
+              @if (event.organizer.instagram; as handle) {
+              <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-2 text-bone/80 hover:text-rose">
+                <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-md">
+                  <ng-icon name="lucideInstagram" class="size-4.5 text-white" />
+                </span>
+                &#64;{{ handle }}
+              </a>
+              }
+
+              @if (event.whatsappUrl; as whatsappUrl) {
+              <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-2 text-bone/80 hover:text-[#25D366]">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#25D366]">
+                  <!-- Official WhatsApp -->
+                  <svg viewBox="0 0 24 24" class="size-4.5 fill-white" aria-hidden="true">
+                    <path
+                      d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413" />
+                  </svg>
+                </span>
+                WhatsApp
+              </a>
+              }
+
+              @if (event.organizer.website; as website) {
+              <a [href]="website" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-2 text-bone/80 hover:text-amber">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-md bg-amber/15 text-amber">
+                  <ng-icon name="lucideGlobe" class="size-3.5" />
+                </span>
+                Sito web
+              </a>
+              }
+            </div>
+            }
+          </aside>
         </div>
-        }
       </div>
-
-      <!-- Organizer sidebar -->
-      <aside class="mt-8 flex flex-col gap-4 rounded-lg bg-white p-5 shadow-sm ring-1 ring-ink/5 md:mt-0">
-        <div class="flex items-center gap-3">
-          @if (event.organizer.logoUrl) {
-          <img [src]="event.organizer.logoUrl" [alt]="event.organizer.name"
-            class="size-12 shrink-0 rounded-full object-cover ring-1 ring-ink/10" />
-          } @else {
-          <div
-            class="flex size-12 shrink-0 items-center justify-center rounded-full bg-violet/15 font-display text-sm font-bold text-violet">
-            {{ organizerInitials(event.organizer) }}
-          </div>
-          }
-          <div class="min-w-0">
-            <p class="flex items-center gap-1 truncate font-display text-base font-bold text-ink">
-              {{ event.organizer.name }}
-              @if (event.organizer.verified) {
-              <ng-icon name="lucideBadgeCheck" class="size-4 shrink-0 text-violet" aria-label="Verificato" />
-              }
-            </p>
-            <p class="text-xs text-ink/50">{{ organizerTypeLabel(event.organizer) }}</p>
-          </div>
-        </div>
-
-        @if (event.organizer.description; as bio) {
-        <p class="text-sm leading-relaxed text-ink/70">{{ bio }}</p>
-        }
-
-        <button type="button"
-          class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
-          [class]="pillClass(following(), 'rose')"
-          [attr.aria-pressed]="following()" (click)="toggleFollow()">
-          <ng-icon [name]="following() ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
-          {{ following() ? 'Segui già' : 'Segui' }}
-        </button>
-
-        @if (event.organizer.instagram || event.whatsappUrl || event.organizer.website) {
-        <div class="flex flex-col gap-2 border-t border-ink/10 pt-4 text-sm">
-          @if (event.organizer.instagram; as handle) {
-          <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
-            class="flex items-center gap-2 text-ink/80 hover:text-rose">
-            <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-md">
-              <ng-icon name="lucideInstagram" class="size-4.5 text-white" />
-            </span>
-            &#64;{{ handle }}
-          </a>
-          }
-
-          @if (event.whatsappUrl; as whatsappUrl) {
-          <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer"
-            class="flex items-center gap-2 text-ink/80 hover:text-[#25D366]">
-            <span class="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#25D366]">
-              <!-- Official WhatsApp -->
-              <svg viewBox="0 0 24 24" class="size-4.5 fill-white" aria-hidden="true">
-                <path
-                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413" />
-              </svg>
-            </span>
-            WhatsApp
-          </a>
-          }
-
-          @if (event.organizer.website; as website) {
-          <a [href]="website" target="_blank" rel="noopener noreferrer"
-            class="flex items-center gap-2 text-ink/80 hover:text-amber">
-            <span class="flex size-7 shrink-0 items-center justify-center rounded-md bg-amber/15 text-amber">
-              <ng-icon name="lucideGlobe" class="size-3.5" />
-            </span>
-            Sito web
-          </a>
-          }
-        </div>
-        }
-      </aside>
     </div>
   </div>
+
+  <!-- Flyer lightbox: tap the hero to open, tap the image to toggle between
+      fit-to-screen and full-size (pan by scrolling the overlay). -->
+  @if (flyerOpen() && event.flyerUrl) {
+  <div class="fixed inset-0 z-modal overflow-auto bg-black/90" role="dialog" aria-modal="true"
+    aria-label="Volantino evento" (click)="closeFlyer()" (keydown.escape)="closeFlyer()">
+    <button type="button"
+      class="fixed top-4 right-4 z-10 inline-flex size-10 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white backdrop-blur-sm transition-colors hover:bg-ink"
+      (click)="closeFlyer(); $event.stopPropagation()" aria-label="Chiudi">
+      <ng-icon name="lucideX" class="size-5" />
+    </button>
+
+    <div class="grid min-h-full place-items-center p-4">
+      <img [src]="event.flyerUrl" [alt]="event.title" class="transition-[max-width,max-height] duration-200"
+        [class]="flyerZoomed() ? 'max-w-none cursor-zoom-out' : 'max-h-[85vh] max-w-full object-contain cursor-zoom-in'"
+        (click)="toggleFlyerZoom(); $event.stopPropagation()" />
+    </div>
+  </div>
+  }
   } @else {
   <div class="flex flex-col items-center gap-4 px-4 py-16 text-center">
     <p class="text-sm text-rose">Impossibile trovare questo evento.</p>
-    <button type="button" class="cursor-pointer rounded-lg border border-ink/15 px-4 py-2 text-sm text-ink"
+    <button type="button" class="cursor-pointer rounded-lg border border-line px-4 py-2 text-sm text-bone"
       (click)="goBack()">
       Torna indietro
     </button>

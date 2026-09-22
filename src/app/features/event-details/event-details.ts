@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, WritableSignal, inject, signal } from '@angular/core';
+import { Component, PLATFORM_ID, WritableSignal, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -18,6 +18,7 @@ import {
   lucideUserCheck,
   lucideUserPlus,
   lucideUsers,
+  lucideX,
 } from '@ng-icons/lucide';
 import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
@@ -29,6 +30,12 @@ import { OrganizerDetailDto, OrganizerType } from '../../core/models/organizer.m
 
 /** Same window used by the map's popup card — see STARTING_SOON_MS in map.ts. */
 const STARTING_SOON_MS = 30 * 60 * 1000;
+
+/** A civico is 1-4 digits with an optional letter/slash suffix (e.g. "12",
+ * "12/A"); a 5-digit Italian CAP never matches, so it's left for addressSecondary. */
+function isCivico(part: string): boolean {
+  return /^\d{1,4}(\/?[a-zA-Z0-9]{0,3})?$/.test(part);
+}
 
 /** Italian label per EventType, same wording as the map's legend (PIN_LABELS in map.ts). */
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
@@ -83,6 +90,7 @@ const PILL_INACTIVE: Record<PillColor, string> = {
       lucideUserCheck,
       lucideUserPlus,
       lucideUsers,
+      lucideX,
     }),
   ],
 })
@@ -109,6 +117,11 @@ export class EventDetails {
    * (clipboard fallback for browsers without navigator.share). */
   protected readonly linkCopied = signal(false);
 
+  /** Fullscreen flyer lightbox: tap the hero to open, tap the image again to
+   * toggle between fit-to-screen and full-size (pannable via scroll). */
+  protected readonly flyerOpen = signal(false);
+  protected readonly flyerZoomed = signal(false);
+
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -127,6 +140,12 @@ export class EventDetails {
         this.loading.set(false);
         this.error.set(true);
       },
+    });
+
+    // Same body-scroll lock as auth-modal.ts, DOM-only hence the platform check.
+    effect(() => {
+      if (!this.isBrowser) return;
+      document.body.style.overflow = this.flyerOpen() ? 'hidden' : '';
     });
   }
 
@@ -193,6 +212,19 @@ export class EventDetails {
     }
   }
 
+  protected openFlyer(): void {
+    this.flyerZoomed.set(false);
+    this.flyerOpen.set(true);
+  }
+
+  protected closeFlyer(): void {
+    this.flyerOpen.set(false);
+  }
+
+  protected toggleFlyerZoom(): void {
+    this.flyerZoomed.update((zoomed) => !zoomed);
+  }
+
   /** Shared by toggleGoing/toggleLike: flips local state immediately, fires
    * the matching add/remove request, and rolls back if it fails. Mirrors
    * toggleOptimistic in map.ts, adapted to a single boolean instead of a Set. */
@@ -236,14 +268,15 @@ export class EventDetails {
     return Math.max(1, Math.round(msToStart / 60000));
   }
 
+  /** Date and time formatted separately and joined with a comma instead of a
+   * single toLocaleString call — it-IT's combined weekday+day+month+hour+minute
+   * format inserts "alle ore" between them (e.g. "lunedì 21 settembre alle ore
+   * 12:40"), which reads as filler here. */
   protected formatStart(event: EventDetailDto): string {
-    return new Date(event.startAt).toLocaleString('it-IT', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const start = new Date(event.startAt);
+    const date = start.toLocaleString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' });
+    const time = start.toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    return `${date}, ${time}`;
   }
 
   protected formatPrice(event: EventDetailDto): string {
@@ -252,14 +285,20 @@ export class EventDetails {
     return `${event.price} ${event.currency ?? ''}`.trim();
   }
 
+  /** Geocoded addresses already join street+civico with a space ("Via Roma
+   * 12"), but older/manually-typed ones use a comma ("Via Roma, 12") — this
+   * merges a leading civico into the primary line either way, while a 5-digit
+   * CAP in the same position is left for addressSecondary. */
   protected addressPrimary(address: string): string {
-    const idx = address.indexOf(',');
-    return idx === -1 ? address : address.slice(0, idx).trim();
+    const parts = address.split(',').map((p) => p.trim());
+    return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];
   }
 
   protected addressSecondary(address: string): string | null {
-    const idx = address.indexOf(',');
-    return idx === -1 ? null : address.slice(idx + 1).trim();
+    const parts = address.split(',').map((p) => p.trim());
+    if (parts.length <= 1) return null;
+    const rest = isCivico(parts[1]) ? parts.slice(2) : parts.slice(1);
+    return rest.length ? rest.join(', ') : null;
   }
 
   protected googleMapsUrl(event: EventDetailDto): string {
@@ -278,7 +317,7 @@ export class EventDetails {
   }
 
   protected goingCountIconClass(goingCount: number): string {
-    return goingCount > 0 ? 'text-violet' : 'text-ink/40';
+    return goingCount > 0 ? 'text-violet' : 'text-bone/70';
   }
 
   protected eventTypeLabel(event: EventDetailDto): string {

@@ -23,6 +23,7 @@ import {
   lucideClock,
   lucideHeart,
   lucideInstagram,
+  lucideMapPin,
   lucideUserCheck,
   lucideUserPlus,
   lucideUsers,
@@ -48,6 +49,12 @@ const DEFAULT_ZOOM = 14;
 /** Waits for panning/zooming to settle before hitting the API, so a burst of
  * scroll-wheel zoom steps triggers one request instead of one per step. */
 const MOVE_DEBOUNCE_MS = 400;
+
+/** A civico is 1-4 digits with an optional letter/slash suffix (e.g. "12",
+ * "12/A"); a 5-digit Italian CAP never matches, so it's left for addressSecondary. */
+function isCivico(part: string): boolean {
+  return /^\d{1,4}(\/?[a-zA-Z0-9]{0,3})?$/.test(part);
+}
 
 /** Window before an event's start in which the popup card shows an "Inizia
  * tra X min" countdown instead of the plain start time. Pins themselves
@@ -124,6 +131,7 @@ const LEGEND_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
       lucideClock,
       lucideHeart,
       lucideInstagram,
+      lucideMapPin,
       lucideUserCheck,
       lucideUserPlus,
       lucideUsers,
@@ -579,14 +587,20 @@ export class MapPage implements AfterViewInit, OnDestroy {
     return `${event.price} ${event.currency ?? ''}`.trim();
   }
 
+  /** Geocoded addresses already join street+civico with a space ("Via Roma
+   * 12"), but older/manually-typed ones use a comma ("Via Roma, 12") — this
+   * merges a leading civico into the primary line either way, while a 5-digit
+   * CAP in the same position is left for addressSecondary. */
   protected addressPrimary(address: string): string {
-    const idx = address.indexOf(',');
-    return idx === -1 ? address : address.slice(0, idx).trim();
+    const parts = address.split(',').map((p) => p.trim());
+    return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];
   }
 
   protected addressSecondary(address: string): string | null {
-    const idx = address.indexOf(',');
-    return idx === -1 ? null : address.slice(idx + 1).trim();
+    const parts = address.split(',').map((p) => p.trim());
+    if (parts.length <= 1) return null;
+    const rest = isCivico(parts[1]) ? parts.slice(2) : parts.slice(1);
+    return rest.length ? rest.join(', ') : null;
   }
 
   protected googleMapsUrl(event: EventCardDto): string {

@@ -63,7 +63,11 @@ defined here instead so both the sidebar and every page's compensating
 left padding agree on the same values — see provideHlmSidebarConfig in
 app.config.ts, which must be kept in sync with these. */
   --sidebar-width: 13rem;
-  --sidebar-width-icon: 3rem;
+  /* 3.5rem, not the library's 3rem default: fits this app's own bigger
+icons (see [hlmSidebarMenuButton] svg below) without the collapsed rail
+clipping them — a mismatch there is what made expanding the rail look like
+a resize glitch instead of a clean reveal. */
+  --sidebar-width-icon: 3.5rem;
 }
 
 @media (min-width: 640px) {
@@ -91,6 +95,26 @@ app.config.ts, which must be kept in sync with these. */
     outline: 2px solid var(--color-amber);
     outline-offset: 3px;
     border-radius: 4px;
+  }
+
+  /* Collapsed desktop rail: Spartan forces sidebar menu buttons to a 32px
+  box (size-8!) with 8px padding (p-2!) there — a 16px content box sized for
+  its own default 16px icons, not this app's bigger ones (see
+  [hlmSidebarMenuButton] svg below), which the mismatch clipped/squeezed
+  until the rail expanded and the button was free to grow — the sudden
+  jump the icon (and the account avatar) made right as it expanded. Bumped
+  to 44px (28px content — comfortably fits the 24px avatar and ~21px icons
+  with room to spare) so nothing changes size when the rail opens, just
+  reveals the label next to it.
+  Layer position matters here, not just !important: Spartan's own classes
+  are Tailwind utilities (the `!` suffix), which live in the `utilities`
+  layer; per the cascade spec, importance flips priority order between
+  layers, so an earlier-declared layer's !important (base, here) wins over
+  the later utilities layer's !important — without that this override would
+  quietly lose despite having its own !important too. */
+  [data-collapsible='icon'] [hlmSidebarMenuButton] {
+    width: 2.75rem !important;
+    height: 2.75rem !important;
   }
 }
 
@@ -160,6 +184,118 @@ reach it. In @layer components (not unlayered) so Tailwind utilities
   50% {
     transform: scale(1.08);
   }
+}
+
+/* app-navbar's sidebar menu buttons (Menu, Admin, Esci, Accedi): the base
+size/spacing/radius override that used to live here moved to plain Tailwind
+classes directly on each <a>/<button hlmSidebarMenuButton> in navbar.html
+(h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1.35rem]! — tune those
+in navbar.html itself, not here) — those are elements navbar.html authors
+directly, so there's no reason to reach them through a separate global
+stylesheet; the `!` modifier is there
+because Spartan's own h-8/gap-2/rounded-md/text-sm on the same element are
+also plain (non-important) Tailwind utilities, and which of two equal-
+specificity, non-important classes wins depends on Tailwind's own internal
+generation order, not on source position — `!` sidesteps that ambiguity
+outright instead of hoping for it. What's left here genuinely has to be
+CSS: the mobile drawer is a Spartan/CDK sheet, and Angular CDK overlays
+portal their content to a container appended to <body>, outside
+app-navbar's own DOM subtree, so a :host-scoped rule (which requires
+physical DOM descendance of the host) could never reach it — same reason
+.map-pin-wrap above has to be global instead of component-scoped. */
+
+/* Spartan's own hover:/active:/data-active: variants swap text to
+--sidebar-accent-foreground, which styles.css maps to --color-ink (the near-
+black plum the whole app is built on) — meant for a light accent background,
+but reads as the text going broken/dark the instant you tap or hover a row.
+Kept on the light --sidebar-foreground colour in every state instead. :hover
+split out below into @media (hover: hover) — see that rule for why. */
+[hlmSidebarMenuButton]:active,
+[hlmSidebarMenuButton][data-active] {
+  color: var(--color-bone) !important;
+}
+
+/* (hover: hover), not a viewport-width breakpoint: touch has no real "hover"
+— tapping either fires it and leaves it stuck until the next unrelated tap,
+or never fires it at all depending on the browser, either way reading as a
+glitch rather than feedback. :active (the transform/tint rules below) is the
+correct, reliable feedback for a tap; this keeps :hover for devices that
+have an actual pointer to hover with. */
+@media (hover: hover) {
+  [hlmSidebarMenuButton]:hover {
+    color: var(--color-bone) !important;
+  }
+}
+
+[hlmSidebarMenuButton] svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+/* Mobile drawer only: more generous padding and a bigger icon than the
+desktop rail above (font-size itself is set to the same value on both now,
+via the !important Tailwind class in navbar.html — no need to repeat it
+here). [data-mobile='true'] (set by Spartan only on the sheet variant) is
+what keeps the desktop rail from also picking this up. Restyled as
+distinct rounded cards rather than a plain flat list — bigger tap targets
+read as more deliberate buttons, not just bigger text. */
+[data-mobile='true'] ul[hlmSidebarMenu] {
+  gap: 0.6rem;
+}
+
+[data-mobile='true'] [hlmSidebarMenuButton] {
+  padding-block: 0.9rem;
+  padding-inline: 1rem;
+  gap: 1rem;
+  border: none;
+  /* One warm, elegant card for every button — the same ink-to-rose gradient
+  language as .mobile-bar / [data-slot='sidebar-inner'] above, instead of
+  each item wearing a different saturated colour (violet/amber/rose/mint
+  side by side read as a rainbow, not a brand). Solid enough to stay
+  legible over the moving aurora/starfield behind the drawer; the per-item
+  identity now lives only in the icon colour below, kept to this app's own
+  warm sunset pair (rose/amber) — violet and mint stay reserved for where
+  they already mean something specific (dance-style tags, the map). No need
+  for :hover or :active to "reveal" the button, which doesn't work reliably
+  on touch anyway — the background is !important so Spartan's own
+  hover:bg-sidebar-accent can't flash a plain rose tint over it if a tap
+  latches :hover with no real hover to release it. */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-ink-2) 82%, transparent),
+    color-mix(in srgb, var(--color-rose) 14%, var(--color-ink-2))
+  ) !important;
+  backdrop-filter: blur(10px);
+  transition: transform 0.12s ease;
+}
+
+[data-mobile='true'] [hlmSidebarMenuButton]:active {
+  transform: scale(0.97);
+}
+
+[data-mobile='true'] [hlmSidebarMenuButton] svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* Icon colour is the only thing that still varies per button — two warm
+tones, not four competing ones: amber for the routine/informational items
+(this app's existing "gold" accent), rose for the ones that act on your
+session (the site's one CTA colour, and its lighter rose-lit shade for the
+destructive Esci). Reads as one elegant, on-brand set instead of a colour
+per item. .nav-item--user has no svg of its own (it's the avatar/initial,
+styled globally in navbar.css) — nothing to tint here for that one. */
+[data-mobile='true'] .nav-item--menu svg,
+[data-mobile='true'] .nav-item--admin svg {
+  color: var(--color-amber);
+}
+
+[data-mobile='true'] .nav-item--login svg {
+  color: var(--color-rose);
+}
+
+[data-mobile='true'] .nav-item--logout svg {
+  color: var(--color-rose-lit);
 }
 
 /* "stasera" = tonight — a scatter of tiny stars over the word itself

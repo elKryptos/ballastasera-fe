@@ -47,7 +47,7 @@
 }
 
 .sheen {
-  background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--color-rose) 22%, transparent) 50%, transparent 60%);
+  background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--color-amber) 22%, transparent) 50%, transparent 60%);
   background-size: 250% 250%;
   background-repeat: no-repeat;
   filter: blur(2px);

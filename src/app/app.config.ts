@@ -27,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideHlmSidebarConfig({
       defaultOpen: false,
       sidebarWidth: '13rem',
-      sidebarWidthIcon: '3rem',
+      sidebarWidthIcon: '3.5rem',
       closeMobileSidebarOnMenuButtonClick: true,
       closeDesktopSidebarOnMenuButtonClick: false,
     }),

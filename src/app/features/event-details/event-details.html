@@ -1,11 +1,14 @@
 <app-navbar />
 <app-auth-modal [(open)]="authOpen" />
 
-<!-- Photo-forward, dark throughout: the hero and body both sit on the
-    blurred flyer over the app's own --color-ink, with content cards raised
-    on --color-ink-2 (the app's standard dark card token) rather than a
-    separate light theme. min-h-dvh keeps it covering the full viewport even
-    on the short loading/error states below. -->
+<!-- Photo-forward hero, ambient body: the hero keeps the flyer itself
+    (blurred and scaled behind the sharp poster), while the body sits on an
+    animated aurora tinted by the event's own type colour instead of the
+    flyer again — see the aurora-bg comment below. Content is raised on the
+    same translucent glass-card material (bg-neutral-800/30 + border-line +
+    backdrop-blur) as the map's popup card, so navigating map -> event
+    details doesn't jump to a different visual language. min-h-dvh keeps it
+    covering the full viewport even on the short loading/error states below. -->
 <!-- @container: the two-column hero+body layout below reacts to how much
     width is actually left after appSidebarPush's padding, not the raw
     viewport — without this, the fixed-width hero/aside columns (still keyed
@@ -23,12 +26,15 @@
       sticky hero's full height, so its own bg-ink covers the whole row
       instead of leaving unstyled space below short content. -->
   <div class="@[768px]:flex @[768px]:flex-row-reverse">
+    @if (event.flyerUrl) {
     <!-- HERO: full-width poster. Flyers are portrait, so object-cover would
       crop them — the sharp image sits object-contain over a blurred/scaled
-      copy of itself instead, showing the whole flyer, letterbox-free. -->
+      copy of itself instead, showing the whole flyer, letterbox-free.
+      Skipped entirely (no placeholder box) when the event has no flyer —
+      see the mobile-only back button further down, which takes over its
+      one essential job (navigation) for that case. -->
     <div
       class="relative h-[46vh] bg-ink w-full overflow-hidden @[768px]:h-dvh @[768px]:w-95 @[768px]:shrink-0 @[768px]:sticky @[768px]:top-0">
-      @if (event.flyerUrl) {
       <div class="absolute inset-0 scale-110 bg-cover bg-center opacity-50 blur-xl"
         [style.background-image]="'url(' + event.flyerUrl + ')'" aria-hidden="true"></div>
       <button type="button" class="absolute inset-0 h-full w-full cursor-zoom-in" (click)="openFlyer()"
@@ -36,11 +42,6 @@
         <img [src]="event.flyerUrl" [alt]="event.title" fetchpriority="high"
           class="relative h-full w-full object-contain drop-shadow-2xl" />
       </button>
-      } @else {
-      <div class="flex h-full w-full items-center justify-center bg-ink-2 text-sm text-muted">
-        Nessun volantino disponibile
-      </div>
-      }
 
       <button type="button"
         class="absolute top-3 left-3 z-10 inline-flex size-9 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white backdrop-blur-sm transition-colors hover:bg-ink @[768px]:hidden"
@@ -50,36 +51,56 @@
 
       @if (isLiveNow(event)) {
       <span
-        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-rose-lit px-3 py-1.5 font-mono text-xs text-white shadow">
+        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-rose-lit px-3 py-1.5 font-mono text-xs text-white shadow @[1024px]:hidden">
         <span class="size-2 rounded-full bg-white"></span> LIVE ORA
       </span>
       } @else if (startsInMinutes(event); as minutes) {
       <span
-        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-amber px-3 py-1.5 font-mono text-xs text-ink shadow">
+        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-amber px-3 py-1.5 font-mono text-xs text-ink shadow @[1024px]:hidden">
         Inizia tra {{ minutes }} min
       </span>
       }
     </div>
+    }
 
     <!-- BODY: single column up to 1024px of @container width, main content +
       organizer sidebar side by side from there — an editorial layout, not
       the map popup's stacked mini-card. Kept at 1024 (not 768) since 768 is
       now shared with the hero column above, and splitting again that early
       leaves too little room. -->
-    <div class="relative overflow-hidden bg-ink @[768px]:min-w-0 @[768px]:flex-1">
-      <!-- Ambient backdrop: the flyer again, blurred, scoped to this column
-        only (absolute + the parent's overflow-hidden, not fixed) so it can
-        never bleed past this div into the navbar/sidebar. A dark scrim on
-        top keeps text legible regardless of how bright the flyer is, same
-        role bg-ink played on its own before. -->
-      @if (event.flyerUrl) {
-      <div class="absolute inset-0 scale-110 bg-cover bg-center blur-sm"
-        [style.background-image]="'url(' + event.flyerUrl + ')'" aria-hidden="true"></div>
-      <div class="absolute inset-0 bg-ink/60" aria-hidden="true"></div>
-      }
-      <div class="relative mx-auto max-w-5xl px-4 py-8 @[640px]:px-6 @[768px]:px-8 @[768px]:py-12">
-        <div class="@[1024px]:grid @[1024px]:grid-cols-[320px_1fr] @[1024px]:items-start @[1024px]:gap-10">
+    <div [class]="bodyColumnClass(event)">
+      <!-- Ambient backdrop: three blurred, slowly-drifting colour blobs
+        instead of the flyer's own (often muddy/low-contrast) artwork —
+        scoped to this column only (absolute + the parent's overflow-hidden,
+        not fixed) so it never bleeds past this div into the navbar/sidebar.
+        Tinted from the event's own type colour (same mapping as its pin on
+        the map, see eventTypeColor()), so the page keeps the identity the
+        pin already established instead of resetting to a generic dark panel.
+        A twinkling starfield (same "stasera" motif as the .night scatter on
+        the landing hero/navbar logo, see styles.css) layers on top, so the
+        blobs read as an aurora seen through a night sky rather than flat
+        colour fields. -->
+      <div class="aurora-bg absolute inset-0" [style.--aurora-color]="eventTypeColor(event)" aria-hidden="true">
+        <span class="aurora-blob aurora-blob--a"></span>
+        <span class="aurora-blob aurora-blob--b"></span>
+        <span class="aurora-blob aurora-blob--c"></span>
+      </div>
+      <div class="starfield absolute inset-0" aria-hidden="true"></div>
+      <div class="absolute inset-0 bg-ink/45" aria-hidden="true"></div>
+      <div class="glass-panel-text relative mx-auto max-w-5xl px-4 py-8 @[640px]:px-6 @[768px]:px-8 @[768px]:py-12">
+        <div class="@[1024px]:relative @[1024px]:grid @[1024px]:grid-cols-[320px_1fr] @[1024px]:items-start @[1024px]:gap-10">
           <div class="flex flex-col gap-5 @[1024px]:order-2">
+            @if (!event.flyerUrl) {
+            <!-- No hero at all when there's no flyer (see above), so this
+            column has to carry the back button on mobile too, not just from
+            768px up like the copy below. -->
+            <button type="button"
+              class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-full border border-line px-3 py-1.5 text-sm font-medium text-bone transition-colors @[768px]:hidden"
+              (click)="goBack()" aria-label="Indietro">
+              <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
+            </button>
+            }
+
             <!-- Visible from 768px of @container width up to just below 1024 —
             the hero no longer carries an overlaid back button there. From
             1024 on, this copy hides and a second one takes over at the top
@@ -115,8 +136,8 @@
             @if (event.venueName || event.address) {
             <div>
               <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
-                class="flex items-start gap-3 rounded-2xl bg-[linear-gradient(135deg,rgba(255,77,109,0.18),var(--color-ink-2)_45%,var(--color-ink))] p-4 shadow-lg shadow-rose/25 ring-1 ring-rose/50 transition-all">
-                <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-rose/20">
+                class="flex items-start gap-3 rounded-lg border border-line bg-neutral-800/30 p-4 shadow-2xl backdrop-blur-sm transition-colors hover:border-rose/50">
+                <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-rose/15">
                   <img src="/icons/google-maps-pin.png" alt="" class="size-4" />
                 </span>
                 <span class="min-w-0 flex-1">
@@ -134,26 +155,28 @@
             }
 
             <!-- Quick facts -->
-            <div
-              class="flex flex-col gap-5 rounded-2xl bg-[linear-gradient(135deg,rgba(139,92,246,0.16),var(--color-ink-2)_45%,var(--color-ink))] p-5 shadow-lg shadow-violet/10 ring-1 ring-violet/25">
+            <div class="flex flex-col gap-5 rounded-lg border border-line bg-neutral-800/30 p-5 shadow-2xl backdrop-blur-sm">
               <div class="grid grid-cols-2 gap-x-4 gap-y-5 @[640px]:grid-cols-4">
                 <div class="flex flex-col gap-1">
-                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
                     <ng-icon name="lucideClock" class="size-3.5" /> Quando
                   </span>
-                  <span class="text-sm font-medium text-bone/70 capitalize">{{ formatStart(event) }}</span>
+                  <span class="flex flex-col text-sm font-medium text-bone/85">
+                    <span class="whitespace-nowrap">{{ formatDate(event) }}</span>
+                    <span class="whitespace-nowrap">{{ formatTimeRange(event) }}</span>
+                  </span>
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
                     <ng-icon name="lucideTicket" class="size-3.5" /> Prezzo
                   </span>
-                  <span class="text-sm font-medium text-bone tabular-nums" [class.text-mint]="event.free">{{
+                  <span class="text-sm font-medium text-amber tabular-nums" [class.text-mint]="event.free">{{
                     formatPrice(event) }}</span>
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
                     <ng-icon name="lucideUsers" class="size-3.5" [class]="goingCountIconClass(event.goingCount)" />
                     Partecipano
                   </span>
@@ -161,8 +184,8 @@
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/70 uppercase">
-                    <ng-icon name="lucideHeart" class="size-3.5" [class]="liked() ? 'text-rose' : 'text-bone/70'"
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
+                    <ng-icon name="lucideHeart" class="size-3.5" [class]="liked() ? 'text-rose' : 'text-bone/85'"
                       [attr.fill]="liked() ? 'currentColor' : 'none'" /> Mi piace
                   </span>
                   <span class="text-sm font-medium text-bone tabular-nums">{{ event.likesCount }}</span>
@@ -170,7 +193,7 @@
               </div>
 
               <!-- Actions -->
-              <div class="flex flex-wrap justify-center gap-3 border-t border-violet/20 pt-5">
+              <div class="flex flex-wrap justify-center gap-3 border-t border-line pt-5">
                 <button type="button"
                   class="inline-flex w-40 cursor-pointer items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors"
                   [class]="pillClass(going(), 'violet')" [attr.aria-pressed]="going()" (click)="toggleGoing()">
@@ -188,10 +211,9 @@
             </div>
 
             @if (event.description; as description) {
-            <div
-              class="rounded-2xl bg-[linear-gradient(135deg,rgba(45,212,191,0.14),var(--color-ink-2)_45%,var(--color-ink))] p-5 shadow-lg shadow-mint/10 ring-1 ring-mint/25">
+            <div class="rounded-lg border border-line bg-neutral-800/30 p-5 shadow-2xl backdrop-blur-sm">
               <h2 class="mb-2 font-display text-lg font-bold text-mint">Descrizione</h2>
-              <p class="whitespace-pre-line text-sm leading-relaxed text-bone/70 @[640px]:text-base">{{ description }}
+              <p class="whitespace-pre-line text-sm leading-relaxed text-bone/85 @[640px]:text-base">{{ description }}
               </p>
             </div>
             }
@@ -199,23 +221,42 @@
 
           <!-- Desktop only (1024px+ of @container width): the back button moves
           here, to the top of the organizer column, instead of beside the
-          title (see the tablet copy above, hidden from 1024 on). Shares the
-          aside's grid cell (col1/row1) — the aside's own @[1024px]:mt-14
-          leaves just enough room above it for this button to sit without
-          overlapping. -->
-          <button type="button"
-            class="hidden w-fit cursor-pointer items-center gap-2 rounded-full border border-white px-3 py-1.5 text-sm font-medium text-white transition-colors @[1024px]:col-start-1 @[1024px]:row-start-1 @[1024px]:inline-flex"
-            (click)="goBack()" aria-label="Indietro">
-            <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
-          </button>
+          title (see the tablet copy above, hidden from 1024 on), with the
+          live/starting-soon badge on the same row, opposite side — above
+          the title's share button. Positioned absolute (out of grid flow,
+          relative to the grid container above) rather than grid-placed, so
+          spanning the full width here doesn't reserve row 1 of column 2 and
+          push the auto-placed main content column down to row 2. The
+          aside's and the title block's own @[1024px]:mt-14 leave just
+          enough room below this row for both to sit without overlapping it. -->
+          <div
+            class="hidden @[1024px]:absolute @[1024px]:inset-x-0 @[1024px]:top-0 @[1024px]:z-10 @[1024px]:flex @[1024px]:items-center @[1024px]:justify-between">
+            <button type="button"
+              class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-full border border-white px-3 py-1.5 text-sm font-medium text-white transition-colors"
+              (click)="goBack()" aria-label="Indietro">
+              <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
+            </button>
+
+            @if (isLiveNow(event)) {
+            <span
+              class="inline-flex items-center gap-1.5 rounded-sm bg-rose-lit px-3 py-1.5 font-mono text-xs text-white shadow">
+              <span class="size-2 rounded-full bg-white"></span> LIVE ORA
+            </span>
+            } @else if (startsInMinutes(event); as minutes) {
+            <span
+              class="inline-flex items-center gap-1.5 rounded-sm bg-amber px-3 py-1.5 font-mono text-xs text-ink shadow">
+              Inizia tra {{ minutes }} min
+            </span>
+            }
+          </div>
 
           <!-- Organizer sidebar -->
           <aside
-            class="mt-8 flex flex-col gap-4 rounded-2xl bg-[linear-gradient(135deg,rgba(255,162,76,0.16),var(--color-ink-2)_45%,var(--color-ink))] p-5 shadow-lg shadow-amber/10 ring-1 ring-amber/25 @[1024px]:col-start-1 @[1024px]:row-start-1 @[1024px]:mt-14">
+            class="mt-8 flex flex-col gap-4 rounded-lg border border-line bg-neutral-800/30 p-5 shadow-2xl backdrop-blur-sm @[1024px]:col-start-1 @[1024px]:row-start-1 @[1024px]:mt-14">
             <div class="flex items-center gap-3">
               @if (event.organizer.logoUrl) {
               <img [src]="event.organizer.logoUrl" [alt]="event.organizer.name"
-                class="size-12 shrink-0 rounded-full object-cover ring-1 ring-amber/25" />
+                class="size-12 shrink-0 rounded-full object-cover ring-1 ring-line" />
               } @else {
               <div
                 class="flex size-12 shrink-0 items-center justify-center rounded-full bg-violet/15 font-display text-sm font-bold text-violet">
@@ -234,7 +275,7 @@
             </div>
 
             @if (event.organizer.description; as bio) {
-            <p class="text-sm leading-relaxed text-bone/70">{{ bio }}</p>
+            <p class="text-sm leading-relaxed text-bone/85">{{ bio }}</p>
             }
 
             <button type="button"
@@ -245,7 +286,7 @@
             </button>
 
             @if (event.organizer.instagram || event.whatsappUrl || event.organizer.website) {
-            <div class="flex flex-col gap-2 border-t border-amber/20 pt-4 text-sm">
+            <div class="flex flex-col gap-2 border-t border-line pt-4 text-sm">
               @if (event.organizer.instagram; as handle) {
               <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
                 class="flex items-center gap-2 text-bone/80 hover:text-rose">

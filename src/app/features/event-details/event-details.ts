@@ -45,6 +45,16 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   BAR: 'Bar',
 };
 
+/** Same per-type colours as the map's pins (PIN_COLORS in map.ts) — drives the
+ * animated aurora backdrop below so an event's page opens already tinted the
+ * way its pin read on the map. */
+const EVENT_TYPE_COLORS: Record<EventType, string> = {
+  EVENT: '#ff4d6d', // rose
+  SCHOOL: '#8b5cf6', // violet
+  CLUB: '#2dd4bf', // mint
+  BAR: '#ffa24c', // amber
+};
+
 const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   PERSON: 'Organizzatore',
   VENUE: 'Locale',
@@ -64,10 +74,13 @@ const PILL_ACTIVE: Record<PillColor, string> = {
   mint: 'border-mint bg-mint text-white',
   rose: 'border-rose bg-rose text-white',
 };
+// Same tint+white-text language as the map popup's own action buttons
+// (see map.html) — border color stays default (--border/line), only bg+text
+// flip, so the two cards' buttons read as one shared component.
 const PILL_INACTIVE: Record<PillColor, string> = {
-  violet: 'border-violet/25 bg-violet/10 text-violet',
-  mint: 'border-mint/25 bg-mint/10 text-mint',
-  rose: 'border-rose/25 bg-rose/10 text-rose',
+  violet: 'bg-violet/15 text-white',
+  mint: 'bg-mint/15 text-white',
+  rose: 'bg-rose/15 text-white',
 };
 
 @Component({
@@ -268,15 +281,27 @@ export class EventDetails {
     return Math.max(1, Math.round(msToStart / 60000));
   }
 
-  /** Date and time formatted separately and joined with a comma instead of a
-   * single toLocaleString call — it-IT's combined weekday+day+month+hour+minute
-   * format inserts "alle ore" between them (e.g. "lunedì 21 settembre alle ore
-   * 12:40"), which reads as filler here. */
-  protected formatStart(event: EventDetailDto): string {
-    const start = new Date(event.startAt);
-    const date = start.toLocaleString('it-IT', { weekday: 'long', day: '2-digit', month: 'long' });
-    const time = start.toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit' });
-    return `${date}, ${time}`;
+  /** Numeric day/month/year (e.g. "21/09/2026") — kept as its own method,
+   * separate from formatTimeRange below, since the Quando quick fact
+   * renders the date and the start-end time on their own lines. */
+  protected formatDate(event: EventDetailDto): string {
+    return new Date(event.startAt).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  /** Start-end range (both were sitting unused on EventDetailDto otherwise)
+   * rather than just the start time, since these are club/party nights that
+   * often run past midnight — knowing when it ends matters as much as when
+   * it starts. */
+  protected formatTimeRange(event: EventDetailDto): string {
+    return `${this.formatClock(event.startAt)} – ${this.formatClock(event.endAt)}`;
+  }
+
+  /** hour12: false pinned explicitly rather than relying on it-IT's default
+   * 24h clock — Intl's per-locale default can vary by runtime/ICU version,
+   * and this page is Italy-only, so it's never meant to show AM/PM. */
+  private formatClock(iso: string): string {
+    const time = new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${time}h`;
   }
 
   protected formatPrice(event: EventDetailDto): string {
@@ -317,11 +342,28 @@ export class EventDetails {
   }
 
   protected goingCountIconClass(goingCount: number): string {
-    return goingCount > 0 ? 'text-violet' : 'text-bone/70';
+    return goingCount > 0 ? 'text-violet' : 'text-bone/85';
   }
 
   protected eventTypeLabel(event: EventDetailDto): string {
     return EVENT_TYPE_LABELS[event.eventType];
+  }
+
+  protected eventTypeColor(event: EventDetailDto): string {
+    return EVENT_TYPE_COLORS[event.eventType];
+  }
+
+  /** With a flyer, the hero's own sticky @[768px]:h-dvh forces this column
+   * tall via flex stretch — but with no flyer there's no hero at all (see
+   * event-details.html), so nothing makes the column reach the bottom of
+   * the viewport and its aurora/starfield backdrop stops short, leaving a
+   * plain unstyled gap below the content. Forcing a floor here — viewport
+   * minus the fixed mobile header below md, full viewport from md up where
+   * the header becomes the sidebar instead (mirrors main's own
+   * pt-(--header-h) md:pt-0) — closes that gap. */
+  protected bodyColumnClass(event: EventDetailDto): string {
+    const base = 'relative overflow-hidden bg-ink @[768px]:min-w-0 @[768px]:flex-1';
+    return event.flyerUrl ? base : `${base} min-h-[calc(100dvh-var(--header-h))] md:min-h-dvh`;
   }
 
   protected organizerTypeLabel(organizer: OrganizerDetailDto): string {

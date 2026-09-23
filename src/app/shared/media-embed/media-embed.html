@@ -17,13 +17,15 @@
           overflow-hidden border-0 bg-ink-2 p-4 text-left"
   >
     @if (posterUrl()) {
+      <!-- Lazy: every current placement of this component sits below the
+        fold, so eager/high-priority would only steal bandwidth from what's
+        actually above it on first paint. -->
       <img
         class="poster absolute inset-0 h-full w-full object-cover"
         [src]="posterUrl()"
         (error)="nextPoster()"
         alt=""
-        loading="eager"
-        fetchpriority="high"
+        loading="lazy"
         decoding="async"
       />
     }

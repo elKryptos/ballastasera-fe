@@ -5,24 +5,17 @@
     "titleLine2Plain": "baila",
     "titleLine2Highlight": "estanoche?",
     "lead": "Salsa, bachata y mucho más: cada noche de baile en Italia en un solo lugar, actualizado día a día. Lo estamos construyendo ahora mismo — empezamos desde Milán.",
-    "emailLabel": "Tu email",
-    "emailPlaceholder": "tu@email.com",
-    "submit": "Avísame",
-    "doneText": "Ya estás dentro.",
-    "doneStrong": "Te avisamos nosotros",
-    "doneSuffix": "el día que abramos.",
-    "errorHint": "Necesitas una dirección completa, como nombre@dominio.com",
-    "hint": "Cero spam. Un único email, el día de la apertura.",
     "musicOn": "Música encendida",
     "musicOff": "Pon la música"
   },
   "mapTeaser": {
-    "titlePrefix": "Próximamente: el mapa",
+    "titlePrefix": "El mapa",
     "titleHighlight": "en tiempo real",
     "badge": "Vista previa de Milán",
-    "description": "Estamos por activar el mapa que mostrará <b class=\"font-semibold text-bone\">dónde se baila esta misma noche</b>, noche a noche, en tiempo real. Para abrirlo solo hará falta iniciar sesión — podrás hacerlo <b class=\"font-semibold text-bone\">con tu cuenta de Google</b> — y al principio cubrirá <b class=\"font-semibold text-bone\">solo Milán</b>: lo iremos abriendo ciudad por ciudad.",
-    "googleCta": "Iniciar sesión con Google",
-    "hint": "Así serás de los primeros en tener el mapa, en cuanto abra."
+    "description": "Mira <b class=\"font-semibold text-bone\">dónde se baila esta misma noche</b>, noche a noche, en tiempo real — libremente, sin necesidad de iniciar sesión. Solo te pediremos iniciar sesión <b class=\"font-semibold text-bone\">con tu cuenta de Google</b> si quieres dar like o decir que vas a una noche. Al principio cubre <b class=\"font-semibold text-bone\">solo Milán</b>: lo iremos abriendo ciudad por ciudad.",
+    "googleCta": "Abrir el mapa",
+    "hint": "Sin login para mirar — solo para dar like o participar.",
+    "liveLabel": "Milán, en directo"
   },
   "legend": {
     "event": "Evento",
@@ -52,8 +45,6 @@
     "titleHighlight": "Tenemos una gran novedad para ti.",
     "badge": "Ya llegamos",
     "intro": "Locales, escuelas, profesores, organizadores de socials y eventos: estamos construyendo algo <b class=\"font-semibold text-bone\">pensado para ti</b> — para que te encuentre quien esta noche quiere bailar y todavía no sabe dónde. Ya falta poco.",
-    "mapBadge": "Milán — vista previa",
-    "mapCaption": "Mapa de ejemplo, el resultado final será más claro y legible. Los pines son inventados, no representan locales reales.",
     "watchOnInstagram": "Ver en Instagram",
     "instagramCta": "Escríbenos por Instagram",
     "instagramHint": "¿Quieres ser de los primeros? Escríbenos: empezamos desde Milán.",

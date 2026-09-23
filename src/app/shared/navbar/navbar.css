@@ -4,9 +4,27 @@
    new containing block, since filters do that to fixed-position descendants
    same as `transform` does — the dialog's `fixed inset-0` would then
    resolve against this element instead of the viewport, and never be
-   visible. */
+   visible.
+
+   The --color-* custom properties below pin this component to the shared
+   brand palette (see @theme in styles.css) no matter which page mounts it.
+   Without this, a page that locally overrides these same var() names on
+   its own :host (e.g. landing's own palette in landing.css) would cascade
+   straight into this component too, since it's a normal DOM descendant of
+   that page's host — the sidebar would then look different depending on
+   which route it's rendered in, which isn't what any page actually wants
+   from shared chrome. Literal values, matching @theme exactly — kept in
+   sync by hand, since a page-scoped override and a "never override this"
+   pin can't both live on the same custom property without one of them
+   duplicating the other's value somewhere. */
 :host {
   display: block;
+  --color-ink: #1a0e2e;
+  --color-ink-2: #2a1640;
+  --color-rose: #ff4d6d;
+  --color-amber: #ffa24c;
+  --color-violet: #8b5cf6;
+  --color-line: rgba(253, 242, 236, 0.14);
 }
 
 /* Mobile-only top bar: the sidebar itself renders nothing on screen below

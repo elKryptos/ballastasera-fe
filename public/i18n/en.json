@@ -5,24 +5,17 @@
     "titleLine2Plain": "dance",
     "titleLine2Highlight": "tonight?",
     "lead": "Salsa, bachata and more: every night out in Italy in one place, updated day by day. We're building it right now — starting from Milan.",
-    "emailLabel": "Your email",
-    "emailPlaceholder": "your@email.com",
-    "submit": "Notify me",
-    "doneText": "You're in.",
-    "doneStrong": "We'll let you know",
-    "doneSuffix": "the day we open.",
-    "errorHint": "You need a full address, like name@domain.com",
-    "hint": "Zero spam. One single email, on opening day.",
     "musicOn": "Music on",
     "musicOff": "Play the music"
   },
   "mapTeaser": {
-    "titlePrefix": "Coming soon: the map",
+    "titlePrefix": "The map",
     "titleHighlight": "in real time",
     "badge": "Milan preview",
-    "description": "We're about to launch the map that shows <b class=\"font-semibold text-bone\">where people are dancing tonight</b>, night by night, in real time. Opening it just takes signing in — you'll be able to do that <b class=\"font-semibold text-bone\">with your Google account</b> — and at first it'll cover <b class=\"font-semibold text-bone\">only Milan</b>: we're opening it city by city.",
-    "googleCta": "Sign in with Google",
-    "hint": "That way you're among the first to get the map, the moment it opens."
+    "description": "See <b class=\"font-semibold text-bone\">where people are dancing tonight</b>, night by night, in real time — freely, no sign-in needed. We'll only ask you to sign in <b class=\"font-semibold text-bone\">with your Google account</b> if you want to like a night or say you're going. At first it covers <b class=\"font-semibold text-bone\">only Milan</b>: we're opening it city by city.",
+    "googleCta": "Open the map",
+    "hint": "No login to look around — only to like or join a night.",
+    "liveLabel": "Milan, live"
   },
   "legend": {
     "event": "Event",
@@ -52,8 +45,6 @@
     "titleHighlight": "We've got great news for you.",
     "badge": "We're coming",
     "intro": "Venues, schools, instructors, event and social organisers: we're building something <b class=\"font-semibold text-bone\">made for you</b> — to get you found by whoever wants to dance tonight and doesn't yet know where. Not long now.",
-    "mapBadge": "Milan — preview",
-    "mapCaption": "Sample map, the final result will be clearer and easier to read. The pins are made up and don't represent real venues.",
     "watchOnInstagram": "Watch on Instagram",
     "instagramCta": "Message us on Instagram",
     "instagramHint": "Want to be among the first? Message us: we're starting from Milan.",

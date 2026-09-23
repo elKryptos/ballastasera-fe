@@ -41,10 +41,18 @@ import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 import { environment } from '../../../environments/environment';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import {
+  MILAN_CENTER,
+  MILAN_DEFAULT_ZOOM,
+  PIN_COLORS,
+  PIN_GLYPHS,
+  PIN_SHAPES,
+  PIN_TYPES,
+} from '../../core/config/map-pins';
 
 /** Fallback view when there's no city yet to centre on: Milano, zoomed to city level. */
-const DEFAULT_CENTER: [number, number] = [45.4642, 9.19];
-const DEFAULT_ZOOM = 14;
+const DEFAULT_CENTER = MILAN_CENTER;
+const DEFAULT_ZOOM = MILAN_DEFAULT_ZOOM;
 
 /** Waits for panning/zooming to settle before hitting the API, so a burst of
  * scroll-wheel zoom steps triggers one request instead of one per step. */
@@ -74,42 +82,6 @@ const SELECTED_PIN_VERTICAL_RATIO = 0.32;
 
 type PulseState = 'live' | null;
 
-/** Pin colour per EventType, reusing the brand accents from styles.css so the
- * map stays inside the same palette as the rest of the UI. */
-const PIN_COLORS: Record<EventType, string> = {
-  EVENT: '#ff4d6d', // rose
-  SCHOOL: '#8b5cf6', // violet
-  CLUB: '#2dd4bf', // mint
-  BAR: '#ffa24c', // amber
-};
-
-/** Outer pin outline per EventType — colour alone isn't enough to
- * distinguish them (colourblindness, greyscale printouts), so the shape
- * itself changes too. Each path fills a 24x32 viewBox, tip at (12, 32). */
-const PIN_SHAPES: Record<EventType, string> = {
-  // Classic teardrop.
-  EVENT: 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z',
-  // Shield.
-  SCHOOL: 'M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z',
-  // Hexagon on a point.
-  CLUB: 'M12 0 23 7v14L12 32 1 21V7z',
-  // Rounded square on a point.
-  BAR: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
-};
-
-/** Inner glyph per EventType, drawn in white centred around (12, 12). */
-const PIN_GLYPHS: Record<EventType, string> = {
-  // Star.
-  EVENT: 'M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z',
-  // Graduation cap.
-  SCHOOL:
-    'M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z',
-  // Music note.
-  CLUB: 'M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z',
-  // Cocktail glass.
-  BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',
-};
-
 /** Italian label per EventType, shown in the map legend. */
 const PIN_LABELS: Record<EventType, string> = {
   EVENT: 'Evento',
@@ -118,7 +90,7 @@ const PIN_LABELS: Record<EventType, string> = {
   BAR: 'Bar',
 };
 
-const LEGEND_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
+const LEGEND_TYPES: EventType[] = PIN_TYPES;
 
 @Component({
   selector: 'app-map',

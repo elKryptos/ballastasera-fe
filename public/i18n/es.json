@@ -72,5 +72,12 @@
   },
   "footer": {
     "location": "Milán — Italia"
+  },
+  "installBanner": {
+    "title": "Instala ballastasera",
+    "androidBody": "Agrégala a tu pantalla de inicio: se abre como una app, sin pasar por el navegador.",
+    "androidCta": "Instalar",
+    "iosBody": "Agrégala a tu pantalla de inicio: toca Compartir y luego \"Agregar a inicio\".",
+    "dismiss": "Cerrar"
   }
 }

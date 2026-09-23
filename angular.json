@@ -32,6 +32,7 @@
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
+            "serviceWorker": "ngsw-config.json",
             "security": {
               "allowedHosts": []
             },

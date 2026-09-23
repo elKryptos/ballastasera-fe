@@ -1,0 +1,35 @@
+@if (visible()) {
+<div class="install-banner fixed inset-x-0 flex justify-center px-3" role="region"
+  [attr.aria-label]="'installBanner.title' | transloco">
+  <div
+    class="flex w-full max-w-md items-center gap-3 rounded-2xl border border-line bg-ink/90 p-3 pr-2 text-left shadow-[0_12px_30px_-10px_rgba(0,0,0,0.6)] backdrop-blur-sm sm:max-w-lg">
+    <img src="/icon-192.png" alt="" class="size-10 shrink-0 rounded-xl" />
+
+    <div class="min-w-0 flex-1">
+      <p class="font-mono text-[0.72rem] font-bold tracking-wide text-bone uppercase">
+        {{ 'installBanner.title' | transloco }}
+      </p>
+      @if (install.canInstall()) {
+      <p class="mt-0.5 text-[0.78rem] leading-snug text-lead">{{ 'installBanner.androidBody' | transloco }}</p>
+      } @else {
+      <p class="mt-0.5 text-[0.78rem] leading-snug text-lead">{{ 'installBanner.iosBody' | transloco }}</p>
+      }
+    </div>
+
+    @if (install.canInstall()) {
+    <button type="button" (click)="startInstall()"
+      class="shrink-0 cursor-pointer rounded-full bg-rose px-3.5 py-1.5 font-mono text-[0.7rem] font-bold tracking-wide text-ink uppercase transition-transform active:scale-95">
+      {{ 'installBanner.androidCta' | transloco }}
+    </button>
+    }
+
+    <button type="button" (click)="close()" [attr.aria-label]="'installBanner.dismiss' | transloco"
+      class="shrink-0 cursor-pointer rounded-full p-1.5 text-muted transition-colors hover:text-bone">
+      <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </div>
+</div>
+}

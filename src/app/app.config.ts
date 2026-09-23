@@ -1,6 +1,7 @@
-import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
+import { ApplicationConfig, isDevMode, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideTransloco } from '@jsverse/transloco';
 import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 
@@ -49,6 +50,16 @@ export const appConfig: ApplicationConfig = {
         prodMode: environment.production,
       },
       loader: TranslocoHttpLoader,
+    }),
+    // Purely to satisfy PWA install criteria (Chrome/Android requires a
+    // registered, controlling service worker before it'll offer to install
+    // the app) and to cache the static build output. `navigationUrls: []`
+    // in ngsw-config.json keeps it from ever intercepting page navigations,
+    // so it doesn't change the SSR/prerender/canonical-redirect behaviour
+    // this app relies on — every route still always hits the network.
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAppInitializer(
       () =>

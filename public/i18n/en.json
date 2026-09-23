@@ -72,5 +72,12 @@
   },
   "footer": {
     "location": "Milan — Italy"
+  },
+  "installBanner": {
+    "title": "Install ballastasera",
+    "androidBody": "Add it to your home screen: it opens like an app, no browser needed.",
+    "androidCta": "Install",
+    "iosBody": "Add it to your home screen: tap Share, then \"Add to Home Screen\".",
+    "dismiss": "Close"
   }
 }

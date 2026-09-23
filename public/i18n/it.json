@@ -72,5 +72,12 @@
   },
   "footer": {
     "location": "Milano — Italia"
+  },
+  "installBanner": {
+    "title": "Installa ballastasera",
+    "androidBody": "Aggiungila alla schermata home: si apre come un'app, senza passare dal browser.",
+    "androidCta": "Installa",
+    "iosBody": "Aggiungila alla schermata home: tocca Condividi, poi \"Aggiungi a Home\".",
+    "dismiss": "Chiudi"
   }
 }

@@ -13,6 +13,7 @@ import { RouterLink } from '@angular/router';
 import type { Map as LeafletMap } from 'leaflet';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { Navbar } from '../../shared/navbar/navbar';
+import { InstallBanner } from '../../shared/install-banner/install-banner';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
@@ -67,7 +68,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, MediaEmbed, Navbar, NgClass, TranslocoPipe, SidebarPushDirective],
+  imports: [RouterLink, MediaEmbed, Navbar, NgClass, TranslocoPipe, SidebarPushDirective, InstallBanner],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })

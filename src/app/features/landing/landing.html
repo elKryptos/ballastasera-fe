@@ -191,7 +191,7 @@
   <section class="map-teaser hud-divider flex flex-col gap-6 border-t border-line pt-8 md:ml-4 lg:ml-4">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 class="section-title font-display text-2xl font-bold tracking-[-0.02em] text-balance">
-        {{ 'mapTeaser.titlePrefix' | transloco }} <span class="text-mint">{{ 'mapTeaser.titleHighlight' | transloco }}</span>
+        {{ 'mapTeaser.titlePrefix' | transloco }} <span class="text-mint">{{ 'mapTeaser.titleHighlight' | transloco }}</span><span> in arrivo</span>
       </h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-amber uppercase">
         {{ 'mapTeaser.badge' | transloco }}
@@ -203,11 +203,11 @@
         — real Leaflet tiles, not a drawing, but no events are fetched here:
         that stays reserved for /mappa once the visitor actually opens it.
         Clicking through anywhere on it opens the full /mappa experience. -->
-      <a #teaserVisual routerLink="/mappa" aria-label="{{ 'mapTeaser.googleCta' | transloco }}"
+      <a #teaserVisual aria-label="{{ 'mapTeaser.googleCta' | transloco }}"
         class="teaser-visual group relative isolate block aspect-4/5 w-full shrink-0 overflow-hidden rounded-3xl border border-line bg-ink-2/60 no-underline sm:aspect-square">
         <div #miniMap class="pointer-events-none absolute inset-0" aria-hidden="true"></div>
         <span
-          class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center gap-1.5 bg-gradient-to-t from-ink/90 to-transparent px-3 pt-8 pb-3">
+          class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center gap-1.5 bg-linear-to-t from-ink/90 to-transparent px-3 pt-8 pb-3">
           <span class="relative flex size-1.5 shrink-0">
             <span class="absolute inline-flex size-full animate-ping rounded-full bg-rose opacity-75"></span>
             <span class="relative inline-flex size-1.5 rounded-full bg-rose"></span>
@@ -224,7 +224,7 @@
         </p>
 
         <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
-          <a routerLink="/mappa"
+          <!-- <a routerLink="/mappa"
             class="google-cta flex cursor-pointer items-center gap-2.5 rounded-xl border border-line bg-bone/95 px-5 py-3 text-[0.85rem] font-semibold text-ink no-underline
               transition-all duration-200 hover:bg-bone active:translate-y-px">
             <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -233,7 +233,7 @@
               <circle cx="12" cy="9" r="2.5" />
             </svg>
             {{ 'mapTeaser.googleCta' | transloco }}
-          </a>
+          </a> -->
           <p class="font-mono text-[0.7rem] text-muted">
             {{ 'mapTeaser.hint' | transloco }}
           </p>

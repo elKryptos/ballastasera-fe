@@ -11,6 +11,7 @@
   "mapTeaser": {
     "titlePrefix": "The map",
     "titleHighlight": "in real time",
+    "titleIsComing": "is coming",
     "badge": "Milan preview",
     "description": "See <b class=\"font-semibold text-bone\">where people are dancing tonight</b>, night by night, in real time — freely, no sign-in needed. We'll only ask you to sign in <b class=\"font-semibold text-bone\">with your Google account</b> if you want to like a night or say you're going. At first it covers <b class=\"font-semibold text-bone\">only Milan</b>: we're opening it city by city.",
     "googleCta": "Open the map",

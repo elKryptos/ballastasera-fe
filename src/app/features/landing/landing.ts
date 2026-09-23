@@ -16,6 +16,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
+import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MILAN_CENTER, MILAN_DEFAULT_ZOOM, PIN_GLYPHS, PIN_SHAPES, PIN_TYPES } from '../../core/config/map-pins';
 import { environment } from '../../../environments/environment';
@@ -84,7 +85,7 @@ export class Landing implements AfterViewInit, OnDestroy {
 
   protected setLang(lang: string): void {
     this.transloco.setActiveLang(lang);
-    localStorage.setItem('lang', lang);
+    writeLangCookie(lang);
   }
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);

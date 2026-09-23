@@ -11,6 +11,7 @@
   "mapTeaser": {
     "titlePrefix": "La mappa",
     "titleHighlight": "in tempo reale",
+    "titleIsComing": "in arrivo",
     "badge": "Anteprima Milano",
     "description": "Guarda <b class=\"font-semibold text-bone\">dove si balla proprio stasera</b>, serata per serata, in tempo reale — liberamente, senza bisogno di accedere. Ti chiederemo di accedere <b class=\"font-semibold text-bone\">con il tuo account Google</b> solo se vuoi mettere like o dire che parteciperai a una serata. All'inizio copre <b class=\"font-semibold text-bone\">solo Milano</b>: la apriamo città dopo città.",
     "googleCta": "Apri la mappa",

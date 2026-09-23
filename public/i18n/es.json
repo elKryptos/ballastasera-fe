@@ -11,6 +11,7 @@
   "mapTeaser": {
     "titlePrefix": "El mapa",
     "titleHighlight": "en tiempo real",
+    "titleIsComing": "pronto",
     "badge": "Vista previa de Milán",
     "description": "Mira <b class=\"font-semibold text-bone\">dónde se baila esta misma noche</b>, noche a noche, en tiempo real — libremente, sin necesidad de iniciar sesión. Solo te pediremos iniciar sesión <b class=\"font-semibold text-bone\">con tu cuenta de Google</b> si quieres dar like o decir que vas a una noche. Al principio cubre <b class=\"font-semibold text-bone\">solo Milán</b>: lo iremos abriendo ciudad por ciudad.",
     "googleCta": "Abrir el mapa",

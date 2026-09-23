@@ -241,7 +241,12 @@ export class Landing implements AfterViewInit, OnDestroy {
     const container = this.miniMapContainer()?.nativeElement;
     if (!container) return;
 
-    const L = await import('leaflet');
+    // Leaflet is CJS/UMD, not real ESM: esbuild's production bundle can
+    // synthesize a namespace that only has the module under `.default`
+    // instead of spreading it onto the namespace itself (works either way
+    // in dev, breaks silently in the optimized prod build).
+    const leafletModule = await import('leaflet');
+    const L = 'map' in leafletModule ? leafletModule : (leafletModule as unknown as { default: typeof leafletModule }).default;
     this.miniMap = L.map(container, {
       center: MILAN_CENTER,
       zoom: MILAN_DEFAULT_ZOOM,

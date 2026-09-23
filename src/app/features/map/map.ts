@@ -283,8 +283,12 @@ export class MapPage implements AfterViewInit, OnDestroy {
     if (!this.isBrowser) return;
 
     // Dynamic import: leaflet touches `window` at module load time, which
-    // doesn't exist during SSR.
-    this.leaflet = await import('leaflet');
+    // doesn't exist during SSR. Leaflet is CJS/UMD, not real ESM: esbuild's
+    // production bundle can synthesize a namespace that only has the module
+    // under `.default` instead of spreading it onto the namespace itself
+    // (works either way in dev, breaks silently in the optimized prod build).
+    const leafletModule = await import('leaflet');
+    this.leaflet = 'map' in leafletModule ? leafletModule : (leafletModule as unknown as { default: typeof leafletModule }).default;
     this.initMap(this.leaflet);
   }
 

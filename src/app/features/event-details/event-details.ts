@@ -305,7 +305,7 @@ export class EventDetails {
   }
 
   protected formatPrice(event: EventDetailDto): string {
-    if (event.free) return 'GRATIS';
+    if (event.isFree) return 'GRATIS';
     if (event.price == null) return 'Prezzo su invito';
     return `${event.price} ${event.currency ?? ''}`.trim();
   }

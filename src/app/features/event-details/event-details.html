@@ -171,7 +171,7 @@
                   <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
                     <ng-icon name="lucideTicket" class="size-3.5" /> Prezzo
                   </span>
-                  <span class="text-sm font-medium text-amber tabular-nums" [class.text-mint]="event.free">{{
+                  <span class="text-sm font-medium text-amber tabular-nums" [class.text-mint]="event.isFree">{{
                     formatPrice(event) }}</span>
                 </div>
 
@@ -293,7 +293,7 @@
                 <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-md">
                   <ng-icon name="lucideInstagram" class="size-4.5 text-white" />
                 </span>
-                &#64;{{ handle }}
+                {{ handle }}
               </a>
               }
 

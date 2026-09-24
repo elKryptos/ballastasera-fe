@@ -14,7 +14,7 @@ export interface EventCardDto {
   startAt: string;
   endAt: string;
   liveNow: boolean;
-  free: boolean;
+  isFree: boolean;
   price: number | null;
   currency: string | null;
   latitude: number;
@@ -60,7 +60,7 @@ export interface EventDetailDto {
   startAt: string;
   endAt: string;
   liveNow: boolean;
-  free: boolean;
+  isFree: boolean;
   price: number | null;
   currency: string | null;
   address: string;
@@ -79,3 +79,29 @@ export interface EventDetailDto {
   interestedCount: number;
 }
 
+export interface EventSeriesCreateDto {
+  organizerId: string;
+  venueId: string | null;
+  cityId: number;
+  title: string;
+  rrule: string;
+  description: string | null;
+  flyerUrl: string | null;
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+  isFree: boolean;
+  price: number | null;
+  currency: string | null;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  startTime: string;        // "HH:mm[:ss]" (LocalTime)
+  endTime: string | null;
+  danceStyleIds: number[];
+}
+
+/** Minimal shape of the create-series response; extend once the backend DTO is final. */
+export interface EventSeriesDetailDto {
+  id: string;
+  title: string;
+}

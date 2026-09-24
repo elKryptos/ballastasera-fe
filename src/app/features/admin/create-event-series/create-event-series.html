@@ -1,0 +1,250 @@
+<app-navbar />
+
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-4xl px-6 py-4" novalidate>
+    <h1 class="text-xl font-semibold">Crea serie di eventi</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Organizzatore *</label>
+        <hlm-autocomplete #organizerAutocomplete class="block" formControlName="organizerId"
+          [itemToString]="organizerItemToString" [search]="organizerSearch()"
+          (searchChange)="organizerSearch.set($event)">
+          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca organizzatore..."
+            class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @for (o of filteredOrganizers(); track o.id) {
+                <hlm-autocomplete-item [value]="o.id">{{ o.name }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.organizerId.invalid && form.controls.organizerId.touched) {
+          <span class="text-red-600">Seleziona un organizzatore.</span>
+          } @else if (selectedOrganizer(); as organizer) {
+          <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{
+            organizer.id }}</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Città *</label>
+        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
+          <button type="button" brnSelectTrigger
+            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Seleziona città"></span>
+            <span class="text-muted-foreground">▾</span>
+          </button>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (c of cities(); track c.id) {
+              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
+          <span class="text-red-600">Seleziona una città.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 md:col-span-2">
+        <label class="text-sm font-medium">Locale</label>
+        <hlm-autocomplete #venueAutocomplete class="block" formControlName="venueId"
+          [itemToString]="venueItemToString" [search]="venueSearch()" (searchChange)="venueSearch.set($event)">
+          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Seleziona prima una città, poi cerca il locale..."
+            class="w-full rounded border px-3 py-2" (click)="openVenueDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @for (v of venues(); track v.id) {
+                <hlm-autocomplete-item [value]="v.id">{{ v.name }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun locale trovato</hlm-autocomplete-empty>
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete>
+        <p class="min-h-5 text-sm">
+          @if (selectedVenue(); as venue) {
+          <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{
+            venue.id }}</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 md:col-span-2">
+        <label for="title" class="text-sm font-medium">Titolo *</label>
+        <input id="title" type="text" formControlName="title" placeholder="Es. Serata Salsa Bachata"
+          class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched" />
+        <p class="min-h-5 text-sm">
+          @if (form.controls.title.invalid && form.controls.title.touched) {
+          <span class="text-red-600">Titolo obbligatorio (max 150 caratteri).</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 md:col-span-2 mb-4">
+        <label class="text-sm font-medium">Ricorrenza</label>
+        <!-- TODO: recurrence selector (rrule) — pending backend implementation. -->
+        <div
+          class="flex min-h-16 items-center justify-center rounded border border-dashed px-3 py-4 text-sm text-muted-foreground">
+          Selettore di ricorrenza in arrivo
+        </div>
+      </div>
+
+      <div class="space-y-1 md:col-span-2 mb-4">
+        <label for="description" class="text-sm font-medium">Descrizione</label>
+        <textarea id="description" formControlName="description" rows="2"
+          placeholder="Racconta la serie in 2 righe..." class="w-full rounded border px-3 py-2"></textarea>
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="instagramUrl" class="text-sm font-medium">Instagram URL</label>
+        <input id="instagramUrl" type="url" formControlName="instagramUrl" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="whatsappUrl" class="text-sm font-medium">WhatsApp URL</label>
+        <input id="whatsappUrl" type="url" formControlName="whatsappUrl" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 mb-4 relative">
+        <label for="startTime" class="text-sm font-medium">Ora di inizio *</label>
+        <input id="startTime" type="time" formControlName="startTime" class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.startTime.invalid && form.controls.startTime.touched" />
+        @if (form.controls.startTime.invalid && form.controls.startTime.touched) {
+        <p class="absolute top-full left-0 text-sm text-red-600">Ora di inizio obbligatoria.</p>
+        }
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="endTime" class="text-sm font-medium">Ora di fine</label>
+        <input id="endTime" type="time" formControlName="endTime" class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div
+        class="md:col-span-2 mb-4 rounded-lg border overflow-hidden transition-colors has-checked:border-green-600 not-has-checked:border-yellow-600">
+        <label
+          class="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer transition-colors has-checked:bg-green-600/10 not-has-checked:bg-yellow-600/10">
+          <span class="flex flex-col gap-0.5">
+            <span class="text-sm font-medium">Serie gratuita</span>
+            <span class="text-sm text-muted-foreground">Nessun biglietto o contributo richiesto per partecipare</span>
+          </span>
+          <input type="checkbox" formControlName="isFree"
+            class="size-5 shrink-0 rounded border accent-red-600 checked:accent-green-600" />
+        </label>
+
+        @if (!form.controls.isFree.value) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 border-t border-yellow-600/30 bg-yellow-600/5 p-4">
+          <div class="space-y-1">
+            <label for="price" class="text-sm font-medium">Prezzo</label>
+            <input id="price" type="number" min="0" step="0.01" formControlName="price"
+              class="w-full rounded border px-3 py-2" />
+          </div>
+
+          <div class="space-y-1">
+            <label for="currency" class="text-sm font-medium">Valuta</label>
+            <input id="currency" type="text" formControlName="currency" class="w-full rounded border px-3 py-2" />
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="space-y-1 mb-4 relative md:col-span-2">
+        <label for="address" class="text-sm font-medium">Indirizzo *</label>
+        <hlm-autocomplete-search class="block" formControlName="address" [search]="addressSearch()"
+          (searchChange)="addressSearch.set($event)" [itemToString]="addressItemToString">
+          <input id="address" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca un indirizzo..."
+            class="w-full rounded border px-3 py-2"
+            [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"
+            (click)="openAddressDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @if (addressSearching()) {
+                <hlm-autocomplete-status>Ricerca in corso...</hlm-autocomplete-status>
+                } @else {
+                @for (suggestion of addressSuggestions(); track suggestion.label) {
+                <hlm-autocomplete-item [value]="suggestion">{{ suggestion.label }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun indirizzo trovato</hlm-autocomplete-empty>
+                }
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete-search>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.address.invalid && form.controls.address.touched) {
+          <span class="text-sm text-red-600">Indirizzo obbligatorio.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="latitude" class="text-sm font-medium">Latitudine</label>
+        <input id="latitude" type="number" step="any" formControlName="latitude"
+          class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-1 mb-4">
+        <label for="longitude" class="text-sm font-medium">Longitudine</label>
+        <input id="longitude" type="number" step="any" formControlName="longitude"
+          class="w-full rounded border px-3 py-2" />
+      </div>
+
+      <div class="space-y-2 md:col-span-2 mb-4">
+        <label class="text-sm font-medium">Stili di danza</label>
+        <div class="flex flex-wrap gap-3 mt-4">
+          @for (style of danceStyles(); track style.id) {
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" class="size-4 rounded border" [checked]="selectedDanceStyleIds().has(style.id)"
+              (change)="toggleDanceStyle(style.id)" />
+            {{ style.name }}
+          </label>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+    <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+    }
+
+    @if (createdSeries()) {
+    <div class="rounded-lg bg-primary/10 text-primary text-sm px-4 py-3 flex items-center gap-2 mb-4">
+      <span>✓</span>
+      <span><strong>{{ createdSeries()!.title }}</strong> è stata creata con successo.</span>
+    </div>
+    <div class="flex justify-end gap-3">
+      <button type="button" (click)="createAnother()"
+        class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent">
+        Crea un'altra
+      </button>
+      <button type="button" (click)="backToAdmin()"
+        class="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90">
+        Torna alla home admin
+      </button>
+    </div>
+    } @else {
+    <div class="flex justify-end">
+      <button type="submit" [disabled]="submitting()"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50">
+        @if (submitting()) {
+        <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+        }
+        {{ submitting() ? 'Creazione...' : 'Crea serie' }}
+      </button>
+    </div>
+    }
+  </form>
+</main>

@@ -558,7 +558,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
   }
 
   protected formatPrice(event: EventCardDto): string {
-    if (event.free) return 'GRATIS';
+    if (event.isFree) return 'GRATIS';
     if (event.price == null) return 'Prezzo su invito';
     return `${event.price} ${event.currency ?? ''}`.trim();
   }

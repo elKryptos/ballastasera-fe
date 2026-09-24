@@ -99,5 +99,13 @@ export const routes: Routes = [
         (m) => m.EventDetails),
   },
 
+  {
+    path: 'admin/create-event-series',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventSeries), roleGuard('ADMIN')],
+    loadComponent: () => 
+      import('./features/admin/create-event-series/create-event-series').then(
+        (m) => m.CreateEventSeries)
+  },
+
   { path: '**', redirectTo: '' },
 ];

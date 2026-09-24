@@ -1,0 +1,371 @@
+<app-navbar />
+
+<main class="pt-(--header-h)">
+  <div class="mx-auto max-w-2xl px-5 pt-10 pb-24 sm:px-8">
+    @if (loading()) {
+      <p class="text-lead">Caricamento…</p>
+    } @else if (loadFailed()) {
+      <section class="rounded-2xl border border-line bg-ink-2 p-8 text-center">
+        <p class="text-lead">Non è stato possibile caricare i dati del form.</p>
+        <button hlmBtn class="mt-4" (click)="load()">Riprova</button>
+      </section>
+    } @else if (noVerifiedOrganizers()) {
+      <section class="rounded-2xl border border-line bg-ink-2 p-8 text-center">
+        <h1 class="font-display text-2xl font-bold">Nessun organizzatore verificato</h1>
+        <p class="mt-3 text-lead">
+          Un evento nasce a nome di un organizzatore verificato: ottieni la verifica del tuo
+          organizzatore e torna qui per creare il tuo primo evento.
+        </p>
+      </section>
+    } @else {
+      <header class="mb-10">
+        <p class="text-sm font-semibold text-amber">Passo 1 di 2</p>
+        <h1 class="font-display text-3xl font-bold tracking-[-0.01em]">Crea evento</h1>
+        <p class="mt-2 text-lead">
+          Definisci l'evento: al passo successivo carichi il flyer e lo pubblichi.
+        </p>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="space-y-10">
+        <section class="space-y-4">
+          <div class="space-y-1.5">
+            <label hlmLabel for="organizer">Organizzatore</label>
+            <hlm-select class="block" formControlName="organizerId" [itemToString]="organizerLabel">
+              <hlm-select-trigger id="organizer" class="w-full">
+                <hlm-select-value placeholder="Scegli l'organizzatore" />
+              </hlm-select-trigger>
+              <ng-template hlmSelectPortal>
+                <hlm-select-content>
+                  @for (organizer of verifiedOrganizers(); track organizer.id) {
+                    <hlm-select-item [value]="organizer.id">{{ organizer.name }}</hlm-select-item>
+                  }
+                </hlm-select-content>
+              </ng-template>
+            </hlm-select>
+          </div>
+          @if (form.controls.organizerId.invalid && form.controls.organizerId.touched) {
+            <p class="text-sm text-rose">Scegli l'organizzatore a nome del quale crei l'evento.</p>
+          }
+        </section>
+
+        <section class="space-y-4">
+          <h2 class="text-sm font-medium text-lead">Dettagli</h2>
+
+          <div class="space-y-1.5">
+            <label hlmLabel for="title">Titolo *</label>
+            <input
+              hlmInput
+              id="title"
+              type="text"
+              formControlName="title"
+              placeholder="Es. Milonga del porto"
+              [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched"
+            />
+            @if (form.controls.title.invalid && form.controls.title.touched) {
+              <p class="text-sm text-rose">Il titolo è obbligatorio (max 150 caratteri).</p>
+            }
+          </div>
+
+          <div class="space-y-1.5">
+            <label hlmLabel for="eventType">Tipo *</label>
+            <hlm-select class="block" formControlName="eventType" [itemToString]="eventTypeLabel">
+              <hlm-select-trigger id="eventType" class="w-full">
+                <hlm-select-value placeholder="Che tipo di evento è?" />
+              </hlm-select-trigger>
+              <ng-template hlmSelectPortal>
+                <hlm-select-content>
+                  @for (type of eventTypes; track type.value) {
+                    <hlm-select-item [value]="type.value">{{ type.label }}</hlm-select-item>
+                  }
+                </hlm-select-content>
+              </ng-template>
+            </hlm-select>
+            @if (form.controls.eventType.invalid && form.controls.eventType.touched) {
+              <p class="text-sm text-rose">Scegli il tipo di evento.</p>
+            }
+          </div>
+
+          <div class="space-y-1.5">
+            <label hlmLabel for="description">Descrizione</label>
+            <textarea
+              hlmInput
+              id="description"
+              formControlName="description"
+              rows="3"
+              placeholder="Racconta l'evento in due righe"
+            ></textarea>
+            @if (form.controls.description.invalid && form.controls.description.touched) {
+              <p class="text-sm text-rose">Massimo 2000 caratteri.</p>
+            }
+          </div>
+        </section>
+
+        <section class="space-y-4">
+          <h2 class="text-sm font-medium text-lead">Dove</h2>
+
+          <div class="space-y-1.5">
+            <label hlmLabel for="city">Città *</label>
+            <hlm-select
+              class="block"
+              formControlName="cityId"
+              (valueChange)="onCityChange($event)"
+              [itemToString]="cityLabel"
+            >
+              <hlm-select-trigger id="city" class="w-full">
+                <hlm-select-value placeholder="Dove si svolge?" />
+              </hlm-select-trigger>
+              <ng-template hlmSelectPortal>
+                <hlm-select-content>
+                  @for (city of cities(); track city.id) {
+                    <hlm-select-item [value]="cityValue(city)">{{ city.name }}</hlm-select-item>
+                  }
+                </hlm-select-content>
+              </ng-template>
+            </hlm-select>
+            @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
+              <p class="text-sm text-rose">Scegli la città.</p>
+            }
+          </div>
+
+          @if (form.controls.cityId.value) {
+            @if (venuesLoading()) {
+              <p class="text-sm text-lead">Caricamento locali…</p>
+            }
+
+            @if (venues().length > 0) {
+              <div class="space-y-1.5">
+                <label hlmLabel for="venue">Locale</label>
+                <hlm-select
+                  class="block"
+                  formControlName="venueId"
+                  (valueChange)="onVenueChange($event)"
+                  [itemToString]="venueLabel"
+                >
+                  <hlm-select-trigger id="venue" class="w-full">
+                    <hlm-select-value placeholder="Nessun locale — indirizzo libero" />
+                  </hlm-select-trigger>
+                  <ng-template hlmSelectPortal>
+                    <hlm-select-content>
+                      <hlm-select-item value="">Nessun locale</hlm-select-item>
+                      @for (venue of venues(); track venue.id) {
+                        <hlm-select-item [value]="venue.id">{{ venue.name }}</hlm-select-item>
+                      }
+                    </hlm-select-content>
+                  </ng-template>
+                </hlm-select>
+                <p class="text-xs text-muted">
+                  Scegli un locale già censito o scrivi l'indirizzo a mano.
+                </p>
+              </div>
+            }
+
+            @if (!venueChosen()) {
+              <div class="space-y-1.5">
+                <label hlmLabel for="address">Indirizzo *</label>
+                <input
+                  hlmInput
+                  id="address"
+                  type="text"
+                  formControlName="address"
+                  autocomplete="off"
+                  (input)="onAddressInput($any($event.target).value)"
+                  placeholder="Inizia a scrivere: es. Via Roma 1, Milano"
+                  [attr.aria-invalid]="
+                    form.controls.address.invalid && form.controls.address.touched
+                  "
+                />
+                @if (addressSearching()) {
+                  <p class="text-xs text-muted">Ricerca indirizzo…</p>
+                }
+                @if (addressSuggestions().length > 0) {
+                  <ul
+                    class="max-h-60 overflow-y-auto rounded-xl border border-line bg-ink-2"
+                    role="listbox"
+                    aria-label="Suggerimenti indirizzo"
+                  >
+                    @for (suggestion of addressSuggestions(); track suggestion.label) {
+                      <li class="border-b border-line last:border-b-0">
+                        <button
+                          type="button"
+                          (click)="selectSuggestion(suggestion)"
+                          class="w-full px-3 py-2 text-left text-sm text-lead transition-colors hover:bg-rose/10 hover:text-bone cursor-pointer"
+                        >
+                          {{ addressItemToString(suggestion) }}
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                }
+                <p class="text-xs text-muted">
+                  Seleziona un suggerimento per inviare le coordinate; scrivi a mano e sarà il
+                  backend a geocodificare l'indirizzo.
+                </p>
+                @if (form.controls.address.invalid && form.controls.address.touched) {
+                  <p class="text-sm text-rose">
+                    Serve un indirizzo: sarà geocodificato dal backend.
+                  </p>
+                }
+              </div>
+            }
+          }
+        </section>
+
+        <section class="space-y-4">
+          <h2 class="text-sm font-medium text-lead">Stili di ballo</h2>
+          <div class="flex flex-wrap gap-2">
+            @for (style of danceStyles(); track style.id) {
+              <button
+                type="button"
+                (click)="toggleStyle(style.id)"
+                [attr.aria-pressed]="selectedStyleIds().has(style.id)"
+                class="rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors cursor-pointer"
+                [class]="
+                  selectedStyleIds().has(style.id)
+                    ? 'border-rose bg-rose/15 text-rose'
+                    : 'border-line text-lead hover:border-lead hover:text-bone'
+                "
+              >
+                {{ style.name }}
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="space-y-4">
+          <h2 class="text-sm font-medium text-lead">Quando</h2>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="space-y-1.5">
+              <label hlmLabel for="startAt">Inizio *</label>
+              <input
+                hlmInput
+                id="startAt"
+                type="datetime-local"
+                formControlName="startAt"
+                [attr.aria-invalid]="form.controls.startAt.invalid && form.controls.startAt.touched"
+              />
+              @if (form.controls.startAt.hasError('required') && form.controls.startAt.touched) {
+                <p class="text-sm text-rose">Scegli data e ora di inizio.</p>
+              } @else if (
+                form.controls.startAt.hasError('future') && form.controls.startAt.touched
+              ) {
+                <p class="text-sm text-rose">L'inizio deve essere nel futuro.</p>
+              }
+            </div>
+
+            <div class="space-y-1.5">
+              <label hlmLabel for="endAt">Fine *</label>
+              <input
+                hlmInput
+                id="endAt"
+                type="datetime-local"
+                formControlName="endAt"
+                [min]="form.controls.startAt.value"
+                [attr.aria-invalid]="
+                  (form.controls.endAt.invalid && form.controls.endAt.touched) ||
+                  (form.hasError('endBeforeStart') && form.controls.endAt.touched)
+                "
+              />
+              @if (form.controls.endAt.invalid && form.controls.endAt.touched) {
+                <p class="text-sm text-rose">Scegli data e ora di fine.</p>
+              } @else if (form.hasError('endBeforeStart') && form.controls.endAt.touched) {
+                <p class="text-sm text-rose">La fine deve venire dopo l'inizio.</p>
+              }
+            </div>
+          </div>
+        </section>
+
+        <section class="space-y-4">
+          <h2 class="text-sm font-medium text-lead">Biglietto</h2>
+
+          <div
+            class="inline-flex rounded-full border border-line p-1"
+            role="group"
+            aria-label="Ingresso gratuito o a pagamento"
+          >
+            <button
+              type="button"
+              (click)="setFree(true)"
+              [attr.aria-pressed]="form.controls.free.value"
+              class="rounded-full px-4 py-1.5 text-sm font-semibold transition-colors cursor-pointer"
+              [class]="form.controls.free.value ? 'bg-rose text-ink' : 'text-lead hover:text-bone'"
+            >
+              Gratuito
+            </button>
+            <button
+              type="button"
+              (click)="setFree(false)"
+              [attr.aria-pressed]="!form.controls.free.value"
+              class="rounded-full px-4 py-1.5 text-sm font-semibold transition-colors cursor-pointer"
+              [class]="!form.controls.free.value ? 'bg-rose text-ink' : 'text-lead hover:text-bone'"
+            >
+              A pagamento
+            </button>
+          </div>
+
+          @if (!form.controls.free.value) {
+            <div class="space-y-1.5 max-w-40">
+              <label hlmLabel for="price">Prezzo (€) *</label>
+              <input
+                hlmInput
+                id="price"
+                type="number"
+                formControlName="price"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                [attr.aria-invalid]="form.controls.price.invalid && form.controls.price.touched"
+              />
+              @if (form.controls.price.invalid && form.controls.price.touched) {
+                <p class="text-sm text-rose">Inserisci un prezzo valido (≥ 0).</p>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="space-y-4">
+          <h2 class="text-sm font-medium text-lead">Contatti</h2>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="space-y-1.5">
+              <label hlmLabel for="instagramUrl">Instagram</label>
+              <input
+                hlmInput
+                id="instagramUrl"
+                type="text"
+                formControlName="instagramUrl"
+                placeholder="https://www.instagram.com/…"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label hlmLabel for="whatsappUrl">WhatsApp</label>
+              <input
+                hlmInput
+                id="whatsappUrl"
+                type="text"
+                formControlName="whatsappUrl"
+                placeholder="https://wa.me/…"
+              />
+            </div>
+          </div>
+        </section>
+
+        @if (errorMessage()) {
+          <p class="rounded-xl border border-rose/30 bg-rose/10 px-4 py-3 text-sm text-rose">
+            {{ errorMessage() }}
+          </p>
+        }
+
+        <div class="flex justify-end">
+          <button hlmBtn type="submit" [disabled]="submitting()">
+            @if (submitting()) {
+              <span
+                class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"
+              ></span>
+            }
+            {{ submitting() ? 'Creazione…' : 'Crea evento' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</main>

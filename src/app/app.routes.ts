@@ -94,9 +94,24 @@ export const routes: Routes = [
   {
     path: 'evento/:id',
     canMatch: [featureFlagGuard(FEATURE_FLAGS.eventDetailsPage)],
-    loadComponent: () => 
-      import('./features/event-details/event-details').then( 
-        (m) => m.EventDetails),
+    loadComponent: () =>
+      import('./features/event-details/event-details').then((m) => m.EventDetails),
+  },
+
+  {
+    // Creazione evento per l'organizzatore verificato (spec 01): stesso flag del
+    // pannello admin, ma guardia sul ruolo ORGANIZER.
+    path: 'organizer/events/new',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventPage), roleGuard('ORGANIZER')],
+    loadComponent: () => import('./features/events/create-event/create-event').then((m) => m.CreateEvent),
+  },
+
+  {
+    // Pubblicazione dell'evento appena creato: recupera il dettaglio privato
+    // con GET /rest/events/{id}/manage e gestisce flyer + Pubblica/Annulla.
+    path: 'organizer/events/:id/publish',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventPage), roleGuard('ORGANIZER')],
+    loadComponent: () => import('./features/events/publish-event/publish-event').then((m) => m.PublishEvent),
   },
 
   { path: '**', redirectTo: '' },

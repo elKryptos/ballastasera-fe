@@ -17,7 +17,7 @@ import { EventsService } from '../../../core/services/events.service';
 import { CitiesService } from '../../../core/services/cities.service';
 import { DanceStylesService } from '../../../core/services/dance-styles.service';
 import { GeocodingService } from '../../../core/services/geocoding.service';
-import { EventCreateDto, EventDetailDto, EventType } from '../../../core/models/event.model';
+import { AdminEventCreateDto, EventDetailDto, EventType } from '../../../core/models/event.model';
 import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
@@ -212,7 +212,7 @@ export class CreateEvent implements OnInit {
     this.errorMessage.set(null);
 
     const value = this.form.getRawValue();
-    const body: EventCreateDto = {
+    const body: AdminEventCreateDto = {
       organizerId: value.organizerId,
       venueId: null,
       seriesId: null,

@@ -29,9 +29,10 @@ interface PhotonResponse {
 export class GeocodingService {
   private readonly http = inject(HttpClient);
 
-  searchAddress(query: string, limit = 5): Observable<AddressSuggestion[]> {
+  /** Photon: limite fisso a 30, il dropdown mostra tutte le suggestions deduplicate. */
+  searchAddress(query: string): Observable<AddressSuggestion[]> {
     return this.http
-      .get<PhotonResponse>(PHOTON_API_URL, { params: { q: query, limit } })
+      .get<PhotonResponse>(PHOTON_API_URL, { params: { q: query, limit: 30 } })
       .pipe(map((response) => dedupeByLabel(response.features.map(toAddressSuggestion))));
   }
 }

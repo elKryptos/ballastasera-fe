@@ -1,0 +1,154 @@
+<app-navbar />
+
+<main class="pt-(--header-h)">
+  <div class="mx-auto max-w-4xl px-5 pt-10 pb-24 sm:px-8">
+
+    @if (loading()) {
+    <p class="text-lead">Caricamento…</p>
+    }
+
+    @else if (loadFailed()) {
+    <section class="rounded-2xl border border-line bg-ink-2 p-8 text-center">
+      <p class="text-lead">Evento non trovato o non più accessibile.</p>
+      <button hlmBtn class="mt-4" (click)="loadEvent()">Riprova</button>
+    </section>
+    }
+
+    @else if (published()) {
+    <section class="mx-auto max-w-xl rounded-2xl border border-line bg-ink-2 p-10 text-center">
+      <div class="mx-auto flex size-14 items-center justify-center rounded-full bg-rose/15 text-2xl text-rose">✓</div>
+      <h1 class="mt-5 font-display text-2xl font-bold">Evento pubblicato</h1>
+      <p class="mt-2 text-lead">
+        <strong class="text-bone">{{ event()?.title }}</strong> è ora visibile sulla mappa.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <button hlmBtn variant="outline" (click)="createAnother()">Crea un altro</button>
+        <button hlmBtn routerLink="/mappa">Vai alla mappa</button>
+      </div>
+    </section>
+    }
+
+    @else {
+    <header class="mb-10">
+      <p class="text-sm font-semibold text-amber">Passo 2 di 2</p>
+      <h1 class="font-display text-3xl font-bold tracking-[-0.01em]">Pubblica evento</h1>
+      <p class="mt-2 text-lead">Aggiungi un flyer se vuoi, poi pubblica: sarà visibile a tutti.</p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-[2fr_3fr]">
+
+      <section class="rounded-2xl border border-line bg-ink-2 p-5">
+        <h2 class="text-sm font-medium text-lead">Flyer</h2>
+
+        @if (flyerReady()) {
+        <img [src]="flyerUrl()" alt="Flyer di {{ event()?.title }}"
+          class="mt-3 max-h-96 w-full rounded-xl object-contain" />
+        }
+        @else if (flyerStatus() === 'PROCESSING') {
+        <div class="mt-3 flex items-center gap-3 text-lead">
+          <span class="size-5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+          <p>Elaborazione del flyer…</p>
+        </div>
+        @if (flyerPollExpired()) {
+        <p class="mt-2 text-sm text-lead">Sta mettendo più tempo del previsto.</p>
+        <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="refreshFlyer()" [disabled]="refreshingFlyer()">
+          {{ refreshingFlyer() ? 'Aggiornamento…' : 'Aggiorna' }}
+        </button>
+        }
+        }
+        @else if (flyerStatus() === 'FAILED') {
+        <p class="mt-3 text-sm text-rose">Il flyer non è andato a buon fine.</p>
+        <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="retryFlyer()">Riprova</button>
+        }
+        @else {
+        <button hlmBtn variant="outline" class="mt-3" (click)="retryFlyer()" [disabled]="uploadingFlyer()">
+          @if (uploadingFlyer()) {
+          <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+          }
+          {{ uploadingFlyer() ? 'Caricamento…' : 'Carica flyer' }}
+        </button>
+        <p class="mt-2 text-xs text-muted">Facoltativo. JPEG, PNG o WebP, max 10 MB.</p>
+        }
+
+        <input #flyerInput type="file" accept="image/jpeg,image/png,image/webp" class="sr-only"
+          (change)="onFlyerChange($event)" aria-label="Carica flyer" />
+
+        @if (flyerError()) {
+        <p class="mt-3 text-sm text-rose">{{ flyerError() }}</p>
+        }
+      </section>
+
+      <section class="rounded-2xl border border-line bg-ink-2 p-5">
+        <h2 class="text-sm font-medium text-lead">Riepilogo</h2>
+
+        <h3 class="mt-3 font-display text-xl font-bold">{{ event()?.title }}</h3>
+        <p class="mt-1 text-sm text-lead">
+          {{ startAtLabel() }} → {{ endAtLabel() }}
+        </p>
+        <dl class="mt-4 space-y-2 text-sm">
+          <div class="flex justify-between gap-4">
+            <dt class="text-muted">Città</dt>
+            <dd class="text-bone">{{ event()?.cityName }}</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-muted">Luogo</dt>
+            <dd class="truncate text-bone">{{ event()?.venueName ?? event()?.address }}</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-muted">Biglietto</dt>
+            <dd class="text-bone">{{ priceLabel() }}</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-muted">Organizzatore</dt>
+            <dd class="text-bone">{{ event()?.organizer?.name }}</dd>
+          </div>
+        </dl>
+
+        @if (event()?.description) {
+        <p class="mt-4 line-clamp-3 text-sm text-lead">{{ event()!.description }}</p>
+        }
+
+        @if (event()?.danceStyles?.length) {
+        <div class="mt-4 flex flex-wrap gap-1.5">
+          @for (style of event()!.danceStyles; track style) {
+          <span class="rounded-full border border-line px-2.5 py-1 text-xs font-medium text-lead">{{ style }}</span>
+          }
+        </div>
+        }
+
+        @if (errorMessage()) {
+        <p class="mt-4 rounded-xl border border-rose/30 bg-rose/10 px-4 py-3 text-sm text-rose">{{ errorMessage() }}</p>
+        }
+
+        <div class="mt-6 flex items-center justify-end gap-3">
+          <hlm-alert-dialog>
+            <button hlmBtn hlmAlertDialogTrigger variant="outline">Annulla</button>
+            <hlm-alert-dialog-content *brnAlertDialogContent="let ctx" class="ring-rose/30">
+              <hlm-alert-dialog-header>
+                <hlm-alert-dialog-media class="bg-rose/15 text-rose text-lg">⚠</hlm-alert-dialog-media>
+                <h3 hlmAlertDialogTitle class="text-rose">Annullare l'evento?</h3>
+                <p hlmAlertDialogDescription>
+                  {{ event()?.title }} verrà eliminato definitivamente e non potrai riprendere la pubblicazione.
+                </p>
+              </hlm-alert-dialog-header>
+              <hlm-alert-dialog-footer>
+                <button hlmAlertDialogCancel [disabled]="deleting()">Torna all'evento</button>
+                <button hlmAlertDialogAction (click)="cancelEvent()" [disabled]="deleting()">
+                  {{ deleting() ? 'Eliminazione…' : 'Sì, annulla' }}
+                </button>
+              </hlm-alert-dialog-footer>
+            </hlm-alert-dialog-content>
+          </hlm-alert-dialog>
+
+          <button hlmBtn (click)="publish()" [disabled]="publishing()">
+            @if (publishing()) {
+            <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+            }
+            {{ publishing() ? 'Pubblicazione…' : 'Pubblica' }}
+          </button>
+        </div>
+      </section>
+    </div>
+    }
+  </div>
+</main>

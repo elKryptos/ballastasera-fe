@@ -1,8 +1,11 @@
-import { OrganizerDetailDto, OrganizerSummaryDto } from "./organizer.model";
+import { OrganizerDetailDto, OrganizerSummaryDto } from './organizer.model';
+import { DanceStyleDto } from './dance-style.model';
 
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
 export type FlyerStatus = 'NONE' | 'PROCESSING' | 'READY' | 'FAILED';
+/** Mirrors EventStatus in the backend. */
+export type EventStatus = 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'CANCELLED';
 
 /** Marker/card payload for the map — mirrors EventCardDto in the backend. */
 export interface EventCardDto {
@@ -29,6 +32,30 @@ export interface EventCardDto {
 
 export interface EventCreateDto {
   organizerId: string;
+  venueId: string | null; // null si el usuario no eligió venue
+  cityId: number;
+  title: string;
+  eventType: EventType;
+  description: string | null;
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+  startAt: string; // OffsetDateTime con offset local del navegador
+  endAt: string;
+  free: boolean; // el backend solo deserializa "free"; "isFree" se ignora
+  price: number | null; // null cuando free === true
+  currency: string; // siempre 'EUR'
+  address: string;
+  latitude?: number; // coordenadas de la suggestion Photon seleccionada
+  longitude?: number;
+  danceStyleIds: number[];
+  // flyerUrl e seriesId nunca se envían.
+}
+
+/** Payload dell'endpoint admin POST /rest/admin/events (flusso del collega, fuori
+ * dallo scope di questa spec): conserva la forma storica con seriesId/flyerUrl/isFree
+ * così il componente admin continua a compilare senza modifiche logiche. */
+export interface AdminEventCreateDto {
+  organizerId: string;
   venueId: string | null;
   seriesId: string | null;
   cityId: number;
@@ -38,14 +65,14 @@ export interface EventCreateDto {
   flyerUrl: string | null;
   instagramUrl: string | null;
   whatsappUrl: string | null;
-  startAt: string; //ISO OffDateTime
-  endAt: string; //ISO OffDateTime
+  startAt: string;
+  endAt: string;
   isFree: boolean;
   price: number | null;
   currency: string | null;
   address: string;
-  latitude: number | null;
-  longitude: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
   danceStyleIds: number[];
 }
 
@@ -77,4 +104,41 @@ export interface EventDetailDto {
   likesCount: number;
   goingCount: number;
   interestedCount: number;
+}
+
+/** Detalle privado del organizador — espeja OrganizerEventDetailDto del backend
+ * (GET /rest/events/{id}/manage): no incluye likesCount y danceStyles son objetos completos. */
+export interface OrganizerEventDetailDto {
+  id: string;
+  slug: string;
+  title: string;
+  eventType: EventType;
+  status: EventStatus;
+  description: string | null;
+  flyerUrl: string | null;
+  flyerStatus: FlyerStatus | null;
+  startAt: string; // ISO OffsetDateTime
+  endAt: string;
+  liveNow: boolean;
+  free: boolean;
+  price: number | null;
+  currency: string | null;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  cityId: number;
+  venueId: string | null;
+  seriesId: string | null;
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+  danceStyles: DanceStyleDto[]; // id, name y slug
+  organizer: OrganizerDetailDto;
+  venueName: string | null;
+  cityName: string;
+  goingCount: number;
+  interestedCount: number;
+}
+
+export interface EventStatusUpdateDto {
+  status: EventStatus;
 }

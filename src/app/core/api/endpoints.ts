@@ -47,6 +47,7 @@ export const endpoints = {
   events: {
     mapEvents: '/rest/events',
     detail: (id: string) => `/rest/events/${id}`,
+    manage: (id: string) => `/rest/events/${id}/manage`,
     create: '/rest/events',
     update: (id: string) => `/rest/events/${id}`,
     updateStatus: (id: string) => `/rest/events/${id}/status`,

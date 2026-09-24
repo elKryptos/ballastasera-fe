@@ -98,6 +98,16 @@
       </li>
       }
 
+      <li *appRole="'ORGANIZER'" hlmSidebarMenuItem>
+        <a hlmSidebarMenuButton routerLink="/organizer/events/new" tooltip="Crea evento">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>Crea evento</span>
+        </a>
+      </li>
+
       <li *appRole="'ADMIN'" hlmSidebarMenuItem>
         <a hlmSidebarMenuButton routerLink="/admin" tooltip="Admin"
           class="nav-item--admin h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">

@@ -5,7 +5,7 @@ import { OrganizerCreateDto, OrganizerDetailDto, OrganizerSummaryDto, OrganizerU
 import { PageDto, SpringPage } from '../models/page.model';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
-import { EventCreateDto, EventDetailDto, EventSeriesCreateDto, EventSeriesDetailDto } from '../models/event.model';
+import { EventCardDto, EventCreateDto, EventDetailDto, EventSeriesCreateDto, EventSeriesDetailDto, EventSeriesGenerateOccurrencesDto } from '../models/event.model';
 
 @Service()
 export class AdminService {
@@ -47,6 +47,10 @@ export class AdminService {
 
   createEventSeries(body: EventSeriesCreateDto): Observable<EventSeriesDetailDto> {
     return this.http.post<EventSeriesDetailDto>(`${environment.apiUrl}${endpoints.admin.createEventSeries}`, body);
+  }
+
+  generateEventSeriesOccurrences(id: string, body: EventSeriesGenerateOccurrencesDto): Observable<EventCardDto[]> {
+    return this.http.post<EventCardDto[]>(`${environment.apiUrl}${endpoints.admin.generateEventSeriesOccurrences(id)}`, body);
   }
 
   uploadEventFlyer(id: string, file: File): Observable<EventDetailDto> {

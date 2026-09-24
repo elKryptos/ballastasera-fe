@@ -94,12 +94,21 @@
       </div>
 
       <div class="space-y-1 md:col-span-2 mb-4">
-        <label class="text-sm font-medium">Ricorrenza</label>
-        <!-- TODO: recurrence selector (rrule) — pending backend implementation. -->
-        <div
-          class="flex min-h-16 items-center justify-center rounded border border-dashed px-3 py-4 text-sm text-muted-foreground">
-          Selettore di ricorrenza in arrivo
+        <label class="text-sm font-medium">Ricorrenza *</label>
+        <div class="flex flex-wrap gap-3 mt-2">
+          @for (day of recurrenceDayOptions; track day.value) {
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" class="size-4 rounded border" [checked]="selectedRecurrenceDays().has(day.value)"
+              (change)="toggleRecurrenceDay(day.value)" />
+            {{ day.label }}
+          </label>
+          }
         </div>
+        <p class="min-h-5 text-sm">
+          @if (recurrenceDaysTouched() && selectedRecurrenceDays().size === 0) {
+          <span class="text-red-600">Seleziona almeno un giorno.</span>
+          }
+        </p>
       </div>
 
       <div class="space-y-1 md:col-span-2 mb-4">
@@ -225,6 +234,55 @@
       <span>✓</span>
       <span><strong>{{ createdSeries()!.title }}</strong> è stata creata con successo.</span>
     </div>
+
+    @if (!generatedOccurrences()) {
+    <div class="rounded-lg border px-4 py-4 mb-4 space-y-3">
+      <h2 class="text-sm font-medium">Genera le prime occorrenze</h2>
+      <p class="text-sm text-muted-foreground">
+        Scegli un intervallo di date: verrà creato un evento pubblicato per ogni giorno di ricorrenza scelto sopra,
+        all'interno di questo intervallo.
+      </p>
+      <form [formGroup]="occurrencesForm" (ngSubmit)="generateOccurrences()"
+        class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
+        <div class="space-y-1">
+          <label for="occStartDate" class="text-sm font-medium">Da *</label>
+          <input id="occStartDate" type="date" formControlName="startDate" class="w-full rounded border px-3 py-2"
+            [attr.aria-invalid]="occurrencesForm.controls.startDate.invalid && occurrencesForm.controls.startDate.touched" />
+        </div>
+        <div class="space-y-1">
+          <label for="occEndDate" class="text-sm font-medium">A *</label>
+          <input id="occEndDate" type="date" formControlName="endDate" class="w-full rounded border px-3 py-2"
+            [attr.aria-invalid]="occurrencesForm.controls.endDate.invalid && occurrencesForm.controls.endDate.touched" />
+        </div>
+        @if (occurrencesError()) {
+        <p class="md:col-span-2 text-sm text-red-600">{{ occurrencesError() }}</p>
+        }
+        <div class="md:col-span-2 flex justify-end mt-2">
+          <button type="submit" [disabled]="generatingOccurrences()"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50">
+            @if (generatingOccurrences()) {
+            <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+            }
+            {{ generatingOccurrences() ? 'Generazione...' : 'Genera occorrenze' }}
+          </button>
+        </div>
+      </form>
+    </div>
+    }
+
+    @if (generatedOccurrences(); as occurrences) {
+    <div class="rounded-lg bg-primary/10 text-primary text-sm px-4 py-3 mb-4">
+      <span>Generate {{ occurrences.length }} occorrenze.</span>
+      @if (occurrences.length > 0) {
+      <ul class="mt-2 list-disc list-inside">
+        @for (o of occurrences; track o.id) {
+        <li>{{ o.startAt | date:'EEEE d MMMM, HH:mm' }}</li>
+        }
+      </ul>
+      }
+    </div>
+    }
+
     <div class="flex justify-end gap-3">
       <button type="button" (click)="createAnother()"
         class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent">

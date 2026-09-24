@@ -3,10 +3,14 @@ import { OrganizerDetailDto, OrganizerSummaryDto } from "./organizer.model";
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
 export type FlyerStatus = 'NONE' | 'PROCESSING' | 'READY' | 'FAILED';
+/** Mirrors java.time.DayOfWeek, used by EventSeries recurrence. */
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 
 /** Marker/card payload for the map — mirrors EventCardDto in the backend. */
 export interface EventCardDto {
   id: string;
+  /** Non-null when this occurrence was generated from an EventSeries. */
+  seriesId: string | null;
   slug: string;
   title: string;
   flyerUrl: string | null;
@@ -51,6 +55,8 @@ export interface EventCreateDto {
 
 export interface EventDetailDto {
   id: string;
+  /** Non-null when this occurrence was generated from an EventSeries. */
+  seriesId: string | null;
   slug: string;
   title: string;
   eventType: EventType;
@@ -84,7 +90,7 @@ export interface EventSeriesCreateDto {
   venueId: string | null;
   cityId: number;
   title: string;
-  rrule: string;
+  recurrenceDays: DayOfWeek[];
   description: string | null;
   flyerUrl: string | null;
   instagramUrl: string | null;
@@ -100,8 +106,34 @@ export interface EventSeriesCreateDto {
   danceStyleIds: number[];
 }
 
-/** Minimal shape of the create-series response; extend once the backend DTO is final. */
 export interface EventSeriesDetailDto {
   id: string;
   title: string;
+  recurrenceDays: DayOfWeek[];
+  active: boolean;
+  /** Last date through which occurrences have already been generated in `events`. */
+  generatedUntil: string | null;
+  description: string | null;
+  flyerUrl: string | null;
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+  startTime: string;
+  endTime: string | null;
+  isFree: boolean;
+  price: number | null;
+  currency: string | null;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  cityName: string;
+  venueName: string | null;
+  organizer: OrganizerDetailDto;
+  danceStyles: string[];
+}
+
+/** Body for POST /event-series/{id}/occurrences — generates concrete Events
+ * for every recurrenceDays match within [startDate, endDate]. */
+export interface EventSeriesGenerateOccurrencesDto {
+  startDate: string; // "yyyy-MM-dd" (LocalDate)
+  endDate: string;   // "yyyy-MM-dd" (LocalDate)
 }

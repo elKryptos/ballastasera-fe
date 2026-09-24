@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal, viewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,7 +14,7 @@ import { CitiesService } from '../../../core/services/cities.service';
 import { DanceStylesService } from '../../../core/services/dance-styles.service';
 import { GeocodingService } from '../../../core/services/geocoding.service';
 import { VenuesService } from '../../../core/services/venues.service';
-import { EventSeriesCreateDto, EventSeriesDetailDto } from '../../../core/models/event.model';
+import { DayOfWeek, EventCardDto, EventSeriesCreateDto, EventSeriesDetailDto } from '../../../core/models/event.model';
 import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
@@ -30,7 +31,7 @@ const ADDRESS_SEARCH_DEBOUNCE_MS = 300;
   selector: 'app-create-event-series',
   imports: [
     ReactiveFormsModule, Navbar, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
-    BrnAutocompleteInput, BrnAutocompleteAnchor, SidebarPushDirective
+    BrnAutocompleteInput, BrnAutocompleteAnchor, SidebarPushDirective, DatePipe
   ],
   templateUrl: './create-event-series.html',
   styleUrl: './create-event-series.css',
@@ -77,17 +78,35 @@ export class CreateEventSeries implements OnInit {
   protected readonly danceStyles = signal<DanceStyleDto[]>([]);
   protected readonly selectedDanceStyleIds = signal<Set<number>>(new Set());
 
+  protected readonly recurrenceDayOptions: { value: DayOfWeek; label: string }[] = [
+    { value: 'MONDAY', label: 'Lunedì' },
+    { value: 'TUESDAY', label: 'Martedì' },
+    { value: 'WEDNESDAY', label: 'Mercoledì' },
+    { value: 'THURSDAY', label: 'Giovedì' },
+    { value: 'FRIDAY', label: 'Venerdì' },
+    { value: 'SATURDAY', label: 'Sabato' },
+    { value: 'SUNDAY', label: 'Domenica' },
+  ];
+  protected readonly selectedRecurrenceDays = signal<Set<DayOfWeek>>(new Set());
+  protected readonly recurrenceDaysTouched = signal(false);
+
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly createdSeries = signal<EventSeriesDetailDto | null>(null);
+
+  protected readonly occurrencesForm = this.fb.nonNullable.group({
+    startDate: ['', [Validators.required]],
+    endDate: ['', [Validators.required]],
+  });
+  protected readonly generatingOccurrences = signal(false);
+  protected readonly occurrencesError = signal<string | null>(null);
+  protected readonly generatedOccurrences = signal<EventCardDto[] | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
     organizerId: ['', [Validators.required]],
     venueId: [''],
     cityId: ['' as number | '', [Validators.required]],
     title: ['', [Validators.required, Validators.maxLength(150)]],
-    // Filled by the recurrence selector once the backend supports it.
-    rrule: [''],
     description: ['', [Validators.maxLength(2000)]],
     instagramUrl: [''],
     whatsappUrl: [''],
@@ -232,8 +251,19 @@ export class CreateEventSeries implements OnInit {
     this.selectedDanceStyleIds.set(current);
   }
 
+  protected toggleRecurrenceDay(day: DayOfWeek): void {
+    const current = new Set(this.selectedRecurrenceDays());
+    if (current.has(day)) {
+      current.delete(day);
+    } else {
+      current.add(day);
+    }
+    this.selectedRecurrenceDays.set(current);
+  }
+
   protected submit(): void {
-    if (this.form.invalid) {
+    this.recurrenceDaysTouched.set(true);
+    if (this.form.invalid || this.selectedRecurrenceDays().size === 0) {
       this.form.markAllAsTouched();
       return;
     }
@@ -247,7 +277,7 @@ export class CreateEventSeries implements OnInit {
       venueId: value.venueId || null,
       cityId: value.cityId as number,
       title: value.title,
-      rrule: value.rrule,
+      recurrenceDays: Array.from(this.selectedRecurrenceDays()),
       description: value.description || null,
       flyerUrl: null,
       instagramUrl: value.instagramUrl || null,
@@ -276,12 +306,43 @@ export class CreateEventSeries implements OnInit {
     });
   }
 
+  /** Segundo paso: materializa los Events concretos de la serie recién creada
+   * para el rango elegido. Se puede repetir (ej. "generar próximo mes") sin
+   * duplicar nada: el backend arranca desde generatedUntil + 1 día. */
+  protected generateOccurrences(): void {
+    const series = this.createdSeries();
+    if (!series || this.occurrencesForm.invalid) {
+      this.occurrencesForm.markAllAsTouched();
+      return;
+    }
+
+    this.generatingOccurrences.set(true);
+    this.occurrencesError.set(null);
+
+    const { startDate, endDate } = this.occurrencesForm.getRawValue();
+    this.admin.generateEventSeriesOccurrences(series.id, { startDate, endDate }).subscribe({
+      next: (events) => {
+        this.generatingOccurrences.set(false);
+        this.generatedOccurrences.set(events);
+      },
+      error: (err) => {
+        this.generatingOccurrences.set(false);
+        this.occurrencesError.set(err?.error?.message ?? 'Si è verificato un errore durante la generazione delle occorrenze.');
+      },
+    });
+  }
+
   protected createAnother(): void {
     this.form.enable();
     this.form.reset({ isFree: true, currency: 'EUR' });
     this.selectedDanceStyleIds.set(new Set());
+    this.selectedRecurrenceDays.set(new Set());
+    this.recurrenceDaysTouched.set(false);
     this.addressSearch.set('');
     this.createdSeries.set(null);
+    this.occurrencesForm.reset();
+    this.generatedOccurrences.set(null);
+    this.occurrencesError.set(null);
   }
 
   protected backToAdmin(): void {

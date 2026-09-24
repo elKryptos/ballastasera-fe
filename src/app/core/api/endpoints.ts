@@ -20,6 +20,7 @@ export const endpoints = {
     updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,//Used
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
     createEventSeries: '/rest/admin/event-series',
+    generateEventSeriesOccurrences: (id: string) => `/rest/admin/event-series/${id}/occurrences`,
     createVenue: '/rest/admin/venues',
     deleteVenue: (id: string) => `/rest/admin/venues/${id}`,
   },
@@ -70,6 +71,7 @@ export const endpoints = {
     update: (id: string) => `/rest/event-series/${id}`,
     delete: (id: string) => `/rest/event-series/${id}`,
     removeVenue: (id: string) => `/rest/event-series/${id}/venue`,
+    generateOccurrences: (id: string) => `/rest/event-series/${id}/occurrences`,
   },
 
   organizers: {

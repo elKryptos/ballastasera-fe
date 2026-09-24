@@ -5,10 +5,10 @@
     <div class="grain" aria-hidden="true"></div>
 
     <div class="relative z-10 mx-auto flex w-full max-w-4xl flex-col ">
-      <p class="eyebrow font-mono text-xs tracking-[0.25em] text-rose uppercase">
+      <p class="eyebrow font-mono text-sm tracking-[0.25em] text-rose uppercase sm:text-xs">
         Ciao{{ firstName() ? ', ' + firstName() : '' }} 👋
       </p>
-      <h1 class="line mt-2 font-display text-2xl font-bold tracking-[-0.02em] text-bone sm:text-3xl">
+      <h1 class="line mt-2 font-display text-3xl font-bold tracking-[-0.02em] text-bone">
         Cosa balli stasera?
       </h1>
 
@@ -84,14 +84,14 @@
           </div>
         </div>
 
-        <h2 class="relative mt-2 font-display text-base font-bold text-ink [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)]">
+        <h2 class="relative mt-2 font-display text-lg font-bold text-ink [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)] sm:text-base">
           Mappa
         </h2>
-        <p class="relative mt-1 font-bold text-sm text-ink [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)]">
+        <p class="relative mt-1 font-bold text-base text-ink [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)] sm:text-sm">
           Vedi chi balla stasera a Milano, in tempo reale.
         </p>
 
-        <span class="relative mt-2 inline-flex items-center gap-1 text-sm font-extrabold text-rose [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)]">
+        <span class="relative mt-2 inline-flex items-center gap-1 text-base font-extrabold text-rose [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)] sm:text-sm">
           Apri la mappa
           <svg viewBox="0 0 24 24" class="h-4 w-4 transition-transform group-hover:translate-x-1 group-active:translate-x-1" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M5 12h14M13 6l6 6-6 6" />

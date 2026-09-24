@@ -1,6 +1,7 @@
-import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
+import { ApplicationConfig, isDevMode, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideTransloco } from '@jsverse/transloco';
 import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 
@@ -9,6 +10,7 @@ import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/p
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthService } from './core/services/auth.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
+import { AVAILABLE_LANGS, DEFAULT_LANG } from './core/config/i18n';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -27,7 +29,7 @@ export const appConfig: ApplicationConfig = {
     provideHlmSidebarConfig({
       defaultOpen: false,
       sidebarWidth: '13rem',
-      sidebarWidthIcon: '3rem',
+      sidebarWidthIcon: '3.5rem',
       closeMobileSidebarOnMenuButtonClick: true,
       closeDesktopSidebarOnMenuButtonClick: false,
     }),
@@ -38,19 +40,26 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideTransloco({
       config: {
-        availableLangs: ['it', 'en', 'es'],
-        defaultLang: 'it',
-        fallbackLang: 'it',
+        availableLangs: [...AVAILABLE_LANGS],
+        defaultLang: DEFAULT_LANG,
+        fallbackLang: DEFAULT_LANG,
         // Needed for the language switch to actually repaint: this app has
         // no zone.js (zoneless change detection), so without this flag
         // nothing tells Angular to re-check the tree after setActiveLang().
-        // The earlier hydration bug wasn't caused by this — it was caused by
-        // restoring the saved language too early (see afterNextRender in
-        // app.ts), which is what actually needed fixing.
         reRenderOnLangChange: true,
         prodMode: environment.production,
       },
       loader: TranslocoHttpLoader,
+    }),
+    // Purely to satisfy PWA install criteria (Chrome/Android requires a
+    // registered, controlling service worker before it'll offer to install
+    // the app) and to cache the static build output. `navigationUrls: []`
+    // in ngsw-config.json keeps it from ever intercepting page navigations,
+    // so it doesn't change the SSR/prerender/canonical-redirect behaviour
+    // this app relies on — every route still always hits the network.
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAppInitializer(
       () =>

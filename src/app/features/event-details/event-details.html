@@ -1,0 +1,358 @@
+<app-navbar />
+<app-auth-modal [(open)]="authOpen" />
+
+<!-- Photo-forward hero, ambient body: the hero keeps the flyer itself
+    (blurred and scaled behind the sharp poster), while the body sits on an
+    animated aurora tinted by the event's own type colour instead of the
+    flyer again — see the aurora-bg comment below. Content is raised on the
+    same translucent glass-card material (bg-neutral-800/30 + border-line +
+    backdrop-blur) as the map's popup card, so navigating map -> event
+    details doesn't jump to a different visual language. min-h-dvh keeps it
+    covering the full viewport even on the short loading/error states below. -->
+<!-- @container: the two-column hero+body layout below reacts to how much
+    width is actually left after appSidebarPush's padding, not the raw
+    viewport — without this, the fixed-width hero/aside columns (still keyed
+    to md:/lg: viewport breakpoints) can collide with the sidebar the moment
+    it expands, since the viewport itself never got narrower. -->
+<main appSidebarPush class="@container min-h-dvh pt-(--header-h) md:pt-0">
+  @if (loading()) {
+  <p class="px-4 py-16 text-center text-sm text-bone/60">Caricamento evento…</p>
+  } @else if (event(); as event) {
+  <!-- On mobile this is a plain top-to-bottom stack (hero, then body) since
+      flex only activates once @container width hits 768px. On desktop it
+      becomes a row, reversed so the hero (first in the markup, on top for
+      mobile) renders on the right.
+      No `items-start`: default stretch makes the body column match the
+      sticky hero's full height, so its own bg-ink covers the whole row
+      instead of leaving unstyled space below short content. -->
+  <div class="@[768px]:flex @[768px]:flex-row-reverse">
+    @if (event.flyerUrl) {
+    <!-- HERO: full-width poster. Flyers are portrait, so object-cover would
+      crop them — the sharp image sits object-contain over a blurred/scaled
+      copy of itself instead, showing the whole flyer, letterbox-free.
+      Skipped entirely (no placeholder box) when the event has no flyer —
+      see the mobile-only back button further down, which takes over its
+      one essential job (navigation) for that case. -->
+    <div
+      class="relative h-[46vh] bg-ink w-full overflow-hidden @[768px]:h-dvh @[768px]:w-95 @[768px]:shrink-0 @[768px]:sticky @[768px]:top-0">
+      <div class="absolute inset-0 scale-110 bg-cover bg-center opacity-50 blur-xl"
+        [style.background-image]="'url(' + event.flyerUrl + ')'" aria-hidden="true"></div>
+      <button type="button" class="absolute inset-0 h-full w-full cursor-zoom-in" (click)="openFlyer()"
+        aria-label="Ingrandisci il volantino">
+        <img [src]="event.flyerUrl" [alt]="event.title" fetchpriority="high"
+          class="relative h-full w-full object-contain drop-shadow-2xl" />
+      </button>
+
+      <button type="button"
+        class="absolute top-3 left-3 z-10 inline-flex size-9 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white backdrop-blur-sm transition-colors hover:bg-ink @[768px]:hidden"
+        (click)="goBack()" aria-label="Indietro">
+        <ng-icon name="lucideArrowLeft" class="size-4" />
+      </button>
+
+      @if (isLiveNow(event)) {
+      <span
+        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-rose-lit px-3 py-1.5 font-mono text-xs text-white shadow @[1024px]:hidden">
+        <span class="size-2 rounded-full bg-white"></span> LIVE ORA
+      </span>
+      } @else if (startsInMinutes(event); as minutes) {
+      <span
+        class="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-sm bg-amber px-3 py-1.5 font-mono text-xs text-ink shadow @[1024px]:hidden">
+        Inizia tra {{ minutes }} min
+      </span>
+      }
+    </div>
+    }
+
+    <!-- BODY: single column up to 1024px of @container width, main content +
+      organizer sidebar side by side from there — an editorial layout, not
+      the map popup's stacked mini-card. Kept at 1024 (not 768) since 768 is
+      now shared with the hero column above, and splitting again that early
+      leaves too little room. -->
+    <div [class]="bodyColumnClass(event)">
+      <!-- Ambient backdrop: three blurred, slowly-drifting colour blobs
+        instead of the flyer's own (often muddy/low-contrast) artwork —
+        scoped to this column only (absolute + the parent's overflow-hidden,
+        not fixed) so it never bleeds past this div into the navbar/sidebar.
+        Tinted from the event's own type colour (same mapping as its pin on
+        the map, see eventTypeColor()), so the page keeps the identity the
+        pin already established instead of resetting to a generic dark panel.
+        A twinkling starfield (same "stasera" motif as the .night scatter on
+        the landing hero/navbar logo, see styles.css) layers on top, so the
+        blobs read as an aurora seen through a night sky rather than flat
+        colour fields. -->
+      <div class="aurora-bg absolute inset-0" [style.--aurora-color]="eventTypeColor(event)" aria-hidden="true">
+        <span class="aurora-blob aurora-blob--a"></span>
+        <span class="aurora-blob aurora-blob--b"></span>
+        <span class="aurora-blob aurora-blob--c"></span>
+      </div>
+      <div class="starfield absolute inset-0" aria-hidden="true"></div>
+      <div class="absolute inset-0 bg-ink/45" aria-hidden="true"></div>
+      <div class="glass-panel-text relative mx-auto max-w-5xl px-4 py-8 @[640px]:px-6 @[768px]:px-8 @[768px]:py-12">
+        <div class="@[1024px]:relative @[1024px]:grid @[1024px]:grid-cols-[320px_1fr] @[1024px]:items-start @[1024px]:gap-10">
+          <div class="flex flex-col gap-5 @[1024px]:order-2">
+            @if (!event.flyerUrl) {
+            <!-- No hero at all when there's no flyer (see above), so this
+            column has to carry the back button on mobile too, not just from
+            768px up like the copy below. -->
+            <button type="button"
+              class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-full border border-line px-3 py-1.5 text-sm font-medium text-bone transition-colors @[768px]:hidden"
+              (click)="goBack()" aria-label="Indietro">
+              <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
+            </button>
+            }
+
+            <!-- Visible from 768px of @container width up to just below 1024 —
+            the hero no longer carries an overlaid back button there. From
+            1024 on, this copy hides and a second one takes over at the top
+            of the organizer column instead (see the aside below), so it
+            doesn't share this column's row with the title anymore. -->
+            <button type="button"
+              class="hidden w-fit cursor-pointer items-center gap-2 rounded-full border border-white px-3 py-1.5 text-sm font-medium text-white transition-colors @[768px]:inline-flex @[1024px]:hidden"
+              (click)="goBack()" aria-label="Indietro">
+              <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
+            </button>
+
+            <div class="@[1024px]:mt-14">
+              <p class="font-mono text-xs tracking-[0.2em] text-rose uppercase">
+                {{ eventTypeLabel(event) }} · {{ event.cityName }}
+              </p>
+              <div class="mt-1 flex items-start justify-between gap-3">
+                <h1 class="font-display text-3xl leading-tight font-bold text-white @[640px]:text-4xl">{{ event.title }}
+                </h1>
+                <button type="button"
+                  class="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white text-white transition-colors"
+                  (click)="share(event)" aria-label="Condividi">
+                  <ng-icon [name]="linkCopied() ? 'lucideCheck' : 'lucideShare2'" class="size-4" />
+                </button>
+              </div>
+
+              <div class="mt-3 flex flex-wrap items-center gap-1.5">
+                @for (style of event.danceStyles; track $index) {
+                <span class="rounded-sm bg-violet px-3 py-1 text-xs font-semibold text-white">{{ style }}</span>
+                }
+              </div>
+            </div>
+
+            @if (event.venueName || event.address) {
+            <div>
+              <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
+                class="flex items-start gap-3 rounded-lg border border-line bg-neutral-800/30 p-4 shadow-2xl backdrop-blur-sm transition-colors hover:border-rose/50">
+                <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-rose/15">
+                  <img src="/icons/google-maps-pin.png" alt="" class="size-4" />
+                </span>
+                <span class="min-w-0 flex-1">
+                  @if (event.venueName) {
+                  <span class="block font-semibold text-bone">{{ event.venueName }}</span>
+                  }
+                  <span class="block text-sm text-bone/90">{{ addressPrimary(event.address)
+                    }}</span>
+                  @if (addressSecondary(event.address); as rest) {
+                  <span class="block text-sm text-bone/50">{{ rest }}</span>
+                  }
+                </span>
+              </a>
+            </div>
+            }
+
+            <!-- Quick facts -->
+            <div class="flex flex-col gap-5 rounded-lg border border-line bg-neutral-800/30 p-5 shadow-2xl backdrop-blur-sm">
+              <div class="grid grid-cols-2 gap-x-4 gap-y-5 @[640px]:grid-cols-4">
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
+                    <ng-icon name="lucideClock" class="size-3.5" /> Quando
+                  </span>
+                  <span class="flex flex-col text-sm font-medium text-bone/85">
+                    <span class="whitespace-nowrap">{{ formatDate(event) }}</span>
+                    <span class="whitespace-nowrap">{{ formatTimeRange(event) }}</span>
+                  </span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
+                    <ng-icon name="lucideTicket" class="size-3.5" /> Prezzo
+                  </span>
+                  <span class="text-sm font-medium text-amber tabular-nums" [class.text-mint]="event.free">{{
+                    formatPrice(event) }}</span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
+                    <ng-icon name="lucideUsers" class="size-3.5" [class]="goingCountIconClass(event.goingCount)" />
+                    Partecipano
+                  </span>
+                  <span class="text-sm font-medium text-bone tabular-nums">{{ event.goingCount }}</span>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                  <span class="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-bone/85 uppercase">
+                    <ng-icon name="lucideHeart" class="size-3.5" [class]="liked() ? 'text-rose' : 'text-bone/85'"
+                      [attr.fill]="liked() ? 'currentColor' : 'none'" /> Mi piace
+                  </span>
+                  <span class="text-sm font-medium text-bone tabular-nums">{{ event.likesCount }}</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-wrap justify-center gap-3 border-t border-line pt-5">
+                <button type="button"
+                  class="inline-flex w-40 cursor-pointer items-center justify-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors"
+                  [class]="pillClass(going(), 'violet')" [attr.aria-pressed]="going()" (click)="toggleGoing()">
+                  <ng-icon name="lucideCircleCheck" class="size-4" />
+                  Parteciperò
+                </button>
+                <button type="button"
+                  class="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-semibold transition-colors"
+                  [class]="pillClass(liked(), 'mint')" [attr.aria-pressed]="liked()" (click)="toggleLike()">
+                  <ng-icon name="lucideHeart" class="size-4" [class.text-rose]="liked()"
+                    [attr.fill]="liked() ? 'currentColor' : 'none'" />
+                  Mi piace
+                </button>
+              </div>
+            </div>
+
+            @if (event.description; as description) {
+            <div class="rounded-lg border border-line bg-neutral-800/30 p-5 shadow-2xl backdrop-blur-sm">
+              <h2 class="mb-2 font-display text-lg font-bold text-mint">Descrizione</h2>
+              <p class="whitespace-pre-line text-sm leading-relaxed text-bone/85 @[640px]:text-base">{{ description }}
+              </p>
+            </div>
+            }
+          </div>
+
+          <!-- Desktop only (1024px+ of @container width): the back button moves
+          here, to the top of the organizer column, instead of beside the
+          title (see the tablet copy above, hidden from 1024 on), with the
+          live/starting-soon badge on the same row, opposite side — above
+          the title's share button. Positioned absolute (out of grid flow,
+          relative to the grid container above) rather than grid-placed, so
+          spanning the full width here doesn't reserve row 1 of column 2 and
+          push the auto-placed main content column down to row 2. The
+          aside's and the title block's own @[1024px]:mt-14 leave just
+          enough room below this row for both to sit without overlapping it. -->
+          <div
+            class="hidden @[1024px]:absolute @[1024px]:inset-x-0 @[1024px]:top-0 @[1024px]:z-10 @[1024px]:flex @[1024px]:items-center @[1024px]:justify-between">
+            <button type="button"
+              class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-full border border-white px-3 py-1.5 text-sm font-medium text-white transition-colors"
+              (click)="goBack()" aria-label="Indietro">
+              <ng-icon name="lucideArrowLeft" class="size-4" /> Indietro
+            </button>
+
+            @if (isLiveNow(event)) {
+            <span
+              class="inline-flex items-center gap-1.5 rounded-sm bg-rose-lit px-3 py-1.5 font-mono text-xs text-white shadow">
+              <span class="size-2 rounded-full bg-white"></span> LIVE ORA
+            </span>
+            } @else if (startsInMinutes(event); as minutes) {
+            <span
+              class="inline-flex items-center gap-1.5 rounded-sm bg-amber px-3 py-1.5 font-mono text-xs text-ink shadow">
+              Inizia tra {{ minutes }} min
+            </span>
+            }
+          </div>
+
+          <!-- Organizer sidebar -->
+          <aside
+            class="mt-8 flex flex-col gap-4 rounded-lg border border-line bg-neutral-800/30 p-5 shadow-2xl backdrop-blur-sm @[1024px]:col-start-1 @[1024px]:row-start-1 @[1024px]:mt-14">
+            <div class="flex items-center gap-3">
+              @if (event.organizer.logoUrl) {
+              <img [src]="event.organizer.logoUrl" [alt]="event.organizer.name"
+                class="size-12 shrink-0 rounded-full object-cover ring-1 ring-line" />
+              } @else {
+              <div
+                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-violet/15 font-display text-sm font-bold text-violet">
+                {{ organizerInitials(event.organizer) }}
+              </div>
+              }
+              <div class="min-w-0">
+                <p class="flex items-center gap-1 truncate font-display text-base font-bold text-bone">
+                  {{ event.organizer.name }}
+                  @if (event.organizer.verified) {
+                  <ng-icon name="lucideBadgeCheck" class="size-4 shrink-0 text-violet" aria-label="Verificato" />
+                  }
+                </p>
+                <p class="text-xs text-bone/50">{{ organizerTypeLabel(event.organizer) }}</p>
+              </div>
+            </div>
+
+            @if (event.organizer.description; as bio) {
+            <p class="text-sm leading-relaxed text-bone/85">{{ bio }}</p>
+            }
+
+            <button type="button"
+              class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+              [class]="pillClass(following(), 'rose')" [attr.aria-pressed]="following()" (click)="toggleFollow()">
+              <ng-icon [name]="following() ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
+              {{ following() ? 'Segui già' : 'Segui' }}
+            </button>
+
+            @if (event.organizer.instagram || event.whatsappUrl || event.organizer.website) {
+            <div class="flex flex-col gap-2 border-t border-line pt-4 text-sm">
+              @if (event.organizer.instagram; as handle) {
+              <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-2 text-bone/80 hover:text-rose">
+                <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-md">
+                  <ng-icon name="lucideInstagram" class="size-4.5 text-white" />
+                </span>
+                &#64;{{ handle }}
+              </a>
+              }
+
+              @if (event.whatsappUrl; as whatsappUrl) {
+              <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-2 text-bone/80 hover:text-[#25D366]">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#25D366]">
+                  <!-- Official WhatsApp -->
+                  <svg viewBox="0 0 24 24" class="size-4.5 fill-white" aria-hidden="true">
+                    <path
+                      d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413" />
+                  </svg>
+                </span>
+                WhatsApp
+              </a>
+              }
+
+              @if (event.organizer.website; as website) {
+              <a [href]="website" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-2 text-bone/80 hover:text-amber">
+                <span class="flex size-7 shrink-0 items-center justify-center rounded-md bg-amber/15 text-amber">
+                  <ng-icon name="lucideGlobe" class="size-3.5" />
+                </span>
+                Sito web
+              </a>
+              }
+            </div>
+            }
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flyer lightbox: tap the hero to open, tap the image to toggle between
+      fit-to-screen and full-size (pan by scrolling the overlay). -->
+  @if (flyerOpen() && event.flyerUrl) {
+  <div class="fixed inset-0 z-modal overflow-auto bg-black/90" role="dialog" aria-modal="true"
+    aria-label="Volantino evento" (click)="closeFlyer()" (keydown.escape)="closeFlyer()">
+    <button type="button"
+      class="fixed top-4 right-4 z-10 inline-flex size-10 cursor-pointer items-center justify-center rounded-full bg-ink/70 text-white backdrop-blur-sm transition-colors hover:bg-ink"
+      (click)="closeFlyer(); $event.stopPropagation()" aria-label="Chiudi">
+      <ng-icon name="lucideX" class="size-5" />
+    </button>
+
+    <div class="grid min-h-full place-items-center p-4">
+      <img [src]="event.flyerUrl" [alt]="event.title" class="transition-[max-width,max-height] duration-200"
+        [class]="flyerZoomed() ? 'max-w-none cursor-zoom-out' : 'max-h-[85vh] max-w-full object-contain cursor-zoom-in'"
+        (click)="toggleFlyerZoom(); $event.stopPropagation()" />
+    </div>
+  </div>
+  }
+  } @else {
+  <div class="flex flex-col items-center gap-4 px-4 py-16 text-center">
+    <p class="text-sm text-rose">Impossibile trovare questo evento.</p>
+    <button type="button" class="cursor-pointer rounded-lg border border-line px-4 py-2 text-sm text-bone"
+      (click)="goBack()">
+      Torna indietro
+    </button>
+  </div>
+  }
+</main>

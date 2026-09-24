@@ -4,9 +4,27 @@
    new containing block, since filters do that to fixed-position descendants
    same as `transform` does — the dialog's `fixed inset-0` would then
    resolve against this element instead of the viewport, and never be
-   visible. */
+   visible.
+
+   The --color-* custom properties below pin this component to the shared
+   brand palette (see @theme in styles.css) no matter which page mounts it.
+   Without this, a page that locally overrides these same var() names on
+   its own :host (e.g. landing's own palette in landing.css) would cascade
+   straight into this component too, since it's a normal DOM descendant of
+   that page's host — the sidebar would then look different depending on
+   which route it's rendered in, which isn't what any page actually wants
+   from shared chrome. Literal values, matching @theme exactly — kept in
+   sync by hand, since a page-scoped override and a "never override this"
+   pin can't both live on the same custom property without one of them
+   duplicating the other's value somewhere. */
 :host {
   display: block;
+  --color-ink: #1a0e2e;
+  --color-ink-2: #2a1640;
+  --color-rose: #ff4d6d;
+  --color-amber: #ffa24c;
+  --color-violet: #8b5cf6;
+  --color-line: rgba(253, 242, 236, 0.14);
 }
 
 /* Mobile-only top bar: the sidebar itself renders nothing on screen below
@@ -23,12 +41,89 @@
   right: 0;
   z-index: var(--z-index-mobile-bar);
   height: var(--header-h);
-  /* Flat, not blended with transparent — has to match the Android status
-     bar above it exactly (theme-color in index.html/site.webmanifest, both
-     --color-ink), and any translucency would read as a visible seam
-     between the two. */
-  background: var(--color-ink);
+  overflow: hidden;
+  /* The flat --color-ink slab it used to be read as dead weight on the one
+     bit of chrome that's always on screen — the top edge still starts as
+     pure ink (matching the Android status bar above it exactly, same
+     theme-color in index.html/site.webmanifest) so there's no visible
+     seam, then eases toward ink-2 and a hint of rose by the bottom edge. */
+  background: linear-gradient(
+    180deg,
+    var(--color-ink) 0%,
+    var(--color-ink-2) 70%,
+    color-mix(in srgb, var(--color-rose) 22%, var(--color-ink-2)) 100%
+  );
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--color-rose) 40%, transparent),
+    0 4px 16px rgba(0, 0, 0, 0.35);
 }
+
+/* Same desktop rail the mobile bar above mirrors: Spartan's own bg-sidebar
+   utility only gives it flat --color-ink (see --sidebar in styles.css), so
+   this is layered on via ::ng-deep — plain (unlayered) component CSS always
+   wins over Tailwind's own @layer utilities regardless of source order, so
+   no !important is needed. Scoped to :host so it only reaches this
+   navbar's own sidebar instance, not sidebars elsewhere in the app.
+   [data-slot='sidebar-inner'] (not the shared [data-sidebar='sidebar']
+   attribute) targets only the desktop variant — the mobile drawer sheet
+   carries the same data-sidebar attribute but is already bg-transparent +
+   backdrop-blur, not flat ink, so it's left alone. */
+:host ::ng-deep [data-slot='sidebar-inner'] {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    var(--color-ink) 0%,
+    var(--color-ink-2) 55%,
+    color-mix(in srgb, var(--color-rose) 20%, var(--color-ink-2)) 100%
+  );
+}
+
+/* Twinkling star scatter over both — same "stasera" (tonight) motif as
+   the .night effect on the wordmark below and the fuller starfield on the
+   event details page, sized down to a thin tile so it reads as ambient
+   texture rather than competing with the nav items sitting on top of it. */
+.mobile-bar::after,
+:host ::ng-deep [data-slot='sidebar-inner']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-repeat: repeat;
+  background-size: 140px 140px;
+  background-image:
+    radial-gradient(1px 1px at 15% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 55% 70%, var(--color-amber), transparent),
+    radial-gradient(1px 1px at 80% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 35% 85%, var(--color-violet), transparent),
+    radial-gradient(1px 1px at 90% 60%, #fff, transparent);
+  animation: nav-twinkle 4s ease-in-out infinite;
+}
+
+@keyframes nav-twinkle {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-bar::after,
+  :host ::ng-deep [data-slot='sidebar-inner']::after {
+    animation: none;
+  }
+}
+
+/* Sidebar menu button sizing/colour (Menu, Admin, Esci, Accedi) lives in
+   global styles.css, not here — the mobile drawer is a Spartan/CDK sheet,
+   and CDK overlays portal their content to a container appended to
+   <body>, outside this component's own DOM subtree, so :host ::ng-deep
+   (which requires physical DOM descendance of the host) never reaches it.
+   See the matching comment in styles.css. */
 
 /* "stasera" = tonight — same tiny star scatter as the landing headline,
    shared globally (styles.css's .night) since it's used by both; the logo
@@ -44,36 +139,29 @@
   color: var(--color-ink);
 }
 
-.account-trigger,
-.login-trigger {
-  display: flex;
-  height: 1.75rem;
-  width: 1.75rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  outline-offset: 2px;
-  padding: 0;
-  border: none;
-}
+/* .account-trigger and .login-trigger (the mobile-bar's avatar wrapper and
+login icon button) moved to plain Tailwind classes directly in navbar.html
+— single-occurrence elements navbar.html authors itself, with a plain
+:active state Tailwind expresses natively (unlike :hover, :active needs no
+touch-vs-pointer gating, so no @media (hover: hover) dance was needed
+there). Same for .logout-item's resting colour (now text-lead in
+navbar.html) — only its :focus-visible/:hover colour-mix stays here, since
+arbitrary-value Tailwind syntax for a multi-stop color-mix() would be
+harder to read than the CSS, not easier. */
 
-.login-trigger {
-  color: var(--color-bone);
-  cursor: pointer;
-  border: 1.5px solid var(--color-line);
-}
-
-.login-trigger:hover {
-  border-color: var(--color-rose);
-  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
-}
-
-.logout-item {
-  color: var(--color-lead);
-}
-
-.logout-item:hover,
+/* :focus-visible (keyboard navigation) stays unconditional — that's a real,
+distinct input state, not touch's fake "hover". :hover itself is split into
+@media (hover: hover) below since .logout-item also renders in the mobile
+drawer's own touch-only [hlmSidebarMenuButton] list (see styles.css for the
+same reasoning on the rest of the sidebar). */
 .logout-item:focus-visible {
   background: color-mix(in srgb, #ff5b6e 14%, transparent);
   color: #ff8a97;
+}
+
+@media (hover: hover) {
+  .logout-item:hover {
+    background: color-mix(in srgb, #ff5b6e 14%, transparent);
+    color: #ff8a97;
+  }
 }

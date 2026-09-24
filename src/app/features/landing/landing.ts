@@ -1,15 +1,26 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  PLATFORM_ID,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { NgClass, isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import type { Map as LeafletMap } from 'leaflet';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { Navbar } from '../../shared/navbar/navbar';
-import { AuthModal } from '../../shared/auth-modal/auth-modal';
+import { InstallBanner } from '../../shared/install-banner/install-banner';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
-import { NgClass } from '@angular/common';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
+import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
-
-type FormState = 'idle' | 'error' | 'done';
+import { MILAN_CENTER, MILAN_DEFAULT_ZOOM, PIN_GLYPHS, PIN_SHAPES, PIN_TYPES } from '../../core/config/map-pins';
+import { environment } from '../../../environments/environment';
 
 interface PartnerCard {
   /** Which drawing sits on top of the card when there is nothing else to show. */
@@ -32,23 +43,6 @@ interface PartnerCard {
   creditName?: string;
   /** Their handle, without the @. Links to instagram.com/<handle>. */
   creditHandle?: string;
-}
-
-/** A made-up night on the teaser map: position is a % of the panel. */
-interface MapPin {
-  x: number;
-  y: number;
-  zone: string;
-  style: string;
-}
-
-/** One pin kind from the real map's legend, reproduced here so visitors
- * already recognise the shapes and colours once the map itself opens. */
-interface PinLegendItem {
-  label: string;
-  color: string;
-  shape: string;
-  glyph: string;
 }
 
 /** One pin kind from the real map's legend, reproduced here so visitors
@@ -74,7 +68,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [FormsModule, MediaEmbed, Navbar, AuthModal, NgClass, TranslocoPipe, SidebarPushDirective],
+  imports: [RouterLink, MediaEmbed, Navbar, NgClass, TranslocoPipe, SidebarPushDirective, InstallBanner],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -92,25 +86,51 @@ export class Landing implements AfterViewInit, OnDestroy {
 
   protected setLang(lang: string): void {
     this.transloco.setActiveLang(lang);
-    localStorage.setItem('lang', lang);
+    writeLangCookie(lang);
   }
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private revealObserver?: IntersectionObserver;
+  private mapObserver?: IntersectionObserver;
+  /** Aborts every pointer listener this component attaches (ambient parallax,
+   * map tilt) in one shot — see ngOnDestroy. */
+  private readonly listenerAbort = new AbortController();
+
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  /** Container for the live map preview in the map-teaser section. */
+  private readonly miniMapContainer = viewChild<ElementRef<HTMLDivElement>>('miniMap');
+  private miniMap: LeafletMap | null = null;
+  private readonly teaserVisual = viewChild<ElementRef<HTMLAnchorElement>>('teaserVisual');
+
+  async ngAfterViewInit(): Promise<void> {
+    this.setupRevealAnimations();
+    if (this.isBrowser) {
+      if (!this.prefersReducedMotion()) {
+        this.setupAmbientParallax();
+        this.setupTeaserTilt();
+      }
+      this.setupLazyMiniMap();
+    }
+  }
+
+  private prefersReducedMotion(): boolean {
+    return this.isBrowser && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
 
   /**
    * The hero's "rise" cascade only plays on load, so anything below the fold
    * — reached by scrolling, not by that initial timer — never got it. This
    * mirrors the same entrance for every `.reveal` section as it comes into view.
    */
-  ngAfterViewInit(): void {
+  private setupRevealAnimations(): void {
     const host = this.elementRef.nativeElement as HTMLElement;
     const targets: NodeListOf<HTMLElement> = host.querySelectorAll('.reveal');
     if (!targets.length || typeof IntersectionObserver === 'undefined') {
       return;
     }
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (this.prefersReducedMotion()) {
       targets.forEach((el) => el.classList.add('in-view'));
       return;
     }
@@ -130,8 +150,129 @@ export class Landing implements AfterViewInit, OnDestroy {
     targets.forEach((el) => this.revealObserver!.observe(el));
   }
 
+  /**
+   * Drifts the fixed ambient glow (see .glow in landing.css) a few percent
+   * with the cursor, set on the host element so .glow — a child — picks up
+   * --mx/--my through ordinary CSS inheritance. rAF-throttled since
+   * pointermove can fire far faster than the screen repaints.
+   */
+  private setupAmbientParallax(): void {
+    const host = this.elementRef.nativeElement as HTMLElement;
+    let frame = 0;
+
+    document.addEventListener(
+      'pointermove',
+      (event: PointerEvent) => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          host.style.setProperty('--mx', String(event.clientX / window.innerWidth));
+          host.style.setProperty('--my', String(event.clientY / window.innerHeight));
+        });
+      },
+      { passive: true, signal: this.listenerAbort.signal },
+    );
+  }
+
+  /**
+   * The map preview tilts toward the cursor and reveals a spotlight under
+   * it (see .teaser-visual in landing.css) — a small "it's alive" flourish
+   * on the section's hero element, reset flat on pointerleave.
+   */
+  private setupTeaserTilt(): void {
+    const el = this.teaserVisual()?.nativeElement;
+    if (!el) return;
+
+    el.addEventListener(
+      'pointermove',
+      (event: PointerEvent) => {
+        const rect = el.getBoundingClientRect();
+        const px = (event.clientX - rect.left) / rect.width;
+        const py = (event.clientY - rect.top) / rect.height;
+        el.style.setProperty('--tiltx', `${(px - 0.5) * 10}deg`);
+        el.style.setProperty('--tilty', `${(0.5 - py) * 10}deg`);
+        el.style.setProperty('--spot-x', `${px * 100}%`);
+        el.style.setProperty('--spot-y', `${py * 100}%`);
+      },
+      { passive: true, signal: this.listenerAbort.signal },
+    );
+
+    el.addEventListener(
+      'pointerleave',
+      () => {
+        el.style.setProperty('--tiltx', '0deg');
+        el.style.setProperty('--tilty', '0deg');
+      },
+      { signal: this.listenerAbort.signal },
+    );
+  }
+
+  /**
+   * Loading Leaflet + fetching basemap tiles is real weight (a JS chunk and
+   * network requests) that a visitor who never scrolls this far shouldn't
+   * pay for — deferred until the box is about to enter the viewport, not
+   * fired unconditionally on every landing pageview. rootMargin starts the
+   * load a bit early so the tiles are usually already in by the time the
+   * box is actually visible, instead of popping in empty.
+   */
+  private setupLazyMiniMap(): void {
+    const container = this.miniMapContainer()?.nativeElement;
+    if (!container || typeof IntersectionObserver === 'undefined') {
+      void this.initMiniMap();
+      return;
+    }
+
+    this.mapObserver = new IntersectionObserver(
+      (entries, observer) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          void this.initMiniMap();
+        }
+      },
+      { rootMargin: '200px 0px' },
+    );
+    this.mapObserver.observe(container);
+  }
+
+  /**
+   * A live, read-only preview of the real map (see MapPage) — the same
+   * basemap, panning/zooming disabled. No events are fetched here: that hits
+   * the backend and stays reserved for MapPage, once the visitor actually
+   * opens /mappa.
+   */
+  private async initMiniMap(): Promise<void> {
+    const container = this.miniMapContainer()?.nativeElement;
+    if (!container) return;
+
+    // Leaflet is CJS/UMD, not real ESM: esbuild's production bundle can
+    // synthesize a namespace that only has the module under `.default`
+    // instead of spreading it onto the namespace itself (works either way
+    // in dev, breaks silently in the optimized prod build).
+    const leafletModule = await import('leaflet');
+    const L = 'map' in leafletModule ? leafletModule : (leafletModule as unknown as { default: typeof leafletModule }).default;
+    this.miniMap = L.map(container, {
+      center: MILAN_CENTER,
+      zoom: MILAN_DEFAULT_ZOOM,
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      boxZoom: false,
+      keyboard: false,
+    });
+
+    L.tileLayer(
+      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${environment.cartoApiKey}`,
+      { subdomains: 'abcd', maxZoom: 20 },
+    ).addTo(this.miniMap);
+  }
+
   ngOnDestroy(): void {
     this.revealObserver?.disconnect();
+    this.mapObserver?.disconnect();
+    this.listenerAbort.abort();
+    this.miniMap?.remove();
   }
 
   /**
@@ -144,7 +285,7 @@ export class Landing implements AfterViewInit, OnDestroy {
   protected readonly media: MediaItem[] = [
     {
       kind: 'youtube',
-      mediaId: 'p_pU5sSRSPA',  
+      mediaId: 'p_pU5sSRSPA',
       title: 'Guarda come si balla la bachata',
       credit: '@ballastasera',
       hint: 'Premi play — parte con l’audio',
@@ -204,21 +345,6 @@ export class Landing implements AfterViewInit, OnDestroy {
   ];
 
   /**
-   * Fake nights for the teaser map — no real venue is named, and nothing here
-   * is fetched: it is a drawing of what the map will do, not the map.
-   */
-  /** Column positions for the streets drawn under the pins. */
-  protected readonly mapGrid = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-  protected readonly mapPins: MapPin[] = [
-    { x: 30, y: 28, zone: 'Navigli', style: 'Bachata' },
-    { x: 62, y: 20, zone: 'Isola', style: 'Salsa cubana' },
-    { x: 48, y: 52, zone: 'Centro', style: 'Kizomba' },
-    { x: 76, y: 63, zone: 'Lambrate', style: 'Social' },
-    { x: 18, y: 66, zone: 'Barona', style: 'Corso base' },
-  ];
-
-  /**
    * Indices whose self-hosted clip 404'd — falls back to the Instagram embed
    * for that card. Lets the video paths above sit ready before the files do.
    */
@@ -230,47 +356,35 @@ export class Landing implements AfterViewInit, OnDestroy {
 
   protected readonly year = new Date().getFullYear();
 
-  protected readonly email = signal('');
-  protected readonly state = signal<FormState>('idle');
-
   /** Shared with the embed, so the hero button can start it from off-screen. */
   protected readonly videoOpen = signal(false);
 
-  /** Opened by the "Accedi con Google" CTA in the live-map teaser section. */
-  protected readonly mapAuthOpen = signal(false);
+  /** Maps each EventType to the transloco key its legend chip shows. */
+  private static readonly LEGEND_LABEL_KEYS: Record<string, string> = {
+    EVENT: 'legend.event',
+    SCHOOL: 'legend.school',
+    CLUB: 'legend.club',
+    BAR: 'legend.bar',
+  };
 
-  /**
-   * Same colour, outline and glyph per type as `PIN_COLORS` / `PIN_SHAPES` /
-   * `PIN_GLYPHS` in map.ts — kept in sync by hand since the two features
-   * don't share a module. Each shape fills a 24x32 viewBox, tip at (12, 32);
-   * each glyph is drawn in white centred around (12, 12).
-   */
-  protected readonly legendPins: PinLegendItem[] = [
-    {
-      label: 'legend.event',
-      color: 'var(--color-rose)',
-      shape: 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z',
-      glyph: 'M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z',
-    },
-    {
-      label: 'legend.school',
-      color: 'var(--color-violet)',
-      shape: 'M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z',
-      glyph: 'M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z',
-    },
-    {
-      label: 'legend.club',
-      color: 'var(--color-mint)',
-      shape: 'M12 0 23 7v14L12 32 1 21V7z',
-      glyph: 'M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z',
-    },
-    {
-      label: 'legend.bar',
-      color: 'var(--color-amber)',
-      shape: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
-      glyph: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',
-    },
-  ];
+  /** Same theme tokens the rest of the UI uses for these accents — kept as
+   * CSS vars here (unlike PIN_COLORS' raw hex) so this flat legend list
+   * follows the current theme. */
+  private static readonly LEGEND_COLOR_VARS: Record<string, string> = {
+    EVENT: 'var(--color-rose)',
+    SCHOOL: 'var(--color-violet)',
+    CLUB: 'var(--color-mint)',
+    BAR: 'var(--color-amber)',
+  };
+
+  /** Shape/glyph sourced from the same map-pins config the real map and the
+   * live preview above use, so all three surfaces can't drift apart. */
+  protected readonly legendPins: PinLegendItem[] = PIN_TYPES.map((type) => ({
+    label: Landing.LEGEND_LABEL_KEYS[type],
+    color: Landing.LEGEND_COLOR_VARS[type],
+    shape: PIN_SHAPES[type],
+    glyph: PIN_GLYPHS[type],
+  }));
 
   protected toggleMusic(): void {
     this.videoOpen.update((open) => !open);
@@ -278,17 +392,5 @@ export class Landing implements AfterViewInit, OnDestroy {
 
   protected isHeld(beat: number): boolean {
     return beat % 4 === 0;
-  }
-
-  protected submit(): void {
-    const value = this.email().trim();
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
-      this.state.set('error');
-      return;
-    }
-
-    // TODO: POST to the waiting-list endpoint once the backend exists.
-    this.state.set('done');
   }
 }

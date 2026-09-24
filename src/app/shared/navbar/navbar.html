@@ -26,20 +26,21 @@
       @if (isAuthenticated()) {
       <!-- Status indicator only, not a control: opening the sidebar is the
           hamburger trigger's job alone, so this doesn't duplicate it. -->
-      <span class="account-trigger shrink-0" aria-hidden="true">
+      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full outline-offset-2" aria-hidden="true">
         @if (currentUser()?.avatarUrl) {
         <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
-          class="avatar-img size-7 shrink-0 rounded-full object-cover" />
+          class="avatar-img size-8 shrink-0 rounded-full object-cover" />
         } @else {
         <span
-          class="avatar-fallback flex size-7 shrink-0 items-center justify-center rounded-full text-[0.75rem] font-semibold">
+          class="avatar-fallback flex size-8 shrink-0 items-center justify-center rounded-full text-[0.85rem] font-semibold">
           {{ initial() }}
         </span>
         }
       </span>
       } @else {
-      <button type="button" (click)="openAuth('login')" class="login-trigger shrink-0" aria-label="Accedi">
-        <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
+      <button type="button" (click)="openAuth('login')" aria-label="Accedi"
+        class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-line p-0 text-bone outline-offset-2 active:border-rose active:bg-rose/12">
+        <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
           <circle cx="12" cy="7.5" r="3.75" />
@@ -78,22 +79,28 @@
   </div>
   }
 
-  <div hlmSidebarContent class="md:p-1.5">
+  <div hlmSidebarContent class="px-3 pt-4 pb-3 md:p-1.5">
     <ul hlmSidebarMenu>
       @if (mapEnabled()) {
       <li hlmSidebarMenuItem>
-        <a hlmSidebarMenuButton routerLink="/menu" tooltip="Menu">
+        <!-- Logged out: the map works without a session now, so it's the
+        direct entry point (/mappa). Logged in: back to the hub (/menu),
+        same as before — the map is one tap away from there anyway. -->
+        <a hlmSidebarMenuButton [routerLink]="isAuthenticated() ? '/menu' : '/mappa'"
+          [tooltip]="isAuthenticated() ? 'Menu' : 'Mappa'"
+          class="nav-item--menu h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">
           <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4m0 0L9 6" />
           </svg>
-          <span>Menu</span>
+          <span>{{ isAuthenticated() ? 'Menu' : 'Mappa' }}</span>
         </a>
       </li>
       }
 
       <li *appRole="'ADMIN'" hlmSidebarMenuItem>
-        <a hlmSidebarMenuButton routerLink="/admin" tooltip="Admin">
+        <a hlmSidebarMenuButton routerLink="/admin" tooltip="Admin"
+          class="nav-item--admin h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">
           <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7l8-4z" />
@@ -104,18 +111,25 @@
     </ul>
   </div>
 
-  <div hlmSidebarFooter>
+  <div hlmSidebarFooter class="px-3 pb-3 md:p-2">
     @if (isAuthenticated()) {
     <ul hlmSidebarMenu>
       <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" tabindex="-1" class="user-id"
+        <button hlmSidebarMenuButton type="button" tabindex="-1"
+          class="user-id nav-item--user h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!"
           [tooltip]="currentUser()?.displayName ?? ''">
           @if (currentUser()?.avatarUrl) {
+          <!-- Same size-6 in both collapsed and expanded states on purpose
+          (see the [data-collapsible='icon'] [hlmSidebarMenuButton] override
+          in styles.css, which grew the collapsed button's own content box to
+          fit this) — a size that changes between states is what made
+          expanding the rail look like a resize glitch instead of a clean
+          reveal. -->
           <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
-            class="avatar-img size-4 shrink-0 rounded-full object-cover" />
+            class="avatar-img size-6 shrink-0 rounded-full object-cover" />
           } @else {
           <span
-            class="avatar-fallback flex size-4 shrink-0 items-center justify-center rounded-full text-[0.55rem] font-semibold">
+            class="avatar-fallback flex size-6 shrink-0 items-center justify-center rounded-full text-[0.7rem] font-semibold">
             {{ initial() }}
           </span>
           }
@@ -123,7 +137,8 @@
         </button>
       </li>
       <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" (click)="logout()" tooltip="Esci" class="logout-item">
+        <button hlmSidebarMenuButton type="button" (click)="logout()" tooltip="Esci"
+          class="nav-item--logout logout-item h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]! text-lead">
           <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8M10 12h11m0 0l-3.5-3.5M21 12l-3.5 3.5" />
@@ -135,7 +150,8 @@
     } @else {
     <ul hlmSidebarMenu>
       <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" (click)="openAuth('login')" tooltip="Accedi">
+        <button hlmSidebarMenuButton type="button" (click)="openAuth('login')" tooltip="Accedi"
+          class="nav-item--login h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">
           <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />

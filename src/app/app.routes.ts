@@ -91,5 +91,13 @@ export const routes: Routes = [
       ),
   },
 
+  {
+    path: 'evento/:id',
+    canMatch: [featureFlagGuard(FEATURE_FLAGS.eventDetailsPage)],
+    loadComponent: () => 
+      import('./features/event-details/event-details').then( 
+        (m) => m.EventDetails),
+  },
+
   { path: '**', redirectTo: '' },
 ];

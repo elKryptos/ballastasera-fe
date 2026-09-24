@@ -20,6 +20,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   pendingOrganizersPage: true,
   updateOrganizerPage: true,
   createEventPage: true,
+  eventDetailsPage: true,
 };
 
 export const environment = {

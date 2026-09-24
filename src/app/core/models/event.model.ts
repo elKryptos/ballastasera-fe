@@ -1,4 +1,4 @@
-import { OrganizerSummaryDto } from "./organizer.model";
+import { OrganizerDetailDto, OrganizerSummaryDto } from "./organizer.model";
 
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
@@ -69,7 +69,9 @@ export interface EventDetailDto {
   cityName: string;
   instagramUrl: string | null;
   whatsappUrl: string | null;
-  organizer: OrganizerSummaryDto;
+  // The detail endpoint nests the organizer's full profile (bio, website,
+  // verified…), not just the map card's summary shape — see OrganizerDetailDto.
+  organizer: OrganizerDetailDto;
   venueName: string | null;
   danceStyles: string[];
   likesCount: number;

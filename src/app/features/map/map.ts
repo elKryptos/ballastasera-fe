@@ -13,6 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, Subject, debounceTime, interval } from 'rxjs';
 import type { Map as LeafletMap, Marker, Point } from 'leaflet';
@@ -22,6 +23,7 @@ import {
   lucideClock,
   lucideHeart,
   lucideInstagram,
+  lucideMapPin,
   lucideUserCheck,
   lucideUserPlus,
   lucideUsers,
@@ -33,19 +35,34 @@ import { EventsService, MapBounds } from '../../core/services/events.service';
 import { CitiesService } from '../../core/services/cities.service';
 import { DanceStylesService } from '../../core/services/dance-styles.service';
 import { AuthService } from '../../core/services/auth.service';
+import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 import { environment } from '../../../environments/environment';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import {
+  MILAN_CENTER,
+  MILAN_DEFAULT_ZOOM,
+  PIN_COLORS,
+  PIN_GLYPHS,
+  PIN_SHAPES,
+  PIN_TYPES,
+} from '../../core/config/map-pins';
 
 /** Fallback view when there's no city yet to centre on: Milano, zoomed to city level. */
-const DEFAULT_CENTER: [number, number] = [45.4642, 9.19];
-const DEFAULT_ZOOM = 14;
+const DEFAULT_CENTER = MILAN_CENTER;
+const DEFAULT_ZOOM = MILAN_DEFAULT_ZOOM;
 
 /** Waits for panning/zooming to settle before hitting the API, so a burst of
  * scroll-wheel zoom steps triggers one request instead of one per step. */
 const MOVE_DEBOUNCE_MS = 400;
+
+/** A civico is 1-4 digits with an optional letter/slash suffix (e.g. "12",
+ * "12/A"); a 5-digit Italian CAP never matches, so it's left for addressSecondary. */
+function isCivico(part: string): boolean {
+  return /^\d{1,4}(\/?[a-zA-Z0-9]{0,3})?$/.test(part);
+}
 
 /** Window before an event's start in which the popup card shows an "Inizia
  * tra X min" countdown instead of the plain start time. Pins themselves
@@ -65,42 +82,6 @@ const SELECTED_PIN_VERTICAL_RATIO = 0.32;
 
 type PulseState = 'live' | null;
 
-/** Pin colour per EventType, reusing the brand accents from styles.css so the
- * map stays inside the same palette as the rest of the UI. */
-const PIN_COLORS: Record<EventType, string> = {
-  EVENT: '#ff4d6d', // rose
-  SCHOOL: '#8b5cf6', // violet
-  CLUB: '#2dd4bf', // mint
-  BAR: '#ffa24c', // amber
-};
-
-/** Outer pin outline per EventType — colour alone isn't enough to
- * distinguish them (colourblindness, greyscale printouts), so the shape
- * itself changes too. Each path fills a 24x32 viewBox, tip at (12, 32). */
-const PIN_SHAPES: Record<EventType, string> = {
-  // Classic teardrop.
-  EVENT: 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z',
-  // Shield.
-  SCHOOL: 'M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z',
-  // Hexagon on a point.
-  CLUB: 'M12 0 23 7v14L12 32 1 21V7z',
-  // Rounded square on a point.
-  BAR: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
-};
-
-/** Inner glyph per EventType, drawn in white centred around (12, 12). */
-const PIN_GLYPHS: Record<EventType, string> = {
-  // Star.
-  EVENT: 'M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z',
-  // Graduation cap.
-  SCHOOL:
-    'M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z',
-  // Music note.
-  CLUB: 'M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z',
-  // Cocktail glass.
-  BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',
-};
-
 /** Italian label per EventType, shown in the map legend. */
 const PIN_LABELS: Record<EventType, string> = {
   EVENT: 'Evento',
@@ -109,11 +90,11 @@ const PIN_LABELS: Record<EventType, string> = {
   BAR: 'Bar',
 };
 
-const LEGEND_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
+const LEGEND_TYPES: EventType[] = PIN_TYPES;
 
 @Component({
   selector: 'app-map',
-  imports: [Navbar, SidebarPushDirective, NgIcon, AuthModal],
+  imports: [Navbar, SidebarPushDirective, NgIcon, AuthModal, RouterLink],
   templateUrl: './map.html',
   styleUrl: './map.css',
   providers: [
@@ -122,6 +103,7 @@ const LEGEND_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
       lucideClock,
       lucideHeart,
       lucideInstagram,
+      lucideMapPin,
       lucideUserCheck,
       lucideUserPlus,
       lucideUsers,
@@ -138,6 +120,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
   private readonly authService = inject(AuthService);
+  private readonly mapViewState = inject(MapViewStateService);
 
   private readonly mapContainer = viewChild<ElementRef<HTMLDivElement>>('mapContainer');
 
@@ -300,8 +283,12 @@ export class MapPage implements AfterViewInit, OnDestroy {
     if (!this.isBrowser) return;
 
     // Dynamic import: leaflet touches `window` at module load time, which
-    // doesn't exist during SSR.
-    this.leaflet = await import('leaflet');
+    // doesn't exist during SSR. Leaflet is CJS/UMD, not real ESM: esbuild's
+    // production bundle can synthesize a namespace that only has the module
+    // under `.default` instead of spreading it onto the namespace itself
+    // (works either way in dev, breaks silently in the optimized prod build).
+    const leafletModule = await import('leaflet');
+    this.leaflet = 'map' in leafletModule ? leafletModule : (leafletModule as unknown as { default: typeof leafletModule }).default;
     this.initMap(this.leaflet);
   }
 
@@ -315,7 +302,13 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
     // Scroll-wheel and pinch zoom stay on; the on-screen +/- control is
     // redundant with those and was competing for corner space with our own UI.
-    this.map = L.map(container, { zoomControl: false }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    // Falls back to DEFAULT_CENTER/DEFAULT_ZOOM the first time this page is
+    // ever visited in the session — mapViewState only has something once a
+    // previous MapPage instance has actually panned/zoomed.
+    this.map = L.map(container, { zoomControl: false }).setView(
+      this.mapViewState.center ?? DEFAULT_CENTER,
+      this.mapViewState.zoom ?? DEFAULT_ZOOM,
+    );
 
     // CARTO Voyager: closer to Google Maps' look than plain OSM tiles.
     // Free, but requires an API key (carto.com/basemaps/apikey) — 5M tile
@@ -329,7 +322,12 @@ export class MapPage implements AfterViewInit, OnDestroy {
       },
     ).addTo(this.map);
 
-    this.map.on('moveend', () => this.moveEnd$.next());
+    this.map.on('moveend', () => {
+      const center = this.map!.getCenter();
+      this.mapViewState.center = [center.lat, center.lng];
+      this.mapViewState.zoom = this.map!.getZoom();
+      this.moveEnd$.next();
+    });
     this.fetchEventsInView();
   }
 
@@ -351,12 +349,34 @@ export class MapPage implements AfterViewInit, OnDestroy {
       next: (events) => {
         this.events.set(events);
         this.loading.set(false);
+        this.restoreSelectedEvent(events);
       },
       error: () => {
         this.loading.set(false);
         this.error.set(true);
       },
     });
+  }
+
+  /** Reopens the card for the pin that was selected before navigating away
+   * (e.g. to /evento/:id) — see mapViewState. Deliberately NOT consumed/nulled
+   * out here: navigating back can momentarily spin up two MapPage instances
+   * in a row (router/view-transition quirk, still under investigation), and
+   * the second one needs the id to still be there since the first's restore
+   * gets wiped out when it's torn down. Only selectEvent()/closeDetail() ever
+   * change it after that. Re-running this on every subsequent pan is cheap —
+   * the already-selected check below skips re-fetching toggle state for a
+   * pin that's already open, so it only actually does anything right after a
+   * fresh MapPage instance mounts. */
+  private restoreSelectedEvent(events: EventCardDto[]): void {
+    const id = this.mapViewState.selectedEventId;
+    if (!id || this.selectedEvent()?.id === id) return;
+
+    const match = events.find((event) => event.id === id);
+    if (!match) return;
+
+    this.selectedEvent.set(match);
+    this.syncAllToggleState(match);
   }
 
   private drawMarkers(): void {
@@ -385,7 +405,14 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
   private selectEvent(event: EventCardDto, marker: Marker): void {
     this.selectedEvent.set(event);
+    this.mapViewState.selectedEventId = event.id;
     this.centerOnPoint(this.map!.latLngToContainerPoint(marker.getLatLng()));
+    this.syncAllToggleState(event);
+  }
+
+  /** Shared by selectEvent/restoreSelectedEvent: fetches both toggle states
+   * for the event that just became the open card's subject. */
+  private syncAllToggleState(event: EventCardDto): void {
     this.syncToggleState(event.id, this.likedEventIds, (id) => this.eventsService.isFavorite(id));
     this.syncToggleState(event.id, this.goingEventIds, (id) => this.eventsService.isGoing(id));
   }
@@ -517,6 +544,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
 
   protected closeDetail(): void {
     this.selectedEvent.set(null);
+    this.mapViewState.selectedEventId = null;
   }
 
   protected formatStart(event: EventCardDto): string {
@@ -535,14 +563,20 @@ export class MapPage implements AfterViewInit, OnDestroy {
     return `${event.price} ${event.currency ?? ''}`.trim();
   }
 
+  /** Geocoded addresses already join street+civico with a space ("Via Roma
+   * 12"), but older/manually-typed ones use a comma ("Via Roma, 12") — this
+   * merges a leading civico into the primary line either way, while a 5-digit
+   * CAP in the same position is left for addressSecondary. */
   protected addressPrimary(address: string): string {
-    const idx = address.indexOf(',');
-    return idx === -1 ? address : address.slice(0, idx).trim();
+    const parts = address.split(',').map((p) => p.trim());
+    return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];
   }
 
   protected addressSecondary(address: string): string | null {
-    const idx = address.indexOf(',');
-    return idx === -1 ? null : address.slice(idx + 1).trim();
+    const parts = address.split(',').map((p) => p.trim());
+    if (parts.length <= 1) return null;
+    const rest = isCivico(parts[1]) ? parts.slice(2) : parts.slice(1);
+    return rest.length ? rest.join(', ') : null;
   }
 
   protected googleMapsUrl(event: EventCardDto): string {

@@ -28,6 +28,11 @@ export class AdminHome {
       routerLink: '/admin/create-event',
     },
     {
+      title: 'Crea evento recurrente',
+      description: 'Aggiungi un nuovo evento repetitivo',
+      routerLink: '/admin/create-event-series',
+    },
+    {
       title: 'Elenco organizzatori verificati, possibilita di aggiornamento e eliminazione',
       description: 'Lista degli organizzatori che hanno completato il processo di verifica.',
       routerLink: '/admin/verified-organizers-list', 

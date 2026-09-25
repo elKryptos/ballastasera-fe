@@ -1,13 +1,18 @@
-import { Component, computed, effect, inject, OnInit, signal, viewChild } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { DatePipe, registerLocaleData } from '@angular/common';
+import localeIt from '@angular/common/locales/it';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { catchError, combineLatest, debounceTime, distinctUntilChanged, map, of, Subscription, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCalendarDays, lucideFileWarning, lucideImage } from '@ng-icons/lucide';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
 import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput, BrnAutocompleteSearch } from '@spartan-ng/brain/autocomplete';
+import { AttachmentState } from '@spartan-ng/helm/attachment';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { Navbar } from '../../../shared/navbar/navbar';
 import { AdminService } from '../../../core/services/admin.service';
 import { CitiesService } from '../../../core/services/cities.service';
@@ -22,21 +27,35 @@ import { AddressSuggestion } from '../../../core/models/geocoding.model';
 import { VenuesSummaryDto } from '../../../core/models/venue.model';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 
+registerLocaleData(localeIt);
+
 /** Photon needs at least this many characters before a search is worth firing. */
 const ADDRESS_SEARCH_MIN_LENGTH = 3;
-/** How long to wait after the last keystroke before querying Photon. */
-const ADDRESS_SEARCH_DEBOUNCE_MS = 300;
+/** How long to wait after the last keystroke before querying the venues or Photon. */
+const SEARCH_DEBOUNCE_MS = 300;
+
+/** Local (not UTC) yyyy-MM-dd, which is what `<input type="date">` expects. */
+const toIsoDate = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const toggled = <T,>(set: ReadonlySet<T>, value: T): Set<T> => {
+  const next = new Set(set);
+  if (!next.delete(value)) {
+    next.add(value);
+  }
+  return next;
+};
 
 @Component({
-  selector: 'app-create-event-series',
   imports: [
     ReactiveFormsModule, Navbar, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
-    BrnAutocompleteInput, BrnAutocompleteAnchor, SidebarPushDirective, DatePipe
+    BrnAutocompleteInput, BrnAutocompleteAnchor, SidebarPushDirective, DatePipe, NgIcon, HlmSpinnerImports
   ],
+  providers: [provideIcons({ lucideCalendarDays, lucideFileWarning, lucideImage })],
   templateUrl: './create-event-series.html',
   styleUrl: './create-event-series.css',
 })
-export class CreateEventSeries implements OnInit {
+export class CreateEventSeries {
   private readonly fb = inject(FormBuilder);
   private readonly admin = inject(AdminService);
   private readonly citiesService = inject(CitiesService);
@@ -45,7 +64,17 @@ export class CreateEventSeries implements OnInit {
   private readonly venuesService = inject(VenuesService);
   private readonly router = inject(Router);
 
-  protected readonly organizers = signal<OrganizerSummaryDto[]>([]);
+  /** Shared by the recurrence-day and dance-style chips. */
+  protected readonly chipClass =
+    'inline-flex cursor-pointer items-center rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors select-none has-checked:border-primary has-checked:bg-primary has-checked:text-primary-foreground not-has-checked:bg-transparent not-has-checked:text-muted-foreground not-has-checked:hover:border-primary/50 not-has-checked:hover:text-foreground';
+
+  protected readonly organizers = toSignal(
+    this.admin.getVerifiedOrganizers(0, 100).pipe(
+      map((page) => page.content),
+      catchError(() => of<OrganizerSummaryDto[]>([])),
+    ),
+    { initialValue: [] as OrganizerSummaryDto[] },
+  );
   protected readonly organizerSearch = signal('');
   protected readonly filteredOrganizers = computed(() => {
     const term = this.organizerSearch().trim().toLowerCase();
@@ -72,10 +101,16 @@ export class CreateEventSeries implements OnInit {
     this.venueAutocomplete()?.open();
   }
 
-  protected readonly cities = signal<CityDto[]>([]);
+  protected readonly cities = toSignal(
+    this.citiesService.getCities().pipe(catchError(() => of<CityDto[]>([]))),
+    { initialValue: [] as CityDto[] },
+  );
   protected readonly cityItemToString = (id: number | ''): string =>
     this.cities().find((c) => c.id === id)?.name ?? '';
-  protected readonly danceStyles = signal<DanceStyleDto[]>([]);
+  protected readonly danceStyles = toSignal(
+    this.danceStylesService.getDanceStyles().pipe(catchError(() => of<DanceStyleDto[]>([]))),
+    { initialValue: [] as DanceStyleDto[] },
+  );
   protected readonly selectedDanceStyleIds = signal<Set<number>>(new Set());
 
   protected readonly recurrenceDayOptions: { value: DayOfWeek; label: string }[] = [
@@ -89,6 +124,9 @@ export class CreateEventSeries implements OnInit {
   ];
   protected readonly selectedRecurrenceDays = signal<Set<DayOfWeek>>(new Set());
   protected readonly recurrenceDaysTouched = signal(false);
+  protected readonly recurrenceDaysInvalid = computed(
+    () => this.recurrenceDaysTouched() && this.selectedRecurrenceDays().size === 0,
+  );
 
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -101,6 +139,23 @@ export class CreateEventSeries implements OnInit {
   protected readonly generatingOccurrences = signal(false);
   protected readonly occurrencesError = signal<string | null>(null);
   protected readonly generatedOccurrences = signal<EventCardDto[] | null>(null);
+
+  protected readonly todayIso = toIsoDate(new Date());
+  private readonly occStartDateValue = toSignal(this.occurrencesForm.controls.startDate.valueChanges, {
+    initialValue: this.occurrencesForm.controls.startDate.value,
+  });
+  /** The end date can never precede the start date. */
+  protected readonly minEndDate = computed(() => this.occStartDateValue() || this.todayIso);
+
+  /** Uploaded once to the series; the backend copies its URL onto every occurrence generated afterwards. */
+  protected readonly flyerState = signal<AttachmentState>('idle');
+  protected readonly flyerError = signal<string | null>(null);
+  protected readonly flyerFile = signal<File | null>(null);
+  protected readonly flyerPreviewUrl = signal<string | null>(null);
+  protected readonly flyerBusy = computed(() => this.flyerState() === 'uploading');
+  /** Occurrences inherit the flyer when they are generated, so it can't change afterwards. */
+  protected readonly flyerLocked = computed(() => this.generatedOccurrences() !== null);
+  private readonly flyerFileInput = viewChild<ElementRef<HTMLInputElement>>('flyerFileInput');
 
   protected readonly form = this.fb.nonNullable.group({
     organizerId: ['', [Validators.required]],
@@ -123,8 +178,10 @@ export class CreateEventSeries implements OnInit {
   private readonly selectedOrganizerId = toSignal(this.form.controls.organizerId.valueChanges, {
     initialValue: this.form.controls.organizerId.value,
   });
+  /** Compared by id: the organizers list is loaded once, but this must never re-trigger the contact autofill. */
   protected readonly selectedOrganizer = computed(
     () => this.organizers().find((o) => o.id === this.selectedOrganizerId()) ?? null,
+    { equal: (a, b) => a?.id === b?.id },
   );
 
   private readonly selectedVenueId = toSignal(this.form.controls.venueId.valueChanges, {
@@ -139,7 +196,7 @@ export class CreateEventSeries implements OnInit {
       toObservable(this.selectedCityId),
       toObservable(this.venueSearch).pipe(
         map((term) => term.trim()),
-        debounceTime(300),
+        debounceTime(SEARCH_DEBOUNCE_MS),
         distinctUntilChanged(),
       ),
     ]).pipe(
@@ -159,27 +216,6 @@ export class CreateEventSeries implements OnInit {
     { equal: (a, b) => a?.id === b?.id },
   );
 
-  private organizerPhoneSubscription?: Subscription;
-
-  private readonly organizerAutofillEffect = effect(() => {
-    const organizer = this.selectedOrganizer();
-    this.organizerPhoneSubscription?.unsubscribe();
-
-    this.form.controls.instagramUrl.setValue(
-      organizer?.instagram ? `https://instagram.com/${organizer.instagram}` : '',
-    );
-
-    if (!organizer) {
-      this.form.controls.whatsappUrl.setValue('');
-      return;
-    }
-
-    this.organizerPhoneSubscription = this.admin.getOrganizer(organizer.id).subscribe((detail) => {
-      const digits = detail.phone?.replace(/[^\d+]/g, '');
-      this.form.controls.whatsappUrl.setValue(digits ? `https://wa.me/${digits}` : '');
-    });
-  });
-
   /** Picking a venue prefills its location; clearing it leaves whatever is already in the form. */
   private readonly venueAutofillEffect = effect(() => {
     const venue = this.selectedVenue();
@@ -197,7 +233,7 @@ export class CreateEventSeries implements OnInit {
   protected readonly addressSuggestions = toSignal(
     toObservable(this.addressSearch).pipe(
       map((term) => term.trim()),
-      debounceTime(ADDRESS_SEARCH_DEBOUNCE_MS),
+      debounceTime(SEARCH_DEBOUNCE_MS),
       distinctUntilChanged(),
       switchMap((term) => {
         if (term.length < ADDRESS_SEARCH_MIN_LENGTH) {
@@ -233,32 +269,52 @@ export class CreateEventSeries implements OnInit {
     }
   });
 
-  ngOnInit(): void {
-    this.admin.getVerifiedOrganizers(0, 100).subscribe((page) => this.organizers.set(page.content));
-    // A venue belongs to one city, so changing the city invalidates the selected venue.
-    this.form.controls.cityId.valueChanges.subscribe(() => this.form.controls.venueId.setValue(''));
-    this.citiesService.getCities().subscribe((cities) => this.cities.set(cities));
-    this.danceStylesService.getDanceStyles().subscribe((styles) => this.danceStyles.set(styles));
+  constructor() {
+    // A venue belongs to one city, so changing the city invalidates the selected venue and its search.
+    this.form.controls.cityId.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.form.controls.venueId.setValue('');
+      this.venueSearch.set('');
+    });
+
+    // The organizer's socials prefill the series' links; switchMap drops a stale phone lookup on re-selection.
+    toObservable(this.selectedOrganizer)
+      .pipe(
+        tap((organizer) =>
+          this.form.controls.instagramUrl.setValue(
+            organizer?.instagram ? `https://instagram.com/${organizer.instagram}` : '',
+          ),
+        ),
+        switchMap((organizer) =>
+          organizer
+            ? this.admin.getOrganizer(organizer.id).pipe(
+                map((detail) => detail.phone),
+                catchError(() => of(null)),
+              )
+            : of(null),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((phone) => {
+        const digits = phone?.replace(/[^\d+]/g, '');
+        this.form.controls.whatsappUrl.setValue(digits ? `https://wa.me/${digits}` : '');
+      });
+
+    this.occurrencesForm.controls.startDate.valueChanges.pipe(takeUntilDestroyed()).subscribe((start) => {
+      const endControl = this.occurrencesForm.controls.endDate;
+      if (start && endControl.value && endControl.value < start) {
+        endControl.setValue(start);
+      }
+    });
+
+    inject(DestroyRef).onDestroy(() => this.clearStagedFlyer());
   }
 
   protected toggleDanceStyle(id: number): void {
-    const current = new Set(this.selectedDanceStyleIds());
-    if (current.has(id)) {
-      current.delete(id);
-    } else {
-      current.add(id);
-    }
-    this.selectedDanceStyleIds.set(current);
+    this.selectedDanceStyleIds.update((current) => toggled(current, id));
   }
 
   protected toggleRecurrenceDay(day: DayOfWeek): void {
-    const current = new Set(this.selectedRecurrenceDays());
-    if (current.has(day)) {
-      current.delete(day);
-    } else {
-      current.add(day);
-    }
-    this.selectedRecurrenceDays.set(current);
+    this.selectedRecurrenceDays.update((current) => toggled(current, day));
   }
 
   protected submit(): void {
@@ -332,6 +388,59 @@ export class CreateEventSeries implements OnInit {
     });
   }
 
+  protected openFlyerPicker(): void {
+    if (this.flyerBusy() || this.flyerLocked()) {
+      return;
+    }
+    this.flyerFileInput()?.nativeElement.click();
+  }
+
+  protected onFlyerFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    this.clearStagedFlyer();
+    this.flyerFile.set(file);
+    this.flyerPreviewUrl.set(URL.createObjectURL(file));
+    this.uploadFlyer();
+  }
+
+  /** Uploads the staged flyer to the series; a failed upload can be retried without picking the file again. */
+  protected uploadFlyer(): void {
+    const series = this.createdSeries();
+    const file = this.flyerFile();
+    if (!series || !file || this.flyerBusy() || this.flyerLocked()) {
+      return;
+    }
+
+    this.flyerState.set('uploading');
+    this.flyerError.set(null);
+
+    this.admin.uploadEventSeriesFlyer(series.id, file).subscribe({
+      next: (updated) => {
+        this.createdSeries.set(updated);
+        this.flyerState.set('done');
+      },
+      error: (err) => {
+        this.flyerState.set('error');
+        this.flyerError.set(err?.error?.message ?? 'Caricamento del flyer non riuscito. Riprova.');
+      },
+    });
+  }
+
+  private clearStagedFlyer(): void {
+    const previewUrl = this.flyerPreviewUrl();
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    this.flyerFile.set(null);
+    this.flyerPreviewUrl.set(null);
+  }
+
   protected createAnother(): void {
     this.form.enable();
     this.form.reset({ isFree: true, currency: 'EUR' });
@@ -343,6 +452,9 @@ export class CreateEventSeries implements OnInit {
     this.occurrencesForm.reset();
     this.generatedOccurrences.set(null);
     this.occurrencesError.set(null);
+    this.flyerState.set('idle');
+    this.flyerError.set(null);
+    this.clearStagedFlyer();
   }
 
   protected backToAdmin(): void {

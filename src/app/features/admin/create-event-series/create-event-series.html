@@ -1,16 +1,17 @@
 <app-navbar />
 
 <main appSidebarPush class="pt-(--header-h) md:pt-0">
-  <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-4xl px-6 py-4" novalidate>
+  <div class="mx-auto max-w-4xl px-6 py-4">
     <h1 class="text-xl font-semibold">Crea serie di eventi</h1>
 
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
       <div class="space-y-1">
-        <label class="text-sm font-medium">Organizzatore *</label>
+        <label for="organizer" class="text-sm font-medium">Organizzatore *</label>
         <hlm-autocomplete #organizerAutocomplete class="block" formControlName="organizerId"
           [itemToString]="organizerItemToString" [search]="organizerSearch()"
           (searchChange)="organizerSearch.set($event)">
-          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca organizzatore..."
+          <input id="organizer" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca organizzatore..."
             class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
@@ -34,9 +35,9 @@
       </div>
 
       <div class="space-y-1">
-        <label class="text-sm font-medium">Città *</label>
+        <label for="city" class="text-sm font-medium">Città *</label>
         <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
-          <button type="button" brnSelectTrigger
+          <button id="city" type="button" brnSelectTrigger
             class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
             <span brnSelectValue placeholder="Seleziona città"></span>
             <span class="text-muted-foreground">▾</span>
@@ -57,10 +58,10 @@
       </div>
 
       <div class="space-y-1 md:col-span-2">
-        <label class="text-sm font-medium">Locale</label>
+        <label for="venue" class="text-sm font-medium">Locale</label>
         <hlm-autocomplete #venueAutocomplete class="block" formControlName="venueId"
           [itemToString]="venueItemToString" [search]="venueSearch()" (searchChange)="venueSearch.set($event)">
-          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Seleziona prima una città, poi cerca il locale..."
+          <input id="venue" brnAutocompleteInput brnAutocompleteAnchor placeholder="Seleziona prima una città, poi cerca il locale..."
             class="w-full rounded border px-3 py-2" (click)="openVenueDropdown()" />
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
@@ -94,18 +95,18 @@
       </div>
 
       <div class="space-y-1 md:col-span-2 mb-4">
-        <label class="text-sm font-medium">Ricorrenza *</label>
-        <div class="flex flex-wrap gap-3 mt-2">
+        <span id="recurrenceLabel" class="block text-sm font-medium">Ricorrenza *</span>
+        <div role="group" aria-labelledby="recurrenceLabel" class="flex flex-wrap gap-2 mt-2">
           @for (day of recurrenceDayOptions; track day.value) {
-          <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" class="size-4 rounded border" [checked]="selectedRecurrenceDays().has(day.value)"
+          <label [class]="chipClass" [class.border-red-600]="recurrenceDaysInvalid()">
+            <input type="checkbox" class="sr-only" [checked]="selectedRecurrenceDays().has(day.value)"
               (change)="toggleRecurrenceDay(day.value)" />
             {{ day.label }}
           </label>
           }
         </div>
         <p class="min-h-5 text-sm">
-          @if (recurrenceDaysTouched() && selectedRecurrenceDays().size === 0) {
+          @if (recurrenceDaysInvalid()) {
           <span class="text-red-600">Seleziona almeno un giorno.</span>
           }
         </p>
@@ -212,14 +213,16 @@
       </div>
 
       <div class="space-y-2 md:col-span-2 mb-4">
-        <label class="text-sm font-medium">Stili di danza</label>
-        <div class="flex flex-wrap gap-3 mt-4">
+        <span id="danceStylesLabel" class="block text-sm font-medium">Stili di danza</span>
+        <div role="group" aria-labelledby="danceStylesLabel" class="flex flex-wrap gap-2 mt-2">
           @for (style of danceStyles(); track style.id) {
-          <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" class="size-4 rounded border" [checked]="selectedDanceStyleIds().has(style.id)"
+          <label [class]="chipClass">
+            <input type="checkbox" class="sr-only" [checked]="selectedDanceStyleIds().has(style.id)"
               (change)="toggleDanceStyle(style.id)" />
             {{ style.name }}
           </label>
+          } @empty {
+          <p class="text-sm text-muted-foreground">Nessuno stile disponibile.</p>
           }
         </div>
       </div>
@@ -229,10 +232,82 @@
     <p class="text-sm text-red-600">{{ errorMessage() }}</p>
     }
 
-    @if (createdSeries()) {
+    @if (!createdSeries()) {
+    <div class="flex justify-end">
+      <button type="submit" [disabled]="submitting()"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50">
+        @if (submitting()) {
+        <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+        }
+        {{ submitting() ? 'Creazione...' : 'Crea serie' }}
+      </button>
+    </div>
+    }
+    </form>
+
+    @if (createdSeries(); as series) {
     <div class="rounded-lg bg-primary/10 text-primary text-sm px-4 py-3 flex items-center gap-2 mb-4">
       <span>✓</span>
-      <span><strong>{{ createdSeries()!.title }}</strong> è stata creata con successo.</span>
+      <span><strong>{{ series.title }}</strong> è stata creata con successo.</span>
+    </div>
+
+    <div
+      class="mb-4 space-y-3 rounded-xl border border-accent/30 bg-linear-to-br from-accent/10 via-primary/5 to-accent/10 p-4">
+      <span
+        class="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-1 text-xs font-semibold tracking-wide text-accent">
+        <ng-icon name="lucideImage" class="size-3.5" />
+        FLYER SERIE
+      </span>
+      <p class="text-sm text-muted-foreground">
+        Carica un'immagine una volta sola, prima di generare le occorrenze: verrà applicata a ognuna di esse.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-start gap-4">
+        <div
+          class="relative flex w-40 sm:w-56 aspect-square shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted"
+          [class.border-destructive]="flyerState() === 'error'">
+          @switch (flyerState()) {
+          @case ('uploading') { <hlm-spinner /> }
+          @default {
+          @if (flyerPreviewUrl()) {
+          <img [src]="flyerPreviewUrl()" alt="Flyer" class="h-full w-full object-cover" />
+          } @else if (flyerState() === 'error') {
+          <ng-icon name="lucideFileWarning" class="size-8 text-destructive" />
+          } @else {
+          <ng-icon name="lucideImage" class="size-8 text-muted-foreground" />
+          }
+          }
+          }
+        </div>
+
+        <div class="flex flex-1 flex-col gap-2 pt-1">
+          <p class="min-h-5 text-sm">
+            @switch (flyerState()) {
+            @case ('uploading') { <span class="text-accent">Caricamento del flyer in corso...</span> }
+            @case ('error') { <span class="text-red-600">{{ flyerError() }}</span> }
+            @case ('done') { <span class="text-muted-foreground">Flyer salvato: {{ flyerLocked() ? 'applicato alle occorrenze' : 'verrà applicato alle occorrenze generate' }}</span> }
+            @default { <span class="text-muted-foreground">{{ flyerFile()?.name ?? 'PNG, JPG o WEBP' }}</span> }
+            }
+          </p>
+          <div class="flex flex-wrap gap-2">
+            @if (!flyerBusy() && !flyerLocked()) {
+            <button type="button" (click)="openFlyerPicker()"
+              class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-accent/10">
+              <ng-icon name="lucideImage" class="size-4" />
+              {{ flyerFile() ? 'Cambia immagine' : 'Scegli immagine' }}
+            </button>
+            @if (flyerState() === 'error') {
+            <button type="button" (click)="uploadFlyer()"
+              class="inline-flex items-center gap-2 rounded-lg border border-destructive/50 px-3 py-2 text-sm font-medium hover:bg-destructive/10">
+              Riprova flyer
+            </button>
+            }
+            }
+          </div>
+        </div>
+      </div>
+      <input #flyerFileInput type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
+        (change)="onFlyerFileSelected($event)" />
     </div>
 
     @if (!generatedOccurrences()) {
@@ -242,23 +317,35 @@
         Scegli un intervallo di date: verrà creato un evento pubblicato per ogni giorno di ricorrenza scelto sopra,
         all'interno di questo intervallo.
       </p>
-      <form [formGroup]="occurrencesForm" (ngSubmit)="generateOccurrences()"
-        class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
-        <div class="space-y-1">
-          <label for="occStartDate" class="text-sm font-medium">Da *</label>
-          <input id="occStartDate" type="date" formControlName="startDate" class="w-full rounded border px-3 py-2"
-            [attr.aria-invalid]="occurrencesForm.controls.startDate.invalid && occurrencesForm.controls.startDate.touched" />
+      <form [formGroup]="occurrencesForm" (ngSubmit)="generateOccurrences()" class="space-y-2">
+        <div
+          class="flex flex-col sm:flex-row rounded-lg border overflow-hidden divide-y sm:divide-y-0 sm:divide-x transition-colors focus-within:border-primary">
+          <label for="occStartDate" class="flex flex-1 items-center gap-3 px-3 py-2.5 cursor-text">
+            <ng-icon name="lucideCalendarDays" class="size-4 text-muted-foreground shrink-0" />
+            <span class="flex flex-1 flex-col">
+              <span class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Da</span>
+              <input id="occStartDate" type="date" formControlName="startDate" [min]="todayIso"
+                class="w-full border-0 bg-transparent p-0 text-sm focus:outline-none focus:ring-0" />
+            </span>
+          </label>
+          <label for="occEndDate" class="flex flex-1 items-center gap-3 px-3 py-2.5 cursor-text">
+            <ng-icon name="lucideCalendarDays" class="size-4 text-muted-foreground shrink-0" />
+            <span class="flex flex-1 flex-col">
+              <span class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">A</span>
+              <input id="occEndDate" type="date" formControlName="endDate" [min]="minEndDate()"
+                class="w-full border-0 bg-transparent p-0 text-sm focus:outline-none focus:ring-0" />
+            </span>
+          </label>
         </div>
-        <div class="space-y-1">
-          <label for="occEndDate" class="text-sm font-medium">A *</label>
-          <input id="occEndDate" type="date" formControlName="endDate" class="w-full rounded border px-3 py-2"
-            [attr.aria-invalid]="occurrencesForm.controls.endDate.invalid && occurrencesForm.controls.endDate.touched" />
-        </div>
-        @if (occurrencesError()) {
-        <p class="md:col-span-2 text-sm text-red-600">{{ occurrencesError() }}</p>
+        @if ((occurrencesForm.controls.startDate.invalid && occurrencesForm.controls.startDate.touched) ||
+        (occurrencesForm.controls.endDate.invalid && occurrencesForm.controls.endDate.touched)) {
+        <p class="text-sm text-red-600">Seleziona un intervallo di date.</p>
         }
-        <div class="md:col-span-2 flex justify-end mt-2">
-          <button type="submit" [disabled]="generatingOccurrences()"
+        @if (occurrencesError()) {
+        <p class="text-sm text-red-600">{{ occurrencesError() }}</p>
+        }
+        <div class="flex justify-end mt-2">
+          <button type="submit" [disabled]="generatingOccurrences() || flyerBusy()"
             class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50">
             @if (generatingOccurrences()) {
             <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
@@ -274,9 +361,16 @@
     <div class="rounded-lg bg-primary/10 text-primary text-sm px-4 py-3 mb-4">
       <span>Generate {{ occurrences.length }} occorrenze.</span>
       @if (occurrences.length > 0) {
-      <ul class="mt-2 list-disc list-inside">
+      <ul class="mt-2 space-y-1.5">
         @for (o of occurrences; track o.id) {
-        <li>{{ o.startAt | date:'EEEE d MMMM, HH:mm' }}</li>
+        <li class="flex items-center gap-2">
+          @if (o.flyerUrl) {
+          <img [src]="o.flyerUrl" alt="" class="size-6 rounded object-cover shrink-0" />
+          } @else {
+          <ng-icon name="lucideImage" class="size-4 text-primary/50 shrink-0" />
+          }
+          <span>{{ o.startAt | date:'EEEE d MMMM, HH:mm':undefined:'it' }}</span>
+        </li>
         }
       </ul>
       }
@@ -293,16 +387,6 @@
         Torna alla home admin
       </button>
     </div>
-    } @else {
-    <div class="flex justify-end">
-      <button type="submit" [disabled]="submitting()"
-        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50">
-        @if (submitting()) {
-        <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
-        }
-        {{ submitting() ? 'Creazione...' : 'Crea serie' }}
-      </button>
-    </div>
     }
-  </form>
+  </div>
 </main>

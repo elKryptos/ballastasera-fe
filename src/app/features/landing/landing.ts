@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { NgClass, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import type { Map as LeafletMap } from 'leaflet';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
@@ -68,7 +68,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, MediaEmbed, Navbar, NgClass, TranslocoPipe, SidebarPushDirective, InstallBanner],
+  imports: [RouterLink, MediaEmbed, Navbar, TranslocoPipe, SidebarPushDirective, InstallBanner],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -356,9 +356,6 @@ export class Landing implements AfterViewInit, OnDestroy {
 
   protected readonly year = new Date().getFullYear();
 
-  /** Shared with the embed, so the hero button can start it from off-screen. */
-  protected readonly videoOpen = signal(false);
-
   /** Maps each EventType to the transloco key its legend chip shows. */
   private static readonly LEGEND_LABEL_KEYS: Record<string, string> = {
     EVENT: 'legend.event',
@@ -385,10 +382,6 @@ export class Landing implements AfterViewInit, OnDestroy {
     shape: PIN_SHAPES[type],
     glyph: PIN_GLYPHS[type],
   }));
-
-  protected toggleMusic(): void {
-    this.videoOpen.update((open) => !open);
-  }
 
   protected isHeld(beat: number): boolean {
     return beat % 4 === 0;

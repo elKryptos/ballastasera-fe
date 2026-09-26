@@ -144,8 +144,6 @@
             class="night text-rose">stasera</span></span>
       </div>
 
-      <!-- Mobile puts the music button straight under the headline, so it is in
-        the first screenful; on large screens it goes back to the end. -->
       <div class="order-2 flex flex-col lg:order-1">
         <p class="eyebrow order-1 mb-2 font-mono text-[0.7rem] tracking-[0.22em] text-amber uppercase sm:mb-6 sm:text-[0.78rem]">
           {{ 'hero.eyebrow' | transloco }}
@@ -159,27 +157,9 @@
         </h1>
 
         <p
-          class="lead order-4 mb-4 max-w-[46ch] text-[clamp(0.85rem,3.5vw,1.15rem)] leading-[1.35] text-lead sm:mb-8 sm:leading-relaxed">
+          class="lead order-4  max-w-[46ch] text-[clamp(0.85rem,3.5vw,1.15rem)] leading-[1.35] text-lead sm:leading-relaxed">
           {{ 'hero.lead' | transloco }}
         </p>
-
-        <!-- Starts the video wherever it is on the page, sound on. Pressing it
-          again pauses it where it is, it does not start over. -->
-        <button type="button" (click)="toggleMusic()" [attr.aria-pressed]="videoOpen()" aria-controls="video"
-          class="music group order-3 mb-4 inline-flex sm:mb-8 cursor-pointer items-center gap-3 self-start rounded-full py-2.5 pr-6 pl-5 font-mono text-[0.72rem] tracking-[0.16em] uppercase transition-all duration-300 ease-in-out active:scale-95 focus:ring-2 focus:ring-mint/50 focus:ring-offset-2 focus:outline-none lg:order-7 lg:mt-7 lg:mb-0"
-          [ngClass]="videoOpen()
-            ? 'border border-mint bg-mint/15 text-bone shadow-[0_0_22px_-4px_var(--color-mint)]'
-            : 'border border-mint/45 bg-mint/8 text-bone shadow-[0_0_16px_-6px_var(--color-mint)] hover:border-mint hover:bg-mint/15 hover:text-bone'"
-          [class.playing]="videoOpen()">
-
-          <span class="eq flex h-3.5 items-end gap-0.75" aria-hidden="true">
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-            <span class="eq-bar"></span>
-          </span>
-
-          {{ (videoOpen() ? 'hero.musicOn' : 'hero.musicOff') | transloco }}
-        </button>
       </div>
     </div>
   </main>
@@ -303,7 +283,7 @@
       @for (item of media; track item.mediaId) {
       <app-media-embed [class]="item.kind === 'youtube' ? 'aspect-video' : 'aspect-4/5'" [kind]="item.kind"
         [mediaId]="item.mediaId" [title]="'social.videoTitle' | transloco" [credit]="item.credit"
-        [hint]="'social.videoHint' | transloco" [poster]="item.poster ?? ''" [(open)]="videoOpen" />
+        [hint]="'social.videoHint' | transloco" [poster]="item.poster ?? ''" />
       }
     </div>
 

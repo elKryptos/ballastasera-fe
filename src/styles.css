@@ -20,8 +20,8 @@ sunset. Everything loud is this colour. */
 orange half of the sunset gradient. */
   --color-amber: #ffa24c;
   --color-violet: #8b5cf6;
-  /* The music toggle only. Turquoise, kept apart from rose/amber/violet so
-it never competes with the signup CTA. */
+  /* Turquoise, kept apart from rose/amber/violet so it never competes with
+the signup CTA. */
   --color-mint: #2dd4bf;
 
   --color-bone: #fdf2ec;

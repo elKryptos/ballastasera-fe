@@ -82,6 +82,17 @@
   );
 }
 
+/* No divider line between the rail and the page, in either theme. The
+   rail's border-r is a 14% translucent line (--border), so it showed only
+   where something contrasting sat behind it — on /mappa the body's dark
+   ground (no background of its own under the rail), a dark line — and
+   vanished on pages with their own background. Dropping it keeps every page
+   the same. Scoped to the outer container only; --sidebar-border still
+   drives the rail's inner separators. */
+:host ::ng-deep [data-slot='sidebar-container'] {
+  border-right-width: 0;
+}
+
 /* Twinkling star scatter over both — same "stasera" (tonight) motif as
    the .night effect on the wordmark below and the fuller starfield on the
    event details page, sized down to a thin tile so it reads as ambient
@@ -125,23 +136,24 @@
    The colour tokens themselves flip in styles.css (see the
    `:root[data-theme='light'] app-navbar` block there — it also has to reach
    the mobile drawer, which lives outside this component). What's here is
-   only the chrome built on top of them: the bar/rail gradients become a
-   morning sky — clear blue at the top, paling down to a peach sunrise
-   horizon at the bottom edge, with a soft sun glow — and the night-sky star
-   scatter goes away. */
+   only the chrome built on top of them: the bar/rail gradients become the
+   /mappa basemap (CARTO Voyager) — its paper ground warming into beige
+   blocks, a glow in its road yellow at the top and one in its park sage at
+   the rail's foot — and the night-sky star scatter goes away. */
 :host-context([data-theme='light']) .mobile-bar {
   background:
-    radial-gradient(160px 60px at 18% 0%, rgba(255, 214, 120, 0.45), transparent 70%),
-    linear-gradient(180deg, #c9e2f6 0%, #dcecf8 70%, #fbe3d4 100%);
+    radial-gradient(160px 60px at 18% 0%, rgba(255, 233, 165, 0.55), transparent 70%),
+    linear-gradient(180deg, #fbf8f3 0%, #f8f3ea 70%, #f4ecdf 100%);
   box-shadow:
-    0 1px 0 rgba(242, 160, 120, 0.45),
-    0 4px 16px rgba(29, 38, 64, 0.1);
+    0 1px 0 rgba(196, 172, 134, 0.35),
+    0 4px 16px rgba(60, 50, 35, 0.08);
 }
 
 :host-context([data-theme='light']) ::ng-deep [data-slot='sidebar-inner'] {
   background:
-    radial-gradient(180px 140px at 50% 0%, rgba(255, 214, 120, 0.5), transparent 70%),
-    linear-gradient(180deg, #c9e2f6 0%, #dcecf8 45%, #eef4f8 72%, #fbe3d4 100%);
+    radial-gradient(180px 140px at 50% 0%, rgba(255, 233, 165, 0.55), transparent 70%),
+    radial-gradient(220px 160px at 50% 100%, rgba(217, 233, 201, 0.6), transparent 70%),
+    linear-gradient(180deg, #fbf8f3 0%, #f8f3ea 55%, #f4ecdf 100%);
 }
 
 :host-context([data-theme='light']) .mobile-bar::after,
@@ -202,7 +214,7 @@ same reasoning on the rest of the sidebar). */
   }
 }
 
-/* The light pink above disappears on the daytime sky — a deeper red there. */
+/* The light pink above disappears on the daytime paper — a deeper red there. */
 :host-context([data-theme='light']) .logout-item:focus-visible {
   color: #c81e3a;
 }

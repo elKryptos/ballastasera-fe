@@ -1,7 +1,6 @@
-import { Component, PLATFORM_ID, WritableSignal, effect, inject, signal } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, DestroyRef, PLATFORM_ID, WritableSignal, computed, effect, inject, signal } from '@angular/core';
+import { Location, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -16,8 +15,7 @@ import {
   lucideMapPin,
   lucideMaximize2,
   lucideShare2,
-  lucideUserCheck,
-  lucideUserPlus,
+  lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
 import { environment } from '../../../environments/environment';
@@ -82,7 +80,10 @@ const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   selector: 'app-event-details',
   templateUrl: './event-details.html',
   styleUrl: './event-details.css',
-  imports: [Navbar, AuthModal, SidebarPushDirective, NgIcon],
+  imports: [Navbar, AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet],
+  // On the document, not the lightbox <div>: that div never holds focus, so a
+  // keydown listener on it would never fire.
+  host: { '(document:keydown.escape)': 'closeFlyer()' },
   providers: [
     provideIcons({
       lucideArrowLeft,
@@ -96,8 +97,7 @@ const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
       lucideMapPin,
       lucideMaximize2,
       lucideShare2,
-      lucideUserCheck,
-      lucideUserPlus,
+      lucideUsers,
       lucideX,
     }),
   ],
@@ -135,7 +135,56 @@ export class EventDetails {
    * null when the event has no coordinates (the card then shows text only). */
   protected readonly miniMap = signal<MiniMap | null>(null);
 
+  /** Only the id, so the effect below doesn't refetch on every count change. */
+  private readonly eventId = computed(() => this.event()?.id ?? null);
+  private linkCopiedTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Toggles with a request still in flight — a second tap is ignored until
+   * it settles, or add/remove could reach the server in the wrong order and
+   * leave the button out of sync with the backend. */
+  private readonly pendingToggles = new Set<WritableSignal<boolean>>();
+
+  /** Ticks once a minute (browser only) so the live/soon badge moves on by
+   * itself — "Inizia tra 5 min" → "LIVE ORA" — while the page stays open.
+   * Purely local: startAt/endAt are already loaded, no backend calls. */
+  private readonly now = signal(Date.now());
+
   constructor() {
+    const destroyRef = inject(DestroyRef);
+
+    // Same body-scroll lock as auth-modal.ts, DOM-only hence the platform
+    // check — released on destroy too, or leaving the page with the lightbox
+    // open would keep every other page unscrollable.
+    effect(() => {
+      if (!this.isBrowser) return;
+      document.body.style.overflow = this.flyerOpen() ? 'hidden' : '';
+    });
+    const clock = this.isBrowser ? setInterval(() => this.now.set(Date.now()), 60_000) : undefined;
+    destroyRef.onDestroy(() => {
+      if (this.isBrowser) document.body.style.overflow = '';
+      clearTimeout(this.linkCopiedTimer);
+      clearInterval(clock);
+    });
+
+    // Parteciperò/Mi piace state follows the session, not just the first
+    // load: signing in from the auth modal fetches it, signing out clears it.
+    effect(() => {
+      const id = this.eventId();
+      if (!id || !this.authService.isAuthenticated()) {
+        this.going.set(false);
+        this.liked.set(false);
+        return;
+      }
+      // On failure (e.g. expired session) the buttons just stay unpressed.
+      this.eventsService.isGoing(id).subscribe({
+        next: (active) => this.going.set(active),
+        error: () => this.going.set(false),
+      });
+      this.eventsService.isFavorite(id).subscribe({
+        next: (active) => this.liked.set(active),
+        error: () => this.liked.set(false),
+      });
+    });
+
     const id = this.route.snapshot.paramMap.get('id');
     // No id or a failed fetch both end with event() still null, which the
     // template already renders as "not found" — no separate error flag needed.
@@ -149,27 +198,22 @@ export class EventDetails {
         this.event.set(event);
         this.miniMap.set(this.buildMiniMap(event));
         this.loading.set(false);
-        this.syncToggleState(event.id);
       },
       error: () => this.loading.set(false),
     });
-
-    // Same body-scroll lock as auth-modal.ts, DOM-only hence the platform check.
-    effect(() => {
-      if (!this.isBrowser) return;
-      document.body.style.overflow = this.flyerOpen() ? 'hidden' : '';
-    });
   }
 
-  private syncToggleState(eventId: string): void {
-    if (!this.authService.isAuthenticated()) return;
-
-    this.eventsService.isGoing(eventId).subscribe({ next: (active) => this.going.set(active) });
-    this.eventsService.isFavorite(eventId).subscribe({ next: (active) => this.liked.set(active) });
-  }
-
+  /** Back only when there's an in-app page to return to. Opened straight from
+   * a shared link, this page is the router's first navigation (navigationId
+   * 1 in history.state) and location.back() would leave the app — or do
+   * nothing in a fresh tab — so it goes to the map instead. */
   protected goBack(): void {
-    this.location.back();
+    const state = this.location.getState() as { navigationId?: number } | null;
+    if ((state?.navigationId ?? 1) > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/mappa']);
+    }
   }
 
   /** Opens /mappa centred on this event with its card already open — the
@@ -228,11 +272,15 @@ export class EventDetails {
       return;
     }
 
-    if (navigator.clipboard) {
+    try {
       await navigator.clipboard.writeText(url);
-      this.linkCopied.set(true);
-      setTimeout(() => this.linkCopied.set(false), 2000);
+    } catch {
+      // No clipboard API (insecure context) or permission denied — nothing to show.
+      return;
     }
+    this.linkCopied.set(true);
+    clearTimeout(this.linkCopiedTimer);
+    this.linkCopiedTimer = setTimeout(() => this.linkCopied.set(false), 2000);
   }
 
   protected openFlyer(): void {
@@ -262,14 +310,18 @@ export class EventDetails {
       this.authOpen.set(true);
       return;
     }
+    if (this.pendingToggles.has(stateSignal)) return;
 
     const wasActive = stateSignal();
     stateSignal.set(!wasActive);
     adjustCount(!wasActive);
+    this.pendingToggles.add(stateSignal);
 
     const request = wasActive ? remove(id) : add(id);
     request.subscribe({
+      complete: () => this.pendingToggles.delete(stateSignal),
       error: () => {
+        this.pendingToggles.delete(stateSignal);
         stateSignal.set(wasActive);
         adjustCount(wasActive);
       },
@@ -281,12 +333,12 @@ export class EventDetails {
   }
 
   protected isLiveNow(event: EventDetailDto): boolean {
-    const now = Date.now();
+    const now = this.now();
     return now >= new Date(event.startAt).getTime() && now <= new Date(event.endAt).getTime();
   }
 
   protected startsInMinutes(event: EventDetailDto): number | null {
-    const msToStart = new Date(event.startAt).getTime() - Date.now();
+    const msToStart = new Date(event.startAt).getTime() - this.now();
     if (msToStart <= 0 || msToStart > STARTING_SOON_MS) return null;
     return Math.max(1, Math.round(msToStart / 60000));
   }

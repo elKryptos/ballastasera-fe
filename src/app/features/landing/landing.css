@@ -33,21 +33,22 @@
 
 /* ---------- light theme ---------- */
 
-/* Same page, daytime: pale sky panels and navy text instead of the
-   night-plum ground (the backdrop itself is the .glow rule below). Only the
-   tokens change (applied when <html data-theme="light">, see ThemeService);
-   every utility built on them follows. Rose stays exactly the logo's rose,
-   and amber/violet/mint are deepened just enough to stay readable as text on
-   a light ground (small mono labels need ~4.5:1). */
+/* Same page, daytime: the /mappa basemap's (CARTO Voyager) paper and beige
+   with navy text, instead of the night-plum ground (the backdrop itself is
+   the .glow rule below). Only the tokens change (applied when <html
+   data-theme="light">, see ThemeService); every utility built on them
+   follows. Rose stays exactly the logo's rose, and amber/violet/mint are
+   deepened just enough to stay readable as text on a light ground (small
+   mono labels need ~4.5:1). */
 :host-context([data-theme='light']) {
-  --color-ink: #f4f9fd;
-  --color-ink-2: #eaf3fa;
+  --color-ink: #fbf8f3;
+  --color-ink-2: #f5ede1;
   --color-rose-lit: #e0245c;
   --color-amber: #b45309;
   --color-violet: #a21caf;
   --color-mint: #0f8a7c;
-  /* Navy text, same family as the daytime sidebar (styles.css), so the
-     page and the nav read as one sky. */
+  /* Navy text, same family as the daytime sidebar (styles.css) and the
+     map's own slate labels, so page, nav and map read as one surface. */
   --color-bone: #1d2640;
   --color-lead: #36425f;
   --color-muted: #5f6d8c;
@@ -58,18 +59,19 @@
   color: var(--color-bone);
 }
 
-/* Sunrise on the Malecón: the same morning-sky blue as the daytime sidebar
-   at the top (so nav and page read as one sky), paling to near-white
-   mid-page and warming into a coral/peach horizon at the bottom — a warm sun
-   glowing behind the big logo pin and a turquoise glint of sea in the
-   bottom-left corner. Same --mx/--my parallax as the dark version, so the
-   sun and sea still drift with the pointer. */
+/* The map by day: the /mappa basemap's (CARTO Voyager) paper ground,
+   warming into its beige city blocks toward the bottom — same stops as the
+   daytime sidebar (navbar.css), so nav and page read as one surface — with a
+   glow in its road yellow behind the big logo pin, a patch of its park sage
+   in the bottom-left corner and a faint rose, the pins' own colour, at the
+   bottom-right. Same --mx/--my parallax as the dark version, so the glows
+   still drift with the pointer. */
 :host-context([data-theme='light']) .glow {
   background:
-    radial-gradient(34vmax 34vmax at calc(74% + (var(--mx) - 0.5) * 10%) calc(24% + (var(--my) - 0.5) * 10%), rgba(255, 214, 120, 0.55), rgba(255, 190, 120, 0.18) 45%, transparent 68%),
-    radial-gradient(40vmax 40vmax at calc(2% - (var(--mx) - 0.5) * 12%) calc(100% - (var(--my) - 0.5) * 12%), rgba(56, 196, 205, 0.3), transparent 64%),
-    radial-gradient(50vmax 30vmax at calc(80% + (var(--mx) - 0.5) * 8%) calc(104% + (var(--my) - 0.5) * 8%), rgba(255, 128, 110, 0.3), transparent 66%),
-    linear-gradient(180deg, #c9e2f6 0%, #deedf8 28%, #f6f9fb 55%, #fdf1e8 80%, #fde0d2 100%);
+    radial-gradient(34vmax 34vmax at calc(74% + (var(--mx) - 0.5) * 10%) calc(24% + (var(--my) - 0.5) * 10%), rgba(255, 226, 140, 0.55), rgba(255, 233, 165, 0.2) 45%, transparent 68%),
+    radial-gradient(40vmax 40vmax at calc(2% - (var(--mx) - 0.5) * 12%) calc(100% - (var(--my) - 0.5) * 12%), rgba(200, 224, 178, 0.5), transparent 64%),
+    radial-gradient(50vmax 30vmax at calc(80% + (var(--mx) - 0.5) * 8%) calc(104% + (var(--my) - 0.5) * 8%), rgba(255, 77, 109, 0.14), transparent 66%),
+    linear-gradient(180deg, #fbf8f3 0%, #f8f3ea 55%, #f4ecdf 100%);
 }
 
 :host-context([data-theme='light']) .grain {

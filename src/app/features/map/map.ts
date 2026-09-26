@@ -148,6 +148,11 @@ export class MapPage implements AfterViewInit, OnDestroy {
    * Parteciperò/Mi piace — both require a session server-side. */
   protected readonly authOpen = signal(false);
   protected readonly followedOrganizerIds = signal<ReadonlySet<string>>(new Set());
+  /** Event ids with a going/like request still in flight, per state signal —
+   * a second tap on the same button is ignored until it settles, or
+   * add/remove could reach the server out of order and leave the button out
+   * of sync with the backend. */
+  private readonly pendingToggles = new Map<WritableSignal<ReadonlySet<string>>, Set<string>>();
 
   /** Filters live in a floating card on mobile, opened from the Filtri button and
    * dismissed only via its own close button, so the map keeps the full screen and
@@ -658,14 +663,22 @@ export class MapPage implements AfterViewInit, OnDestroy {
       return;
     }
 
+    const pending = this.pendingToggles.get(idsSignal) ?? new Set<string>();
+    if (pending.has(id)) return;
+    this.pendingToggles.set(idsSignal, pending);
+
     const wasActive = idsSignal().has(id);
-    this.toggleId(idsSignal, id);
+    this.setMembership(idsSignal, id, !wasActive);
     adjustCount?.(!wasActive);
+    pending.add(id);
 
     const request = wasActive ? remove(id) : add(id);
     request.subscribe({
+      complete: () => pending.delete(id),
       error: () => {
-        this.toggleId(idsSignal, id);
+        pending.delete(id);
+        // Restore the exact previous state rather than flipping again.
+        this.setMembership(idsSignal, id, wasActive);
         adjustCount?.(wasActive);
       },
     });

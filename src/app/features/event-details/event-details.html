@@ -11,24 +11,35 @@
   @if (loading()) {
   <p class="px-4 py-16 text-center text-sm ed-muted">Caricamento evento…</p>
   } @else if (event(); as event) {
-  <div class="ed-backdrop" aria-hidden="true">
-    <span class="ed-blob ed-blob--a"></span>
-    <span class="ed-blob ed-blob--b"></span>
-    <span class="ed-blob ed-blob--c"></span>
-    @if (event.flyerUrl) {
-    <img [src]="event.flyerUrl" alt="" class="ed-backdrop-flyer" />
+  <!-- Live/soon badge, shared by its two spots: overlaid on the flyer, or
+    next to the eyebrow above the title when there's no flyer. -->
+  <ng-template #statusBadge>
+    @if (isLiveNow(event)) {
+    <span
+      class="ed-live inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-bold tracking-[0.5px] @[1024px]:h-6.5 @[1024px]:text-xs">
+      <span class="ed-live-dot size-1.5 rounded-full bg-white @[1024px]:size-1.75"></span> LIVE ORA
+    </span>
+    } @else if (startsInMinutes(event); as minutes) {
+    <span
+      class="ed-soon inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-bold @[1024px]:h-6.5 @[1024px]:text-xs">
+      Inizia tra {{ minutes }} min
+    </span>
     }
+  </ng-template>
+
+  <div class="ed-backdrop" aria-hidden="true">
+    <span class="ed-grain"></span>
   </div>
 
   <div class="relative mx-auto w-full max-w-260 flex-1 px-4 pt-3 pb-8 @[1024px]:px-8 @[1024px]:pt-6 @[1024px]:pb-16">
     <!-- Top bar: icon-only circles on mobile, labelled back pill from 1024 up. -->
     <div class="mb-4 flex items-center justify-between @[1024px]:mb-6">
-      <button type="button" class="ed-glass-btn @[1024px]:pr-4.5 @[1024px]:pl-3.5" (click)="goBack()"
+      <button type="button" class="ed-glass-btn rounded-full @[1024px]:pr-4.5 @[1024px]:pl-3.5" (click)="goBack()"
         aria-label="Indietro">
         <ng-icon name="lucideArrowLeft" class="size-4.5" />
         <span class="hidden @[1024px]:inline">Indietro</span>
       </button>
-      <button type="button" class="ed-glass-btn" (click)="share(event)" aria-label="Condividi">
+      <button type="button" class="ed-glass-btn rounded-full" (click)="share(event)" aria-label="Condividi">
         <ng-icon [name]="linkCopied() ? 'lucideCheck' : 'lucideShare2'" class="size-4.5" />
       </button>
     </div>
@@ -36,18 +47,26 @@
     <!-- One set of cards for both layouts. Below 1024px the two column
       wrappers are display:contents, so every card becomes a direct item of
       the outer column and order-* sets the mobile sequence (flyer, title,
-      quando, descrizione, organizzatore, dove). From 1024 up the wrappers
-      become real columns and the same order-* values keep DOM order. -->
+      quando, dove, descrizione, organizzatore — logistics first, reading
+      last). From 1024 up the wrappers become real columns and the
+      @[1024px]:order-* values restore DOM order (descrizione before dove). -->
     <div class="flex flex-col gap-4 @[1024px]:flex-row @[1024px]:items-start @[1024px]:gap-6">
       <!-- LEFT column (desktop) -->
       <div class="contents @[1024px]:flex @[1024px]:min-w-0 @[1024px]:flex-1 @[1024px]:flex-col @[1024px]:gap-6">
         <!-- Info: bare title + a "quando/numeri" card on mobile, one big
           glass card on desktop (with address row and actions too). -->
-        <section class="ed-info order-2 flex flex-col gap-4 @[1024px]:gap-4.5">
+        <section class="ed-info rounded-lg order-2 flex flex-col gap-4 @[1024px]:gap-4.5">
           <div class="flex flex-col gap-2 px-1 @[1024px]:px-0">
-            <p class="ed-accent text-[11px] font-bold tracking-[1.5px] uppercase @[1024px]:text-xs @[1024px]:tracking-[2px]">
-              {{ eventTypeLabel(event) }} · {{ event.cityName }}
-            </p>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="ed-accent text-[11px] font-bold tracking-[1.5px] uppercase @[1024px]:text-xs @[1024px]:tracking-[2px]">
+                {{ eventTypeLabel(event) }} · {{ event.cityName }}
+              </p>
+              <!-- Without a flyer there's nothing to overlay the live/soon
+                badge on, so it sits here, right of the eyebrow, instead. -->
+              @if (!event.flyerUrl) {
+              <ng-container [ngTemplateOutlet]="statusBadge" />
+              }
+            </div>
             <h1
               class="font-display text-[34px] leading-none font-extrabold tracking-[-0.5px] @[1024px]:text-[52px] @[1024px]:tracking-[-1px]">
               {{ event.title }}
@@ -55,7 +74,7 @@
             @if (event.danceStyles.length) {
             <div class="mt-0.5 flex flex-wrap gap-1.5 @[1024px]:mt-1 @[1024px]:gap-2">
               @for (style of event.danceStyles; track $index) {
-              <span class="ed-chip rounded-full px-2.5 py-1 text-xs font-semibold @[1024px]:px-3 @[1024px]:py-1.5 @[1024px]:text-[13px]">
+              <span class="ed-chip rounded-sm px-2.5 py-1 text-xs font-semibold @[1024px]:px-3 @[1024px]:py-1.5 @[1024px]:text-[13px]">
                 {{ style }}
               </span>
               }
@@ -63,9 +82,9 @@
             }
           </div>
 
-          <div class="ed-when flex flex-col gap-3.5">
+          <div class="ed-when rounded-lg flex flex-col gap-3.5">
             <div class="flex items-center gap-3 @[1024px]:gap-3.5">
-              <span class="ed-tile ed-accent flex size-10 shrink-0 items-center justify-center rounded-xl">
+              <span class="ed-tile ed-accent flex size-10 shrink-0 items-center justify-center rounded-lg">
                 <ng-icon name="lucideClock" class="size-5" />
               </span>
               <div>
@@ -76,7 +95,7 @@
 
             @if (event.venueName || event.address) {
             <div class="hidden items-center gap-3.5 @[1024px]:flex">
-              <span class="ed-tile ed-accent flex size-10 shrink-0 items-center justify-center rounded-xl">
+              <span class="ed-tile ed-accent flex size-10 shrink-0 items-center justify-center rounded-lg">
                 <ng-icon name="lucideMapPin" class="size-5" />
               </span>
               <div class="min-w-0">
@@ -87,47 +106,49 @@
             }
 
             <div class="grid grid-cols-3 gap-2 @[1024px]:mt-1 @[1024px]:gap-3">
-              <div class="ed-tile rounded-xl px-3 py-2 @[1024px]:rounded-[14px] @[1024px]:px-4 @[1024px]:py-3">
+              <div class="ed-tile rounded-lg px-3 py-2 @[1024px]:px-4 @[1024px]:py-3">
                 <p class="ed-muted text-[10px] font-bold tracking-[1.2px] uppercase @[1024px]:text-[11px] @[1024px]:tracking-[1.5px]">
                   Prezzo</p>
                 <p class="ed-price text-base font-bold tabular-nums @[1024px]:mt-0.5 @[1024px]:text-lg">{{
                   formatPrice(event) }}</p>
               </div>
-              <div class="ed-tile rounded-xl px-3 py-2 @[1024px]:rounded-[14px] @[1024px]:px-4 @[1024px]:py-3">
+              <div class="ed-tile rounded-lg px-3 py-2 @[1024px]:px-4 @[1024px]:py-3">
                 <p class="ed-muted text-[10px] font-bold tracking-[1.2px] uppercase @[1024px]:text-[11px] @[1024px]:tracking-[1.5px]">
                   Partecipano</p>
-                <p class="text-base font-bold tabular-nums @[1024px]:mt-0.5 @[1024px]:text-lg">{{ event.goingCount }}</p>
+                <p class="flex items-center gap-1.5 text-base font-bold tabular-nums @[1024px]:mt-0.5 @[1024px]:text-lg">
+                  {{ event.goingCount }}
+                  <ng-icon name="lucideUsers" class="size-4" [class.ed-accent]="event.goingCount > 0" />
+                </p>
               </div>
-              <div class="ed-tile rounded-xl px-3 py-2 @[1024px]:rounded-[14px] @[1024px]:px-4 @[1024px]:py-3">
+              <div class="ed-tile rounded-lg px-3 py-2 @[1024px]:px-4 @[1024px]:py-3">
                 <p class="ed-muted text-[10px] font-bold tracking-[1.2px] uppercase @[1024px]:text-[11px] @[1024px]:tracking-[1.5px]">
                   Mi piace</p>
-                <p class="text-base font-bold tabular-nums @[1024px]:mt-0.5 @[1024px]:text-lg">{{ event.likesCount }}</p>
+                <p class="flex items-center gap-1.5 text-base font-bold tabular-nums @[1024px]:mt-0.5 @[1024px]:text-lg">
+                  {{ event.likesCount }}
+                  <ng-icon name="lucideHeart" class="size-4" [class.ed-heart-on]="liked()"
+                    [attr.fill]="liked() ? 'currentColor' : 'none'" />
+                </p>
               </div>
             </div>
           </div>
 
           <!-- Desktop actions; on mobile they live in the sticky bar below. -->
           <div class="mt-1 hidden gap-3 @[1024px]:flex">
-            <button type="button" class="inline-flex ed-btn ed-btn--primary flex-1" [attr.aria-pressed]="going()"
+            <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--primary flex-1" [attr.aria-pressed]="going()"
               (click)="toggleGoing()">
-              <ng-icon [name]="going() ? 'lucideCheck' : 'lucideCircleCheck'" class="size-4.5" />
-              {{ going() ? 'Ci sarò' : 'Parteciperò' }}
+              <ng-icon name="lucideCircleCheck" class="size-4.5" />
+              Parteciperò
             </button>
-            <button type="button" class="inline-flex ed-btn ed-btn--like flex-1" [attr.aria-pressed]="liked()"
-              (click)="toggleLike()">
-              <ng-icon name="lucideHeart" class="size-4.5" [attr.fill]="liked() ? 'currentColor' : 'none'" />
-              Mi piace
-            </button>
-            <button type="button" class="inline-flex ed-btn ed-btn--follow flex-1" [attr.aria-pressed]="following()"
-              (click)="toggleFollow()">
-              <ng-icon [name]="following() ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4.5" />
-              {{ following() ? 'Segui già' : 'Segui' }}
+            <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--like w-14 shrink-0" [attr.aria-pressed]="liked()"
+              (click)="toggleLike()" aria-label="Mi piace">
+              <ng-icon name="lucideHeart" class="size-8" [class.ed-heart-on]="liked()"
+                [attr.fill]="liked() ? 'currentColor' : 'none'" />
             </button>
           </div>
         </section>
 
         @if (event.description; as description) {
-        <section class="ed-card order-3 rounded-[18px] p-4 @[1024px]:rounded-[20px] @[1024px]:p-6">
+        <section class="ed-card order-4 rounded-lg p-4 @[1024px]:order-3 @[1024px]:p-6">
           <h2 class="font-display text-lg font-bold @[1024px]:text-xl">Descrizione</h2>
           <p class="ed-text-2 mt-1.5 text-[15px] leading-[1.55] whitespace-pre-line @[1024px]:mt-2.5 @[1024px]:text-base @[1024px]:leading-[1.6]">
             {{ description }}</p>
@@ -137,15 +158,15 @@
         <!-- Dove: static mini-map (tap = /mappa centred on this event) + directions. -->
         @if (event.venueName || event.address) {
         <section
-          class="ed-card order-5 flex flex-col gap-3 rounded-[18px] p-2.5 @[1024px]:flex-row @[1024px]:items-center @[1024px]:gap-5 @[1024px]:rounded-[20px] @[1024px]:p-3">
+          class="ed-card order-3 flex flex-col gap-3 rounded-lg p-2.5 @[1024px]:order-4 @[1024px]:flex-row @[1024px]:items-center @[1024px]:gap-5 @[1024px]:p-3">
           @if (miniMap(); as map) {
           <button type="button"
-            class="relative block h-35 w-full shrink-0 cursor-pointer overflow-hidden rounded-xl @[1024px]:h-42.5 @[1024px]:w-75"
+            class="relative block h-35 w-full shrink-0 cursor-pointer overflow-hidden rounded-lg @[1024px]:h-42.5 @[1024px]:w-75"
             (click)="openOnMap(event)" aria-label="Vedi sulla mappa">
             <span class="absolute block size-192" [style.left]="'calc(50% - ' + map.offsetX + 'px)'"
               [style.top]="'calc(50% - ' + map.offsetY + 'px)'" aria-hidden="true">
               @for (tile of map.tiles; track tile.light) {
-              <img [src]="tile.light" alt="" loading="lazy" class="ed-map-light absolute size-64 max-w-none"
+              <img [src]="tile.light" alt="" loading="lazy" class="absolute size-64 max-w-none"
                 [style.left.px]="tile.left" [style.top.px]="tile.top" />
               <img [src]="tile.dark" alt="" loading="lazy" class="ed-map-dark absolute size-64 max-w-none"
                 [style.left.px]="tile.left" [style.top.px]="tile.top" />
@@ -153,7 +174,7 @@
             </span>
             <svg viewBox="0 0 24 32" class="ed-pin absolute top-1/2 left-1/2 h-12 w-9 -translate-x-1/2 -translate-y-full"
               aria-hidden="true">
-              <path [attr.d]="pinShape(event)" [attr.fill]="pinColor(event)" stroke="#fff" stroke-width="1.5" />
+              <path [attr.d]="pinShape(event)" [attr.fill]="pinColor(event)" />
               <path [attr.d]="pinGlyph(event)" fill="#fff" />
             </svg>
           </button>
@@ -165,12 +186,14 @@
                 addressPrimary(event.address) }}</p>
               <p class="ed-muted text-[13px] @[1024px]:text-sm">{{ addressSubtitle(event) }}</p>
             </div>
-            <div class="grid grid-cols-2 gap-2">
+            <!-- Side by side on mobile and wide desktop; stacked in the narrow
+              1024–1280 range, where two columns squeeze the labels. -->
+            <div class="flex gap-2 @[1024px]:flex-col @[1280px]:flex-row">
               @if (miniMap()) {
-              <button type="button" class="inline-flex ed-btn ed-btn--secondary" (click)="openOnMap(event)">Vedi sulla mappa</button>
+              <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--map flex-1" (click)="openOnMap(event)">Vedi sulla mappa</button>
               }
-              <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer" class="inline-flex ed-btn ed-btn--chip"
-                [class.col-span-2]="!miniMap()">Indicazioni</a>
+              <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"
+                class="inline-flex ed-btn rounded-lg ed-btn--directions flex-1">Indicazioni</a>
             </div>
           </div>
         </section>
@@ -179,79 +202,74 @@
 
       <!-- RIGHT column (desktop) -->
       <div class="contents @[1024px]:flex @[1024px]:w-85 @[1024px]:shrink-0 @[1024px]:flex-col @[1024px]:gap-6">
-        <!-- Flyer: whole poster (3:4 frame, object-contain so it's never
-          cropped), tap to open the lightbox. Skipped without a flyer. -->
+        <!-- Flyer: fills the 3:4 frame (object-cover, may crop the edges);
+          tap to open the lightbox, which shows the whole poster. Skipped
+          without a flyer. -->
         @if (event.flyerUrl) {
         <button type="button"
-          class="ed-flyer relative order-1 aspect-3/4 w-full cursor-zoom-in overflow-hidden rounded-[20px] p-0"
+          class="ed-flyer relative order-1 aspect-3/4 w-full cursor-zoom-in overflow-hidden rounded-lg p-0"
           (click)="openFlyer()" aria-label="Apri il flyer a tutto schermo">
-          <img [src]="event.flyerUrl" alt=""
-            class="absolute inset-0 size-full scale-110 object-cover opacity-60 blur-xl" aria-hidden="true" />
           <img [src]="event.flyerUrl" [alt]="event.title" fetchpriority="high"
-            class="relative size-full object-contain" />
+            class="size-full object-cover" />
 
-          @if (isLiveNow(event)) {
-          <span
-            class="ed-live absolute top-3 left-3 inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-bold tracking-[0.5px] @[1024px]:h-6.5 @[1024px]:text-xs">
-            <span class="size-1.5 rounded-full bg-white @[1024px]:size-1.75"></span> LIVE ORA
-          </span>
-          } @else if (startsInMinutes(event); as minutes) {
-          <span
-            class="ed-soon absolute top-3 left-3 inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-bold @[1024px]:h-6.5 @[1024px]:text-xs">
-            Inizia tra {{ minutes }} min
-          </span>
-          }
+          <div class="absolute top-3 left-3 flex">
+            <ng-container [ngTemplateOutlet]="statusBadge" />
+          </div>
 
           <span
             class="ed-overlay-pill absolute right-3 bottom-3 inline-flex size-9 items-center justify-center gap-1.5 rounded-full text-xs font-bold @[1024px]:h-8 @[1024px]:w-auto @[1024px]:px-3">
-            <ng-icon name="lucideMaximize2" class="size-3.5 @[1024px]:size-3.5" />
+            <ng-icon name="lucideMaximize2" class="size-3.5" />
             <span class="hidden @[1024px]:inline">Ingrandisci</span>
           </span>
         </button>
         }
 
-        <!-- Organizer: compact row on mobile, full card on desktop. -->
-        <section class="ed-card order-4 flex flex-col gap-3.5 rounded-[18px] px-4 py-3.5 @[1024px]:rounded-[20px] @[1024px]:p-6">
+        <!-- Organizer: compact row on mobile, full card on desktop. The organizer
+          is null once deleted; the card then only keeps the event's WhatsApp link. -->
+        @if (event.organizer || event.whatsappUrl) {
+        <section class="ed-card order-5 flex flex-col gap-3.5 rounded-lg px-4 py-3.5 @[1024px]:p-6">
+          @if (event.organizer; as organizer) {
           <div class="flex items-center gap-3">
-            @if (event.organizer.logoUrl) {
-            <img [src]="event.organizer.logoUrl" [alt]="event.organizer.name"
+            @if (organizer.logoUrl) {
+            <img [src]="organizer.logoUrl" [alt]="organizer.name"
               class="size-11 shrink-0 rounded-full object-cover @[1024px]:size-12" />
             } @else {
             <span
               class="ed-chip flex size-11 shrink-0 items-center justify-center rounded-full font-display text-lg font-extrabold @[1024px]:size-12 @[1024px]:text-xl">
-              {{ organizerInitials(event.organizer) }}
+              {{ organizerInitials(organizer) }}
             </span>
             }
             <div class="min-w-0 flex-1">
               <p class="flex items-center gap-1.5 truncate text-[15px] font-bold @[1024px]:text-[17px]">
-                {{ event.organizer.name }}
-                @if (event.organizer.verified) {
+                {{ organizer.name }}
+                @if (organizer.verified) {
                 <ng-icon name="lucideBadgeCheck" class="ed-accent size-4 shrink-0" aria-label="Verificato" />
                 }
               </p>
-              <p class="ed-muted text-xs @[1024px]:text-[13px]">{{ organizerTypeLabel(event.organizer) }}</p>
+              <p class="ed-muted text-xs @[1024px]:text-[13px]">{{ organizerTypeLabel(organizer) }}</p>
             </div>
-            <button type="button" class="inline-flex ed-btn ed-btn--outline-follow shrink-0 px-4 @[1024px]:hidden"
+            <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--outline-follow shrink-0 px-4 @[1024px]:hidden"
               [attr.aria-pressed]="following()" (click)="toggleFollow()">
               {{ following() ? 'Segui già' : 'Segui' }}
             </button>
           </div>
 
-          @if (event.organizer.description; as bio) {
+          @if (organizer.description; as bio) {
           <p class="ed-text-2 text-sm leading-relaxed @[1024px]:text-[15px]">{{ bio }}</p>
           }
 
-          <button type="button" class="ed-btn ed-btn--outline-follow hidden @[1024px]:inline-flex"
+          <button type="button" class="ed-btn rounded-lg ed-btn--outline-follow hidden @[1024px]:inline-flex"
             [attr.aria-pressed]="following()" (click)="toggleFollow()">
             {{ following() ? 'Segui già' : 'Segui organizzatore' }}
           </button>
+          }
 
-          @if (event.organizer.instagram || event.whatsappUrl || event.organizer.website) {
-          <div class="ed-divider flex flex-col gap-2 border-t pt-3.5 text-sm">
-            @if (event.organizer.instagram; as handle) {
+          @if (event.organizer?.instagram || event.whatsappUrl || event.organizer?.website) {
+          <div class="ed-divider flex flex-col gap-2 text-sm" [class]="event.organizer ? 'border-t pt-3.5' : ''">
+            @if (event.organizer?.instagram; as handle) {
             <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
               class="ed-text-2 flex items-center gap-2 hover:underline">
-              <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-md">
+              <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-lg">
                 <ng-icon name="lucideInstagram" class="size-4.5 text-white" />
               </span>
               {{ handle }}
@@ -261,7 +279,7 @@
             @if (event.whatsappUrl; as whatsappUrl) {
             <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer"
               class="ed-text-2 flex items-center gap-2 hover:underline">
-              <span class="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#25D366]">
+              <span class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#25D366]">
                 <!-- Official WhatsApp -->
                 <svg viewBox="0 0 24 24" class="size-4.5 fill-white" aria-hidden="true">
                   <path
@@ -272,10 +290,10 @@
             </a>
             }
 
-            @if (event.organizer.website; as website) {
+            @if (event.organizer?.website; as website) {
             <a [href]="website" target="_blank" rel="noopener noreferrer"
               class="ed-text-2 flex items-center gap-2 hover:underline">
-              <span class="ed-chip flex size-7 shrink-0 items-center justify-center rounded-md">
+              <span class="ed-chip flex size-7 shrink-0 items-center justify-center rounded-lg">
                 <ng-icon name="lucideGlobe" class="size-3.5" />
               </span>
               Sito web
@@ -284,6 +302,7 @@
           </div>
           }
         </section>
+        }
       </div>
     </div>
   </div>
@@ -291,15 +310,16 @@
   <!-- Mobile action bar: sticky at the bottom of <main> (not fixed), so it
     never slides under the sidebar when the container is narrow but the
     viewport is md+. -->
-  <div class="ed-bar sticky bottom-0 z-10 flex gap-2.5 px-4 pt-3 pb-7 @[1024px]:hidden">
-    <button type="button" class="inline-flex ed-btn ed-btn--primary flex-1" [attr.aria-pressed]="going()"
+  <div class="ed-bar sticky bottom-0 z-10 flex items-center justify-center gap-2 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] @[1024px]:hidden">
+    <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--primary ed-btn--sm" [attr.aria-pressed]="going()"
       (click)="toggleGoing()">
-      <ng-icon [name]="going() ? 'lucideCheck' : 'lucideCircleCheck'" class="size-4.5" />
-      {{ going() ? 'Ci sarò' : 'Parteciperò' }}
+      <ng-icon name="lucideCircleCheck" class="size-5" />
+      Parteciperò
     </button>
-    <button type="button" class="inline-flex ed-btn ed-btn--like w-12.5 shrink-0" [attr.aria-pressed]="liked()"
+    <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--sm ed-btn--like w-13 shrink-0" [attr.aria-pressed]="liked()"
       (click)="toggleLike()" aria-label="Mi piace">
-      <ng-icon name="lucideHeart" class="size-5" [attr.fill]="liked() ? 'currentColor' : 'none'" />
+      <ng-icon name="lucideHeart" class="size-8" [class.ed-heart-on]="liked()"
+        [attr.fill]="liked() ? 'currentColor' : 'none'" />
     </button>
   </div>
 
@@ -307,7 +327,7 @@
     full-size (pan by scrolling the overlay). -->
   @if (flyerOpen() && event.flyerUrl) {
   <div class="fixed inset-0 z-modal overflow-auto bg-[rgba(20,16,36,0.78)] backdrop-blur-lg" role="dialog"
-    aria-modal="true" aria-label="Volantino evento" (click)="closeFlyer()" (keydown.escape)="closeFlyer()">
+    aria-modal="true" aria-label="Volantino evento" (click)="closeFlyer()">
     <button type="button"
       class="fixed top-4 right-4 z-10 inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-white/90 text-[#1e1b2e] shadow-lg @[1024px]:top-6 @[1024px]:right-6"
       (click)="closeFlyer(); $event.stopPropagation()" aria-label="Chiudi">
@@ -316,7 +336,7 @@
 
     <div class="grid min-h-full place-items-center p-4">
       <img [src]="event.flyerUrl" [alt]="event.title"
-        class="rounded-2xl shadow-[0_30px_80px_rgba(0,0,0,0.4)] transition-[max-width,max-height] duration-200"
+        class="rounded-lg shadow-[0_30px_80px_rgba(0,0,0,0.4)] transition-[max-width,max-height] duration-200"
         [class]="flyerZoomed() ? 'max-w-none cursor-zoom-out' : 'max-h-[85vh] max-w-full object-contain cursor-zoom-in'"
         (click)="toggleFlyerZoom(); $event.stopPropagation()" />
     </div>
@@ -325,7 +345,7 @@
   } @else {
   <div class="flex flex-col items-center gap-4 px-4 py-16 text-center">
     <p class="ed-error text-sm">Impossibile trovare questo evento.</p>
-    <button type="button" class="inline-flex ed-btn ed-btn--secondary px-4" (click)="goBack()">
+    <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--secondary" (click)="goBack()">
       Torna indietro
     </button>
   </div>

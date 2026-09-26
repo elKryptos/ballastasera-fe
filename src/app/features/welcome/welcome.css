@@ -30,6 +30,52 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* ---------- daytime (light theme) ----------
+   Same paper palette as the daytime sidebar (styles.css) and the landing:
+   the /mappa basemap's (CARTO Voyager) paper and beige with navy text, the
+   accents deepened just enough to read on it. Only the tokens change
+   (applied when <html data-theme="light">, see ThemeService); every utility
+   built on them follows. Rose stays the logo's rose. app-navbar pins its own
+   tokens, so this doesn't reach it. */
+:host-context([data-theme='light']) {
+  color-scheme: light;
+  --color-ink: #fbf8f3;
+  --color-ink-2: #f5ede1;
+  --color-amber: #c2410c;
+  --color-violet: #6d28d9;
+  --color-mint: #0f8a7c;
+  --color-bone: #1d2640;
+  --color-lead: #36425f;
+  --color-muted: #5f6d8c;
+  --color-line: rgba(29, 38, 64, 0.14);
+  background: var(--color-ink);
+  color: var(--color-bone);
+}
+
+/* The map by day — same backdrop as the event details page in light. */
+:host-context([data-theme='light']) .glow {
+  background:
+    radial-gradient(34vmax 34vmax at 74% 24%, rgba(255, 226, 140, 0.55), rgba(255, 233, 165, 0.2) 45%, transparent 68%),
+    radial-gradient(40vmax 40vmax at 2% 100%, rgba(200, 224, 178, 0.5), transparent 64%),
+    radial-gradient(50vmax 30vmax at 80% 104%, rgba(255, 77, 109, 0.14), transparent 66%),
+    linear-gradient(180deg, #fbf8f3 0%, #f8f3ea 55%, #f4ecdf 100%);
+}
+
+:host-context([data-theme='light']) .grain {
+  opacity: 0.03;
+}
+
+/* Kept exactly as in the dark theme, whatever --color-ink is now: the logo's
+   night-ink equaliser bars (same as navbar/landing) and the CTA's dark label
+   on rose (a light one would drop well below readable contrast). */
+:host-context([data-theme='light']) .line svg g {
+  fill: #1a0e2e;
+}
+
+:host-context([data-theme='light']) .cta {
+  color: #1a0e2e;
+}
+
 .mapglow {
   background: radial-gradient(70% 70% at 50% 100%, color-mix(in srgb, var(--color-rose) 22%, transparent), transparent 70%);
   filter: blur(6px);

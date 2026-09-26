@@ -199,7 +199,7 @@
             </a>
             }
 
-            @if (event.organizer.instagram; as handle) {
+            @if (event.organizer?.instagram; as handle) {
             <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
               class="inline-flex w-fit items-center gap-1.5 opacity-80">
               <span class="flex size-5 shrink-0 items-center justify-center">
@@ -236,7 +236,8 @@
             </span>
           </div>
 
-          <div class="action-buttons-text grid grid-cols-3 gap-1.5">
+          <div class="action-buttons-text grid gap-1.5" [class.grid-cols-3]="event.organizer"
+            [class.grid-cols-2]="!event.organizer">
             <button type="button"
               class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
               [class]="isGoing(event.id) ? 'border-violet bg-violet text-white' : 'bg-violet/15 text-white'"
@@ -251,13 +252,16 @@
                 [attr.fill]="likeIconFill(event.id)" />
               Mi piace
             </button>
+            <!-- Hidden when the organizer has been deleted (organizer is null). -->
+            @if (event.organizer; as organizer) {
             <button type="button"
               class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-[0.7rem] font-semibold transition-colors min-[380px]:text-sm sm:text-[0.7rem]"
-              [class]="isFollowing(event.organizer.id) ? 'border-rose bg-rose text-white' : 'bg-rose/15 text-white'"
-              [attr.aria-pressed]="isFollowing(event.organizer.id)" (click)="toggleFollow(event.organizer.id)">
-              <ng-icon [name]="isFollowing(event.organizer.id) ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
+              [class]="isFollowing(organizer.id) ? 'border-rose bg-rose text-white' : 'bg-rose/15 text-white'"
+              [attr.aria-pressed]="isFollowing(organizer.id)" (click)="toggleFollow(organizer.id)">
+              <ng-icon [name]="isFollowing(organizer.id) ? 'lucideUserCheck' : 'lucideUserPlus'" class="size-4" />
               Segui
             </button>
+            }
           </div>
         </div>
       </section>

@@ -299,8 +299,10 @@ styled globally in navbar.css) — nothing to tint here for that one. */
 }
 
 /* Daytime navigation (<html data-theme="light">, see ThemeService): the
-same tokens app-navbar pins on its own :host (navbar.css), swapped for a
-morning-sky set: pale sky blues with navy text. Lives here rather than in navbar.css because the
+same tokens app-navbar pins on its own :host (navbar.css), swapped for the
+/mappa basemap's own palette (CARTO Voyager): its warm paper ground and beige
+blocks, with navy text close to the map's slate labels — so the rail reads as
+part of the map next to it, not a separate sky-blue strip. Lives here rather than in navbar.css because the
 mobile drawer ([data-mobile='true']) is a CDK overlay portalled to <body>,
 outside app-navbar's DOM — one block covers both. :root[...] prefix so this
 outranks navbar.css' own `app-navbar[_nghost]` pin on specificity. Rose is
@@ -308,8 +310,8 @@ left alone: it's the logo's colour. The --sidebar-* tokens are re-declared
 so they resolve against these values instead of :root's dark ones. */
 :root[data-theme='light'] app-navbar,
 :root[data-theme='light'] [data-mobile='true'] {
-  --color-ink: #e6f1fa;
-  --color-ink-2: #d4e8f7;
+  --color-ink: #fbf8f3;
+  --color-ink-2: #f5ede1;
   --color-amber: #c2410c;
   --color-violet: #6d28d9;
   --color-bone: #1d2640;

@@ -24,7 +24,8 @@ export interface EventCardDto {
   latitude: number;
   longitude: number;
   address: string;
-  organizer: OrganizerSummaryDto;
+  /** Null when the organizer has been deleted. */
+  organizer: OrganizerSummaryDto | null;
   venueName: string | null;
   danceStyles: string[];
   goingCount: number;
@@ -77,7 +78,8 @@ export interface EventDetailDto {
   whatsappUrl: string | null;
   // The detail endpoint nests the organizer's full profile (bio, website,
   // verified…), not just the map card's summary shape — see OrganizerDetailDto.
-  organizer: OrganizerDetailDto;
+  // Null when the organizer has been deleted.
+  organizer: OrganizerDetailDto | null;
   venueName: string | null;
   danceStyles: string[];
   likesCount: number;

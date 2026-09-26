@@ -298,6 +298,87 @@ styled globally in navbar.css) — nothing to tint here for that one. */
   color: var(--color-rose-lit);
 }
 
+/* Daytime navigation (<html data-theme="light">, see ThemeService): the
+same tokens app-navbar pins on its own :host (navbar.css), swapped for a
+morning-sky set: pale sky blues with navy text. Lives here rather than in navbar.css because the
+mobile drawer ([data-mobile='true']) is a CDK overlay portalled to <body>,
+outside app-navbar's DOM — one block covers both. :root[...] prefix so this
+outranks navbar.css' own `app-navbar[_nghost]` pin on specificity. Rose is
+left alone: it's the logo's colour. The --sidebar-* tokens are re-declared
+so they resolve against these values instead of :root's dark ones. */
+:root[data-theme='light'] app-navbar,
+:root[data-theme='light'] [data-mobile='true'] {
+  --color-ink: #e6f1fa;
+  --color-ink-2: #d4e8f7;
+  --color-amber: #c2410c;
+  --color-violet: #6d28d9;
+  --color-bone: #1d2640;
+  --color-lead: #36425f;
+  --color-muted: #5f6d8c;
+  --color-line: rgba(29, 38, 64, 0.14);
+
+  --sidebar: var(--color-ink);
+  --sidebar-foreground: var(--color-bone);
+  --sidebar-border: var(--color-line);
+  --sidebar-accent-foreground: var(--color-bone);
+  color: var(--color-bone);
+}
+
+/* Sidebar theme toggle (navbar.html): sun and moon stacked in one clipped
+slot, sliding past each other like a sunset/sunrise. Dark theme shows the
+sun (the theme you'd switch to); switching sets it — down and out, spinning —
+while the moon drops in from above with a small overshoot, and the reverse on
+the way back. Global, not in navbar.css, because the same button also
+renders in the mobile drawer (a CDK overlay outside app-navbar's DOM). Sized
+off the same [hlmSidebarMenuButton] svg rules as every other nav icon. */
+.theme-icon {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1.3rem;
+  height: 1.3rem;
+  overflow: hidden;
+}
+
+[data-mobile='true'] .theme-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.theme-icon svg {
+  position: absolute;
+  inset: 0;
+  transition:
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.35s ease;
+}
+
+.theme-icon__sun {
+  transform: translateY(0) rotate(0);
+  opacity: 1;
+}
+
+.theme-icon__moon {
+  transform: translateY(-110%) rotate(-70deg);
+  opacity: 0;
+}
+
+.theme-icon--light .theme-icon__sun {
+  transform: translateY(110%) rotate(120deg);
+  opacity: 0;
+}
+
+.theme-icon--light .theme-icon__moon {
+  transform: translateY(0) rotate(0);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-icon svg {
+    transition: opacity 0.2s ease;
+  }
+}
+
 /* "stasera" = tonight — a scatter of tiny stars over the word itself
 (positions are % of its own box, so they never spill outside it), each
 pulsing on its own offset so they don't all blink in sync. Shared between

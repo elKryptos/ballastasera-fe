@@ -24,6 +24,9 @@
   --color-rose: #ff4d6d;
   --color-amber: #ffa24c;
   --color-violet: #8b5cf6;
+  --color-bone: #fdf2ec;
+  --color-lead: #ead6dc;
+  --color-muted: #c2a0ae;
   --color-line: rgba(253, 242, 236, 0.14);
 }
 
@@ -118,6 +121,39 @@
   }
 }
 
+/* ---------- daytime (light theme) ----------
+   The colour tokens themselves flip in styles.css (see the
+   `:root[data-theme='light'] app-navbar` block there — it also has to reach
+   the mobile drawer, which lives outside this component). What's here is
+   only the chrome built on top of them: the bar/rail gradients become a
+   morning sky — clear blue at the top, paling down to a peach sunrise
+   horizon at the bottom edge, with a soft sun glow — and the night-sky star
+   scatter goes away. */
+:host-context([data-theme='light']) .mobile-bar {
+  background:
+    radial-gradient(160px 60px at 18% 0%, rgba(255, 214, 120, 0.45), transparent 70%),
+    linear-gradient(180deg, #c9e2f6 0%, #dcecf8 70%, #fbe3d4 100%);
+  box-shadow:
+    0 1px 0 rgba(242, 160, 120, 0.45),
+    0 4px 16px rgba(29, 38, 64, 0.1);
+}
+
+:host-context([data-theme='light']) ::ng-deep [data-slot='sidebar-inner'] {
+  background:
+    radial-gradient(180px 140px at 50% 0%, rgba(255, 214, 120, 0.5), transparent 70%),
+    linear-gradient(180deg, #c9e2f6 0%, #dcecf8 45%, #eef4f8 72%, #fbe3d4 100%);
+}
+
+:host-context([data-theme='light']) .mobile-bar::after,
+:host-context([data-theme='light']) ::ng-deep [data-slot='sidebar-inner']::after {
+  display: none;
+}
+
+/* The logo keeps its night-ink equaliser bars, whatever --color-ink is now. */
+:host-context([data-theme='light']) a[aria-label='ballastasera — home'] svg g {
+  fill: #1a0e2e;
+}
+
 /* Sidebar menu button sizing/colour (Menu, Admin, Esci, Accedi) lives in
    global styles.css, not here — the mobile drawer is a Spartan/CDK sheet,
    and CDK overlays portal their content to a container appended to
@@ -163,5 +199,16 @@ same reasoning on the rest of the sidebar). */
   .logout-item:hover {
     background: color-mix(in srgb, #ff5b6e 14%, transparent);
     color: #ff8a97;
+  }
+}
+
+/* The light pink above disappears on the daytime sky — a deeper red there. */
+:host-context([data-theme='light']) .logout-item:focus-visible {
+  color: #c81e3a;
+}
+
+@media (hover: hover) {
+  :host-context([data-theme='light']) .logout-item:hover {
+    color: #c81e3a;
   }
 }

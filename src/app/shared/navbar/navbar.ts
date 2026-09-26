@@ -5,6 +5,7 @@ import { AuthMode, AuthModal } from '../auth-modal/auth-modal';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
+import { ThemeService } from '../../core/services/theme.service';
 import { RoleDirective } from '../directives/role.directive';
 
 /**
@@ -24,6 +25,7 @@ export class Navbar {
   private readonly auth = inject(AuthService);
   private readonly featureFlags = inject(FeatureFlagService);
   private readonly sidebarService = inject(HlmSidebarService);
+  private readonly themeService = inject(ThemeService);
 
   protected readonly authOpen = signal(false);
   protected readonly authMode = signal<AuthMode>('login');
@@ -43,6 +45,12 @@ export class Navbar {
   protected readonly mapEnabled = computed(() => this.featureFlags.isEnabled(FEATURE_FLAGS.mapPage));
 
   protected readonly initial = computed(() => this.currentUser()?.displayName.trim().charAt(0).toUpperCase() ?? '');
+
+  protected readonly theme = this.themeService.theme;
+
+  protected toggleTheme(): void {
+    this.themeService.toggle();
+  }
 
   protected openAuth(mode: AuthMode): void {
     this.authMode.set(mode);

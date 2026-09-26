@@ -31,6 +31,77 @@
   --color-line: rgba(255, 241, 230, 0.14);
 }
 
+/* ---------- light theme ---------- */
+
+/* Same page, daytime: pale sky panels and navy text instead of the
+   night-plum ground (the backdrop itself is the .glow rule below). Only the
+   tokens change (applied when <html data-theme="light">, see ThemeService);
+   every utility built on them follows. Rose stays exactly the logo's rose,
+   and amber/violet/mint are deepened just enough to stay readable as text on
+   a light ground (small mono labels need ~4.5:1). */
+:host-context([data-theme='light']) {
+  --color-ink: #f4f9fd;
+  --color-ink-2: #eaf3fa;
+  --color-rose-lit: #e0245c;
+  --color-amber: #b45309;
+  --color-violet: #a21caf;
+  --color-mint: #0f8a7c;
+  /* Navy text, same family as the daytime sidebar (styles.css), so the
+     page and the nav read as one sky. */
+  --color-bone: #1d2640;
+  --color-lead: #36425f;
+  --color-muted: #5f6d8c;
+  --color-line: rgba(29, 38, 64, 0.14);
+
+  color-scheme: light;
+  background: var(--color-ink);
+  color: var(--color-bone);
+}
+
+/* Sunrise on the Malecón: the same morning-sky blue as the daytime sidebar
+   at the top (so nav and page read as one sky), paling to near-white
+   mid-page and warming into a coral/peach horizon at the bottom — a warm sun
+   glowing behind the big logo pin and a turquoise glint of sea in the
+   bottom-left corner. Same --mx/--my parallax as the dark version, so the
+   sun and sea still drift with the pointer. */
+:host-context([data-theme='light']) .glow {
+  background:
+    radial-gradient(34vmax 34vmax at calc(74% + (var(--mx) - 0.5) * 10%) calc(24% + (var(--my) - 0.5) * 10%), rgba(255, 214, 120, 0.55), rgba(255, 190, 120, 0.18) 45%, transparent 68%),
+    radial-gradient(40vmax 40vmax at calc(2% - (var(--mx) - 0.5) * 12%) calc(100% - (var(--my) - 0.5) * 12%), rgba(56, 196, 205, 0.3), transparent 64%),
+    radial-gradient(50vmax 30vmax at calc(80% + (var(--mx) - 0.5) * 8%) calc(104% + (var(--my) - 0.5) * 8%), rgba(255, 128, 110, 0.3), transparent 66%),
+    linear-gradient(180deg, #c9e2f6 0%, #deedf8 28%, #f6f9fb 55%, #fdf1e8 80%, #fde0d2 100%);
+}
+
+:host-context([data-theme='light']) .grain {
+  opacity: 0.03;
+}
+
+/* The logo stays exactly as it is on the dark page: equaliser bars in the
+   night ink (not the now-light --color-ink), and the big pin's
+   amber→rose→violet gradient in its original hues. */
+:host-context([data-theme='light']) a[aria-label='ballastasera — home'] svg g,
+:host-context([data-theme='light']) .pinbig g {
+  fill: #1a0510;
+}
+
+:host-context([data-theme='light']) .pinbig stop:nth-child(1) {
+  stop-color: #ffb703;
+}
+
+:host-context([data-theme='light']) .pinbig stop:nth-child(3) {
+  stop-color: #d946ef;
+}
+
+/* Video facades are text over a darkened poster — they stay dark in both
+   themes, so they get the night palette back. */
+:host-context([data-theme='light']) app-media-embed {
+  --color-ink: #1a0510;
+  --color-ink-2: #2b0a1f;
+  --color-bone: #fff1e6;
+  --color-muted: #c68aa0;
+  --color-line: rgba(255, 241, 230, 0.14);
+}
+
 /* ---------- header ---------- */
 
 /* Pinned from the first frame — no travelling-then-catching motion — so it

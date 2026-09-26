@@ -41,6 +41,21 @@
   <meta name="theme-color" content="#1a0e2e">
   <meta name="apple-mobile-web-app-title" content="ballastasera">
 
+  <!-- Light/dark theme: applied here, before first paint, so a server-rendered
+      page never flashes the wrong one. Same storage key and rules as
+      ThemeService (src/app/core/services/theme.service.ts), which takes over
+      once the app has booted. -->
+  <script>
+    (function () {
+      var theme = 'dark';
+      try { if (localStorage.getItem('ballastasera.theme') === 'light') theme = 'light'; } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'light') {
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#c9e2f6');
+      }
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..600&family=DM+Mono:wght@400;500&display=swap">

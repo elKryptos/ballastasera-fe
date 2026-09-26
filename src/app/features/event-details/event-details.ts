@@ -1,6 +1,6 @@
 import { Component, PLATFORM_ID, WritableSignal, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -13,13 +13,16 @@ import {
   lucideGlobe,
   lucideHeart,
   lucideInstagram,
+  lucideMapPin,
+  lucideMaximize2,
   lucideShare2,
-  lucideTicket,
   lucideUserCheck,
   lucideUserPlus,
-  lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
+import { environment } from '../../../environments/environment';
+import { PIN_COLORS, PIN_GLYPHS, PIN_SHAPES } from '../../core/config/map-pins';
+import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -45,15 +48,27 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   BAR: 'Bar',
 };
 
-/** Same per-type colours as the map's pins (PIN_COLORS in map.ts) — drives the
- * animated aurora backdrop below so an event's page opens already tinted the
- * way its pin read on the map. */
-const EVENT_TYPE_COLORS: Record<EventType, string> = {
-  EVENT: '#ff4d6d', // rose
-  SCHOOL: '#8b5cf6', // violet
-  CLUB: '#2dd4bf', // mint
-  BAR: '#ffa24c', // amber
-};
+/** Zoom level of the static mini-map in the "Dove" card — street level, enough
+ * to read the surrounding streets without being a full interactive map. */
+const MINI_MAP_ZOOM = 16;
+const TILE_SIZE = 256;
+
+/** One CARTO tile of the mini-map, placed inside a 3x3 grid (768x768 px). */
+interface MiniMapTile {
+  light: string;
+  dark: string;
+  left: number;
+  top: number;
+}
+
+/** 3x3 tile grid around the event plus the event's pixel position inside it,
+ * so the template can shift the grid until that point sits at the card's
+ * centre (where the pin is drawn) whatever the card's width. */
+interface MiniMap {
+  tiles: MiniMapTile[];
+  offsetX: number;
+  offsetY: number;
+}
 
 const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   PERSON: 'Organizzatore',
@@ -61,26 +76,6 @@ const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   CLUB: 'Discoteca',
   SCHOOL: 'Scuola',
   ASSOCIATION: 'Associazione',
-};
-
-type PillColor = 'violet' | 'mint' | 'rose';
-
-// Tailwind's JIT scanner needs every class name to appear literally
-// somewhere in source — a template-string build like `border-${color}`
-// would silently never be generated, hence this lookup table instead of
-// interpolating pillClass()'s color argument directly.
-const PILL_ACTIVE: Record<PillColor, string> = {
-  violet: 'border-violet bg-violet text-white',
-  mint: 'border-mint bg-mint text-white',
-  rose: 'border-rose bg-rose text-white',
-};
-// Same tint+white-text language as the map popup's own action buttons
-// (see map.html) — border color stays default (--border/line), only bg+text
-// flip, so the two cards' buttons read as one shared component.
-const PILL_INACTIVE: Record<PillColor, string> = {
-  violet: 'bg-violet/15 text-white',
-  mint: 'bg-mint/15 text-white',
-  rose: 'bg-rose/15 text-white',
 };
 
 @Component({
@@ -98,11 +93,11 @@ const PILL_INACTIVE: Record<PillColor, string> = {
       lucideGlobe,
       lucideHeart,
       lucideInstagram,
+      lucideMapPin,
+      lucideMaximize2,
       lucideShare2,
-      lucideTicket,
       lucideUserCheck,
       lucideUserPlus,
-      lucideUsers,
       lucideX,
     }),
   ],
@@ -111,12 +106,13 @@ export class EventDetails {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
+  private readonly router = inject(Router);
+  private readonly mapViewState = inject(MapViewStateService);
   private readonly eventsService = inject(EventsService);
   private readonly authService = inject(AuthService);
 
   protected readonly event = signal<EventDetailDto | null>(null);
   protected readonly loading = signal(true);
-  protected readonly error = signal(false);
 
   /** Opens the shared login dialog when a signed-out visitor taps
    * Parteciperò/Mi piace — both require a session server-side (same pattern
@@ -135,24 +131,27 @@ export class EventDetails {
   protected readonly flyerOpen = signal(false);
   protected readonly flyerZoomed = signal(false);
 
+  /** Static tiles for the "Dove" card, computed once when the event loads;
+   * null when the event has no coordinates (the card then shows text only). */
+  protected readonly miniMap = signal<MiniMap | null>(null);
+
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
+    // No id or a failed fetch both end with event() still null, which the
+    // template already renders as "not found" — no separate error flag needed.
     if (!id) {
       this.loading.set(false);
-      this.error.set(true);
       return;
     }
 
     this.eventsService.getEventDetail(id).subscribe({
       next: (event) => {
         this.event.set(event);
+        this.miniMap.set(this.buildMiniMap(event));
         this.loading.set(false);
         this.syncToggleState(event.id);
       },
-      error: () => {
-        this.loading.set(false);
-        this.error.set(true);
-      },
+      error: () => this.loading.set(false),
     });
 
     // Same body-scroll lock as auth-modal.ts, DOM-only hence the platform check.
@@ -171,6 +170,17 @@ export class EventDetails {
 
   protected goBack(): void {
     this.location.back();
+  }
+
+  /** Opens /mappa centred on this event with its card already open — the
+   * map reads both from MapViewStateService when it mounts (see
+   * restoreSelectedEvent in map.ts). */
+  protected openOnMap(event: EventDetailDto): void {
+    if (event.latitude == null || event.longitude == null) return;
+    this.mapViewState.center = [event.latitude, event.longitude];
+    this.mapViewState.zoom = MINI_MAP_ZOOM;
+    this.mapViewState.selectedEventId = event.id;
+    this.router.navigate(['/mappa']);
   }
 
   protected toggleGoing(): void {
@@ -281,11 +291,17 @@ export class EventDetails {
     return Math.max(1, Math.round(msToStart / 60000));
   }
 
-  /** Numeric day/month/year (e.g. "21/09/2026") — kept as its own method,
-   * separate from formatTimeRange below, since the Quando quick fact
-   * renders the date and the start-end time on their own lines. */
+  /** Long form (e.g. "Venerdì 25 settembre 2026") — kept as its own method,
+   * separate from formatTimeRange below, since the Quando row renders the
+   * date and the start-end time on their own lines. */
   protected formatDate(event: EventDetailDto): string {
-    return new Date(event.startAt).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const date = new Date(event.startAt).toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    return date.charAt(0).toUpperCase() + date.slice(1);
   }
 
   /** Start-end range (both were sitting unused on EventDetailDto otherwise)
@@ -300,12 +316,11 @@ export class EventDetails {
    * 24h clock — Intl's per-locale default can vary by runtime/ICU version,
    * and this page is Italy-only, so it's never meant to show AM/PM. */
   private formatClock(iso: string): string {
-    const time = new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
-    return `${time}h`;
+    return new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
   protected formatPrice(event: EventDetailDto): string {
-    if (event.isFree) return 'GRATIS';
+    if (event.isFree) return 'Gratis';
     if (event.price == null) return 'Prezzo su invito';
     return `${event.price} ${event.currency ?? ''}`.trim();
   }
@@ -326,6 +341,13 @@ export class EventDetails {
     return rest.length ? rest.join(', ') : null;
   }
 
+  /** Second line under the "Dove" heading: with a venue name as the first
+   * line, the whole address; otherwise just what's left after the street. */
+  protected addressSubtitle(event: EventDetailDto): string | null {
+    if (event.venueName) return event.address;
+    return this.addressSecondary(event.address);
+  }
+
   protected googleMapsUrl(event: EventDetailDto): string {
     const query = event.venueName ? `${event.venueName}, ${event.address}` : event.address;
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
@@ -335,35 +357,58 @@ export class EventDetails {
     return `https://www.instagram.com/${handle}/`;
   }
 
-  /** Shared by the Parteciperò/Mi piace/Segui pills: same active-vs-idle
-   * border+bg+text combination, just a different accent colour per button. */
-  protected pillClass(active: boolean, color: PillColor): string {
-    return active ? PILL_ACTIVE[color] : PILL_INACTIVE[color];
-  }
-
-  protected goingCountIconClass(goingCount: number): string {
-    return goingCount > 0 ? 'text-violet' : 'text-bone/85';
-  }
-
   protected eventTypeLabel(event: EventDetailDto): string {
     return EVENT_TYPE_LABELS[event.eventType];
   }
 
-  protected eventTypeColor(event: EventDetailDto): string {
-    return EVENT_TYPE_COLORS[event.eventType];
+  /** Same shape/glyph/colour as this event's pin on the real map, so the
+   * mini-map in the "Dove" card reads as a crop of it. */
+  protected pinShape(event: EventDetailDto): string {
+    return PIN_SHAPES[event.eventType];
   }
 
-  /** With a flyer, the hero's own sticky @[768px]:h-dvh forces this column
-   * tall via flex stretch — but with no flyer there's no hero at all (see
-   * event-details.html), so nothing makes the column reach the bottom of
-   * the viewport and its aurora/starfield backdrop stops short, leaving a
-   * plain unstyled gap below the content. Forcing a floor here — viewport
-   * minus the fixed mobile header below md, full viewport from md up where
-   * the header becomes the sidebar instead (mirrors main's own
-   * pt-(--header-h) md:pt-0) — closes that gap. */
-  protected bodyColumnClass(event: EventDetailDto): string {
-    const base = 'relative overflow-hidden bg-ink @[768px]:min-w-0 @[768px]:flex-1';
-    return event.flyerUrl ? base : `${base} min-h-[calc(100dvh-var(--header-h))] md:min-h-dvh`;
+  protected pinGlyph(event: EventDetailDto): string {
+    return PIN_GLYPHS[event.eventType];
+  }
+
+  protected pinColor(event: EventDetailDto): string {
+    return PIN_COLORS[event.eventType];
+  }
+
+  /** Web Mercator maths (same projection Leaflet uses) to pick the 3x3 block
+   * of CARTO tiles around the event: Voyager for the light theme — the same
+   * basemap as /mappa — and Dark Matter for the dark one. Plain <img> tiles
+   * instead of a second Leaflet instance: the card is static, so it doesn't
+   * need the library's JS chunk at all. */
+  private buildMiniMap(event: EventDetailDto): MiniMap | null {
+    if (event.latitude == null || event.longitude == null) return null;
+
+    const scale = TILE_SIZE * 2 ** MINI_MAP_ZOOM;
+    const latRad = (event.latitude * Math.PI) / 180;
+    const x = ((event.longitude + 180) / 360) * scale;
+    const y = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * scale;
+
+    const firstTileX = Math.floor(x / TILE_SIZE) - 1;
+    const firstTileY = Math.floor(y / TILE_SIZE) - 1;
+    const subdomains = ['a', 'b', 'c', 'd'];
+    const tiles: MiniMapTile[] = [];
+
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const tileX = firstTileX + col;
+        const tileY = firstTileY + row;
+        const s = subdomains[(tileX + tileY) % subdomains.length];
+        const path = `${MINI_MAP_ZOOM}/${tileX}/${tileY}@2x.png?key=${environment.cartoApiKey}`;
+        tiles.push({
+          light: `https://${s}.basemaps.cartocdn.com/rastertiles/voyager/${path}`,
+          dark: `https://${s}.basemaps.cartocdn.com/dark_all/${path}`,
+          left: col * TILE_SIZE,
+          top: row * TILE_SIZE,
+        });
+      }
+    }
+
+    return { tiles, offsetX: x - firstTileX * TILE_SIZE, offsetY: y - firstTileY * TILE_SIZE };
   }
 
   protected organizerTypeLabel(organizer: OrganizerDetailDto): string {

@@ -20,7 +20,7 @@ export const endpoints = {
     updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,//Used
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
     createEventSeries: '/rest/admin/event-series',
-    updateEventSeriesFlyer: (id: string) => `/rest/admin/event-series/${id}/flyer`,
+    updateEventSeriesFlyer: (seriesId: string) => `/rest/admin/event-series/${seriesId}/flyer`,
     generateEventSeriesOccurrences: (id: string) => `/rest/admin/event-series/${id}/occurrences`,
     createVenue: '/rest/admin/venues',
     deleteVenue: (id: string) => `/rest/admin/venues/${id}`,

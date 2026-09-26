@@ -49,10 +49,10 @@ export class AdminService {
     return this.http.post<EventSeriesDetailDto>(`${environment.apiUrl}${endpoints.admin.createEventSeries}`, body);
   }
 
-  uploadEventSeriesFlyer(id: string, file: File): Observable<EventSeriesDetailDto> {
+  uploadEventSeriesFlyer(seriesId: string, file: File): Observable<EventSeriesDetailDto> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.patch<EventSeriesDetailDto>(`${environment.apiUrl}${endpoints.admin.updateEventSeriesFlyer(id)}`, formData);
+    return this.http.patch<EventSeriesDetailDto>(`${environment.apiUrl}${endpoints.admin.updateEventSeriesFlyer(seriesId)}`, formData);
   }
 
   generateEventSeriesOccurrences(id: string, body: EventSeriesGenerateOccurrencesDto): Observable<EventCardDto[]> {

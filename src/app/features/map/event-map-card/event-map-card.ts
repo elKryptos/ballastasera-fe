@@ -1,4 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -14,9 +15,12 @@ import { EventCardDto } from '../../../core/models/event.model';
 import {
   addressPrimary,
   addressSecondary,
+  formatEventDate,
   formatPrice,
+  formatTimeRange,
   isLiveAt,
   minutesToStart,
+  withoutCountry,
 } from '../../../core/utils/event-format';
 
 /** Detail card docked over the map when a pin is tapped. Presentational
@@ -25,7 +29,7 @@ import {
  * to the event's detail page. */
 @Component({
   selector: 'app-event-map-card',
-  imports: [RouterLink, NgIcon],
+  imports: [RouterLink, NgIcon, NgTemplateOutlet],
   templateUrl: './event-map-card.html',
   styleUrl: './event-map-card.css',
   providers: [
@@ -56,19 +60,15 @@ export class EventMapCard {
   protected readonly live = computed(() => isLiveAt(this.event(), this.now()));
   protected readonly startsInMinutes = computed(() => minutesToStart(this.event(), this.now()));
 
-  protected readonly startLabel = computed(() =>
-    new Date(this.event().startAt).toLocaleString('it-IT', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
-  );
+  /** Same two lines as the event page's "Quando" row: long date, then the
+   * start-end range. */
+  protected readonly dateLabel = computed(() => formatEventDate(this.event()));
+  protected readonly timeRangeLabel = computed(() => formatTimeRange(this.event()));
 
   protected readonly priceLabel = computed(() => formatPrice(this.event()));
-  protected readonly addressLine1 = computed(() => addressPrimary(this.event().address));
-  protected readonly addressLine2 = computed(() => addressSecondary(this.event().address));
+  private readonly address = computed(() => withoutCountry(this.event().address));
+  protected readonly addressLine1 = computed(() => addressPrimary(this.address()));
+  protected readonly addressLine2 = computed(() => addressSecondary(this.address()));
 
   /** Outline (inheriting the surrounding text colour) when not liked, filled
   with the theme's heart colour (--mc-heart, event-map-card.css) when liked

@@ -31,11 +31,14 @@ import { OrganizerDetailDto, OrganizerType } from '../../core/models/organizer.m
 import {
   addressPrimary,
   addressSecondary,
+  formatEventDate,
   formatPrice,
+  formatTimeRange,
   googleMapsUrl,
   instagramUrl,
   isLiveAt,
   minutesToStart,
+  withoutCountry,
 } from '../../core/utils/event-format';
 
 /** Zoom level of the static mini-map in the "Dove" card — street level, enough
@@ -137,6 +140,8 @@ export class EventDetails {
   protected readonly miniMap = signal<MiniMap | null>(null);
 
   protected readonly formatPrice = formatPrice;
+  protected readonly formatDate = formatEventDate;
+  protected readonly formatTimeRange = formatTimeRange;
   protected readonly addressPrimary = addressPrimary;
   protected readonly addressSecondary = addressSecondary;
   protected readonly googleMapsUrl = googleMapsUrl;
@@ -347,39 +352,13 @@ export class EventDetails {
     return minutesToStart(event, this.now());
   }
 
-  /** Long form (e.g. "Venerdì 25 settembre 2026") — kept as its own method,
-   * separate from formatTimeRange below, since the Quando row renders the
-   * date and the start-end time on their own lines. */
-  protected formatDate(event: EventDetailDto): string {
-    const date = new Date(event.startAt).toLocaleDateString('it-IT', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-    return date.charAt(0).toUpperCase() + date.slice(1);
-  }
-
-  /** Start-end range (both were sitting unused on EventDetailDto otherwise)
-   * rather than just the start time, since these are club/party nights that
-   * often run past midnight — knowing when it ends matters as much as when
-   * it starts. */
-  protected formatTimeRange(event: EventDetailDto): string {
-    return `${this.formatClock(event.startAt)} – ${this.formatClock(event.endAt)}`;
-  }
-
-  /** hour12: false pinned explicitly rather than relying on it-IT's default
-   * 24h clock — Intl's per-locale default can vary by runtime/ICU version,
-   * and this page is Italy-only, so it's never meant to show AM/PM. */
-  private formatClock(iso: string): string {
-    return new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
-  }
-
   /** Second line under the "Dove" heading: with a venue name as the first
-   * line, the whole address; otherwise just what's left after the street. */
+   * line, the whole address; otherwise just what's left after the street.
+   * Either way without the country, like the map's card (see withoutCountry). */
   protected addressSubtitle(event: EventDetailDto): string | null {
-    if (event.venueName) return event.address;
-    return this.addressSecondary(event.address);
+    const address = withoutCountry(event.address);
+    if (event.venueName) return address;
+    return this.addressSecondary(address);
   }
 
   protected eventTypeLabel(event: EventDetailDto): string {

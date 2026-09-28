@@ -8,36 +8,55 @@
     <ng-icon name="lucideX" class="size-4" />
   </button>
 
+  <!-- Live/soon badge, shared by its two spots: overlaid on the flyer, or
+  right of the title when there's no flyer — same as the detail page. -->
+  <ng-template #statusBadge>
+    @if (live()) {
+    <span
+      class="inline-flex items-center gap-1 rounded-sm bg-(--mc-live) px-1.5 py-0.5 font-mono text-[0.6rem] text-white shadow">
+      <span class="size-1.5 rounded-full bg-white"></span> LIVE
+    </span>
+    } @else if (startsInMinutes(); as minutes) {
+    <span class="rounded-sm bg-(--mc-soon) px-1.5 py-0.5 font-mono text-[0.6rem] text-(--mc-on-solid) shadow">
+      {{ minutes }}′
+    </span>
+    }
+  </ng-template>
+
   <!-- The whole top block is one link to the detail page — the Google Maps
   directions and the Instagram profile link live there, not on the card. -->
   <a [routerLink]="['/evento', event().id]" class="flex gap-3 p-3 pr-10">
     @if (event().flyerUrl) {
     <div class="relative min-h-28 w-28 shrink-0 self-stretch">
       <img class="size-full rounded-lg object-cover" [src]="event().flyerUrl" [alt]="event().title" />
-      @if (live()) {
-      <span
-        class="absolute top-1 left-1 inline-flex items-center gap-1 rounded-sm bg-(--mc-live) px-1.5 py-0.5 font-mono text-[0.6rem] text-white shadow">
-        <span class="size-1.5 rounded-full bg-white"></span> LIVE
-      </span>
-      } @else if (startsInMinutes(); as minutes) {
-      <span
-        class="absolute top-1 left-1 rounded-sm bg-(--mc-soon) px-1.5 py-0.5 font-mono text-[0.6rem] text-(--mc-on-solid) shadow">
-        {{ minutes }}′
-      </span>
-      }
+      <div class="absolute top-1 left-1 flex">
+        <ng-container [ngTemplateOutlet]="statusBadge" />
+      </div>
     </div>
     }
 
     <div class="flex min-w-0 flex-1 flex-col gap-1.5 text-sm text-(--map-text-2) xs:text-base sm:text-sm">
-      <h2 class="font-display text-base leading-tight font-bold text-(--map-text) uppercase xs:text-lg sm:text-base">
-        {{ event().title }}
-      </h2>
+      <div class="flex items-start justify-between gap-2">
+        <h2 class="font-display text-base leading-tight font-bold text-(--map-text) uppercase xs:text-lg sm:text-base">
+          {{ event().title }}
+        </h2>
+        <!-- Without a flyer there's nothing to overlay the badge on, so it
+        sits here instead. -->
+        @if (!event().flyerUrl) {
+        <div class="flex shrink-0 pt-0.5">
+          <ng-container [ngTemplateOutlet]="statusBadge" />
+        </div>
+        }
+      </div>
 
-      <p class="flex items-center gap-1.5">
+      <p class="flex items-start gap-1.5">
         <span class="flex size-5 shrink-0 items-center justify-center">
           <ng-icon name="lucideClock" class="size-3 text-(--map-accent)" />
         </span>
-        {{ startLabel() }}
+        <span class="min-w-0 flex-1">
+          <span class="block">{{ dateLabel() }}</span>
+          <span class="block tabular-nums">{{ timeRangeLabel() }}</span>
+        </span>
       </p>
 
       @if (event().venueName || event().address) {

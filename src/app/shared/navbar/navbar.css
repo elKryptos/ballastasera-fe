@@ -1,22 +1,22 @@
 /* Plain flow element — the fixed positioning lives on .mobile-bar and on
-   hlm-sidebar's own host below, not here. A `backdrop-filter` on this host
-   would give the auth dialog (its sibling in the DOM, `<app-auth-modal>`) a
-   new containing block, since filters do that to fixed-position descendants
-   same as `transform` does — the dialog's `fixed inset-0` would then
-   resolve against this element instead of the viewport, and never be
-   visible.
+hlm-sidebar's own host below, not here. A `backdrop-filter` on this host
+would give the auth dialog (its sibling in the DOM, `<app-auth-modal>`) a
+new containing block, since filters do that to fixed-position descendants
+same as `transform` does — the dialog's `fixed inset-0` would then
+resolve against this element instead of the viewport, and never be
+visible.
 
-   The --color-* custom properties below pin this component to the shared
-   brand palette (see @theme in styles.css) no matter which page mounts it.
-   Without this, a page that locally overrides these same var() names on
-   its own :host (e.g. landing's own palette in landing.css) would cascade
-   straight into this component too, since it's a normal DOM descendant of
-   that page's host — the sidebar would then look different depending on
-   which route it's rendered in, which isn't what any page actually wants
-   from shared chrome. Literal values, matching @theme exactly — kept in
-   sync by hand, since a page-scoped override and a "never override this"
-   pin can't both live on the same custom property without one of them
-   duplicating the other's value somewhere. */
+The --color-* custom properties below pin this component to the shared
+brand palette (see @theme in styles.css) no matter which page mounts it.
+Without this, a page that locally overrides these same var() names on
+its own :host (e.g. landing's own palette in landing.css) would cascade
+straight into this component too, since it's a normal DOM descendant of
+that page's host — the sidebar would then look different depending on
+which route it's rendered in, which isn't what any page actually wants
+from shared chrome. Literal values, matching @theme exactly — kept in
+sync by hand, since a page-scoped override and a "never override this"
+pin can't both live on the same custom property without one of them
+duplicating the other's value somewhere. */
 :host {
   display: block;
   --color-ink: #1a0e2e;
@@ -31,12 +31,12 @@
 }
 
 /* Mobile-only top bar: the sidebar itself renders nothing on screen below
-   md until its sheet is opened, so this keeps the logo pinned in view at
-   all times on small screens, edge to edge, above everything but a modal.
-   --z-index-mobile-bar, not the usual --z-index-header (see styles.css):
-   staying above CDK's own overlay container keeps the bar visible while
-   the drawer is open, instead of sitting under the scrim's dim/blur like
-   normal page content does. */
+md until its sheet is opened, so this keeps the logo pinned in view at
+all times on small screens, edge to edge, above everything but a modal.
+--z-index-mobile-bar, not the usual --z-index-header (see styles.css):
+staying above CDK's own overlay container keeps the bar visible while
+the drawer is open, instead of sitting under the scrim's dim/blur like
+normal page content does. */
 .mobile-bar {
   position: fixed;
   top: 0;
@@ -46,10 +46,10 @@
   height: var(--header-h);
   overflow: hidden;
   /* The flat --color-ink slab it used to be read as dead weight on the one
-     bit of chrome that's always on screen — the top edge still starts as
-     pure ink (matching the Android status bar above it exactly, same
-     theme-color in index.html/site.webmanifest) so there's no visible
-     seam, then eases toward ink-2 and a hint of rose by the bottom edge. */
+  bit of chrome that's always on screen — the top edge still starts as
+  pure ink (matching the Android status bar above it exactly, same
+  theme-color in index.html/site.webmanifest) so there's no visible
+  seam, then eases toward ink-2 and a hint of rose by the bottom edge. */
   background: linear-gradient(
     180deg,
     var(--color-ink) 0%,
@@ -62,15 +62,15 @@
 }
 
 /* Same desktop rail the mobile bar above mirrors: Spartan's own bg-sidebar
-   utility only gives it flat --color-ink (see --sidebar in styles.css), so
-   this is layered on via ::ng-deep — plain (unlayered) component CSS always
-   wins over Tailwind's own @layer utilities regardless of source order, so
-   no !important is needed. Scoped to :host so it only reaches this
-   navbar's own sidebar instance, not sidebars elsewhere in the app.
-   [data-slot='sidebar-inner'] (not the shared [data-sidebar='sidebar']
-   attribute) targets only the desktop variant — the mobile drawer sheet
-   carries the same data-sidebar attribute but is already bg-transparent +
-   backdrop-blur, not flat ink, so it's left alone. */
+utility only gives it flat --color-ink (see --sidebar in styles.css), so
+this is layered on via ::ng-deep — plain (unlayered) component CSS always
+wins over Tailwind's own @layer utilities regardless of source order, so
+no !important is needed. Scoped to :host so it only reaches this
+navbar's own sidebar instance, not sidebars elsewhere in the app.
+[data-slot='sidebar-inner'] (not the shared [data-sidebar='sidebar']
+attribute) targets only the desktop variant — the mobile drawer sheet
+carries the same data-sidebar attribute but is already bg-transparent +
+backdrop-blur, not flat ink, so it's left alone. */
 :host ::ng-deep [data-slot='sidebar-inner'] {
   position: relative;
   overflow: hidden;
@@ -83,20 +83,20 @@
 }
 
 /* No divider line between the rail and the page, in either theme. The
-   rail's border-r is a 14% translucent line (--border), so it showed only
-   where something contrasting sat behind it — on /mappa the body's dark
-   ground (no background of its own under the rail), a dark line — and
-   vanished on pages with their own background. Dropping it keeps every page
-   the same. Scoped to the outer container only; --sidebar-border still
-   drives the rail's inner separators. */
+rail's border-r is a 14% translucent line (--border), so it showed only
+where something contrasting sat behind it — on /mappa the body's dark
+ground (no background of its own under the rail), a dark line — and
+vanished on pages with their own background. Dropping it keeps every page
+the same. Scoped to the outer container only; --sidebar-border still
+drives the rail's inner separators. */
 :host ::ng-deep [data-slot='sidebar-container'] {
   border-right-width: 0;
 }
 
 /* Twinkling star scatter over both — same "stasera" (tonight) motif as
-   the .night effect on the wordmark below and the fuller starfield on the
-   event details page, sized down to a thin tile so it reads as ambient
-   texture rather than competing with the nav items sitting on top of it. */
+the .night effect on the wordmark below and the fuller starfield on the
+event details page, sized down to a thin tile so it reads as ambient
+texture rather than competing with the nav items sitting on top of it. */
 .mobile-bar::after,
 :host ::ng-deep [data-slot='sidebar-inner']::after {
   content: '';
@@ -133,13 +133,13 @@
 }
 
 /* ---------- daytime (light theme) ----------
-   The colour tokens themselves flip in styles.css (see the
-   `:root[data-theme='light'] app-navbar` block there — it also has to reach
-   the mobile drawer, which lives outside this component). What's here is
-   only the chrome built on top of them: the bar/rail gradients become the
-   /mappa basemap (CARTO Voyager) — its paper ground warming into beige
-   blocks, a glow in its road yellow at the top and one in its park sage at
-   the rail's foot — and the night-sky star scatter goes away. */
+The colour tokens themselves flip in styles.css (see the
+`:root[data-theme='light'] app-navbar` block there — it also has to reach
+the mobile drawer, which lives outside this component). What's here is
+only the chrome built on top of them: the bar/rail gradients become the
+/mappa basemap (CARTO Voyager) — its paper ground warming into beige
+blocks, a glow in its road yellow at the top and one in its park sage at
+the rail's foot — and the night-sky star scatter goes away. */
 :host-context([data-theme='light']) .mobile-bar {
   background:
     radial-gradient(160px 60px at 18% 0%, rgba(255, 233, 165, 0.55), transparent 70%),
@@ -167,15 +167,15 @@
 }
 
 /* Sidebar menu button sizing/colour (Menu, Admin, Esci, Accedi) lives in
-   global styles.css, not here — the mobile drawer is a Spartan/CDK sheet,
-   and CDK overlays portal their content to a container appended to
-   <body>, outside this component's own DOM subtree, so :host ::ng-deep
-   (which requires physical DOM descendance of the host) never reaches it.
-   See the matching comment in styles.css. */
+global styles.css, not here — the mobile drawer is a Spartan/CDK sheet,
+and CDK overlays portal their content to a container appended to
+<body>, outside this component's own DOM subtree, so :host ::ng-deep
+(which requires physical DOM descendance of the host) never reaches it.
+See the matching comment in styles.css. */
 
 /* "stasera" = tonight — same tiny star scatter as the landing headline,
-   shared globally (styles.css's .night) since it's used by both; the logo
-   here just takes the default (smaller) size. */
+shared globally (styles.css's .night) since it's used by both; the logo
+here just takes the default (smaller) size. */
 
 .avatar-img,
 .avatar-fallback {

@@ -1,18 +1,18 @@
 /* Only what utilities can't express: atmosphere, the beat choreography,
-   and the intro sequence. Everything else is Tailwind, in the template. */
+and the intro sequence. Everything else is Tailwind, in the template. */
 
 /* A "Latin night" palette, local to the landing page only — overrides the
-   shared design tokens (see @theme in styles.css) right here on the host,
-   so every Tailwind utility built on them (bg-rose, text-amber, border-line,
-   …) and every var(--color-*) reference in this file/template — including
-   ones inherited by <app-navbar>/<app-media-embed>/<app-auth-modal>, since
-   custom properties cascade through the real DOM regardless of Angular's
-   view encapsulation — picks it up automatically. No other route is
-   affected: their own component trees never sit under this :host. Warmer
-   and more saturated than the shared sunset theme, leaning into the
-   salsa/bachata scene this page is actually about — rose/violet/mint/amber
-   stay distinct hues on purpose, since the same four also colour the map's
-   event-type pins (see legendPins). */
+shared design tokens (see @theme in styles.css) right here on the host,
+so every Tailwind utility built on them (bg-rose, text-amber, border-line,
+…) and every var(--color-*) reference in this file/template — including
+ones inherited by <app-navbar>/<app-media-embed>/<app-auth-modal>, since
+custom properties cascade through the real DOM regardless of Angular's
+view encapsulation — picks it up automatically. No other route is
+affected: their own component trees never sit under this :host. Warmer
+and more saturated than the shared sunset theme, leaning into the
+salsa/bachata scene this page is actually about — rose/violet/mint/amber
+stay distinct hues on purpose, since the same four also colour the map's
+event-type pins (see legendPins). */
 :host {
   display: block;
   min-height: 100dvh;
@@ -34,12 +34,12 @@
 /* ---------- light theme ---------- */
 
 /* Same page, daytime: the /mappa basemap's (CARTO Voyager) paper and beige
-   with navy text, instead of the night-plum ground (the backdrop itself is
-   the .glow rule below). Only the tokens change (applied when <html
-   data-theme="light">, see ThemeService); every utility built on them
-   follows. Rose stays exactly the logo's rose, and amber/violet/mint are
-   deepened just enough to stay readable as text on a light ground (small
-   mono labels need ~4.5:1). */
+with navy text, instead of the night-plum ground (the backdrop itself is
+the .glow rule below). Only the tokens change (applied when <html
+data-theme="light">, see ThemeService); every utility built on them
+follows. Rose stays exactly the logo's rose, and amber/violet/mint are
+deepened just enough to stay readable as text on a light ground (small
+mono labels need ~4.5:1). */
 :host-context([data-theme='light']) {
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
@@ -48,7 +48,7 @@
   --color-violet: #a21caf;
   --color-mint: #0f8a7c;
   /* Navy text, same family as the daytime sidebar (styles.css) and the
-     map's own slate labels, so page, nav and map read as one surface. */
+  map's own slate labels, so page, nav and map read as one surface. */
   --color-bone: #1d2640;
   --color-lead: #36425f;
   --color-muted: #5f6d8c;
@@ -60,12 +60,12 @@
 }
 
 /* The map by day: the /mappa basemap's (CARTO Voyager) paper ground,
-   warming into its beige city blocks toward the bottom — same stops as the
-   daytime sidebar (navbar.css), so nav and page read as one surface — with a
-   glow in its road yellow behind the big logo pin, a patch of its park sage
-   in the bottom-left corner and a faint rose, the pins' own colour, at the
-   bottom-right. Same --mx/--my parallax as the dark version, so the glows
-   still drift with the pointer. */
+warming into its beige city blocks toward the bottom — same stops as the
+daytime sidebar (navbar.css), so nav and page read as one surface — with a
+glow in its road yellow behind the big logo pin, a patch of its park sage
+in the bottom-left corner and a faint rose, the pins' own colour, at the
+bottom-right. Same --mx/--my parallax as the dark version, so the glows
+still drift with the pointer. */
 :host-context([data-theme='light']) .glow {
   background:
     radial-gradient(34vmax 34vmax at calc(74% + (var(--mx) - 0.5) * 10%) calc(24% + (var(--my) - 0.5) * 10%), rgba(255, 226, 140, 0.55), rgba(255, 233, 165, 0.2) 45%, transparent 68%),
@@ -79,8 +79,8 @@
 }
 
 /* The logo stays exactly as it is on the dark page: equaliser bars in the
-   night ink (not the now-light --color-ink), and the big pin's
-   amber→rose→violet gradient in its original hues. */
+night ink (not the now-light --color-ink), and the big pin's
+amber→rose→violet gradient in its original hues. */
 :host-context([data-theme='light']) a[aria-label='ballastasera — home'] svg g,
 :host-context([data-theme='light']) .pinbig g {
   fill: #1a0510;
@@ -95,7 +95,7 @@
 }
 
 /* Video facades are text over a darkened poster — they stay dark in both
-   themes, so they get the night palette back. */
+themes, so they get the night palette back. */
 :host-context([data-theme='light']) app-media-embed {
   --color-ink: #1a0510;
   --color-ink-2: #2b0a1f;
@@ -107,9 +107,9 @@
 /* ---------- header ---------- */
 
 /* Pinned from the first frame — no travelling-then-catching motion — so it
-  needs a fixed height (the page's top padding, above, reserves exactly this
-  much space) and its own edge-to-edge backdrop, since content now scrolls
-   underneath it rather than pushing it down. */
+needs a fixed height (the page's top padding, above, reserves exactly this
+much space) and its own edge-to-edge backdrop, since content now scrolls
+underneath it rather than pushing it down. */
 .sticky-header {
   height: var(--header-h);
   background: color-mix(in srgb, var(--color-ink) 92%, transparent);
@@ -118,16 +118,16 @@
 }
 
 /* The page's own top padding, so content clears the fixed header above —
-   kept in lockstep with it via the shared --header-h custom property. */
+kept in lockstep with it via the shared --header-h custom property. */
 .page {
   padding-top: calc(var(--header-h) + 1rem);
 }
 
 /* app-navbar's sidebar only shows a fixed top bar (this same --header-h)
-  on phones — on desktop it's a left icon rail instead, so the page needs
-  left padding, not top, from md up. Scoped to .sidebar-layout (set only
-  when showNewNavbar is on) so the legacy fixed header below keeps its
-  own top padding at every width. */
+on phones — on desktop it's a left icon rail instead, so the page needs
+left padding, not top, from md up. Scoped to .sidebar-layout (set only
+when showNewNavbar is on) so the legacy fixed header below keeps its
+own top padding at every width. */
 @media (min-width: 768px) {
   .page.sidebar-layout {
     padding-top: 0;
@@ -135,9 +135,9 @@
 }
 
 /* Language switcher (+ the WIP badge, next to it when the new navbar is
-  on): fixed top-right, just under the navbar (not inside it, so it stays
-  put regardless of which header variant is shown) — same position on
-   mobile, tied to --header-h like everything else up here. */
+on): fixed top-right, just under the navbar (not inside it, so it stays
+put regardless of which header variant is shown) — same position on
+mobile, tied to --header-h like everything else up here. */
 .top-right-float {
   top: calc(var(--header-h) + 0.6rem);
   right: clamp(0.75rem, 3vw, 2rem);
@@ -150,9 +150,9 @@
 }
 
 /* Desktop-only stand-in for the sidebar's (currently absent) brand mark —
-  pinned at the same height as the language switcher, just past the
-  sidebar's icon rail. Only ever rendered past md (see the md:flex on the
-   element itself), so no media query needed here. */
+pinned at the same height as the language switcher, just past the
+sidebar's icon rail. Only ever rendered past md (see the md:flex on the
+element itself), so no media query needed here. */
 .brand-float {
   top: 0.6rem;
   left: calc(var(--sidebar-width-icon) + 1rem);
@@ -161,10 +161,10 @@
 /* ---------- atmosphere ---------- */
 
 /* --mx/--my (0..1, set from JS on pointer move — see setupAmbientParallax in
-   landing.ts — defaulting to centre) drift the two blobs a few percent in
-   opposite directions: a cheap sense of depth across the whole page, not
-   just one section. Stay put (centred) whenever the listener isn't attached
-   — no JS, or prefers-reduced-motion. */
+landing.ts — defaulting to centre) drift the two blobs a few percent in
+opposite directions: a cheap sense of depth across the whole page, not
+just one section. Stay put (centred) whenever the listener isn't attached
+— no JS, or prefers-reduced-motion. */
 .glow {
   position: fixed;
   inset: 0;
@@ -198,13 +198,13 @@
 }
 
 /* "stasera" = tonight — shared star-scatter effect (styles.css's .night),
-   just twice the navbar logo's default size for the hero's larger type. */
+just twice the navbar logo's default size for the hero's larger type. */
 .night::after {
   --night-star-size: 2;
 }
 
 /* On a very short screen — an old small phone, or any phone held sideways —
-   the pin is what gives way, so the form and its note stay in the first view. */
+the pin is what gives way, so the form and its note stay in the first view. */
 @media (max-height: 520px) {
   .stage {
     display: none;
@@ -223,7 +223,7 @@
 }
 
 /* The tap sustains instead of striking: full height, amber, and a glow that
-   decays across the beat — so 4 and 8 read as different, not just as another hit. */
+decays across the beat — so 4 and 8 read as different, not just as another hit. */
 .held .bar {
   background: var(--color-amber);
   animation-name: hold;
@@ -240,7 +240,7 @@
 }
 
 /* Keyed off the beat itself, not the position: the two halves of the bar live
-   in separate columns, so nth-child would restart the count at 5. */
+in separate columns, so nth-child would restart the count at 5. */
 .beat[data-beat="1"] .bar { animation-delay: 0s; }
 .beat[data-beat="2"] .bar { animation-delay: 0.5s; }
 .beat[data-beat="3"] .bar { animation-delay: 1s; }
@@ -266,7 +266,7 @@
 }
 
 /* Beats 4 and 8 are held: they hit full height like a step, then fade out over
-   the beat rather than dropping, which is what makes the tap stand out. */
+the beat rather than dropping, which is what makes the tap stand out. */
 @keyframes hold {
   0% {
     transform: scaleY(1);
@@ -339,16 +339,16 @@
 /* The card drawings get the same violet glow as the teaser map preview. */
 .art {
   background-image: radial-gradient(85% 120% at 50% 0%,
-      color-mix(in srgb, var(--color-violet) 32%, transparent), transparent 65%);
+    color-mix(in srgb, var(--color-violet) 32%, transparent), transparent 65%);
 }
 
 /* ---------- support: the coffee button ---------- */
 
 /* A slowly travelling rainbow, plus a gentle bob so the button reads as
-   "alive" without ever demanding attention the way a loop-and-flash would. */
+"alive" without ever demanding attention the way a loop-and-flash would. */
 .coffee-btn {
   background: linear-gradient(120deg,
-      var(--color-amber), var(--color-rose) 40%, var(--color-violet) 72%, var(--color-mint));
+    var(--color-amber), var(--color-rose) 40%, var(--color-violet) 72%, var(--color-mint));
   background-size: 300% 300%;
   animation: coffeegradient 2.5s ease-in-out infinite;
 }
@@ -395,9 +395,9 @@
 .count { animation-delay: 1.65s; }
 
 /* A cinematic push-in: fades and de-blurs while easing down from a slight
-   scale-up, instead of just sliding up flat. Shared by the hero's load-time
-   cascade above and the scroll-triggered .reveal below, so every section
-   enters the same way. */
+scale-up, instead of just sliding up flat. Shared by the hero's load-time
+cascade above and the scroll-triggered .reveal below, so every section
+enters the same way. */
 @keyframes rise {
   from {
     opacity: 0;
@@ -412,8 +412,8 @@
 }
 
 /* Below-the-fold sections don't get the hero's load-time cascade — they get
-   this instead, playing the same "rise" entrance the moment each one scrolls
-   into view, so the appear effect isn't limited to just the first screenful. */
+this instead, playing the same "rise" entrance the moment each one scrolls
+into view, so the appear effect isn't limited to just the first screenful. */
 .reveal {
   opacity: 0;
   transform: translateY(0.6em) scale(0.96);
@@ -437,7 +437,7 @@
 }
 
 /* Above-the-fold cascade (map-teaser, count): timed just after their own
-   section finishes rising in. */
+section finishes rising in. */
 .map-teaser .section-title { animation: wipe 0.7s cubic-bezier(0.65, 0, 0.35, 1) 1.85s both; }
 .count .section-title { animation: wipe 0.7s cubic-bezier(0.65, 0, 0.35, 1) 2s both; }
 
@@ -449,8 +449,8 @@
 /* ---------- section dividers: hud scan ---------- */
 
 /* A thin travelling highlight over the existing border-top, once per
-   entrance — a "loading terminal" flourish rather than a redesign of the
-   divider itself. */
+entrance — a "loading terminal" flourish rather than a redesign of the
+divider itself. */
 .hud-divider {
   position: relative;
 }
@@ -482,8 +482,8 @@
 /* ---------- map teaser: cursor tilt + spotlight ---------- */
 
 /* --tiltx/--tilty/--spot-x/--spot-y are set from JS on pointer move (see
-   setupTeaserTilt in landing.ts) — defaulting to a flat, centred spotlight
-   when the listener isn't attached (no JS, or prefers-reduced-motion). */
+setupTeaserTilt in landing.ts) — defaulting to a flat, centred spotlight
+when the listener isn't attached (no JS, or prefers-reduced-motion). */
 .teaser-visual {
   --tiltx: 0deg;
   --tilty: 0deg;

@@ -1,5 +1,5 @@
 /* Always in the DOM (never *ngIf'd out) so focus and transitions behave —
-   visibility is purely this opacity/transform/pointer-events toggle. */
+visibility is purely this opacity/transform/pointer-events toggle. */
 .overlay {
   opacity: 0;
   pointer-events: none;
@@ -72,7 +72,7 @@
 }
 
 /* Always in the DOM, at fixed height, so a field turning invalid never
-   pushes the fields below it — only its opacity switches. */
+pushes the fields below it — only its opacity switches. */
 .field-error {
   margin-top: 0.4rem;
   min-height: 1rem;

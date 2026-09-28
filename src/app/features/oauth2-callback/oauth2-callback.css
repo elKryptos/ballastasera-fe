@@ -3,7 +3,7 @@
 }
 
 /* A slow heartbeat on the brand mark reads as "working" without borrowing a
-   generic spinner — fits an app about dance nights better than a ring would. */
+generic spinner — fits an app about dance nights better than a ring would. */
 .heartbeat {
   animation: heartbeat 1.6s ease-in-out infinite;
 }

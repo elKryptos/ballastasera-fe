@@ -9,7 +9,7 @@
 }
 
 /* Poster sits back in the palette until hover, so the type stays readable
-   and the wall of thumbnails doesn't fight the hero for attention. */
+and the wall of thumbnails doesn't fight the hero for attention. */
 .poster {
   filter: saturate(0.65) brightness(0.72);
   transform: scale(1.02);

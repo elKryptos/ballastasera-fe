@@ -1,7 +1,7 @@
 .install-banner {
   bottom: max(0.75rem, env(safe-area-inset-bottom));
   /* Below the modal (1010) and the fixed mobile top bar (1001) from
-     styles.css, above everything else on the page. */
+  styles.css, above everything else on the page. */
   z-index: 999;
   animation: install-banner-in 0.25s ease-out;
 }

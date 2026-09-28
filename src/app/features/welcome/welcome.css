@@ -1,6 +1,6 @@
 /* Only what Tailwind utilities can't express: atmosphere and the intro
-  choreography. Reuses the same visual language as the landing page
-   (glow / grain / drop-and-float pin) so this reads as the same product. */
+choreography. Reuses the same visual language as the landing page
+(glow / grain / drop-and-float pin) so this reads as the same product. */
 
 :host {
   display: block;
@@ -31,12 +31,12 @@
 }
 
 /* ---------- daytime (light theme) ----------
-   Same paper palette as the daytime sidebar (styles.css) and the landing:
-   the /mappa basemap's (CARTO Voyager) paper and beige with navy text, the
-   accents deepened just enough to read on it. Only the tokens change
-   (applied when <html data-theme="light">, see ThemeService); every utility
-   built on them follows. Rose stays the logo's rose. app-navbar pins its own
-   tokens, so this doesn't reach it. */
+Same paper palette as the daytime sidebar (styles.css) and the landing:
+the /mappa basemap's (CARTO Voyager) paper and beige with navy text, the
+accents deepened just enough to read on it. Only the tokens change
+(applied when <html data-theme="light">, see ThemeService); every utility
+built on them follows. Rose stays the logo's rose. app-navbar pins its own
+tokens, so this doesn't reach it. */
 :host-context([data-theme='light']) {
   color-scheme: light;
   --color-ink: #fbf8f3;
@@ -66,8 +66,8 @@
 }
 
 /* Kept exactly as in the dark theme, whatever --color-ink is now: the logo's
-   night-ink equaliser bars (same as navbar/landing) and the CTA's dark label
-   on rose (a light one would drop well below readable contrast). */
+night-ink equaliser bars (same as navbar/landing) and the CTA's dark label
+on rose (a light one would drop well below readable contrast). */
 :host-context([data-theme='light']) .line svg g {
   fill: #1a0e2e;
 }
@@ -94,9 +94,9 @@
 .pin--d { animation-delay: 0.7s, 1.6s; }
 
 /* Ground ring under each pin — same idea as .map-pin-pulse on the real map
-  (see styles.css), just sized as a % of the pin instead of a fixed px ring
-  so it scales with each icon's own size. Centred on the pin's head, not its
-   tip, same as the map markers. */
+(see styles.css), just sized as a % of the pin instead of a fixed px ring
+so it scales with each icon's own size. Centred on the pin's head, not its
+tip, same as the map markers. */
 .pin-ring {
   position: absolute;
   left: 50%;
@@ -154,8 +154,8 @@
 }
 
 /* ---------- cards: each tinted with its own accent (same colors as the pins
-  above), a soft glow blooms behind the icon on hover, and a diagonal sheen
-   loops on its own timer — restrained, not a generic lift-and-shadow card. */
+above), a soft glow blooms behind the icon on hover, and a diagonal sheen
+loops on its own timer — restrained, not a generic lift-and-shadow card. */
 
 .card {
   --accent: var(--color-rose);
@@ -169,8 +169,8 @@
 .accent-mint { --accent: var(--color-mint); }
 
 /* Hover only deepens the tint already on by default and adds the lift —
-   a desktop-only extra, not the thing that makes the color show up at all,
-   so touch devices see the same accented card everyone else does. */
+a desktop-only extra, not the thing that makes the color show up at all,
+so touch devices see the same accented card everyone else does. */
 .card:hover {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--color-line));
   background-color: color-mix(in srgb, var(--color-ink-2) 86%, var(--accent) 6%);
@@ -200,16 +200,16 @@
 }
 
 /* A light sweep that revisits each card on its own, staggered so the three
-   never catch the light at once — works the same with no pointer at all
-   (mobile) as it does on desktop.
-   The actual bug behind every earlier "line at the loop point" attempt:
-   background-repeat defaults to `repeat`, and the tile (250% of the card)
-   is bigger than the card itself — so even at a position meant to be
-   "off-canvas", a repeated copy of the band was wrapping back into view.
-   `no-repeat` removes that entirely: past the tile's own edges there is
-   nothing to show, no wrapped copy, so an off-canvas position is truly
-   invisible. With that fixed, the band only needs to move enough to clear
-   the tile's own edges (~67%/167%) — -180%/320% leaves comfortable margin. */
+never catch the light at once — works the same with no pointer at all
+(mobile) as it does on desktop.
+The actual bug behind every earlier "line at the loop point" attempt:
+background-repeat defaults to `repeat`, and the tile (250% of the card)
+is bigger than the card itself — so even at a position meant to be
+"off-canvas", a repeated copy of the band was wrapping back into view.
+`no-repeat` removes that entirely: past the tile's own edges there is
+nothing to show, no wrapped copy, so an off-canvas position is truly
+invisible. With that fixed, the band only needs to move enough to clear
+the tile's own edges (~67%/167%) — -180%/320% leaves comfortable margin. */
 .sheen {
   background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--accent) 22%, transparent) 50%, transparent 60%);
   background-size: 250% 250%;

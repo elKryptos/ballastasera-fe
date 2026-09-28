@@ -1,5 +1,5 @@
 /* Stesso linguaggio visivo di welcome.css (glow / grain / accento colorato),
-   senza le animazioni della hero — qui è un hub, non un'intro. */
+senza le animazioni della hero — qui è un hub, non un'intro. */
 
 :host {
   display: block;
@@ -28,11 +28,11 @@
 }
 
 /* ---------- daytime (light theme) ----------
-   Same paper palette as the daytime sidebar (styles.css) and the landing:
-   the /mappa basemap's (CARTO Voyager) paper and beige with navy text. Only
-   the tokens change (applied when <html data-theme="light">, see
-   ThemeService); every utility built on them follows. Rose stays the
-   logo's rose. app-navbar pins its own tokens, so this doesn't reach it. */
+Same paper palette as the daytime sidebar (styles.css) and the landing:
+the /mappa basemap's (CARTO Voyager) paper and beige with navy text. Only
+the tokens change (applied when <html data-theme="light">, see
+ThemeService); every utility built on them follows. Rose stays the
+logo's rose. app-navbar pins its own tokens, so this doesn't reach it. */
 :host-context([data-theme='light']) {
   color-scheme: light;
   --color-ink: #fbf8f3;
@@ -61,18 +61,18 @@
 }
 
 /* The Mappa card sits on a screenshot of the map — the same image in both
-   themes — so it keeps its night ink: dark title/copy (with their white
-   halo) and the dark icon disc, exactly as in the dark theme. */
+themes — so it keeps its night ink: dark title/copy (with their white
+halo) and the dark icon disc, exactly as in the dark theme. */
 :host-context([data-theme='light']) .hero {
   --color-ink: #1a0e2e;
   --color-ink-2: #2a1640;
 }
 
 /* ---------- hero card (Mappa) ----------
-  Il resto (posizione dei pin, hover, sfondo, ombra sul testo, icona
-  "prossimamente") è tutto in Tailwind direttamente nel template — qui
-  resta solo ciò che Tailwind non esprime nativamente: color-mix() e le
-   animazioni con relative @keyframes. */
+Il resto (posizione dei pin, hover, sfondo, ombra sul testo, icona
+"prossimamente") è tutto in Tailwind direttamente nel template — qui
+resta solo ciò che Tailwind non esprime nativamente: color-mix() e le
+animazioni con relative @keyframes. */
 
 .hero {
   border-color: color-mix(in srgb, var(--color-rose) 34%, var(--color-line));

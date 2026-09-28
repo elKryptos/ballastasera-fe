@@ -1,5 +1,5 @@
 import { ApplicationConfig, isDevMode, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
-import { provideRouter, withViewTransitions } from '@angular/router';
+import { RouteReuseStrategy, provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTransloco } from '@jsverse/transloco';
@@ -8,6 +8,7 @@ import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 import { routes } from './app.routes';
 import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { KeepAliveReuseStrategy } from './core/routing/keep-alive-reuse.strategy';
 import { AuthService } from './core/services/auth.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { AVAILABLE_LANGS, DEFAULT_LANG } from './core/config/i18n';
@@ -20,6 +21,9 @@ export const appConfig: ApplicationConfig = {
     // instead of the hard cut-over you get by default; see the
     // ::view-transition-* rules in styles.css for the actual timing/easing.
     provideRouter(routes, withViewTransitions()),
+    // Keeps routes flagged `data: { keepAlive: true }` (the map) alive
+    // across navigations instead of rebuilding them on every visit.
+    { provide: RouteReuseStrategy, useClass: KeepAliveReuseStrategy },
     // Starts as an icon-only rail on desktop (matches the md:pl-(--sidebar-width-icon)
     // gutter every page reserves for it) and closes the mobile drawer as soon
     // as a nav link inside it is clicked. The desktop rail stays open on

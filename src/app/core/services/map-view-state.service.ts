@@ -1,12 +1,12 @@
 import { Service } from '@angular/core';
 
 /**
- * Remembers the map's last pan position and open pin across navigations away
- * from /mappa (e.g. to /evento/:id and back). MapPage is destroyed and
- * rebuilt on every route change — its Leaflet instance included — so without
- * this it always reopens at DEFAULT_CENTER/DEFAULT_ZOOM with no pin selected.
- * In-memory only, on purpose: it doesn't need to survive a page reload or
- * become a shareable link, just outlive one round trip through another route.
+ * The map's pan position and open pin, shared with the pages that send the
+ * visitor to /mappa. MapPage itself survives navigating away
+ * (KeepAliveReuseStrategy), so this is what an event's page writes to point
+ * the map at that event (openOnMap) — read by MapPage when it's first built
+ * and whenever it's reattached. In-memory only, on purpose: it doesn't need to
+ * survive a page reload or become a shareable link.
  */
 @Service()
 export class MapViewStateService {

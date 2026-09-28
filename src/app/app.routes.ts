@@ -23,8 +23,11 @@ export const routes: Routes = [
   },
 
   {
+    // keepAlive: detached rather than destroyed on the way out, so coming
+    // back doesn't rebuild the map — see KeepAliveReuseStrategy.
     path: 'mappa',
     canMatch: [featureFlagGuard(FEATURE_FLAGS.mapPage)],
+    data: { keepAlive: true },
     loadComponent: () => import('./features/map/map').then((m) => m.MapPage),
   },
 

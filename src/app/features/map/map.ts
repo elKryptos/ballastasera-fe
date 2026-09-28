@@ -23,6 +23,7 @@ import { DanceStylesService } from '../../core/services/dance-styles.service';
 import { EventEngagementService } from '../../core/services/event-engagement.service';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { Theme, ThemeService } from '../../core/services/theme.service';
+import { KeepAliveHooks } from '../../core/routing/keep-alive-reuse.strategy';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
@@ -97,7 +98,7 @@ function supportsWebGL(): boolean {
   templateUrl: './map.html',
   styleUrl: './map.css',
 })
-export class MapPage implements AfterViewInit, OnDestroy {
+export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly destroyRef = inject(DestroyRef);
@@ -191,6 +192,9 @@ export class MapPage implements AfterViewInit, OnDestroy {
    * call — lets the pulse timer skip the marker sync on ticks where nothing
    * actually crossed the live threshold. */
   private markerPulseSignature = '';
+  /** False while the page sits detached on another route — see
+   * onRouteDetached(). */
+  private onScreen = true;
 
   constructor() {
     this.moveEnd$
@@ -240,6 +244,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
       interval(PULSE_REFRESH_MS)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
+          if (!this.onScreen) return;
           this.now.set(Date.now());
           if (this.pulseSignature() !== this.markerPulseSignature) this.drawMarkers();
         });
@@ -266,6 +271,46 @@ export class MapPage implements AfterViewInit, OnDestroy {
     this.map?.remove();
     // Nulled so a basemap still loading (see showBaseLayer) sees the page is gone.
     this.map = null;
+  }
+
+  /** Leaving /mappa doesn't destroy this page: KeepAliveReuseStrategy
+   * detaches it, Leaflet and MapLibre (WebGL context, loaded style and tiles)
+   * included, so coming back shows the map as it was instead of an empty one
+   * while the basemap rebuilds. Until then, the clock and the moveend
+   * handler stand down. */
+  onRouteDetached(): void {
+    this.onScreen = false;
+  }
+
+  /** Back on screen: resync what may have changed meanwhile — the container's
+   * size, the view and open pin (openOnMap on an event's page rewrites both
+   * in mapViewState), and the events themselves (a like or Parteciperò on the
+   * event's page, which keeps its own copy of that state). The theme needs
+   * nothing here: its effect runs as soon as the view is checked again. */
+  onRouteAttached(): void {
+    const map = this.map;
+    if (map) {
+      // Still flagged off screen, so any moveend these fire is ignored — the
+      // fetch below replaces it.
+      map.invalidateSize();
+      const { center, zoom } = this.mapViewState;
+      if (center && zoom !== null && (!map.getCenter().equals(center) || map.getZoom() !== zoom)) {
+        map.setView(center, zoom, { animate: false });
+      }
+      this.glLayer?.getMaplibreMap().triggerRepaint();
+    }
+    this.onScreen = true;
+    if (!map) return; // left before Leaflet loaded: initMap() does all of this itself
+
+    this.now.set(Date.now());
+    const selectedId = this.mapViewState.selectedEventId;
+    if (this.selectedEvent()?.id === selectedId) {
+      if (selectedId) this.engagement.sync(selectedId);
+    } else {
+      this.selectedEvent.set(null);
+      this.restoreSelectedEvent(this.events());
+    }
+    this.fetchEventsInView();
   }
 
   private initMap(L: typeof import('leaflet')): void {
@@ -295,6 +340,9 @@ export class MapPage implements AfterViewInit, OnDestroy {
     void this.showBaseLayer(this.themeService.theme());
 
     map.on('moveend', () => {
+      // Detached, the container is out of the DOM and a window resize makes
+      // Leaflet measure it as 0×0 — neither that view nor its bounds are real.
+      if (!this.onScreen) return;
       const center = map.getCenter();
       this.mapViewState.center = [center.lat, center.lng];
       this.mapViewState.zoom = map.getZoom();
@@ -401,19 +449,21 @@ export class MapPage implements AfterViewInit, OnDestroy {
   in a row (router/view-transition quirk, still under investigation), and
   the second one needs the id to still be there since the first's restore
   gets wiped out when it's torn down. Only selectEvent()/closeDetail() ever
-  change it after that. Re-running this on every subsequent pan is cheap —
-  the already-selected check below skips re-fetching toggle state for a
-  pin that's already open, so it only actually does anything right after a
-  fresh MapPage instance mounts. */
+  change it after that (and openOnMap on an event's page, see
+  onRouteAttached). Re-running this on every subsequent pan is cheap — for a
+  pin that's already open it only swaps in the fresh copy (so the card's
+  counts follow the server, e.g. after a like on the event's page) and skips
+  re-fetching toggle state. */
   private restoreSelectedEvent(events: EventCardDto[]): void {
     const id = this.mapViewState.selectedEventId;
-    if (!id || this.selectedEvent()?.id === id) return;
+    if (!id) return;
 
     const match = events.find((event) => event.id === id);
     if (!match) return;
 
+    const alreadyOpen = this.selectedEvent()?.id === id;
     this.selectedEvent.set(match);
-    this.engagement.sync(match.id);
+    if (!alreadyOpen) this.engagement.sync(match.id);
   }
 
   /** Syncs the markers with filteredEvents(): pins already on the map stay put

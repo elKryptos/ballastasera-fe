@@ -1,0 +1,94 @@
+<!-- Los colores del filtro (tema claro y oscuro) se cambian en los tokens --map-* de map.css y --mf-* de map-filters.css. -->
+<aside
+  class="absolute right-4 bottom-4 z-map-content flex max-h-[75vh] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col gap-5 overflow-y-auto rounded-lg border-(--map-glass-border) bg-(--map-glass) text-(--map-text) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out sm:top-4 sm:right-auto sm:bottom-auto sm:left-4 sm:max-h-[calc(100%-2rem)] sm:max-w-none sm:origin-top-left sm:scale-100 sm:pointer-events-auto sm:opacity-100"
+  [class]="panelStateClass()" [class.scale-50]="!open() || hideForCard()" [class.opacity-0]="!open() || hideForCard()"
+  [class.pointer-events-none]="!open() || hideForCard()" [attr.inert]="hideForCard() ? '' : null" aria-label="Filtri">
+  <!-- Desktop-only: the collapse arrow is hidden on mobile, but collapsed
+  defaults true everywhere and mobile never resets it — summaryMode()
+  (== isDesktop() && collapsed()) is what actually gates the collapsed
+  layout below. -->
+  <button type="button"
+    class="absolute right-1.5 hidden size-6 cursor-pointer items-center justify-center rounded-lg border border-(--map-glass-border) bg-(--map-close-bg) shadow transition-colors hover:bg-(--map-close-bg-hover) sm:inline-flex"
+    [class]="collapseButtonClass()" (click)="toggleCollapsed()"
+    [attr.aria-label]="collapsed() ? 'Espandi filtri' : 'Comprimi filtri'" [attr.aria-expanded]="!collapsed()">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+      class="transition-transform duration-200" [class.rotate-180]="collapsed()">
+      <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+
+  <button type="button"
+    class="absolute top-2 right-2 z-10 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-(--map-close-bg) transition-colors hover:bg-(--map-close-bg-hover) sm:hidden"
+    (click)="openToggled.emit()" aria-label="Chiudi filtri">
+    <ng-icon name="lucideX" class="size-4" />
+  </button>
+
+  @if (summaryMode()) {
+  <div class="flex flex-wrap items-center gap-1.5 pr-6">
+    @if (hasActiveFilters()) {
+    @if (activeCityName(); as cityName) {
+    <span class="rounded-sm bg-(--mf-city-on-bg) px-2.5 py-1 text-xs text-white">{{ cityName }}</span>
+    }
+    @for (name of activeStyleNames(); track name) {
+    <span class="rounded-sm bg-(--mf-style-on-bg) px-2.5 py-1 text-xs text-white">{{ name }}</span>
+    }
+    } @else {
+    <span class="mr-1 rounded-lg border border-(--mf-chip-border) bg-(--mf-chip-bg) px-2.5 py-1 text-xs">Filtri</span>
+    }
+  </div>
+  } @else {
+  <!-- Chips are toggle buttons: aria-pressed marks the selected ones, and
+  Tailwind's aria-pressed: variant styles them from that same attribute. -->
+  <div class="flex flex-col gap-2">
+    <span class="font-mono text-xs tracking-[0.08em] text-(--map-muted) uppercase">Città</span>
+    <div class="flex flex-wrap gap-1.5">
+      <button type="button"
+        class="cursor-pointer rounded-sm border border-(--mf-chip-border) bg-(--mf-chip-bg) px-3 py-1.5 text-sm transition-colors aria-pressed:border-(--mf-city-on-bg) aria-pressed:bg-(--mf-city-on-bg) aria-pressed:text-white"
+        [attr.aria-pressed]="selectedCityId() === null" (click)="citySelected.emit(null)">
+        Tutte
+      </button>
+      @for (city of cities(); track city.id) {
+      <button type="button"
+        class="cursor-pointer rounded-sm border border-(--mf-chip-border) bg-(--mf-chip-bg) px-3 py-1.5 text-sm transition-colors aria-pressed:border-(--mf-city-on-bg) aria-pressed:bg-(--mf-city-on-bg) aria-pressed:text-white"
+        [attr.aria-pressed]="selectedCityId() === city.id" (click)="citySelected.emit(city.id)">
+        {{ city.name }}
+      </button>
+      }
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2">
+    <span class="font-mono text-xs tracking-[0.08em] text-(--map-muted) uppercase">Stile</span>
+    <div class="flex flex-wrap gap-1.5">
+      @for (style of danceStyles(); track style.id) {
+      <button type="button"
+        class="cursor-pointer rounded-sm border border-(--mf-chip-border) bg-(--mf-chip-bg) px-3 py-1.5 text-sm transition-colors aria-pressed:border-(--mf-style-on-bg) aria-pressed:bg-(--mf-style-on-bg) aria-pressed:text-white"
+        [attr.aria-pressed]="selectedStyleNames().has(style.name)" (click)="styleToggled.emit(style.name)">
+        {{ style.name }}
+      </button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+  <p class="text-sm text-(--map-muted)">Caricamento eventi…</p>
+  } @else if (error()) {
+  <p class="text-sm text-(--mf-error)">Impossibile caricare gli eventi.</p>
+  } @else {
+  <p class="text-sm">{{ eventCount() }} eventi in questa zona</p>
+  }
+  }
+</aside>
+
+<!-- Mobile-only "Filtri" button, bottom-right over the map; hides while the
+panel is open or the event card is docked there. -->
+<button type="button"
+  class="absolute right-4 bottom-4 z-map-content inline-flex origin-bottom-right items-center gap-2 rounded-lg border border-(--map-glass-border) bg-(--map-glass) px-4 py-2 text-sm font-semibold text-(--map-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out sm:hidden"
+  [class.scale-50]="open() || hideForCard()" [class.opacity-0]="open() || hideForCard()"
+  [class.pointer-events-none]="open() || hideForCard()" [class.cursor-pointer]="!open()"
+  [attr.inert]="open() || hideForCard() ? '' : null" (click)="openToggled.emit()">
+  Filtri
+  @if (hasActiveFilters()) {
+  <span class="inline-flex size-2 rounded-full bg-(--mf-dot)"></span>
+  }
+</button>

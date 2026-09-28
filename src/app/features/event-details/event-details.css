@@ -4,7 +4,9 @@
 version — matching /mappa's Voyager basemap — applies when <html> has
 data-theme="light" (the visitor's choice in the sidebar, see ThemeService).
 Scoped to .event-page instead of styles.css' @theme since most of the app is
-still dark-only. */
+still dark-only. The template reads most of them through Tailwind's var
+shorthand (e.g. text-(--ed-muted)); only multi-property pieces (buttons,
+glass cards, the backdrop) keep a class of their own below. */
 .event-page {
   color-scheme: dark;
   --ed-live: #e11d48;
@@ -26,9 +28,14 @@ still dark-only. */
   --ed-chip-fg: #c9bbff;
   /* Pressed "Parteciperò": solid mid-tone violet, white text at >= 4.5:1. */
   --ed-going-on-bg: #7152dc;
-  --ed-going-on-fg: #ffffff;
-  --ed-like-bg: rgba(255, 47, 109, 0.12);
-  --ed-like-on-bg: rgba(255, 47, 109, 0.24);
+  /* Like button: rose tint matching the heart while idle; once pressed,
+  solid rose with a white label and heart, like Parteciperò's solid violet
+  (white on #e0245c is 4.6:1, in both themes). Same values as the map
+  card's --mc-like-*, event-map-card.css. The idle label/outline colour is
+  lighter than --ed-heart so the text keeps >= 4.5:1 on the tint. */
+  --ed-like-bg: rgba(255, 47, 109, 0.18);
+  --ed-like-fg: #ff8fab;
+  --ed-like-on-bg: #e0245c;
   /* "Vedi sulla mappa" / "Indicazioni": teal tints, apart from the violet
   Parteciperò and the rose heart so they don't compete with them. */
   --ed-nav-fg: #5eead4;
@@ -66,9 +73,8 @@ still dark-only. */
   --ed-chip-bg: rgba(107, 70, 224, 0.12);
   --ed-chip-fg: #5a35d1;
   --ed-going-on-bg: #6446d6;
-  --ed-going-on-fg: #ffffff;
-  --ed-like-bg: rgba(224, 36, 92, 0.1);
-  --ed-like-on-bg: rgba(224, 36, 92, 0.2);
+  --ed-like-bg: rgba(224, 36, 92, 0.16);
+  --ed-like-fg: #9f1239;
   --ed-nav-fg: #0f766e;
   --ed-nav-bg: rgba(15, 118, 110, 0.1);
   --ed-nav-border: rgba(15, 118, 110, 0.3);
@@ -125,40 +131,6 @@ that one changes. */
   box-shadow: var(--ed-shadow);
 }
 
-/* The info block swaps which part is the card between layouts: on mobile
-the title sits bare on the backdrop and only "quando + numeri" is a card; from
-1024px of <main>'s container width the whole block becomes one big card and
-the inner one goes flat. Container queries (not Tailwind variants) since
-these are plain classes, and <main> is the @container. */
-.ed-when {
-  padding: 16px;
-  background: var(--ed-glass);
-  border: 1px solid var(--ed-glass-border);
-  box-shadow: var(--ed-shadow);
-}
-
-@container (min-width: 1024px) {
-  .ed-info {
-    padding: 28px;
-    background: var(--ed-glass);
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
-    border: 1px solid var(--ed-glass-border);
-    box-shadow: var(--ed-shadow);
-  }
-
-  .ed-when {
-    padding: 0;
-    border: 0;
-    background: none;
-    box-shadow: none;
-  }
-}
-
-.ed-error {
-  color: var(--ed-follow-fg);
-}
-
 /* Round glass buttons in the top bar (back, share). */
 .ed-glass-btn {
   display: inline-flex;
@@ -176,41 +148,6 @@ these are plain classes, and <main> is the @container. */
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-}
-
-.ed-tile {
-  background: var(--ed-tile);
-  border: 1px solid var(--ed-tile-border);
-}
-
-.ed-chip {
-  background: var(--ed-chip-bg);
-  color: var(--ed-chip-fg);
-}
-
-.ed-muted {
-  color: var(--ed-muted);
-}
-
-.ed-text-2 {
-  color: var(--ed-text-2);
-}
-
-.ed-accent {
-  color: var(--ed-accent);
-}
-
-.ed-price {
-  color: var(--ed-price);
-}
-
-.ed-divider {
-  border-color: var(--ed-divider);
-}
-
-.ed-live {
-  background: var(--ed-live);
-  color: #ffffff;
 }
 
 /* "LIVE ORA" dot: a slow on-air blink. */
@@ -232,24 +169,6 @@ these are plain classes, and <main> is the @container. */
   .ed-live-dot {
     animation: none;
   }
-}
-
-.ed-soon {
-  background: var(--ed-soon);
-  color: #ffffff;
-}
-
-.ed-overlay-pill {
-  background: var(--ed-overlay-pill);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: var(--ed-text);
-}
-
-.ed-flyer {
-  background: var(--ed-flyer-bg);
-  border: 1px solid var(--ed-glass-border);
-  box-shadow: var(--ed-shadow);
 }
 
 /* Action buttons: tinted when idle, stronger once toggled on, so
@@ -274,34 +193,30 @@ No `display` here: unlayered component CSS would beat Tailwind's layered
 
 .ed-btn--primary[aria-pressed='true'] {
   background: var(--ed-going-on-bg);
-  color: var(--ed-going-on-fg);
+  color: #ffffff;
 }
 
-/* Compact variant (mobile sticky bar): content-width instead of full-width. */
+/* Compact variant (mobile sticky bar): content-width instead of full-width.
+20px sides so Parteciperò and Mi piace (both labelled) still fit side by
+side on a 360px-wide phone. */
 .ed-btn--sm {
   height: 52px;
-  padding: 0 28px;
+  padding: 0 20px;
 }
 
-/* Like: just the heart on a soft rose card, so it matches the red heart —
-outline while idle, filled once liked (.ed-heart-on + [attr.fill]). */
+/* Like: heart + "Mi piace" on a rose tint, same size as Parteciperò next to
+it (and the same button as the map card's) so it doesn't get lost — heart
+outline while idle; once liked, solid rose with a white label. The heart's
+own colour/fill comes from heartIconClass (event-details.ts), turned white
+inside a pressed button by group-aria-pressed:text-white in the template. */
 .ed-btn--like {
   background: var(--ed-like-bg);
-  color: var(--ed-heart);
+  color: var(--ed-like-fg);
 }
 
 .ed-btn--like[aria-pressed='true'] {
   background: var(--ed-like-on-bg);
-}
-
-/* Icon-only: no side padding, the fixed width centres the heart. */
-.ed-btn--like.ed-btn--sm {
-  padding: 0;
-}
-
-/* Liked heart (buttons + "Mi piace" counter): red like the map card's. */
-.ed-heart-on {
-  color: var(--ed-heart);
+  color: #ffffff;
 }
 
 /* Secondary-size buttons: follow, "Vedi sulla mappa", "Indicazioni", "Torna indietro". */
@@ -350,15 +265,6 @@ outline while idle, filled once liked (.ed-heart-on + [attr.fill]). */
   color: var(--ed-nav-fg);
 }
 
-/* Sticky action bar on mobile: the only element there with a backdrop
-blur, so scrolling stays cheap on low-end phones. */
-.ed-bar {
-  background: var(--ed-bar);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border-top: 1px solid var(--ed-glass-border);
-}
-
 /* Mini-map: for now Voyager (light tiles) in both themes; the Dark Matter set
 stays in the template but hidden (<img loading=lazy>, so it never downloads).
 To bring the dark map back, give the light <img> an .ed-map-light class, show
@@ -368,22 +274,8 @@ To bring the dark map back, give the light <img> an .ed-map-light class, show
   display: none;
 }
 
-.ed-pin {
-  filter: drop-shadow(0 4px 8px rgba(40, 30, 80, 0.35));
-}
-
 /* Instagram's actual icon gradient, so the link reads as "Instagram" at a
-glance instead of just another monochrome glyph. Same rule as map.css —
-component styles don't leak across components, so it needs its own copy. */
+glance instead of just another monochrome glyph. */
 .instagram-gradient {
   background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
-}
-
-/* ng-icon only exposes name/size/color/strokeWidth as inputs — there's no
-input for the raw SVG's own fill attribute, so lucideHeart's hardcoded
-fill="none" ignores the [attr.fill] binding set on the <ng-icon> host.
-Overriding fill on the injected <svg> itself is the only thing that
-actually toggles the heart between outline and filled. Same rule as map.css. */
-:host ::ng-deep ng-icon[fill='currentColor'] svg {
-  fill: currentColor;
 }

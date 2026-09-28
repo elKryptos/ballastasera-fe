@@ -1,0 +1,38 @@
+/* Card-only theme tokens, straight from the Claude Design canvas ("Card
+sulla mappa", light and dark). The glass, text and close-button colours it
+shares with the other map panels are the --map-* tokens in map.css; the
+light/dark switch works the same way here (dark base, light under
+:host-context([data-theme='light'])). The template reads them through
+Tailwind's var shorthand, e.g. bg-(--mc-chip-bg). */
+:host {
+  --mc-live: #e11d48;
+  --mc-soon: #fbbf24;
+  /* Text on the solid "starting soon" badge. */
+  --mc-on-solid: #15121f;
+  --mc-chip-bg: rgba(139, 108, 240, 0.22);
+  --mc-chip-fg: #c9bbff;
+  --mc-price: #fbbf24;
+  --mc-heart: #ff2f6d;
+  /* Parteciperò: the chip tint (--mc-chip-*) while idle, like the detail
+  page's; the canvas' solid violet once pressed, with white text (>= 4.5:1). */
+  --mc-going-on-bg: #6b46e0;
+  /* Mi piace: rose tint matching the heart while idle; once pressed, solid
+  rose with a white label and heart, like Parteciperò's solid violet (white
+  on #e0245c is 4.6:1, in both themes). Same values as the detail page's
+  like button (--ed-like-*, event-details.css). The idle label/outline
+  colour is lighter than the heart so the text keeps >= 4.5:1 on the tint. */
+  --mc-like-bg: rgba(255, 47, 109, 0.18);
+  --mc-like-fg: #ff8fab;
+  --mc-like-on-bg: #e0245c;
+}
+
+:host-context([data-theme='light']) {
+  --mc-soon: #b45309;
+  --mc-on-solid: #ffffff;
+  --mc-chip-bg: rgba(107, 70, 224, 0.12);
+  --mc-chip-fg: #5a35d1;
+  --mc-price: #b45309;
+  --mc-heart: #e0245c;
+  --mc-like-bg: rgba(224, 36, 92, 0.16);
+  --mc-like-fg: #9f1239;
+}

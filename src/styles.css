@@ -33,6 +33,11 @@ the signup CTA. */
   --font-body: 'Instrument Sans', system-ui, sans-serif;
   --font-mono: 'DM Mono', ui-monospace, monospace;
 
+  /* Large phones and up. The map's event card docks full-width on mobile
+  and has room for bigger text past this width, then shrinks back at sm:
+  once it turns into a small floating box. */
+  --breakpoint-xs: 23.75rem; /* 380px */
+
   /* Shared stacking scale, low-to-high, one step per layer that can end up
 fighting another — instead of ad-hoc numbers picked to "clearly win".
 Generates z-map-content etc. utilities; components outside a template
@@ -118,8 +123,44 @@ a resize glitch instead of a clean reveal. */
   }
 }
 
+/* The two rules from maplibre-gl.css the /mappa MapLibre layers actually need
+(MapLibre drawn inside a Leaflet pane, see createGlLayer() in map.ts)
+— the full 70kB stylesheet is mostly map controls and popups we never use.
+Global for the same reason as the pins below: MapLibre builds this DOM
+outside Angular's view. */
+.maplibregl-map {
+  overflow: hidden;
+  position: relative;
+}
+
+.maplibregl-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* /mappa's attribution: the legally required credits, kept small and quiet,
+on the same themed glass as the floating panels (--map-* tokens in map.css,
+inherited down into Leaflet's DOM). Scoped to app-map: the landing's
+mini-map has no attribution control. */
+app-map .leaflet-container .leaflet-control-attribution {
+  margin: 0;
+  padding: 1px 6px;
+  border-top-left-radius: 6px;
+  background: var(--map-glass);
+  backdrop-filter: blur(8px);
+  color: var(--map-muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+app-map .leaflet-control-attribution a {
+  color: inherit;
+}
+
 /* Map pin pulse — only once an event is actually underway. A pin starting
-soon shows plain (no pulse) until it crosses into --live; see pulseState()
+soon shows plain (no pulse) until it crosses into --live; see isLive()
 in map.ts. Global, not component-scoped: Leaflet injects marker markup
 straight into the DOM outside Angular's view, so component styles never
 reach it. In @layer components (not unlayered) so Tailwind utilities
@@ -154,11 +195,13 @@ reach it. In @layer components (not unlayered) so Tailwind utilities
     filter: drop-shadow(0 0 3px currentColor);
   }
 
-  /* Selected pin: its own shape (per event type) is recoloured black in
+  /* Selected pin: its own shape (per event type) is drawn inverted in
   getPinIcon rather than styled here, plus a size bump so it still reads as
   the clear visual anchor now that its event card docks at the bottom of the
-  screen instead of floating above it. */
+  screen instead of floating above it. Overflow visible because the shapes
+  touch the viewBox edges, which would clip half of the outline stroke. */
   .map-pin-wrap--selected svg {
+    overflow: visible;
     transform: scale(1.2);
     transform-origin: 50% 100%;
     filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));

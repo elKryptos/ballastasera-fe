@@ -1,38 +1,53 @@
-/* The floating glass panels (filters, legend) sit over map tiles whose
-colour varies underneath the blur — sometimes pale roads, sometimes a dark
-water/park tile — so no single text colour stays legible against all of
-them. A dark halo keeps light text (bone/muted) readable either way,
-inherited by every descendant instead of tuning each element's colour. */
-.glass-panel-text {
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.95),
-    0 2px 6px rgba(0, 0, 0, 0.8);
+/* Theme tokens shared by the floating panels over the map (event card,
+filters, legend): the frosted glass, its text and the round close buttons, from the
+Claude Design canvas ("Card sulla mappa", light and dark). Dark is the base,
+like the rest of the app (and what shows if the pre-paint script in
+index.html never ran); the light version applies when <html> has
+data-theme="light" (the visitor's choice in the sidebar, see ThemeService) —
+same approach as event-details.css. Declared once on MapPage's host: custom
+properties inherit across component boundaries, so every panel reads them
+through Tailwind's var shorthand (e.g. bg-(--map-glass)) — the legend, which
+stays inline in map.html, straight from here. Colours specific to one panel
+live in that panel's own CSS (event-map-card.css, map-filters.css). */
+:host {
+  color-scheme: dark;
+  /* The basemap's own land colour (dark.json's / light.json's background),
+  shown while tiles load — see .leaflet-container below. */
+  --map-land: #1d2230;
+  /* Frosted panel: opaque enough (with a 20px backdrop blur) that text stays
+  legible over any map tile without a text-shadow halo. */
+  --map-glass: rgba(32, 27, 50, 0.66);
+  --map-glass-border: rgba(255, 255, 255, 0.1);
+  --map-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  --map-text: #f4f1fa;
+  --map-text-2: #d6d1e4;
+  --map-muted: #aba5bd;
+  --map-accent: #b9a6ff;
+  --map-close-bg: rgba(255, 255, 255, 0.07);
+  --map-close-bg-hover: rgba(255, 255, 255, 0.14);
 }
 
-/* Instagram's actual icon gradient, so the link reads as "Instagram" at a
-glance instead of just another monochrome glyph. */
-.instagram-gradient {
-  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+:host-context([data-theme='light']) {
+  color-scheme: light;
+  --map-land: #fbf8f3; /* light.json's background */
+  --map-glass: rgba(255, 255, 255, 0.66);
+  --map-glass-border: rgba(255, 255, 255, 0.85);
+  --map-shadow: 0 16px 40px rgba(40, 30, 80, 0.14);
+  --map-text: #1e1b2e;
+  --map-text-2: #3e3a4c;
+  --map-muted: #5e5a6b;
+  --map-accent: #5b3cc4;
+  --map-close-bg: rgba(255, 255, 255, 0.7);
+  --map-close-bg-hover: rgba(255, 255, 255, 0.95);
 }
 
-/* The three action buttons sit on tinted (rose/mint/violet) backgrounds
-rather than the plain glass panel, so the shared glass-panel-text shadow
-needs an extra, wider halo layer to keep their white text legible against
-the tint. */
-.action-buttons-text {
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.95),
-    0 2px 6px rgba(0, 0, 0, 0.85),
-    0 3px 10px rgba(0, 0, 0, 0.75);
-}
-
-/* ng-icon only exposes name/size/color/strokeWidth as inputs — there's no
-input for the raw SVG's own fill attribute, so lucideHeart's hardcoded
-fill="none" ignores the [attr.fill] binding set on the <ng-icon> host.
-Overriding fill on the injected <svg> itself is the only thing that
-actually toggles the heart between outline and filled. */
-:host ::ng-deep ng-icon[fill='currentColor'] svg {
-  fill: currentColor;
+/* What shows while tiles load (and when panning faster than they arrive):
+the basemap's land colour instead of Leaflet's default light grey, which
+flashed on the dark theme. Leaflet adds this class to #mapContainer, an
+element of this template, so component CSS reaches it — and, unlayered,
+beats leaflet.css's own rule where a Tailwind bg-* utility wouldn't. */
+.leaflet-container {
+  background: var(--map-land);
 }
 
 /* Each legend icon pops in with a slight overshoot, staggered per row via

@@ -1,0 +1,114 @@
+<!-- Los colores de la card (tema claro y oscuro) se cambian en los tokens --map-* de map.css y --mc-* de event-map-card.css. -->
+<section
+  class="absolute inset-x-4 bottom-4 z-map-content flex max-h-[70vh] flex-col overflow-y-auto rounded-lg border border-(--map-glass-border) bg-(--map-glass) text-(--map-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140 sm:inset-x-auto sm:left-1/2 sm:w-md sm:-translate-x-1/2 lg:w-lg"
+  aria-live="polite">
+  <button type="button"
+    class="absolute top-2 right-2 z-10 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-(--map-close-bg) transition-colors hover:bg-(--map-close-bg-hover)"
+    (click)="closed.emit()" aria-label="Chiudi">
+    <ng-icon name="lucideX" class="size-4" />
+  </button>
+
+  <!-- The whole top block is one link to the detail page — the Google Maps
+  directions and the Instagram profile link live there, not on the card. -->
+  <a [routerLink]="['/evento', event().id]" class="flex gap-3 p-3 pr-10">
+    @if (event().flyerUrl) {
+    <div class="relative min-h-28 w-28 shrink-0 self-stretch">
+      <img class="size-full rounded-lg object-cover" [src]="event().flyerUrl" [alt]="event().title" />
+      @if (live()) {
+      <span
+        class="absolute top-1 left-1 inline-flex items-center gap-1 rounded-sm bg-(--mc-live) px-1.5 py-0.5 font-mono text-[0.6rem] text-white shadow">
+        <span class="size-1.5 rounded-full bg-white"></span> LIVE
+      </span>
+      } @else if (startsInMinutes(); as minutes) {
+      <span
+        class="absolute top-1 left-1 rounded-sm bg-(--mc-soon) px-1.5 py-0.5 font-mono text-[0.6rem] text-(--mc-on-solid) shadow">
+        {{ minutes }}′
+      </span>
+      }
+    </div>
+    }
+
+    <div class="flex min-w-0 flex-1 flex-col gap-1.5 text-sm text-(--map-text-2) xs:text-base sm:text-sm">
+      <h2 class="font-display text-base leading-tight font-bold text-(--map-text) uppercase xs:text-lg sm:text-base">
+        {{ event().title }}
+      </h2>
+
+      <p class="flex items-center gap-1.5">
+        <span class="flex size-5 shrink-0 items-center justify-center">
+          <ng-icon name="lucideClock" class="size-3 text-(--map-accent)" />
+        </span>
+        {{ startLabel() }}
+      </p>
+
+      @if (event().venueName || event().address) {
+      <p class="flex items-start gap-1.5">
+        <span class="flex size-5 shrink-0 items-center justify-center">
+          <ng-icon name="lucideMapPin" class="size-3.5 text-(--map-accent)" />
+        </span>
+        <span class="min-w-0 flex-1">
+          <span class="block">
+            @if (event().venueName) {
+            {{ event().venueName }} — {{ addressLine1() }}
+            } @else {
+            {{ addressLine1() }}
+            }
+          </span>
+          @if (addressLine2(); as rest) {
+          <span class="block">{{ rest }}</span>
+          }
+        </span>
+      </p>
+      }
+
+      @if (event().organizer?.instagram; as handle) {
+      <p class="flex items-center gap-1.5 font-medium text-(--map-muted)">
+        <span class="flex size-5 shrink-0 items-center justify-center">
+          <ng-icon name="lucideInstagram" class="size-3 text-(--map-accent)" />
+        </span>
+        {{ handle }}
+      </p>
+      }
+    </div>
+  </a>
+
+  <div class="flex flex-col gap-2 px-3 pb-3">
+    <div class="flex flex-wrap items-center gap-1.5">
+      @for (style of event().danceStyles; track $index) {
+      <span
+        class="rounded-sm bg-(--mc-chip-bg) px-2 py-0.5 text-[0.65rem] text-(--mc-chip-fg) xs:text-xs sm:text-[0.65rem]">{{
+        style }}</span>
+      }
+    </div>
+
+    <div class="flex items-center justify-between text-sm tabular-nums xs:text-base sm:text-sm">
+      <span class="text-(--mc-price)">{{ priceLabel() }}</span>
+      <span class="flex items-center gap-3 text-(--map-muted)">
+        <span class="flex items-center gap-1">
+          <ng-icon name="lucideUsers" class="size-3.5" [class.text-violet]="event().goingCount > 0" />
+          {{ event().goingCount }}
+        </span>
+        <span class="flex items-center gap-1">
+          <ng-icon name="lucideHeart" class="size-3.5" [class]="heartIconClass()" />
+          {{ event().likesCount }}
+        </span>
+      </span>
+    </div>
+
+    <!-- One equal-width column per button. Pressed styling comes from
+    aria-pressed via Tailwind's aria-pressed: variant. -->
+    <div class="grid auto-cols-fr grid-flow-col gap-1.5">
+      <button type="button"
+        class="inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg bg-(--mc-chip-bg) px-1.5 py-2 text-[0.7rem] font-semibold text-(--mc-chip-fg) transition-colors aria-pressed:bg-(--mc-going-on-bg) aria-pressed:text-white xs:text-sm sm:text-[0.7rem]"
+        [attr.aria-pressed]="going()" (click)="goingToggled.emit()">
+        <ng-icon name="lucideCircleCheck" class="size-4" /> Parteciperò
+      </button>
+      <button type="button"
+        class="group inline-flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg bg-(--mc-like-bg) px-1.5 py-2 text-[0.7rem] font-semibold text-(--mc-like-fg) transition-colors aria-pressed:bg-(--mc-like-on-bg) aria-pressed:text-white xs:text-sm sm:text-[0.7rem]"
+        [attr.aria-pressed]="liked()" (click)="likeToggled.emit()">
+        <!-- White with the label once pressed: a rose heart would vanish into the solid rose fill. -->
+        <ng-icon name="lucideHeart" class="size-4 group-aria-pressed:text-white" [class]="heartIconClass()" />
+        Mi piace
+      </button>
+    </div>
+  </div>
+</section>

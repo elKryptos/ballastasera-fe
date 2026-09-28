@@ -14,7 +14,8 @@
     "deploy:staging": "pnpm run build:staging && wrangler deploy --env staging",
     "preview": "pnpm run build && wrangler dev",
     "preview:staging": "pnpm run build:staging && wrangler dev --env staging",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "map:styles": "node scripts/build-map-styles.mjs"
   },
   "private": true,
   "packageManager": "pnpm@10.33.0",
@@ -30,6 +31,7 @@
     "@angular/service-worker": "^22.1.7",
     "@angular/ssr": "^22.1.2",
     "@jsverse/transloco": "^8.4.0",
+    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "@ng-icons/core": ">=32.0.0 <34.0.0",
     "@ng-icons/lucide": ">=32.0.0 <34.0.0",
     "@spartan-ng/brain": "^1.4.1",
@@ -37,6 +39,7 @@
     "clsx": "^2.1.1",
     "express": "^5.1.0",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^5.24.0",
     "rxjs": "~7.8.0",
     "tailwind-merge": "^3.5.0",
     "tslib": "^2.3.0"

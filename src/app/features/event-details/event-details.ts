@@ -19,32 +19,24 @@ import {
   lucideX,
 } from '@ng-icons/lucide';
 import { environment } from '../../../environments/environment';
-import { PIN_COLORS, PIN_GLYPHS, PIN_SHAPES } from '../../core/config/map-pins';
+import { EVENT_TYPE_LABELS, PIN_COLORS, PIN_GLYPHS, PIN_SHAPES } from '../../core/config/map-pins';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
-import { EventDetailDto, EventType } from '../../core/models/event.model';
+import { EventDetailDto } from '../../core/models/event.model';
 import { OrganizerDetailDto, OrganizerType } from '../../core/models/organizer.model';
-
-/** Same window used by the map's popup card — see STARTING_SOON_MS in map.ts. */
-const STARTING_SOON_MS = 30 * 60 * 1000;
-
-/** A civico is 1-4 digits with an optional letter/slash suffix (e.g. "12",
- * "12/A"); a 5-digit Italian CAP never matches, so it's left for addressSecondary. */
-function isCivico(part: string): boolean {
-  return /^\d{1,4}(\/?[a-zA-Z0-9]{0,3})?$/.test(part);
-}
-
-/** Italian label per EventType, same wording as the map's legend (PIN_LABELS in map.ts). */
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  EVENT: 'Evento',
-  SCHOOL: 'Scuola',
-  CLUB: 'Discoteca',
-  BAR: 'Bar',
-};
+import {
+  addressPrimary,
+  addressSecondary,
+  formatPrice,
+  googleMapsUrl,
+  instagramUrl,
+  isLiveAt,
+  minutesToStart,
+} from '../../core/utils/event-format';
 
 /** Zoom level of the static mini-map in the "Dove" card — street level, enough
  * to read the surrounding streets without being a full interactive map. */
@@ -120,8 +112,17 @@ export class EventDetails {
   protected readonly authOpen = signal(false);
   protected readonly going = signal(false);
   protected readonly liked = signal(false);
-  /** No follow-organizer endpoint yet — local-only toggle, same as map.ts. */
+  /** No follow-organizer endpoint yet — local-only toggle. */
   protected readonly following = signal(false);
+
+  /** Outline while not liked; filled with --ed-heart once liked — shared by
+   * the "Mi piace" counter and both like buttons (which turn it white when
+   * pressed, see the template). lucideHeart's <svg> hardcodes fill="none" and
+   * ng-icon has no input for it, so the fill goes on the inner svg via an
+   * arbitrary variant. Same approach as heartIconClass in event-map-card.ts. */
+  protected readonly heartIconClass = computed(() =>
+    this.liked() ? 'text-(--ed-heart) [&_svg]:fill-current' : '',
+  );
   /** Briefly swaps the share icon for a checkmark after copying the link
    * (clipboard fallback for browsers without navigator.share). */
   protected readonly linkCopied = signal(false);
@@ -134,6 +135,12 @@ export class EventDetails {
   /** Static tiles for the "Dove" card, computed once when the event loads;
    * null when the event has no coordinates (the card then shows text only). */
   protected readonly miniMap = signal<MiniMap | null>(null);
+
+  protected readonly formatPrice = formatPrice;
+  protected readonly addressPrimary = addressPrimary;
+  protected readonly addressSecondary = addressSecondary;
+  protected readonly googleMapsUrl = googleMapsUrl;
+  protected readonly instagramUrl = instagramUrl;
 
   /** Only the id, so the effect below doesn't refetch on every count change. */
   private readonly eventId = computed(() => this.event()?.id ?? null);
@@ -298,7 +305,7 @@ export class EventDetails {
 
   /** Shared by toggleGoing/toggleLike: flips local state immediately, fires
    * the matching add/remove request, and rolls back if it fails. Mirrors
-   * toggleOptimistic in map.ts, adapted to a single boolean instead of a Set. */
+   * EventEngagementService.toggleOptimistic, adapted to a single boolean instead of a Set. */
   private toggleOptimistic(
     stateSignal: WritableSignal<boolean>,
     id: string,
@@ -333,14 +340,11 @@ export class EventDetails {
   }
 
   protected isLiveNow(event: EventDetailDto): boolean {
-    const now = this.now();
-    return now >= new Date(event.startAt).getTime() && now <= new Date(event.endAt).getTime();
+    return isLiveAt(event, this.now());
   }
 
   protected startsInMinutes(event: EventDetailDto): number | null {
-    const msToStart = new Date(event.startAt).getTime() - this.now();
-    if (msToStart <= 0 || msToStart > STARTING_SOON_MS) return null;
-    return Math.max(1, Math.round(msToStart / 60000));
+    return minutesToStart(event, this.now());
   }
 
   /** Long form (e.g. "Venerdì 25 settembre 2026") — kept as its own method,
@@ -371,42 +375,11 @@ export class EventDetails {
     return new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  protected formatPrice(event: EventDetailDto): string {
-    if (event.isFree) return 'Gratis';
-    if (event.price == null) return 'Prezzo su invito';
-    return `${event.price} ${event.currency ?? ''}`.trim();
-  }
-
-  /** Geocoded addresses already join street+civico with a space ("Via Roma
-   * 12"), but older/manually-typed ones use a comma ("Via Roma, 12") — this
-   * merges a leading civico into the primary line either way, while a 5-digit
-   * CAP in the same position is left for addressSecondary. */
-  protected addressPrimary(address: string): string {
-    const parts = address.split(',').map((p) => p.trim());
-    return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];
-  }
-
-  protected addressSecondary(address: string): string | null {
-    const parts = address.split(',').map((p) => p.trim());
-    if (parts.length <= 1) return null;
-    const rest = isCivico(parts[1]) ? parts.slice(2) : parts.slice(1);
-    return rest.length ? rest.join(', ') : null;
-  }
-
   /** Second line under the "Dove" heading: with a venue name as the first
    * line, the whole address; otherwise just what's left after the street. */
   protected addressSubtitle(event: EventDetailDto): string | null {
     if (event.venueName) return event.address;
     return this.addressSecondary(event.address);
-  }
-
-  protected googleMapsUrl(event: EventDetailDto): string {
-    const query = event.venueName ? `${event.venueName}, ${event.address}` : event.address;
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
-  }
-
-  protected instagramUrl(handle: string): string {
-    return `https://www.instagram.com/${handle}/`;
   }
 
   protected eventTypeLabel(event: EventDetailDto): string {

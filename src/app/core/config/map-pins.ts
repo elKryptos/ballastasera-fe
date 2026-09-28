@@ -41,3 +41,12 @@ export const PIN_GLYPHS: Record<EventType, string> = {
 
 /** Every EventType, in the order the legend (and any pin listing) shows them. */
 export const PIN_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
+
+/** Italian label per EventType — the map's legend and the event page's
+ * eyebrow ("Scuola · Milano") share it so the wording can't drift apart. */
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  EVENT: 'Evento',
+  SCHOOL: 'Scuola',
+  CLUB: 'Discoteca',
+  BAR: 'Bar',
+};

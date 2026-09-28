@@ -5,7 +5,6 @@ import {
   ElementRef,
   OnDestroy,
   PLATFORM_ID,
-  WritableSignal,
   computed,
   effect,
   inject,
@@ -13,35 +12,27 @@ import {
   viewChild,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, Subject, debounceTime, interval } from 'rxjs';
-import type { Map as LeafletMap, Marker, Point } from 'leaflet';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideCircleCheck,
-  lucideClock,
-  lucideHeart,
-  lucideInstagram,
-  lucideMapPin,
-  lucideUserCheck,
-  lucideUserPlus,
-  lucideUsers,
-  lucideX,
-} from '@ng-icons/lucide';
+import { Subject, Subscription, debounceTime, interval } from 'rxjs';
+import type { DivIcon, LatLng, Layer, Map as LeafletMap, MaplibreGL, Marker } from 'leaflet';
 import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { CitiesService } from '../../core/services/cities.service';
 import { DanceStylesService } from '../../core/services/dance-styles.service';
-import { AuthService } from '../../core/services/auth.service';
+import { EventEngagementService } from '../../core/services/event-engagement.service';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
+import { Theme, ThemeService } from '../../core/services/theme.service';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
+import { isLiveAt } from '../../core/utils/event-format';
 import { environment } from '../../../environments/environment';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import { EventMapCard } from './event-map-card/event-map-card';
+import { MapFilters } from './map-filters/map-filters';
 import {
+  EVENT_TYPE_LABELS,
   MILAN_CENTER,
   MILAN_DEFAULT_ZOOM,
   PIN_COLORS,
@@ -58,58 +49,53 @@ const DEFAULT_ZOOM = MILAN_DEFAULT_ZOOM;
  * scroll-wheel zoom steps triggers one request instead of one per step. */
 const MOVE_DEBOUNCE_MS = 400;
 
-/** A civico is 1-4 digits with an optional letter/slash suffix (e.g. "12",
- * "12/A"); a 5-digit Italian CAP never matches, so it's left for addressSecondary. */
-function isCivico(part: string): boolean {
-  return /^\d{1,4}(\/?[a-zA-Z0-9]{0,3})?$/.test(part);
-}
-
-/** Window before an event's start in which the popup card shows an "Inizia
- * tra X min" countdown instead of the plain start time. Pins themselves
- * don't react to this — see pulseState(). */
-const STARTING_SOON_MS = 30 * 60 * 1000;
-
 /** Re-evaluates pin pulse state on a timer, since an event can tip into
- * "live" purely by the clock ticking, with no new fetch — this also keeps
- * the popup's "Inizia tra X min" countdown current, since it runs inside
- * Angular's zone. */
+ * "live" purely by the clock ticking, with no new fetch — and ticks the
+ * `now` signal the event card's LIVE badge and "Inizia tra X min" countdown
+ * read. */
 const PULSE_REFRESH_MS = 30 * 1000;
 
 /** Fraction of the map's height at which a selected pin should sit once
  * centred — high enough on the screen that the event card docked along the
- * bottom (see map.html) never covers it. */
+ * bottom (see event-map-card.html) never covers it. */
 const SELECTED_PIN_VERTICAL_RATIO = 0.32;
 
-type PulseState = 'live' | null;
+/** The basemap, one MapLibre style per theme over OpenFreeMap's vector tiles
+ * (free, no API key, no request limits, commercial use allowed), generated
+ * into public/ by scripts/build-map-styles.mjs (`pnpm map:styles`): the same
+ * layers recoloured Voyager-like (light) and Google-"night"-like (dark), metro
+ * and train stations as the only POIs. */
+const LIGHT_STYLE_URL = '/map-styles/light.json';
+const DARK_STYLE_URL = '/map-styles/dark.json';
 
-/** Italian label per EventType, shown in the map legend. */
-const PIN_LABELS: Record<EventType, string> = {
-  EVENT: 'Evento',
-  SCHOOL: 'Scuola',
-  CLUB: 'Discoteca',
-  BAR: 'Bar',
-};
+/** The shortest credit OpenStreetMap's attribution guidelines accept, linked
+ * to their copyright page — required under the ODbL for every basemap here. */
+const OSM_ATTRIBUTION =
+  '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>';
 
-const LEGEND_TYPES: EventType[] = PIN_TYPES;
+let webGLSupport: boolean | undefined;
+
+/** MapLibre draws with WebGL. Checked up front (once, then cached) because
+ * without it the GL layer fails halfway through being added and leaves an
+ * empty container behind; the light raster basemap stands in instead. */
+function supportsWebGL(): boolean {
+  if (webGLSupport === undefined) {
+    try {
+      const gl = document.createElement('canvas').getContext('webgl2') ?? document.createElement('canvas').getContext('webgl');
+      webGLSupport = !!gl;
+      gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    } catch {
+      webGLSupport = false;
+    }
+  }
+  return webGLSupport;
+}
 
 @Component({
   selector: 'app-map',
-  imports: [Navbar, SidebarPushDirective, NgIcon, AuthModal, RouterLink],
+  imports: [Navbar, SidebarPushDirective, AuthModal, EventMapCard, MapFilters],
   templateUrl: './map.html',
   styleUrl: './map.css',
-  providers: [
-    provideIcons({
-      lucideCircleCheck,
-      lucideClock,
-      lucideHeart,
-      lucideInstagram,
-      lucideMapPin,
-      lucideUserCheck,
-      lucideUserPlus,
-      lucideUsers,
-      lucideX,
-    }),
-  ],
 })
 export class MapPage implements AfterViewInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
@@ -119,8 +105,10 @@ export class MapPage implements AfterViewInit, OnDestroy {
   private readonly eventsService = inject(EventsService);
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
-  private readonly authService = inject(AuthService);
   private readonly mapViewState = inject(MapViewStateService);
+  private readonly themeService = inject(ThemeService);
+  /** Parteciperò/Mi piace state for the open card — see EventEngagementService. */
+  protected readonly engagement = inject(EventEngagementService);
 
   private readonly mapContainer = viewChild<ElementRef<HTMLDivElement>>('mapContainer');
 
@@ -136,73 +124,39 @@ export class MapPage implements AfterViewInit, OnDestroy {
   protected readonly error = signal(false);
   protected readonly selectedEvent = signal<EventCardDto | null>(null);
 
-  /** Optimistic local state for the popup's Parteciperò/Mi piace toggles,
-   * keyed by event id so it survives switching between pins within the same
-   * session. Flipped immediately on click, then reconciled against
-   * EventsService.addAttendance/removeAttendance and addFavorite/removeFavorite
-   * — reverted if the request fails. There's no follow-organizer endpoint
-   * yet, so followedOrganizerIds stays local-only for now. */
-  protected readonly goingEventIds = signal<ReadonlySet<string>>(new Set());
-  protected readonly likedEventIds = signal<ReadonlySet<string>>(new Set());
+  /** Clock for the event card's LIVE badge and countdown, ticked by the
+   * pulse timer — the app is zoneless, so nothing else would re-render the
+   * card while time moves on. */
+  protected readonly now = signal(Date.now());
+
   /** Opens the shared login dialog when a signed-out visitor taps
    * Parteciperò/Mi piace — both require a session server-side. */
   protected readonly authOpen = signal(false);
-  protected readonly followedOrganizerIds = signal<ReadonlySet<string>>(new Set());
-  /** Event ids with a going/like request still in flight, per state signal —
-   * a second tap on the same button is ignored until it settles, or
-   * add/remove could reach the server out of order and leave the button out
-   * of sync with the backend. */
-  private readonly pendingToggles = new Map<WritableSignal<ReadonlySet<string>>, Set<string>>();
 
   /** Filters live in a floating card on mobile, opened from the Filtri button and
    * dismissed only via its own close button, so the map keeps the full screen and
-   * stays interactive by default. */
+   * stays interactive by default. Here rather than in MapFilters because the
+   * legend closes it too (see toggleLegend). */
   protected readonly filtersOpen = signal(false);
 
-  /** Desktop-only: the floating filters card can shrink down to just its
-   * active filters via the collapse arrow, freeing up map space without
-   * closing it outright. Starts collapsed so the map is unobstructed on
-   * load. Never toggled from mobile, which uses filtersOpen instead — but
-   * combine it with isDesktop() before trusting it for anything visual,
-   * since mobile never resets it back to false. */
-  protected readonly filtersCollapsed = signal(true);
-
-  /** Tracks the sm: breakpoint (640px) so the filters card's collapsed
-   * summary — a desktop-only affordance — never renders on mobile even
-   * though filtersCollapsed defaults true there too. */
+  /** Tracks the sm: breakpoint (640px): the filters' collapsed summary
+   * (MapFilters) is a desktop-only affordance, and hideFabsForCard below
+   * only applies on mobile. */
   protected readonly isDesktop = signal(false);
 
-  protected readonly filtersSummaryMode = computed(() => this.isDesktop() && this.filtersCollapsed());
-
   /** The event card docks full-width along the bottom edge on mobile (see
-   * map.html), which would otherwise sit under — or behind — the Filtri/
+   * event-map-card.html), which would otherwise sit under — or behind — the Filtri/
    * Legenda corner buttons and the filters panel itself (also bottom-anchored
    * on mobile). Desktop's card stays a small floating box, so those corners
    * remain free there. */
   protected readonly hideFabsForCard = computed(() => this.selectedEvent() !== null && !this.isDesktop());
 
-  /** The filters card's size/chrome depends on whether it's showing the full
-   * list or just the collapsed summary, which Tailwind's opacity-modifier
-   * class names (e.g. "bg-ink/10") can't cleanly express as `[class.x]`
-   * bindings — so this returns the whole combination as one string instead.
-   * Open looks the same on mobile and on the desktop-expanded state, on
-   * purpose — same glass tint everywhere the full filter list is showing. */
-  protected readonly filtersCardStateClass = computed(() =>
-    this.filtersSummaryMode() ? 'w-auto p-2 bg-neutral-800/15 text-ink' : 'w-72 p-4 border shadow-2xl bg-neutral-800/15 text-bone',
-  );
-
-  /** Pinned near the top corner while the full filter list is showing, but
-   * centred on the single row of chips once collapsed to the summary. */
-  protected readonly filtersToggleButtonClass = computed(() =>
-    this.filtersSummaryMode() ? 'top-1/2 -translate-y-1/2' : 'top-3',
-  );
-
   protected readonly legendOpen = signal(false);
 
   /** What each pin looks like on the map, for the legend popover. */
-  protected readonly legendItems = LEGEND_TYPES.map((type) => ({
+  protected readonly legendItems = PIN_TYPES.map((type) => ({
     type,
-    label: PIN_LABELS[type],
+    label: EVENT_TYPE_LABELS[type],
     color: PIN_COLORS[type],
     shape: PIN_SHAPES[type],
     glyph: PIN_GLYPHS[type],
@@ -215,26 +169,27 @@ export class MapPage implements AfterViewInit, OnDestroy {
     return list.filter((event) => event.danceStyles.some((style) => styles.has(style)));
   });
 
-  protected readonly activeCityName = computed(() => {
-    const id = this.selectedCityId();
-    if (id === null) return null;
-    return this.cities().find((city) => city.id === id)?.name ?? null;
-  });
-
-  protected readonly activeStyleNames = computed(() => Array.from(this.selectedStyleNames()));
-
-  protected readonly hasActiveFilters = computed(
-    () => this.selectedCityId() !== null || this.selectedStyleNames().size > 0,
-  );
-
   private map: LeafletMap | null = null;
-  private markers: Marker[] = [];
+  /** One marker per visible event, by id — see drawMarkers(). `event` is
+  refreshed on every sync, so a click never opens the card with a stale copy
+  (e.g. the counts from before a like). */
+  private markers = new Map<string, { marker: Marker; event: EventCardDto }>();
   private leaflet: typeof import('leaflet') | null = null;
-  private readonly pinIconCache = new Map<string, import('leaflet').DivIcon>();
+  /** The basemap — see showBaseLayer(): normally the MapLibre layer, restyled
+   * to basemapStyleUrl on each theme switch; the Voyager raster instead when
+   * MapLibre can't run. */
+  private glLayer: MaplibreGL | null = null;
+  private rasterLayer: Layer | null = null;
+  private basemapStyleUrl = LIGHT_STYLE_URL;
+  private basemapLoading = false;
+  private readonly pinIconCache = new Map<string, DivIcon>();
   private readonly moveEnd$ = new Subject<void>();
+  /** The in-flight getMapEvents call, cancelled when a newer one starts so a
+   * slow response for an old viewport can't overwrite the current pins. */
+  private eventsRequest: Subscription | null = null;
   /** Live/not-live state of every visible pin as of the last drawMarkers()
-   * call — lets the pulse timer skip the full marker teardown/recreate on
-   * ticks where nothing actually crossed the live threshold. */
+   * call — lets the pulse timer skip the marker sync on ticks where nothing
+   * actually crossed the live threshold. */
   private markerPulseSignature = '';
 
   constructor() {
@@ -265,7 +220,7 @@ export class MapPage implements AfterViewInit, OnDestroy {
       this.destroyRef.onDestroy(() => desktopQuery.removeEventListener('change', handleDesktopChange));
     }
 
-    // Re-draw markers whenever the style filter, the fetched events, or the
+    // Sync the markers whenever the style filter, the fetched events, or the
     // selected pin (which needs its own highlighted icon) change.
     effect(() => {
       this.filteredEvents();
@@ -273,12 +228,19 @@ export class MapPage implements AfterViewInit, OnDestroy {
       this.drawMarkers();
     });
 
-    // Pulse state depends on the clock, not just on the data — an event can
-    // tip into "starting soon" or "live" with the events list untouched.
+    // Swap the basemap when the visitor flips the theme in the sidebar. A
+    // no-op until initMap() has built the map, which applies it itself.
+    effect(() => {
+      void this.showBaseLayer(this.themeService.theme());
+    });
+
+    // The card's countdown and the pins' live pulse depend on the clock, not
+    // just on the data — an event can go live with the events list untouched.
     if (this.isBrowser) {
       interval(PULSE_REFRESH_MS)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
+          this.now.set(Date.now());
           if (this.pulseSignature() !== this.markerPulseSignature) this.drawMarkers();
         });
     }
@@ -293,12 +255,17 @@ export class MapPage implements AfterViewInit, OnDestroy {
     // under `.default` instead of spreading it onto the namespace itself
     // (works either way in dev, breaks silently in the optimized prod build).
     const leafletModule = await import('leaflet');
+    // Page left while Leaflet loaded: ngOnDestroy has already run, so a map
+    // built now would never be removed.
+    if (this.destroyRef.destroyed) return;
     this.leaflet = 'map' in leafletModule ? leafletModule : (leafletModule as unknown as { default: typeof leafletModule }).default;
     this.initMap(this.leaflet);
   }
 
   ngOnDestroy(): void {
     this.map?.remove();
+    // Nulled so a basemap still loading (see showBaseLayer) sees the page is gone.
+    this.map = null;
   }
 
   private initMap(L: typeof import('leaflet')): void {
@@ -310,30 +277,91 @@ export class MapPage implements AfterViewInit, OnDestroy {
     // Falls back to DEFAULT_CENTER/DEFAULT_ZOOM the first time this page is
     // ever visited in the session — mapViewState only has something once a
     // previous MapPage instance has actually panned/zoomed.
-    this.map = L.map(container, { zoomControl: false }).setView(
+    // maxZoom on the map itself: Leaflet otherwise takes it from the tile
+    // layers, and the dark (vector) basemap declares none — so without this
+    // the dark theme could zoom in forever, the light one stopping at 20.
+    const map = L.map(container, { zoomControl: false, maxZoom: 20 }).setView(
       this.mapViewState.center ?? DEFAULT_CENTER,
       this.mapViewState.zoom ?? DEFAULT_ZOOM,
     );
+    this.map = map;
 
-    // CARTO Voyager: closer to Google Maps' look than plain OSM tiles.
-    // Free, but requires an API key (carto.com/basemaps/apikey) — 5M tile
-    // requests/month fair-use limit.
-    L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${environment.cartoApiKey}`,
-      {
-        attribution: '© OpenStreetMap contributors © CARTO',
-        maxZoom: 20,
-        subdomains: 'abcd',
-      },
-    ).addTo(this.map);
+    // Minimal attribution: OpenStreetMap — the data behind every basemap
+    // layer — credited once here, so each layer only adds its own short
+    // "© CARTO" / "© OpenMapTiles" and nothing is repeated when two are on at
+    // once. Leaflet's own prefix (with its flag) stays as it is.
+    map.attributionControl.addAttribution(OSM_ATTRIBUTION);
 
-    this.map.on('moveend', () => {
-      const center = this.map!.getCenter();
+    void this.showBaseLayer(this.themeService.theme());
+
+    map.on('moveend', () => {
+      const center = map.getCenter();
       this.mapViewState.center = [center.lat, center.lng];
-      this.mapViewState.zoom = this.map!.getZoom();
+      this.mapViewState.zoom = map.getZoom();
       this.moveEnd$.next();
     });
     this.fetchEventsInView();
+  }
+
+  /** Puts the basemap for `theme` on the map: one MapLibre layer, created on
+   * first use (MapLibre itself loads lazily) and then just restyled on a theme
+   * switch — same tiles, only the colours change, so the switch is instant and
+   * downloads nothing new. Without WebGL (see supportsWebGL), or if MapLibre
+   * fails to load, CARTO Voyager's raster stands in for both themes rather than
+   * leaving the map blank. */
+  private async showBaseLayer(theme: Theme): Promise<void> {
+    const L = this.leaflet;
+    if (!L || !this.map) return;
+    this.basemapStyleUrl = theme === 'dark' ? DARK_STYLE_URL : LIGHT_STYLE_URL;
+
+    if (this.glLayer) {
+      this.glLayer.getMaplibreMap().setStyle(this.basemapStyleUrl);
+      return;
+    }
+    // Already on the raster fallback (one look for both themes), or MapLibre
+    // is still loading — it picks up basemapStyleUrl once it's in.
+    if (this.rasterLayer || this.basemapLoading) return;
+
+    this.basemapLoading = true;
+    try {
+      if (!supportsWebGL()) throw new Error('WebGL unavailable');
+      const styleUrl = this.basemapStyleUrl;
+      const layer = await this.createGlLayer(styleUrl);
+      if (!this.map) return; // page left meanwhile
+      this.glLayer = layer.addTo(this.map);
+      // The theme may have flipped while MapLibre loaded.
+      if (this.basemapStyleUrl !== styleUrl) this.glLayer.getMaplibreMap().setStyle(this.basemapStyleUrl);
+    } catch (err) {
+      if (!this.map) return;
+      console.warn('Vector basemap unavailable, falling back to raster tiles', err);
+      this.rasterLayer = this.createRasterLayer(L).addTo(this.map);
+    } finally {
+      this.basemapLoading = false;
+    }
+  }
+
+  /** Fallback basemap for browsers without WebGL. CARTO Voyager: the look
+   * light.json is modelled on. Needs an API key (carto.com/basemaps/apikey);
+   * free up to 1M tile requests a month for commercial use (5M
+   * non-commercial) under CARTO's terms of 23 September 2026 — plenty for the
+   * few visitors who end up here. */
+  private createRasterLayer(L: typeof import('leaflet')): Layer {
+    return L.tileLayer(
+      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${environment.cartoApiKey}`,
+      {
+        attribution: '© <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
+        maxZoom: 20,
+        subdomains: 'abcd',
+      },
+    );
+  }
+
+  /** Vector basemap drawn by MapLibre inside Leaflet's tile pane (markers stay
+   * above it), via @maplibre/maplibre-gl-leaflet. Its attribution
+   * ("© OpenMapTiles") comes from the style's own source. */
+  private async createGlLayer(style: string): Promise<MaplibreGL> {
+    const { maplibreGL } = await import('@maplibre/maplibre-gl-leaflet');
+    return maplibreGL({ style });
   }
 
   private fetchEventsInView(): void {
@@ -350,29 +378,33 @@ export class MapPage implements AfterViewInit, OnDestroy {
     this.loading.set(true);
     this.error.set(false);
 
-    this.eventsService.getMapEvents(box, this.selectedCityId() ?? undefined).subscribe({
-      next: (events) => {
-        this.events.set(events);
-        this.loading.set(false);
-        this.restoreSelectedEvent(events);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.error.set(true);
-      },
-    });
+    this.eventsRequest?.unsubscribe();
+    this.eventsRequest = this.eventsService
+      .getMapEvents(box, this.selectedCityId() ?? undefined)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (events) => {
+          this.events.set(events);
+          this.loading.set(false);
+          this.restoreSelectedEvent(events);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.error.set(true);
+        },
+      });
   }
 
   /** Reopens the card for the pin that was selected before navigating away
-   * (e.g. to /evento/:id) — see mapViewState. Deliberately NOT consumed/nulled
-   * out here: navigating back can momentarily spin up two MapPage instances
-   * in a row (router/view-transition quirk, still under investigation), and
-   * the second one needs the id to still be there since the first's restore
-   * gets wiped out when it's torn down. Only selectEvent()/closeDetail() ever
-   * change it after that. Re-running this on every subsequent pan is cheap —
-   * the already-selected check below skips re-fetching toggle state for a
-   * pin that's already open, so it only actually does anything right after a
-   * fresh MapPage instance mounts. */
+  (e.g. to /evento/:id) — see mapViewState. Deliberately NOT consumed/nulled
+  out here: navigating back can momentarily spin up two MapPage instances
+  in a row (router/view-transition quirk, still under investigation), and
+  the second one needs the id to still be there since the first's restore
+  gets wiped out when it's torn down. Only selectEvent()/closeDetail() ever
+  change it after that. Re-running this on every subsequent pan is cheap —
+  the already-selected check below skips re-fetching toggle state for a
+  pin that's already open, so it only actually does anything right after a
+  fresh MapPage instance mounts. */
   private restoreSelectedEvent(events: EventCardDto[]): void {
     const id = this.mapViewState.selectedEventId;
     if (!id || this.selectedEvent()?.id === id) return;
@@ -381,119 +413,114 @@ export class MapPage implements AfterViewInit, OnDestroy {
     if (!match) return;
 
     this.selectedEvent.set(match);
-    this.syncAllToggleState(match);
+    this.engagement.sync(match.id);
   }
 
+  /** Syncs the markers with filteredEvents(): pins already on the map stay put
+  and only get a new icon when their live/selected state changed, and only
+  events that appeared or went away are added/removed. Rebuilding every
+  marker instead restarted every live pin's pulse animation on each
+  selection, pan (the refetch returns mostly the same events) or like. Icons
+  come from pinIconCache, so an unchanged state is the very same object. */
   private drawMarkers(): void {
     const L = this.leaflet;
-    if (!L || !this.map) return;
+    const map = this.map;
+    if (!L || !map) return;
 
     const selectedId = this.selectedEvent()?.id;
-    this.markers.forEach((marker) => marker.remove());
-    this.markers = this.filteredEvents().map((event) => {
-      const marker = L.marker([event.latitude, event.longitude], {
-        icon: this.getPinIcon(L, event.eventType, this.pulseState(event), event.id === selectedId),
-      }).addTo(this.map!);
-      marker.on('click', () => this.selectEvent(event, marker));
-      return marker;
-    });
-    this.markerPulseSignature = this.pulseSignature();
+    const previous = this.markers;
+    this.markers = new Map();
+    let signature = '';
+    for (const event of this.filteredEvents()) {
+      const live = this.isLive(event);
+      signature += live ? '1' : '0';
+      const icon = this.getPinIcon(L, event.eventType, live, event.id === selectedId);
+      const existing = previous.get(event.id);
+      if (existing) {
+        previous.delete(event.id);
+        existing.event = event;
+        if (existing.marker.options.icon !== icon) existing.marker.setIcon(icon);
+        const { lat, lng } = existing.marker.getLatLng();
+        if (lat !== event.latitude || lng !== event.longitude) existing.marker.setLatLng([event.latitude, event.longitude]);
+        this.markers.set(event.id, existing);
+      } else {
+        const marker = L.marker([event.latitude, event.longitude], { icon }).addTo(map);
+        const entry = { marker, event };
+        marker.on('click', () => this.selectEvent(entry.event, marker.getLatLng()));
+        this.markers.set(event.id, entry);
+      }
+    }
+    previous.forEach(({ marker }) => marker.remove());
+    this.markerPulseSignature = signature;
   }
 
   /** One char per visible event (1 = live, 0 = not) — cheap way to tell the
-   * pulse timer whether a redraw is actually needed. */
+  pulse timer whether a sync is actually needed. Built the same way as the one
+  drawMarkers() stores. */
   private pulseSignature(): string {
     return this.filteredEvents()
-      .map((event) => (this.isLiveNow(event) ? '1' : '0'))
+      .map((event) => (this.isLive(event) ? '1' : '0'))
       .join('');
   }
 
-  private selectEvent(event: EventCardDto, marker: Marker): void {
+  /** Pins pulse only once the event is actually underway — before that
+  (even "starting soon") the pin just sits there plain, no animation.
+  Reads Date.now() rather than the `now` signal on purpose: drawMarkers()
+  runs inside an effect, which would otherwise track `now` and resync every
+  pin on every tick. */
+  private isLive(event: EventCardDto): boolean {
+    return isLiveAt(event, Date.now());
+  }
+
+  private selectEvent(event: EventCardDto, position: LatLng): void {
     this.selectedEvent.set(event);
     this.mapViewState.selectedEventId = event.id;
-    this.centerOnPoint(this.map!.latLngToContainerPoint(marker.getLatLng()));
-    this.syncAllToggleState(event);
-  }
-
-  /** Shared by selectEvent/restoreSelectedEvent: fetches both toggle states
-   * for the event that just became the open card's subject. */
-  private syncAllToggleState(event: EventCardDto): void {
-    this.syncToggleState(event.id, this.likedEventIds, (id) => this.eventsService.isFavorite(id));
-    this.syncToggleState(event.id, this.goingEventIds, (id) => this.eventsService.isGoing(id));
-  }
-
-  /** goingEventIds/likedEventIds are only ever flipped locally by
-   * toggleGoing/toggleLike, so they start every page load empty — without
-   * this, a user who's already attending/liking sees the button uncoloured
-   * until they click it, and that click would fire the "add" request again
-   * instead of "remove". */
-  private syncToggleState(
-    eventId: string,
-    idsSignal: WritableSignal<ReadonlySet<string>>,
-    fetchActive: (id: string) => Observable<boolean>,
-  ): void {
-    if (!this.authService.isAuthenticated()) return;
-
-    fetchActive(eventId).subscribe({
-      next: (active) => this.setMembership(idsSignal, eventId, active),
-      error: (err) => console.error('Failed to sync toggle state for event', eventId, err),
-    });
+    this.centerOn(position);
+    this.engagement.sync(event.id);
   }
 
   /** Pans (doesn't zoom) so the pin lands higher in the viewport rather than
-   * dead centre, keeping it clear of the event card docked along the bottom
-   * edge (see map.html) once it opens. */
-  private centerOnPoint(currentPoint: Point): void {
+  dead centre, keeping it clear of the event card docked along the bottom
+  edge (see event-map-card.html) once it opens. */
+  private centerOn(position: LatLng): void {
     const L = this.leaflet;
-    if (!L || !this.map) return;
+    const map = this.map;
+    if (!L || !map) return;
 
-    const size = this.map.getSize();
+    const size = map.getSize();
     const targetPoint = L.point(size.x / 2, size.y * SELECTED_PIN_VERTICAL_RATIO);
-    this.map.panBy(currentPoint.subtract(targetPoint), { animate: true });
-  }
-
-  /** event.liveNow is a snapshot from whenever the event list was last
-   * fetched (map pan/filter change, not on a timer), so it goes stale the
-   * moment an event starts without a new fetch — read the clock instead. */
-  protected isLiveNow(event: EventCardDto): boolean {
-    const now = Date.now();
-    return now >= new Date(event.startAt).getTime() && now <= new Date(event.endAt).getTime();
-  }
-
-  /** Pins pulse only once the event is actually underway — before that
-   * (even "starting soon") the pin just sits there plain, no animation. */
-  private pulseState(event: EventCardDto): PulseState {
-    return this.isLiveNow(event) ? 'live' : null;
-  }
-
-  /** Minutes to start, only while inside the "starting soon" window; null
-   * once the event is live (isLiveNow covers that) or too far out to flag. */
-  protected startsInMinutes(event: EventCardDto): number | null {
-    const msToStart = new Date(event.startAt).getTime() - Date.now();
-    if (msToStart <= 0 || msToStart > STARTING_SOON_MS) return null;
-    return Math.max(1, Math.round(msToStart / 60000));
+    map.panBy(map.latLngToContainerPoint(position).subtract(targetPoint), { animate: true });
   }
 
   private getPinIcon(
     L: typeof import('leaflet'),
     eventType: EventType,
-    pulse: PulseState,
+    live: boolean,
     selected: boolean,
-  ): import('leaflet').DivIcon {
-    const cacheKey = `${eventType}:${pulse ?? 'idle'}:${selected ? 'selected' : 'idle'}`;
+  ): DivIcon {
+    const cacheKey = `${eventType}:${live ? 'live' : 'idle'}:${selected ? 'selected' : 'idle'}`;
     const cached = this.pinIconCache.get(cacheKey);
     if (cached) return cached;
 
-    const pulseClass = pulse ? ` map-pin-wrap--${pulse}` : '';
+    const color = PIN_COLORS[eventType];
+    const liveClass = live ? ' map-pin-wrap--live' : '';
     const selectedClass = selected ? ' map-pin-wrap--selected' : '';
-    const pinFill = selected ? '#000000' : PIN_COLORS[eventType];
+    // The ring only ever animates on live pins, so the others don't carry it.
+    const pulseRing = live ? `<span class="map-pin-pulse" style="background:${color}"></span>` : '';
+    // Selected pin is drawn inverted (white body, outline and glyph in the type
+    // colour): the one hollow pin among filled ones stands out on both basemaps
+    // and still reads as its type.
+    const shapeAttrs = selected
+      ? `fill="#fff" stroke="${color}" stroke-width="2" stroke-linejoin="round"`
+      : `fill="${color}"`;
+    const glyphFill = selected ? color : '#fff';
     const icon = L.divIcon({
       className: 'map-pin',
-      html: `<span class="map-pin-wrap${pulseClass}${selectedClass}" style="color:${PIN_COLORS[eventType]}">
-        <span class="map-pin-pulse" style="background:${PIN_COLORS[eventType]}"></span>
+      html: `<span class="map-pin-wrap${liveClass}${selectedClass}" style="color:${color}">
+        ${pulseRing}
         <svg viewBox="0 0 24 32" width="24" height="32" xmlns="http://www.w3.org/2000/svg">
-          <path d="${PIN_SHAPES[eventType]}" fill="${pinFill}"/>
-          <path d="${PIN_GLYPHS[eventType]}" fill="#fff"/>
+          <path d="${PIN_SHAPES[eventType]}" ${shapeAttrs}/>
+          <path d="${PIN_GLYPHS[eventType]}" fill="${glyphFill}"/>
         </svg>
       </span>`,
       iconSize: [24, 32],
@@ -535,10 +562,6 @@ export class MapPage implements AfterViewInit, OnDestroy {
     }
   }
 
-  protected toggleFiltersCollapsed(): void {
-    this.filtersCollapsed.update((collapsed) => !collapsed);
-  }
-
   protected toggleLegend(): void {
     const willOpen = !this.legendOpen();
     this.legendOpen.set(willOpen);
@@ -552,168 +575,38 @@ export class MapPage implements AfterViewInit, OnDestroy {
     this.mapViewState.selectedEventId = null;
   }
 
-  protected formatStart(event: EventCardDto): string {
-    return new Date(event.startAt).toLocaleString('it-IT', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  protected formatPrice(event: EventCardDto): string {
-    if (event.isFree) return 'GRATIS';
-    if (event.price == null) return 'Prezzo su invito';
-    return `${event.price} ${event.currency ?? ''}`.trim();
-  }
-
-  /** Geocoded addresses already join street+civico with a space ("Via Roma
-   * 12"), but older/manually-typed ones use a comma ("Via Roma, 12") — this
-   * merges a leading civico into the primary line either way, while a 5-digit
-   * CAP in the same position is left for addressSecondary. */
-  protected addressPrimary(address: string): string {
-    const parts = address.split(',').map((p) => p.trim());
-    return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];
-  }
-
-  protected addressSecondary(address: string): string | null {
-    const parts = address.split(',').map((p) => p.trim());
-    if (parts.length <= 1) return null;
-    const rest = isCivico(parts[1]) ? parts.slice(2) : parts.slice(1);
-    return rest.length ? rest.join(', ') : null;
-  }
-
-  protected googleMapsUrl(event: EventCardDto): string {
-    const query = event.venueName ? `${event.venueName}, ${event.address}` : event.address;
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
-  }
-
-  protected instagramUrl(handle: string): string {
-    return `https://www.instagram.com/${handle}/`;
-  }
-
-  protected isGoing(eventId: string): boolean {
-    return this.goingEventIds().has(eventId);
-  }
-
-  protected isLiked(eventId: string): boolean {
-    return this.likedEventIds().has(eventId);
-  }
-
-  protected isFollowing(organizerId: string): boolean {
-    return this.followedOrganizerIds().has(organizerId);
-  }
-
+  /** Signed out, the engagement service refuses the toggle and the login
+  dialog opens instead. */
   protected toggleGoing(event: EventCardDto): void {
-    this.toggleOptimistic(
-      this.goingEventIds,
-      event.id,
-      (id) => this.eventsService.addAttendance(id),
-      (id) => this.eventsService.removeAttendance(id),
-      (activating) => this.adjustCount(event.id, 'goingCount', activating ? 1 : -1),
+    const handled = this.engagement.toggleGoing(event.id, (delta) =>
+      this.adjustCount(event.id, 'goingCount', delta),
     );
+    if (!handled) this.authOpen.set(true);
   }
 
   protected toggleLike(event: EventCardDto): void {
-    this.toggleOptimistic(
-      this.likedEventIds,
-      event.id,
-      (id) => this.eventsService.addFavorite(id),
-      (id) => this.eventsService.removeFavorite(id),
-      (activating) => this.adjustCount(event.id, 'likesCount', activating ? 1 : -1),
+    const handled = this.engagement.toggleLike(event.id, (delta) =>
+      this.adjustCount(event.id, 'likesCount', delta),
     );
+    if (!handled) this.authOpen.set(true);
   }
 
-  /** No follow-organizer endpoint exists yet — stays a local-only toggle
-   * until the backend adds one (see the note on followedOrganizerIds). */
-  protected toggleFollow(organizerId: string): void {
-    this.toggleId(this.followedOrganizerIds, organizerId);
-  }
-
-  protected likeIconFill(eventId: string): 'currentColor' | 'none' {
-    return this.isLiked(eventId) ? 'currentColor' : 'none';
-  }
-
-  /** White outline when not liked, rose when liked — shared by the count
-   * badge and the "Mi piace" button so the two spots can't drift apart. */
-  protected heartIconClass(eventId: string): string {
-    return this.isLiked(eventId) ? 'text-rose' : 'text-white';
-  }
-
-  /** Going-count badge colours by the count itself, not by the current
-   * user's own attendance — white while nobody's going yet, rose the moment
-   * it's non-zero, for any viewer. */
-  protected goingCountIconClass(goingCount: number): string {
-    return goingCount > 0 ? 'text-violet' : 'text-white';
-  }
-
-  /** Shared by toggleGoing/toggleLike: flips the local state immediately,
-   * fires the matching add/remove request, and rolls back if it fails.
-   * Gated on auth first, since both actions require a session server-side. */
-  private toggleOptimistic(
-    idsSignal: WritableSignal<ReadonlySet<string>>,
-    id: string,
-    add: (id: string) => Observable<void>,
-    remove: (id: string) => Observable<void>,
-    adjustCount?: (activating: boolean) => void,
-  ): void {
-    if (!this.authService.isAuthenticated()) {
-      this.authOpen.set(true);
-      return;
-    }
-
-    const pending = this.pendingToggles.get(idsSignal) ?? new Set<string>();
-    if (pending.has(id)) return;
-    this.pendingToggles.set(idsSignal, pending);
-
-    const wasActive = idsSignal().has(id);
-    this.setMembership(idsSignal, id, !wasActive);
-    adjustCount?.(!wasActive);
-    pending.add(id);
-
-    const request = wasActive ? remove(id) : add(id);
-    request.subscribe({
-      complete: () => pending.delete(id),
-      error: () => {
-        pending.delete(id);
-        // Restore the exact previous state rather than flipping again.
-        this.setMembership(idsSignal, id, wasActive);
-        adjustCount?.(wasActive);
-      },
-    });
-  }
-
-  /** Optimistic +1/-1 on a displayed count field (likes or going), mirrored
-   * into both the events list and the open card (same object reference) so
-   * the UI updates instantly without a getMapEvents refetch. Reversed by
-   * toggleOptimistic's rollback on request failure. */
+  /** Optimistic +1/-1 on a displayed count field (likes or going), applied to
+  both the events list and the open card so the UI updates instantly without
+  a getMapEvents refetch. The card is updated on its own, not from the list:
+  after a pan its event may no longer be among the fetched ones. Reversed by
+  EventEngagementService's rollback on request failure. */
   private adjustCount(eventId: string, field: 'likesCount' | 'goingCount', delta: number): void {
-    let updated: EventCardDto | null = null;
+    const bump = (event: EventCardDto): EventCardDto => ({
+      ...event,
+      [field]: Math.max(0, event[field] + delta),
+    });
 
     this.events.update((events) =>
-      events.map((event) => {
-        if (event.id !== eventId) return event;
-        updated = { ...event, [field]: Math.max(0, event[field] + delta) };
-        return updated;
-      }),
+      events.map((event) => (event.id === eventId ? bump(event) : event)),
     );
 
-    if (updated && this.selectedEvent()?.id === eventId) {
-      this.selectedEvent.set(updated);
-    }
-  }
-
-  private toggleId(idsSignal: WritableSignal<ReadonlySet<string>>, id: string): void {
-    this.setMembership(idsSignal, id, !idsSignal().has(id));
-  }
-
-  private setMembership(idsSignal: WritableSignal<ReadonlySet<string>>, id: string, active: boolean): void {
-    idsSignal.update((ids) => {
-      const next = new Set(ids);
-      if (active) next.add(id);
-      else next.delete(id);
-      return next;
-    });
+    const selected = this.selectedEvent();
+    if (selected?.id === eventId) this.selectedEvent.set(bump(selected));
   }
 }

@@ -265,15 +265,6 @@ inside a pressed button by group-aria-pressed:text-white in the template. */
   color: var(--ed-nav-fg);
 }
 
-/* Mini-map: for now Voyager (light tiles) in both themes; the Dark Matter set
-stays in the template but hidden (<img loading=lazy>, so it never downloads).
-To bring the dark map back, give the light <img> an .ed-map-light class, show
-.ed-map-dark by default and .ed-map-light only under
-:host-context([data-theme='light']). */
-.ed-map-dark {
-  display: none;
-}
-
 /* Instagram's actual icon gradient, so the link reads as "Instagram" at a
 glance instead of just another monochrome glyph. */
 .instagram-gradient {

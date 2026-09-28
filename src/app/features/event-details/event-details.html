@@ -157,23 +157,15 @@
         </section>
         }
 
-        <!-- Dove: static mini-map (tap = /mappa centred on this event) + directions. -->
+        <!-- Dove: read-only mini-map (tap = /mappa centred on this event) + directions. -->
         @if (event.venueName || event.address) {
         <section
           class="ed-card order-3 flex flex-col gap-3 rounded-lg p-2.5 @5xl:order-4 @5xl:flex-row @5xl:items-center @5xl:gap-5 @5xl:p-3">
-          @if (miniMap(); as map) {
+          @if (mapCenter(); as center) {
           <button type="button"
             class="relative block h-35 w-full shrink-0 cursor-pointer overflow-hidden rounded-lg @5xl:h-42.5 @5xl:w-75"
             (click)="openOnMap(event)" aria-label="Vedi sulla mappa">
-            <span class="absolute block size-192" [style.left]="'calc(50% - ' + map.offsetX + 'px)'"
-              [style.top]="'calc(50% - ' + map.offsetY + 'px)'" aria-hidden="true">
-              @for (tile of map.tiles; track tile.light) {
-              <img [src]="tile.light" alt="" loading="lazy" class="absolute size-64 max-w-none"
-                [style.left.px]="tile.left" [style.top.px]="tile.top" />
-              <img [src]="tile.dark" alt="" loading="lazy" class="ed-map-dark absolute size-64 max-w-none"
-                [style.left.px]="tile.left" [style.top.px]="tile.top" />
-              }
-            </span>
+            <app-map-preview class="absolute inset-0" [center]="center" [zoom]="miniMapZoom" />
             <svg viewBox="0 0 24 32" class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 h-12 w-9 -translate-x-1/2 -translate-y-full"
               aria-hidden="true">
               <path [attr.d]="pinShape(event)" [attr.fill]="pinColor(event)" />
@@ -191,7 +183,7 @@
             <!-- Side by side on mobile and wide desktop; stacked in the narrow
               @5xl–@7xl range (1024–1280px), where two columns squeeze the labels. -->
             <div class="flex gap-2 @5xl:flex-col @7xl:flex-row">
-              @if (miniMap()) {
+              @if (mapCenter()) {
               <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--map flex-1" (click)="openOnMap(event)">Vedi sulla mappa</button>
               }
               <a [href]="googleMapsUrl(event)" target="_blank" rel="noopener noreferrer"

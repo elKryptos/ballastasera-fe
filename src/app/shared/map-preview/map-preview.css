@@ -1,0 +1,21 @@
+/* The map styles' own land colour — dark.json's by default (dark is the
+app's base), light.json's under data-theme="light"; same values as --map-land
+in map.css — shown before MapLibre has drawn, and for good without WebGL. */
+:host {
+  display: block;
+  --preview-land: #1d2230;
+  background: var(--preview-land);
+}
+
+:host-context([data-theme='light']) {
+  --preview-land: #fbf8f3;
+}
+
+/* The one rule from maplibre-gl.css the preview needs — that stylesheet
+(70 kB, mostly controls and popups this map never shows) isn't loaded app-wide.
+::ng-deep because MapLibre creates the canvas itself, outside the template. */
+:host ::ng-deep .maplibregl-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

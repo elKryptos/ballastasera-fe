@@ -28,6 +28,7 @@ import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 import { isLiveAt } from '../../core/utils/event-format';
+import { supportsWebGL } from '../../core/utils/webgl';
 import { environment } from '../../../environments/environment';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { EventMapCard } from './event-map-card/event-map-card';
@@ -41,6 +42,7 @@ import {
   PIN_SHAPES,
   PIN_TYPES,
 } from '../../core/config/map-pins';
+import { MAP_STYLE_URLS } from '../../core/config/map-styles';
 
 /** Fallback view when there's no city yet to centre on: Milano, zoomed to city level. */
 const DEFAULT_CENTER = MILAN_CENTER;
@@ -61,36 +63,10 @@ const PULSE_REFRESH_MS = 30 * 1000;
  * bottom (see event-map-card.html) never covers it. */
 const SELECTED_PIN_VERTICAL_RATIO = 0.32;
 
-/** The basemap, one MapLibre style per theme over OpenFreeMap's vector tiles
- * (free, no API key, no request limits, commercial use allowed), generated
- * into public/ by scripts/build-map-styles.mjs (`pnpm map:styles`): the same
- * layers recoloured Voyager-like (light) and Google-"night"-like (dark), metro
- * and train stations as the only POIs. */
-const LIGHT_STYLE_URL = '/map-styles/light.json';
-const DARK_STYLE_URL = '/map-styles/dark.json';
-
 /** The shortest credit OpenStreetMap's attribution guidelines accept, linked
  * to their copyright page — required under the ODbL for every basemap here. */
 const OSM_ATTRIBUTION =
   '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>';
-
-let webGLSupport: boolean | undefined;
-
-/** MapLibre draws with WebGL. Checked up front (once, then cached) because
- * without it the GL layer fails halfway through being added and leaves an
- * empty container behind; the light raster basemap stands in instead. */
-function supportsWebGL(): boolean {
-  if (webGLSupport === undefined) {
-    try {
-      const gl = document.createElement('canvas').getContext('webgl2') ?? document.createElement('canvas').getContext('webgl');
-      webGLSupport = !!gl;
-      gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    } catch {
-      webGLSupport = false;
-    }
-  }
-  return webGLSupport;
-}
 
 @Component({
   selector: 'app-map',
@@ -181,7 +157,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
    * MapLibre can't run. */
   private glLayer: MaplibreGL | null = null;
   private rasterLayer: Layer | null = null;
-  private basemapStyleUrl = LIGHT_STYLE_URL;
+  private basemapStyleUrl = MAP_STYLE_URLS.light;
   private basemapLoading = false;
   private readonly pinIconCache = new Map<string, DivIcon>();
   private readonly moveEnd$ = new Subject<void>();
@@ -360,7 +336,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private async showBaseLayer(theme: Theme): Promise<void> {
     const L = this.leaflet;
     if (!L || !this.map) return;
-    this.basemapStyleUrl = theme === 'dark' ? DARK_STYLE_URL : LIGHT_STYLE_URL;
+    this.basemapStyleUrl = MAP_STYLE_URLS[theme];
 
     if (this.glLayer) {
       this.glLayer.getMaplibreMap().setStyle(this.basemapStyleUrl);

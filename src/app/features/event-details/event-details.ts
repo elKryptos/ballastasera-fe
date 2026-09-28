@@ -18,12 +18,12 @@ import {
   lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
-import { environment } from '../../../environments/environment';
 import { EVENT_TYPE_LABELS, PIN_COLORS, PIN_GLYPHS, PIN_SHAPES } from '../../core/config/map-pins';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EventDetailDto } from '../../core/models/event.model';
@@ -41,27 +41,10 @@ import {
   withoutCountry,
 } from '../../core/utils/event-format';
 
-/** Zoom level of the static mini-map in the "Dove" card — street level, enough
- * to read the surrounding streets without being a full interactive map. */
+/** Zoom level of the mini-map in the "Dove" card (Leaflet levels, like
+ * /mappa's) — street level, enough to read the surrounding streets without
+ * being a full interactive map. */
 const MINI_MAP_ZOOM = 16;
-const TILE_SIZE = 256;
-
-/** One CARTO tile of the mini-map, placed inside a 3x3 grid (768x768 px). */
-interface MiniMapTile {
-  light: string;
-  dark: string;
-  left: number;
-  top: number;
-}
-
-/** 3x3 tile grid around the event plus the event's pixel position inside it,
- * so the template can shift the grid until that point sits at the card's
- * centre (where the pin is drawn) whatever the card's width. */
-interface MiniMap {
-  tiles: MiniMapTile[];
-  offsetX: number;
-  offsetY: number;
-}
 
 const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   PERSON: 'Organizzatore',
@@ -75,7 +58,7 @@ const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   selector: 'app-event-details',
   templateUrl: './event-details.html',
   styleUrl: './event-details.css',
-  imports: [Navbar, AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet],
+  imports: [Navbar, AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview],
   // On the document, not the lightbox <div>: that div never holds focus, so a
   // keydown listener on it would never fire.
   host: { '(document:keydown.escape)': 'closeFlyer()' },
@@ -135,9 +118,18 @@ export class EventDetails {
   protected readonly flyerOpen = signal(false);
   protected readonly flyerZoomed = signal(false);
 
-  /** Static tiles for the "Dove" card, computed once when the event loads;
-   * null when the event has no coordinates (the card then shows text only). */
-  protected readonly miniMap = signal<MiniMap | null>(null);
+  /** Where the "Dove" card's mini-map is centred (MapPreview, with this
+   * event's pin drawn over it); null when the event has no coordinates (the
+   * card then shows text only). Compared by value, so a count change on the
+   * event doesn't hand the map a "new" centre. */
+  protected readonly mapCenter = computed(
+    () => {
+      const event = this.event();
+      return event?.latitude != null && event.longitude != null ? ([event.latitude, event.longitude] as [number, number]) : null;
+    },
+    { equal: (a, b) => a?.[0] === b?.[0] && a?.[1] === b?.[1] },
+  );
+  protected readonly miniMapZoom = MINI_MAP_ZOOM;
 
   protected readonly formatPrice = formatPrice;
   protected readonly formatDate = formatEventDate;
@@ -208,7 +200,6 @@ export class EventDetails {
     this.eventsService.getEventDetail(id).subscribe({
       next: (event) => {
         this.event.set(event);
-        this.miniMap.set(this.buildMiniMap(event));
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -377,42 +368,6 @@ export class EventDetails {
 
   protected pinColor(event: EventDetailDto): string {
     return PIN_COLORS[event.eventType];
-  }
-
-  /** Web Mercator maths (same projection Leaflet uses) to pick the 3x3 block
-   * of CARTO tiles around the event: Voyager for the light theme — the same
-   * basemap as /mappa — and Dark Matter for the dark one. Plain <img> tiles
-   * instead of a second Leaflet instance: the card is static, so it doesn't
-   * need the library's JS chunk at all. */
-  private buildMiniMap(event: EventDetailDto): MiniMap | null {
-    if (event.latitude == null || event.longitude == null) return null;
-
-    const scale = TILE_SIZE * 2 ** MINI_MAP_ZOOM;
-    const latRad = (event.latitude * Math.PI) / 180;
-    const x = ((event.longitude + 180) / 360) * scale;
-    const y = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * scale;
-
-    const firstTileX = Math.floor(x / TILE_SIZE) - 1;
-    const firstTileY = Math.floor(y / TILE_SIZE) - 1;
-    const subdomains = ['a', 'b', 'c', 'd'];
-    const tiles: MiniMapTile[] = [];
-
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const tileX = firstTileX + col;
-        const tileY = firstTileY + row;
-        const s = subdomains[(tileX + tileY) % subdomains.length];
-        const path = `${MINI_MAP_ZOOM}/${tileX}/${tileY}@2x.png?key=${environment.cartoApiKey}`;
-        tiles.push({
-          light: `https://${s}.basemaps.cartocdn.com/rastertiles/voyager/${path}`,
-          dark: `https://${s}.basemaps.cartocdn.com/dark_all/${path}`,
-          left: col * TILE_SIZE,
-          top: row * TILE_SIZE,
-        });
-      }
-    }
-
-    return { tiles, offsetX: x - firstTileX * TILE_SIZE, offsetY: y - firstTileY * TILE_SIZE };
   }
 
   protected organizerTypeLabel(organizer: OrganizerDetailDto): string {

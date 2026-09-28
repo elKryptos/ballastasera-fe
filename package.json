@@ -15,7 +15,8 @@
     "preview": "pnpm run build && wrangler dev",
     "preview:staging": "pnpm run build:staging && wrangler dev --env staging",
     "cf-typegen": "wrangler types",
-    "map:styles": "node scripts/build-map-styles.mjs"
+    "map:styles": "node scripts/build-map-styles.mjs",
+    "map:snapshots": "node scripts/build-map-snapshots.mjs"
   },
   "private": true,
   "packageManager": "pnpm@10.33.0",

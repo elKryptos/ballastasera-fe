@@ -10,8 +10,8 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import type { Map as LeafletMap } from 'leaflet';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
+import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
 import { Navbar } from '../../shared/navbar/navbar';
 import { InstallBanner } from '../../shared/install-banner/install-banner';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
@@ -19,8 +19,7 @@ import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
-import { MILAN_CENTER, MILAN_DEFAULT_ZOOM, PIN_GLYPHS, PIN_SHAPES, PIN_TYPES } from '../../core/config/map-pins';
-import { environment } from '../../../environments/environment';
+import { PIN_GLYPHS, PIN_SHAPES, PIN_TYPES } from '../../core/config/map-pins';
 
 interface PartnerCard {
   /** Which drawing sits on top of the card when there is nothing else to show. */
@@ -68,7 +67,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, MediaEmbed, Navbar, TranslocoPipe, SidebarPushDirective, InstallBanner],
+  imports: [RouterLink, MediaEmbed, Navbar, TranslocoPipe, SidebarPushDirective, InstallBanner, MapSnapshot],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -91,16 +90,12 @@ export class Landing implements AfterViewInit, OnDestroy {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private revealObserver?: IntersectionObserver;
-  private mapObserver?: IntersectionObserver;
   /** Aborts every pointer listener this component attaches (ambient parallax,
    * map tilt) in one shot — see ngOnDestroy. */
   private readonly listenerAbort = new AbortController();
 
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
-  /** Container for the live map preview in the map-teaser section. */
-  private readonly miniMapContainer = viewChild<ElementRef<HTMLDivElement>>('miniMap');
-  private miniMap: LeafletMap | null = null;
   private readonly teaserVisual = viewChild<ElementRef<HTMLAnchorElement>>('teaserVisual');
 
   async ngAfterViewInit(): Promise<void> {
@@ -110,7 +105,6 @@ export class Landing implements AfterViewInit, OnDestroy {
         this.setupAmbientParallax();
         this.setupTeaserTilt();
       }
-      this.setupLazyMiniMap();
     }
   }
 
@@ -206,73 +200,9 @@ export class Landing implements AfterViewInit, OnDestroy {
     );
   }
 
-  /**
-   * Loading Leaflet + fetching basemap tiles is real weight (a JS chunk and
-   * network requests) that a visitor who never scrolls this far shouldn't
-   * pay for — deferred until the box is about to enter the viewport, not
-   * fired unconditionally on every landing pageview. rootMargin starts the
-   * load a bit early so the tiles are usually already in by the time the
-   * box is actually visible, instead of popping in empty.
-   */
-  private setupLazyMiniMap(): void {
-    const container = this.miniMapContainer()?.nativeElement;
-    if (!container || typeof IntersectionObserver === 'undefined') {
-      void this.initMiniMap();
-      return;
-    }
-
-    this.mapObserver = new IntersectionObserver(
-      (entries, observer) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          observer.disconnect();
-          void this.initMiniMap();
-        }
-      },
-      { rootMargin: '200px 0px' },
-    );
-    this.mapObserver.observe(container);
-  }
-
-  /**
-   * A live, read-only preview of the real map (see MapPage) — the same
-   * basemap, panning/zooming disabled. No events are fetched here: that hits
-   * the backend and stays reserved for MapPage, once the visitor actually
-   * opens /mappa.
-   */
-  private async initMiniMap(): Promise<void> {
-    const container = this.miniMapContainer()?.nativeElement;
-    if (!container) return;
-
-    // Leaflet is CJS/UMD, not real ESM: esbuild's production bundle can
-    // synthesize a namespace that only has the module under `.default`
-    // instead of spreading it onto the namespace itself (works either way
-    // in dev, breaks silently in the optimized prod build).
-    const leafletModule = await import('leaflet');
-    const L = 'map' in leafletModule ? leafletModule : (leafletModule as unknown as { default: typeof leafletModule }).default;
-    this.miniMap = L.map(container, {
-      center: MILAN_CENTER,
-      zoom: MILAN_DEFAULT_ZOOM,
-      zoomControl: false,
-      attributionControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      touchZoom: false,
-      boxZoom: false,
-      keyboard: false,
-    });
-
-    L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${environment.cartoApiKey}`,
-      { subdomains: 'abcd', maxZoom: 20 },
-    ).addTo(this.miniMap);
-  }
-
   ngOnDestroy(): void {
     this.revealObserver?.disconnect();
-    this.mapObserver?.disconnect();
     this.listenerAbort.abort();
-    this.miniMap?.remove();
   }
 
   /**

@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { EventType } from '../../core/models/event.model';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
 
 /**
  * Rough bounding box around Milano — wide enough to catch every event in the
@@ -42,7 +43,7 @@ interface MapDot {
   selector: 'app-menu',
   templateUrl: './menu.html',
   styleUrl: './menu.css',
-  imports: [Navbar, RouterLink, SidebarPushDirective],
+  imports: [Navbar, RouterLink, SidebarPushDirective, MapSnapshot],
 })
 export class Menu {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -60,8 +61,8 @@ export class Menu {
     { icon: 'user', title: 'Profilo' },
   ];
 
-  /** Decorative only — positioned over the static map image in
-   * public/menu/map-preview.jpg, not tied to any real event. */
+  /** Decorative only — positioned over the card's map picture (MapSnapshot),
+   * not tied to any real event. */
   protected readonly mapDots: MapDot[] = [
     { x: 15, y: 30, type: 'EVENT' },
     { x: 58, y: 18, type: 'SCHOOL' },

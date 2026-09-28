@@ -16,8 +16,8 @@
       <a
         routerLink="/mappa"
         class="hero group relative mt-4 flex min-h-70 flex-col justify-end overflow-hidden rounded-lg border border-line p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.75 active:-translate-y-0.75 sm:mt-6">
-        <!-- Sfondo: screenshot statico della mappa, in public/imageMap.webp -->
-        <div class="absolute inset-0 bg-[url('/imageMap.webp')] bg-cover bg-center" aria-hidden="true"></div>
+        <!-- Sfondo: immagine statica della mappa, una per tema (stessi stili di /mappa), vedi MapSnapshot -->
+        <app-map-snapshot variant="menu" class="pointer-events-none absolute inset-0" />
 
         @for (dot of mapDots; track dot.type) {
           <span
@@ -84,14 +84,14 @@
           </div>
         </div>
 
-        <h2 class="relative mt-2 font-display text-lg font-bold text-ink [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)] sm:text-base">
+        <h2 class="relative mt-2 font-display text-lg font-bold text-bone text-shadow-(--hero-halo) sm:text-base">
           Mappa
         </h2>
-        <p class="relative mt-1 font-bold text-base text-ink [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)] sm:text-sm">
+        <p class="relative mt-1 font-bold text-base text-bone text-shadow-(--hero-halo) sm:text-sm">
           Vedi chi balla stasera a Milano, in tempo reale.
         </p>
 
-        <span class="relative mt-2 inline-flex items-center gap-1 text-base font-extrabold text-rose [text-shadow:0_1px_2px_rgba(255,255,255,.9),0_0_10px_rgba(255,255,255,.7)] sm:text-sm">
+        <span class="relative mt-2 inline-flex items-center gap-1 text-base font-extrabold text-rose text-shadow-(--hero-halo) sm:text-sm">
           Apri la mappa
           <svg viewBox="0 0 24 24" class="h-4 w-4 transition-transform group-hover:translate-x-1 group-active:translate-x-1" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M5 12h14M13 6l6 6-6 6" />

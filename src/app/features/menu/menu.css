@@ -60,12 +60,15 @@ logo's rose. app-navbar pins its own tokens, so this doesn't reach it. */
   opacity: 0.03;
 }
 
-/* The Mappa card sits on a screenshot of the map — the same image in both
-themes — so it keeps its night ink: dark title/copy (with their white
-halo) and the dark icon disc, exactly as in the dark theme. */
+/* The Mappa card's copy sits right on the map preview, which follows the
+theme like /mappa does: light text (bone) with a dark halo over the night
+map, dark text (bone is navy by day) with a white halo over the day one. */
+.hero {
+  --hero-halo: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
 :host-context([data-theme='light']) .hero {
-  --color-ink: #1a0e2e;
-  --color-ink-2: #2a1640;
+  --hero-halo: 0 1px 2px rgba(255, 255, 255, 0.9), 0 0 10px rgba(255, 255, 255, 0.7);
 }
 
 /* ---------- hero card (Mappa) ----------
@@ -74,13 +77,11 @@ Il resto (posizione dei pin, hover, sfondo, ombra sul testo, icona
 resta solo ciò che Tailwind non esprime nativamente: color-mix() e le
 animazioni con relative @keyframes. */
 
+/* Border: just the template's neutral border-line, like the "presto" tiles —
+no rose tint over the map. Not dropped altogether: by day the map's land and
+the page share the same paper colour, and the card would melt into it. */
 .hero {
-  border-color: color-mix(in srgb, var(--color-rose) 34%, var(--color-line));
   background-color: var(--color-ink-2);
-}
-
-.hero:hover {
-  border-color: color-mix(in srgb, var(--color-rose) 55%, var(--color-line));
 }
 
 .hero .icon {

@@ -179,13 +179,12 @@
     </div>
 
     <div class="grid gap-6 lg:grid-cols-[minmax(0,20rem)_1fr] lg:items-center">
-      <!-- The actual live map's basemap, shrunk down and frozen (no drag/zoom)
-        — real Leaflet tiles, not a drawing, but no events are fetched here:
-        that stays reserved for /mappa once the visitor actually opens it.
-        Clicking through anywhere on it opens the full /mappa experience. -->
+      <!-- A picture of the live map's basemap — rendered from /mappa's own
+        styles, one per theme (see MapSnapshot) — rather than the map itself:
+        here it's only a teaser, so no map library or tiles to load. -->
       <a #teaserVisual aria-label="{{ 'mapTeaser.googleCta' | transloco }}"
         class="teaser-visual group relative isolate block aspect-4/5 w-full shrink-0 overflow-hidden rounded-3xl border border-line bg-ink-2/60 no-underline sm:aspect-square">
-        <div #miniMap class="pointer-events-none absolute inset-0" aria-hidden="true"></div>
+        <app-map-snapshot variant="landing" class="pointer-events-none absolute inset-0" />
         <span
           class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-center gap-1.5 bg-linear-to-t from-ink/90 to-transparent px-3 pt-8 pb-3">
           <span class="relative flex size-1.5 shrink-0">

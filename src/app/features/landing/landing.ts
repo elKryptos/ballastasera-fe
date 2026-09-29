@@ -72,7 +72,7 @@ interface MediaItem {
   styleUrl: './landing.css',
 })
 export class Landing implements AfterViewInit, OnDestroy {
-  // Keeps the redesigned navbar + login/signup dialog off the public site
+  // Keeps the redesigned navbar + sign-in dialog off the public site
   // until it's signed off on staging — see environment.staging.ts. The
   // production header below stays byte-for-byte what already shipped.
   protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.navbarAuth);

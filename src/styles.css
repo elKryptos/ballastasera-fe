@@ -51,7 +51,7 @@ Generates z-map-content etc. utilities; components outside a template
   fixed constant of CDK's own, not ours — so anything that must stay
   visible over it, like the fixed mobile top bar, has to clear that first. */
   --z-index-mobile-bar: 1001; /* Fixed mobile top bar — above CDK's overlay container */
-  --z-index-modal: 1010; /* Login/signup dialog — always topmost, incl. above the mobile bar */
+  --z-index-modal: 1010; /* Sign-in dialog — always topmost, incl. above the mobile bar */
 }
 
 :root {

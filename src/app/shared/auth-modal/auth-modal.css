@@ -32,61 +32,6 @@ visibility is purely this opacity/transform/pointer-events toggle. */
   }
 }
 
-/* ---------- tabs ---------- */
-
-.tab {
-  color: var(--color-muted);
-}
-
-.tab.active {
-  background: var(--color-rose);
-  color: var(--color-ink);
-}
-
-/* ---------- fields ---------- */
-
-.field {
-  width: 100%;
-  border-radius: 0.75rem;
-  border: 1px solid var(--color-line);
-  background: color-mix(in srgb, var(--color-bone) 5%, transparent);
-  padding: 0.75rem 1rem;
-  font-size: 0.95rem;
-  color: var(--color-bone);
-  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.field::placeholder {
-  color: color-mix(in srgb, var(--color-muted) 85%, transparent);
-}
-
-.field:focus {
-  border-color: var(--color-rose);
-  background: color-mix(in srgb, var(--color-bone) 8%, transparent);
-  box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.16);
-  outline: none;
-}
-
-.field[aria-invalid='true'] {
-  border-color: var(--color-amber);
-}
-
-/* Always in the DOM, at fixed height, so a field turning invalid never
-pushes the fields below it — only its opacity switches. */
-.field-error {
-  margin-top: 0.4rem;
-  min-height: 1rem;
-  font-size: 0.76rem;
-  line-height: 1rem;
-  color: var(--color-amber);
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.field-error--visible {
-  opacity: 1;
-}
-
 /* ---------- buttons ---------- */
 
 .google-btn:hover {

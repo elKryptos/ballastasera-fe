@@ -2,30 +2,37 @@ import {
   Component,
   ElementRef,
   PLATFORM_ID,
+  computed,
   effect,
   inject,
-  input,
   model,
   signal,
   viewChild,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 
-export type AuthMode = 'login' | 'signup';
 type Step = 'form' | 'done';
 
+/** The Apple button's replies, one per tap, the last one repeating. The joke
+ * is on Apple, never on the visitor — plenty of them are on an iPhone. */
+const APPLE_REPLIES = [
+  "In arrivo… mai 🙃 Apple vuole 99 $ all'anno solo per farti entrare. Noi quei soldi li spendiamo in mojito.",
+  'Insisti? La mela resta fuori dalla pista 🍏🚫',
+  'Il buttafuori è stato chiaro: niente mele. Con Google entri subito 😉',
+];
+
 /**
- * Login / create-account dialog. There is no auth backend yet, so a
- * successful submit or Google click lands on an honest "done" state instead
- * of faking a session — see the TODOs below for where the real calls go.
+ * Sign-in dialog. Google is the only way in — no email/password accounts:
+ * everyone already has a Google account and there's no password to manage.
+ * "Continua con Apple" is an easter egg, not a login: see tapApple().
+ * With the googleAuth flag off (no backend on this environment) the Google
+ * button lands on an honest "coming soon" state instead of faking a session.
  */
 @Component({
   selector: 'app-auth-modal',
-  imports: [FormsModule],
   templateUrl: './auth-modal.html',
   styleUrl: './auth-modal.css',
 })
@@ -34,23 +41,20 @@ export class AuthModal {
   private readonly auth = inject(AuthService);
   private readonly featureFlags = inject(FeatureFlagService);
 
-  /** Two-way: the opener (the navbar's "Accedi" button) toggles this. */
+  /** Two-way: the opener (the navbar's "Accedi" button, a like/Parteciperò tap) toggles this. */
   readonly open = model(false);
 
-  /** Which tab is shown first. The dialog itself still lets people switch. */
-  readonly mode = input<AuthMode>('login');
-
-  protected readonly tab = signal<AuthMode>('login');
   protected readonly step = signal<Step>('form');
-  protected readonly showPassword = signal(false);
 
-  protected readonly email = signal('');
-  protected readonly password = signal('');
+  /** Taps on the Apple button since the dialog opened — see tapApple(). */
+  protected readonly appleTaps = signal(0);
+  protected readonly appleReply = computed(() => {
+    const taps = this.appleTaps();
+    return taps === 0 ? '' : APPLE_REPLIES[Math.min(taps, APPLE_REPLIES.length) - 1];
+  });
 
-  protected readonly emailError = signal(false);
-  protected readonly passwordError = signal(false);
-
-  private readonly emailField = viewChild<ElementRef<HTMLInputElement>>('emailField');
+  private readonly googleButton = viewChild<ElementRef<HTMLButtonElement>>('googleButton');
+  private readonly appleButton = viewChild<ElementRef<HTMLButtonElement>>('appleButton');
 
   constructor() {
     // Body-scroll lock and initial focus are DOM-only, hence the platform
@@ -60,15 +64,14 @@ export class AuthModal {
       if (!isPlatformBrowser(this.platformId)) return;
 
       if (isOpen) {
-        this.tab.set(this.mode());
         this.step.set('form');
-        this.resetErrors();
+        this.appleTaps.set(0);
         document.body.style.overflow = 'hidden';
-        // Only on a precise pointer (mouse/trackpad): on a touchscreen this
-        // would pop the on-screen keyboard the instant the dialog opens,
-        // before the person has actually chosen to type anything.
+        // Only on a precise pointer (mouse/trackpad), where a focus ring on
+        // the dialog's first action helps keyboard users; on a touchscreen it
+        // would just flash a ring nobody asked for.
         if (window.matchMedia('(pointer: fine)').matches) {
-          queueMicrotask(() => this.emailField()?.nativeElement.focus());
+          queueMicrotask(() => this.googleButton()?.nativeElement.focus());
         }
       } else {
         document.body.style.overflow = '';
@@ -76,18 +79,30 @@ export class AuthModal {
     });
   }
 
-  protected switchTab(tab: AuthMode): void {
-    this.tab.set(tab);
-    this.resetErrors();
-  }
-
   protected close(): void {
     this.open.set(false);
   }
 
-  private resetErrors(): void {
-    this.emailError.set(false);
-    this.passwordError.set(false);
+  /** Easter egg: no Sign in with Apple — Apple charges 99 $/year just to let
+  people in. Each tap escalates the reply and shakes the button like a door
+  that won't open (a "no" head-shake), unless the visitor asked for reduced
+  motion. Web Animations rather than a CSS class, so every tap restarts it. */
+  protected tapApple(): void {
+    this.appleTaps.update((taps) => taps + 1);
+
+    const button = this.appleButton()?.nativeElement;
+    if (!button || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    button.animate(
+      [
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-7px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-4px)' },
+        { transform: 'translateX(3px)' },
+        { transform: 'translateX(0)' },
+      ],
+      { duration: 420, easing: 'ease-in-out' },
+    );
   }
 
   protected continueWithGoogle(): void {
@@ -100,18 +115,5 @@ export class AuthModal {
     // Full-page redirect to the backend's OAuth2 flow — it lands back on
     // /oauth2/callback with our JWT once Google confirms the login.
     this.auth.loginWithGoogle();
-  }
-
-  protected submit(): void {
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(this.email().trim());
-    const passwordValid = this.password().length >= 8;
-
-    this.emailError.set(!emailValid);
-    this.passwordError.set(!passwordValid);
-
-    if (!emailValid || !passwordValid) return;
-
-    // TODO: POST to the auth endpoint once the backend exists.
-    this.step.set('done');
   }
 }

@@ -4,7 +4,7 @@
  * on any environment file that's missing one.
  */
 export const FEATURE_FLAGS = {
-  /** Redesigned navbar + login/signup dialog — see auth-modal. */
+  /** Redesigned navbar + Google sign-in dialog — see auth-modal. */
   navbarAuth: 'navbarAuth',
   mapPage: 'mapPage',
   welcomePage: 'welcomePage',

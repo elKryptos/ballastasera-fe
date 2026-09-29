@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
-import { AuthMode, AuthModal } from '../auth-modal/auth-modal';
+import { AuthModal } from '../auth-modal/auth-modal';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
@@ -28,7 +28,6 @@ export class Navbar {
   private readonly themeService = inject(ThemeService);
 
   protected readonly authOpen = signal(false);
-  protected readonly authMode = signal<AuthMode>('login');
 
   // The collapse/expand trigger only makes sense inside the desktop rail
   // mobile has its own trigger in the top bar, so the projected sidebar
@@ -52,8 +51,7 @@ export class Navbar {
     this.themeService.toggle();
   }
 
-  protected openAuth(mode: AuthMode): void {
-    this.authMode.set(mode);
+  protected openAuth(): void {
     this.authOpen.set(true);
   }
 

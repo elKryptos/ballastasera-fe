@@ -17,94 +17,50 @@
     </button>
 
     @if (step() === 'form') {
-    <div class="tabs mb-6 inline-flex rounded-full border border-line bg-ink/60 p-1" role="tablist">
-      <button type="button" role="tab" [attr.aria-selected]="tab() === 'login'" [class.active]="tab() === 'login'"
-        (click)="switchTab('login')"
-        class="tab cursor-pointer rounded-full px-4 py-2 text-[0.78rem] font-semibold whitespace-nowrap transition-all duration-200">
-        Accedi
-      </button>
-      <button type="button" role="tab" [attr.aria-selected]="tab() === 'signup'" [class.active]="tab() === 'signup'"
-        (click)="switchTab('signup')"
-        class="tab cursor-pointer rounded-full px-4 py-2 text-[0.78rem] font-semibold whitespace-nowrap transition-all duration-200">
-        Crea account
-      </button>
-    </div>
-
     <h2 id="authTitle" class="mb-1.5 font-display text-2xl font-bold tracking-[-0.02em]">
-      {{ tab() === 'login' ? 'Bentornato' : 'Unisciti alla scena' }}
+      Entra nella scena
     </h2>
     <p class="mb-6 text-sm leading-relaxed text-lead">
-      {{ tab() === 'login'
-      ? 'Accedi per salvare le tue serate e i tuoi locali preferiti.'
-      : 'Crea un account per non perderti nemmeno una serata di salsa o bachata.' }}
+      Accedi con il tuo account Google per mettere like alle serate e dire a quali partecipi. Niente password da
+      ricordare.
     </p>
 
-    <button type="button" (click)="continueWithGoogle()"
-      class="google-btn flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-line bg-bone/95 px-4 py-3 text-[0.9rem] font-semibold text-ink transition-all duration-200 hover:bg-bone active:translate-y-px">
-      <svg viewBox="0 0 48 48" class="size-5 shrink-0" aria-hidden="true">
-        <path fill="#FFC107"
-          d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
-        <path fill="#FF3D00"
-          d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
-        <path fill="#4CAF50"
-          d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
-        <path fill="#1976D2"
-          d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
-      </svg>
-      Continua con Google
-    </button>
+    <div class="flex flex-col gap-3">
+      <button #googleButton type="button" (click)="continueWithGoogle()"
+        class="google-btn flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-line bg-bone/95 px-4 py-3 text-[0.9rem] font-semibold text-ink transition-all duration-200 hover:bg-bone active:translate-y-px">
+        <svg viewBox="0 0 48 48" class="size-5 shrink-0" aria-hidden="true">
+          <path fill="#FFC107"
+            d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+          <path fill="#FF3D00"
+            d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+          <path fill="#4CAF50"
+            d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+          <path fill="#1976D2"
+            d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+        </svg>
+        Continua con Google
+      </button>
 
-    <div class="divider my-5 flex items-center gap-3 text-[0.68rem] tracking-widest text-muted uppercase">
-      <span class="h-px flex-1 bg-line"></span>
-      oppure con l'email
-      <span class="h-px flex-1 bg-line"></span>
+      <!-- Easter egg: there's no Sign in with Apple and there won't be (Apple
+      wants 99 $/year just to let people in). The button looks like the real
+      thing; tapping it shakes and gets a reply — see tapApple(). -->
+      <button #appleButton type="button" (click)="tapApple()" aria-describedby="appleReply"
+        class="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-line bg-bone/5 px-4 py-3 text-[0.9rem] font-semibold text-lead transition-colors hover:bg-bone/8">
+        <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill="currentColor" aria-hidden="true">
+          <path
+            d="M16.37 1.43c0 1.14-.46 2.24-1.2 3.05-.8.87-2.1 1.54-3.18 1.45-.14-1.1.41-2.26 1.15-3.05.82-.9 2.22-1.56 3.23-1.45zM20.5 17.22c-.56 1.3-.83 1.88-1.55 3.03-1 1.6-2.42 3.6-4.17 3.62-1.56.02-1.96-1.01-4.08-1-2.12.01-2.56 1.02-4.12 1-1.75-.02-3.09-1.82-4.1-3.42C-.33 16.1-.63 10.9 1.2 8.1 2.5 6.1 4.55 4.93 6.47 4.93c1.96 0 3.19 1.08 4.81 1.08 1.57 0 2.53-1.08 4.8-1.08 1.71 0 3.52.93 4.81 2.54-4.23 2.32-3.54 8.36.61 9.75z" />
+        </svg>
+        Continua con Apple
+        <span
+          class="rounded-full border border-line px-2 py-0.5 font-mono text-[0.6rem] tracking-widest uppercase">{{
+          appleTaps() > 0 ? 'Mai' : 'In arrivo' }}</span>
+      </button>
     </div>
 
-    <form (ngSubmit)="submit()" novalidate class="flex flex-col gap-3.5">
-      <div>
-        <label class="sr-only" for="authEmail">Email</label>
-        <input #emailField id="authEmail" name="email" type="email" inputmode="email" autocomplete="email"
-          placeholder="la-tua@email.com" [(ngModel)]="email" [attr.aria-invalid]="emailError()" class="field" />
-        <p class="field-error" [class.field-error--visible]="emailError()">Serve un indirizzo email valido.</p>
-      </div>
-
-      <div>
-        <label class="sr-only" for="authPassword">Password</label>
-        <div class="relative">
-          <input id="authPassword" name="password" [type]="showPassword() ? 'text' : 'password'"
-            [autocomplete]="tab() === 'signup' ? 'new-password' : 'current-password'" placeholder="Password"
-            [(ngModel)]="password" [attr.aria-invalid]="passwordError()" class="field pr-11" />
-          <button type="button"
-            class="absolute top-1/2 right-2.5 inline-flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-bone/8 hover:text-bone"
-            (click)="showPassword.set(!showPassword())"
-            [attr.aria-label]="showPassword() ? 'Nascondi password' : 'Mostra password'">
-            @if (showPassword()) {
-            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.7"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M3 3l18 18" />
-              <path
-                d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6 0 9.6 5.5 10.5 7-.34.57-1.14 1.72-2.36 2.9M6.3 6.3C4 7.8 2.3 10 1.5 12c.9 1.5 2.5 4.1 5.4 5.9A10.6 10.6 0 0 0 12 19c1.06 0 2.06-.15 3-.42" />
-              <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
-            </svg>
-            } @else {
-            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="1.7"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            }
-          </button>
-        </div>
-        <p class="field-error" [class.field-error--visible]="passwordError()">Minimo 8 caratteri.</p>
-      </div>
-
-      <button type="submit" class="submit-btn mt-1.5">
-        {{ tab() === 'login' ? 'Accedi' : 'Crea account' }}
-      </button>
-    </form>
-
-    <p class="mt-5 text-center text-[0.7rem] leading-relaxed text-muted">
-      Il login è in arrivo: appena è attivo ti mandiamo un invito su questa email.
+    <!-- Always in the DOM so screen readers announce each new reply. -->
+    <p id="appleReply" aria-live="polite" class="text-center text-[0.8rem] leading-relaxed text-lead"
+      [class.mt-4]="appleReply()">
+      {{ appleReply() }}
     </p>
     } @else {
     <div class="flex flex-col items-center gap-3 py-3 text-center">
@@ -115,10 +71,9 @@
           <path d="M5 13l4 4L19 7" />
         </svg>
       </span>
-      <h2 class="font-display text-xl font-bold tracking-[-0.02em]">Ci sei quasi</h2>
+      <h2 id="authTitle" class="font-display text-xl font-bold tracking-[-0.02em]">Ci sei quasi</h2>
       <p class="max-w-75 text-sm leading-relaxed text-lead">
-        Il login sta per arrivare. Appena è pronto, ti avvisiamo su
-        <strong class="font-semibold text-bone">{{ email() || 'questa email' }}</strong>.
+        L'accesso con Google sta per arrivare: torna a trovarci tra poco.
       </p>
       <button type="button" class="submit-btn mt-2 w-auto px-8" (click)="close()">
         Ok, ci vediamo in pista

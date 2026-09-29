@@ -38,7 +38,7 @@
         }
       </span>
       } @else {
-      <button type="button" (click)="openAuth('login')" aria-label="Accedi"
+      <button type="button" (click)="openAuth()" aria-label="Accedi"
         class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-line p-0 text-bone outline-offset-2 active:border-rose active:bg-rose/12">
         <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -180,7 +180,7 @@
     } @else {
     <ul hlmSidebarMenu>
       <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" (click)="openAuth('login')" tooltip="Accedi"
+        <button hlmSidebarMenuButton type="button" (click)="openAuth()" tooltip="Accedi"
           class="nav-item--login h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">
           <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -195,4 +195,4 @@
   </div>
 </hlm-sidebar>
 
-<app-auth-modal [(open)]="authOpen" [mode]="authMode()" />
+<app-auth-modal [(open)]="authOpen" />

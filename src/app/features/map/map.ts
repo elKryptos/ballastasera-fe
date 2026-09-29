@@ -80,15 +80,29 @@ const VENUE_PIN_SIZE = 20;
  * reading up to a minute old is fine, and past 10s we give up and say so. */
 const LOCATE_OPTIONS: PositionOptions = { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 };
 /** A real GPS fix (a few to ~100 m on phones) gets its accuracy circle and a
- * zoom that fits it, capped at street level. Past LOCATE_CIRCLE_MAX_METERS the
+ * zoom that fits it, capped at LOCATE_MAX_ZOOM. Past LOCATE_CIRCLE_MAX_METERS the
  * fix is Wi-Fi/IP guesswork (desktops: often several km, bigger than the whole
- * city): no circle, just the dot at city zoom and a note saying it's rough. */
-const LOCATE_MAX_ZOOM = 16;
+ * city): no circle, just the dot at city zoom and a note saying it's rough.
+ * The cap is 14, not street level: a couple of km around the visitor is what
+ * "events near me" needs, and it's the last zoom served by the light z13 vector
+ * tiles (~125 KB each) — from 15 up MapLibre switches to z14 tiles, ~3x
+ * heavier, mostly POIs this style never draws. Closer is one pinch away. */
+const LOCATE_MAX_ZOOM = 14;
 const LOCATE_APPROX_ZOOM = 13;
 const LOCATE_CIRCLE_MAX_METERS = 1000;
 const LOCATE_MESSAGE_MS = 5000;
 /** The classic "you are here" blue, outside the pin palette on purpose. */
 const USER_LOCATION_COLOR = '#3b82f6';
+
+/** The app only covers Italy: panning is kept to it (plus a margin, so the
+ * coast and the borders never sit flush with the screen edge) and zooming out
+ * stops once the whole country fits a phone. Without this, dragging or
+ * zooming far away downloaded basemap tiles for places with no events at all. */
+const MAP_BOUNDS: [[number, number], [number, number]] = [
+  [35.0, 5.5],
+  [47.8, 19.5],
+];
+const MAP_MIN_ZOOM = 5;
 
 /** The shortest credit OpenStreetMap's attribution guidelines accept, linked
  * to their copyright page required under the ODbL for every basemap here. */
@@ -397,7 +411,15 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     // maxZoom on the map itself: Leaflet otherwise takes it from the tile
     // layers, and the dark (vector) basemap declares none so without this
     // the dark theme could zoom in forever, the light one stopping at 20.
-    const map = L.map(container, { zoomControl: false, maxZoom: 20 }).setView(
+    // minZoom/maxBounds: Italy only, see MAP_BOUNDS. Viscosity 1 makes the
+    // edge solid instead of letting the map be dragged past it and spring back.
+    const map = L.map(container, {
+      zoomControl: false,
+      maxZoom: 20,
+      minZoom: MAP_MIN_ZOOM,
+      maxBounds: MAP_BOUNDS,
+      maxBoundsViscosity: 1,
+    }).setView(
       this.mapViewState.center ?? DEFAULT_CENTER,
       this.mapViewState.zoom ?? DEFAULT_ZOOM,
     );
@@ -817,6 +839,15 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     if (!L || !map) return;
 
     const position = L.latLng(coords.latitude, coords.longitude);
+    // Outside MAP_BOUNDS the map couldn't pan there anyway (it would stop at
+    // the edge with the dot off screen), so say why instead.
+    if (!L.latLngBounds(MAP_BOUNDS).contains(position)) {
+      this.userLocationLayer?.remove();
+      this.userLocationLayer = null;
+      this.showLocateMessage('Per ora la mappa copre solo l’Italia.');
+      return;
+    }
+
     const precise = coords.accuracy <= LOCATE_CIRCLE_MAX_METERS;
     const dot = L.marker(position, {
       icon: L.divIcon({

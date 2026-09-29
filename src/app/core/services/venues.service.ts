@@ -3,7 +3,7 @@ import { Service, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
-import { VenuesSummaryDto } from '../models/venue.model';
+import { VenueMapPinDto, VenuesSummaryDto } from '../models/venue.model';
 
 @Service()
 export class VenuesService {
@@ -15,5 +15,11 @@ export class VenuesService {
       params = params.set('search', search)
     }
     return this.http.get<VenuesSummaryDto[]>(`${environment.apiUrl}${endpoints.venues.list}`, {params});
+  }
+
+  /** Every venue of a city, for the map's places layer. */
+  getMapVenues(cityId: number): Observable<VenueMapPinDto[]> {
+    const params = new HttpParams().set('cityId', cityId);
+    return this.http.get<VenueMapPinDto[]>(`${environment.apiUrl}${endpoints.venues.map}`, { params });
   }
 }

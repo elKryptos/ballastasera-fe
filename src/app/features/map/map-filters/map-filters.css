@@ -12,6 +12,8 @@ them through Tailwind's var shorthand, e.g. bg-(--mf-chip-bg). */
   colours, white text at >= 4.5:1 on both, in both themes. */
   --mf-city-on-bg: #e0245c;
   --mf-style-on-bg: #6b46e0;
+  /* Selected "Mostra" option (teal): white text at >= 4.5:1. */
+  --mf-layer-on-bg: #0d7a70;
   --mf-error: #ff8fab;
   /* "Filters active" dot on the mobile Filtri button. */
   --mf-dot: #ff2f6d;

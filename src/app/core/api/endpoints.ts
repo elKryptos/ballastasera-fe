@@ -23,6 +23,7 @@ export const endpoints = {
     updateEventSeriesFlyer: (seriesId: string) => `/rest/admin/event-series/${seriesId}/flyer`,
     generateEventSeriesOccurrences: (id: string) => `/rest/admin/event-series/${id}/occurrences`,
     createVenue: '/rest/admin/venues',
+    updateVenue: (id: string) => `/rest/admin/venues/${id}`,
     deleteVenue: (id: string) => `/rest/admin/venues/${id}`,
   },
 
@@ -41,10 +42,10 @@ export const endpoints = {
     details: (id: number) => `/rest/dance-styles/${id}`,
   },
 
+  // Read-only: venues are created and edited by the admin (see admin.createVenue/updateVenue).
   venues: {
     list: '/rest/venues',
-    create: '/rest/venues',
-    update: (id: string) => `/rest/venues/${id}`,
+    map: '/rest/venues/map',
   },
 
   events: {

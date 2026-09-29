@@ -1,6 +1,6 @@
 <!-- Los colores del filtro (tema claro y oscuro) se cambian en los tokens --map-* de map.css y --mf-* de map-filters.css. -->
 <aside
-  class="absolute right-4 bottom-4 z-map-content flex max-h-[75vh] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col gap-5 overflow-y-auto rounded-lg border-(--map-glass-border) bg-(--map-glass) text-(--map-text) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out sm:top-4 sm:right-auto sm:bottom-auto sm:left-4 sm:max-h-[calc(100%-2rem)] sm:max-w-none sm:origin-top-left sm:scale-100 sm:pointer-events-auto sm:opacity-100"
+  class="absolute right-4 bottom-4 z-map-content flex max-h-[75dvh] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col gap-5 overflow-y-auto rounded-lg border-(--map-glass-border) bg-(--map-glass) text-(--map-text) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out sm:top-4 sm:right-auto sm:bottom-auto sm:left-4 sm:max-h-[calc(100%-2rem)] sm:max-w-none sm:origin-top-left sm:scale-100 sm:pointer-events-auto sm:opacity-100"
   [class]="panelStateClass()" [class.scale-50]="!open() || hideForCard()" [class.opacity-0]="!open() || hideForCard()"
   [class.pointer-events-none]="!open() || hideForCard()" [attr.inert]="hideForCard() ? '' : null" aria-label="Filtri">
   <!-- Desktop-only: the collapse arrow is hidden on mobile, but collapsed
@@ -26,11 +26,16 @@
   @if (summaryMode()) {
   <div class="flex flex-wrap items-center gap-1.5 pr-6">
     @if (hasActiveFilters()) {
+    @if (layerSummary(); as label) {
+    <span class="rounded-sm bg-(--mf-layer-on-bg) px-2.5 py-1 text-xs text-white">{{ label }}</span>
+    }
     @if (activeCityName(); as cityName) {
     <span class="rounded-sm bg-(--mf-city-on-bg) px-2.5 py-1 text-xs text-white">{{ cityName }}</span>
     }
+    @if (layer() !== 'venues') {
     @for (name of activeStyleNames(); track name) {
     <span class="rounded-sm bg-(--mf-style-on-bg) px-2.5 py-1 text-xs text-white">{{ name }}</span>
+    }
     }
     } @else {
     <span class="mr-1 rounded-lg border border-(--mf-chip-border) bg-(--mf-chip-bg) px-2.5 py-1 text-xs">Filtri</span>
@@ -39,6 +44,24 @@
   } @else {
   <!-- Chips are toggle buttons: aria-pressed marks the selected ones, and
   Tailwind's aria-pressed: variant styles them from that same attribute. -->
+  <!-- What the map shows: events (default), places only, or both. Venue pins
+  are only fetched once a layer that includes them is picked. -->
+  <div class="flex flex-col gap-2">
+    <span class="font-mono text-xs tracking-[0.08em] text-(--map-muted) uppercase">Mostra</span>
+    <div class="flex flex-wrap gap-1.5" role="group" aria-label="Cosa mostrare sulla mappa">
+      @for (option of layerOptions; track option.value) {
+      <button type="button"
+        class="cursor-pointer rounded-sm border border-(--mf-chip-border) bg-(--mf-chip-bg) px-3 py-1.5 text-sm transition-colors aria-pressed:border-(--mf-layer-on-bg) aria-pressed:bg-(--mf-layer-on-bg) aria-pressed:text-white"
+        [attr.aria-pressed]="layer() === option.value" (click)="layerSelected.emit(option.value)">
+        {{ option.label }}
+      </button>
+      }
+    </div>
+    @if (layer() !== 'events' && venuesError()) {
+    <p class="text-sm text-(--mf-error)">Impossibile caricare i luoghi.</p>
+    }
+  </div>
+
   <div class="flex flex-col gap-2">
     <span class="font-mono text-xs tracking-[0.08em] text-(--map-muted) uppercase">Città</span>
     <div class="flex flex-wrap gap-1.5">
@@ -57,6 +80,9 @@
     </div>
   </div>
 
+  <!-- Dance styles only filter events: venues have none, so the section goes
+  away (selection kept) while only places are showing. -->
+  @if (layer() !== 'venues') {
   <div class="flex flex-col gap-2">
     <span class="font-mono text-xs tracking-[0.08em] text-(--map-muted) uppercase">Stile</span>
     <div class="flex flex-wrap gap-1.5">
@@ -69,14 +95,26 @@
       }
     </div>
   </div>
-
-  @if (loading()) {
-  <p class="text-sm text-(--map-muted)">Caricamento eventi…</p>
-  } @else if (error()) {
-  <p class="text-sm text-(--mf-error)">Impossibile caricare gli eventi.</p>
-  } @else {
-  <p class="text-sm">{{ eventCount() }} eventi in questa zona</p>
   }
+
+  <div class="flex flex-col gap-0.5">
+    @if (layer() !== 'venues') {
+    @if (loading()) {
+    <p class="text-sm text-(--map-muted)">Caricamento eventi…</p>
+    } @else if (error()) {
+    <p class="text-sm text-(--mf-error)">Impossibile caricare gli eventi.</p>
+    } @else {
+    <p class="text-sm">{{ eventCount() }} eventi in questa zona</p>
+    }
+    }
+    @if (layer() !== 'events') {
+    @if (venuesLoading()) {
+    <p class="text-sm text-(--map-muted)">Caricamento luoghi…</p>
+    } @else if (!venuesError()) {
+    <p class="text-sm">{{ venueCount() }} {{ venueCount() === 1 ? 'luogo' : 'luoghi' }}</p>
+    }
+    }
+  </div>
   }
 </aside>
 

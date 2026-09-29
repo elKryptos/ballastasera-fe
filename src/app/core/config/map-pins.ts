@@ -1,4 +1,5 @@
 import { EventType } from '../models/event.model';
+import { VenueType } from '../models/venue.model';
 
 /** Fallback view when there's no city yet to centre on: Milano, zoomed to city level. */
 export const MILAN_CENTER: [number, number] = [45.4642, 9.19];
@@ -49,4 +50,36 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
   SCHOOL: 'Scuola',
   CLUB: 'Discoteca',
   BAR: 'Bar',
+};
+
+/** Venue pins (the map's "Locali e scuole" layer) are round badges instead of
+ * pointed pins, so a permanent place never reads as an event. The types they
+ * share with EventType reuse its colour and glyph — a school is violet with a
+ * graduation cap whether it's the place or one of its events; OTHER (halls,
+ * theatres, squares...) gets a neutral slate and a building glyph. Glyphs are
+ * the same paths as PIN_GLYPHS, centred around (12, 12) in a 24x24 viewBox. */
+export const VENUE_PIN_COLORS: Record<VenueType, string> = {
+  SCHOOL: PIN_COLORS.SCHOOL,
+  CLUB: PIN_COLORS.CLUB,
+  BAR: PIN_COLORS.BAR,
+  OTHER: '#64748b', // slate: white glyph stays >= 4.5:1
+};
+
+export const VENUE_PIN_GLYPHS: Record<VenueType, string> = {
+  SCHOOL: PIN_GLYPHS.SCHOOL,
+  CLUB: PIN_GLYPHS.CLUB,
+  BAR: PIN_GLYPHS.BAR,
+  // House with a door.
+  OTHER: 'M12 6.5 6 11.5V17h4v-3.5h4V17h4v-5.5z',
+};
+
+/** Every VenueType, in the order the legend shows them. */
+export const VENUE_TYPES: VenueType[] = ['SCHOOL', 'CLUB', 'BAR', 'OTHER'];
+
+/** Italian label per VenueType, for the legend and the venue popup. */
+export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
+  SCHOOL: 'Scuola',
+  CLUB: 'Discoteca',
+  BAR: 'Bar',
+  OTHER: 'Altro',
 };

@@ -9,6 +9,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -18,6 +19,7 @@ import type { DivIcon, LatLng, Layer, Map as LeafletMap, MaplibreGL, Marker } fr
 import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { EventsService, MapBounds } from '../../core/services/events.service';
+import { VenuesService } from '../../core/services/venues.service';
 import { CitiesService } from '../../core/services/cities.service';
 import { DanceStylesService } from '../../core/services/dance-styles.service';
 import { EventEngagementService } from '../../core/services/event-engagement.service';
@@ -25,6 +27,7 @@ import { MapViewStateService } from '../../core/services/map-view-state.service'
 import { Theme, ThemeService } from '../../core/services/theme.service';
 import { KeepAliveHooks } from '../../core/routing/keep-alive-reuse.strategy';
 import { EventCardDto, EventType } from '../../core/models/event.model';
+import { VenueMapPinDto, VenueType } from '../../core/models/venue.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 import { isLiveAt } from '../../core/utils/event-format';
@@ -32,7 +35,7 @@ import { supportsWebGL } from '../../core/utils/webgl';
 import { environment } from '../../../environments/environment';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { EventMapCard } from './event-map-card/event-map-card';
-import { MapFilters } from './map-filters/map-filters';
+import { MapFilters, MapLayer } from './map-filters/map-filters';
 import {
   EVENT_TYPE_LABELS,
   MILAN_CENTER,
@@ -41,6 +44,10 @@ import {
   PIN_GLYPHS,
   PIN_SHAPES,
   PIN_TYPES,
+  VENUE_PIN_COLORS,
+  VENUE_PIN_GLYPHS,
+  VENUE_TYPE_LABELS,
+  VENUE_TYPES,
 } from '../../core/config/map-pins';
 import { MAP_STYLE_URLS } from '../../core/config/map-styles';
 
@@ -63,6 +70,26 @@ const PULSE_REFRESH_MS = 30 * 1000;
  * bottom (see event-map-card.html) never covers it. */
 const SELECTED_PIN_VERTICAL_RATIO = 0.32;
 
+/** Venue badges sit under every event pin: when a place hosts an event right
+ * now, the event is what the visitor should be able to tap. */
+const VENUE_PIN_Z_OFFSET = -1000;
+const VENUE_PIN_SIZE = 20;
+
+/** "Intorno a me": GPS on phones (desktop falls back to Wi-Fi/IP, so the fix
+ * can be off by hundreds of metres — the accuracy circle shows how much), a
+ * reading up to a minute old is fine, and past 10s we give up and say so. */
+const LOCATE_OPTIONS: PositionOptions = { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 };
+/** A real GPS fix (a few to ~100 m on phones) gets its accuracy circle and a
+ * zoom that fits it, capped at street level. Past LOCATE_CIRCLE_MAX_METERS the
+ * fix is Wi-Fi/IP guesswork (desktops: often several km, bigger than the whole
+ * city): no circle, just the dot at city zoom and a note saying it's rough. */
+const LOCATE_MAX_ZOOM = 16;
+const LOCATE_APPROX_ZOOM = 13;
+const LOCATE_CIRCLE_MAX_METERS = 1000;
+const LOCATE_MESSAGE_MS = 5000;
+/** The classic "you are here" blue, outside the pin palette on purpose. */
+const USER_LOCATION_COLOR = '#3b82f6';
+
 /** The shortest credit OpenStreetMap's attribution guidelines accept, linked
  * to their copyright page — required under the ODbL for every basemap here. */
 const OSM_ATTRIBUTION =
@@ -80,6 +107,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly eventsService = inject(EventsService);
+  private readonly venuesService = inject(VenuesService);
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
   private readonly mapViewState = inject(MapViewStateService);
@@ -103,6 +131,38 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
 
   /** True when the backend hit its limit and some far-off events may be missing. */
   protected readonly truncated = signal(false);
+
+  /** What the map shows, picked under "Mostra" in the filters: events (the
+   * default), places only, or both. Venue pins are only fetched once a layer
+   * that includes them is picked; with places only, events aren't fetched at all. */
+  protected readonly mapLayer = signal<MapLayer>('events');
+  protected readonly showEvents = computed(() => this.mapLayer() !== 'venues');
+  protected readonly showVenues = computed(() => this.mapLayer() !== 'events');
+  protected readonly venuesError = signal(false);
+  /** Venues are fixed places, so each city is fetched once per page lifetime
+   * and kept here — panning or switching layers again never refetches. */
+  private readonly venuesByCity = signal<ReadonlyMap<number, VenueMapPinDto[]>>(new Map());
+  /** Cities whose venues are in flight, so a quick switch doesn't double-fetch. */
+  private readonly venueRequests = signal<ReadonlySet<number>>(new Set());
+  protected readonly venuesLoading = computed(() => this.venueRequests().size > 0);
+
+  /** The selected city, or with "Tutte" every active one — the venues API is per city. */
+  private readonly venueCityIds = computed(() => {
+    const cityId = this.selectedCityId();
+    return cityId !== null ? [cityId] : this.cities().map((city) => city.id);
+  });
+
+  /** "Intorno a me" in progress — the button shows a spinner meanwhile. */
+  protected readonly locating = signal(false);
+  /** Why the last "Intorno a me" failed, or that its fix is only approximate —
+   * shown briefly over the map. */
+  protected readonly locateMessage = signal<string | null>(null);
+
+  protected readonly visibleVenues = computed(() => {
+    if (!this.showVenues()) return [];
+    const byCity = this.venuesByCity();
+    return this.venueCityIds().flatMap((cityId) => byCity.get(cityId) ?? []);
+  });
 
   /** Clock for the event card's LIVE badge and countdown, ticked by the
    * pulse timer — the app is zoneless, so nothing else would re-render the
@@ -142,7 +202,16 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     glyph: PIN_GLYPHS[type],
   }));
 
+  /** The venue badges, listed in the legend only while their layer is on. */
+  protected readonly venueLegendItems = VENUE_TYPES.map((type) => ({
+    type,
+    label: VENUE_TYPE_LABELS[type],
+    color: VENUE_PIN_COLORS[type],
+    glyph: VENUE_PIN_GLYPHS[type],
+  }));
+
   protected readonly filteredEvents = computed(() => {
+    if (!this.showEvents()) return [];
     const styles = this.selectedStyleNames();
     const list = this.events();
     if (styles.size === 0) return list;
@@ -154,6 +223,12 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   refreshed on every sync, so a click never opens the card with a stale copy
   (e.g. the counts from before a like). */
   private markers = new Map<string, { marker: Marker; event: EventCardDto }>();
+  /** One marker per visible venue, by id — see drawVenueMarkers(). */
+  private venueMarkers = new Map<string, Marker>();
+  private readonly venuePinIconCache = new Map<VenueType, DivIcon>();
+  /** The "you are here" dot plus its accuracy circle, replaced on each locate. */
+  private userLocationLayer: Layer | null = null;
+  private locateMessageTimer: ReturnType<typeof setTimeout> | null = null;
   private leaflet: typeof import('leaflet') | null = null;
   /** The basemap — see showBaseLayer(): normally the MapLibre layer, restyled
    * to basemapStyleUrl on each theme switch; the Voyager raster instead when
@@ -211,6 +286,20 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       this.drawMarkers();
     });
 
+    // Venue layer on: fetch whichever of the needed cities isn't cached yet
+    // (the selected one, or all of them under "Tutte"). untracked so the
+    // cache filling up doesn't re-run this for nothing.
+    effect(() => {
+      if (!this.showVenues()) return;
+      const cityIds = this.venueCityIds();
+      untracked(() => this.loadVenues(cityIds));
+    });
+
+    effect(() => {
+      this.visibleVenues();
+      this.drawVenueMarkers();
+    });
+
     // Swap the basemap when the visitor flips the theme in the sidebar. A
     // no-op until initMap() has built the map, which applies it itself.
     effect(() => {
@@ -247,6 +336,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   }
 
   ngOnDestroy(): void {
+    if (this.locateMessageTimer) clearTimeout(this.locateMessageTimer);
     this.map?.remove();
     // Nulled so a basemap still loading (see showBaseLayer) sees the page is gone.
     this.map = null;
@@ -283,6 +373,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
 
     this.now.set(Date.now());
     const selectedId = this.mapViewState.selectedEventId;
+    // Opened on the map from an event's page (openOnMap) while only places
+    // were showing: bring events back, or that pin could never open.
+    if (selectedId && !this.showEvents()) this.mapLayer.set('both');
     if (this.selectedEvent()?.id === selectedId) {
       if (selectedId) this.engagement.sync(selectedId);
     } else {
@@ -328,6 +421,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       this.moveEnd$.next();
     });
     this.fetchEventsInView();
+    // The layer may have been switched on while Leaflet was still loading.
+    this.drawVenueMarkers();
   }
 
   /** Puts the basemap for `theme` on the map: one MapLibre layer, created on
@@ -392,7 +487,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   }
 
   private fetchEventsInView(): void {
-    if (!this.map) return;
+    // Places only: no event pins to show, so no request on every pan either.
+    if (!this.map || !this.showEvents()) return;
 
     const bounds = this.map.getBounds();
     const box: MapBounds = {
@@ -559,6 +655,236 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
 
     this.pinIconCache.set(cacheKey, icon);
     return icon;
+  }
+
+  /** Fetches the venues of each city in `cityIds` that isn't cached or
+  already in flight. A failed city stays uncached, so going back to "Eventi"
+  and picking a places layer again retries it. */
+  private loadVenues(cityIds: number[]): void {
+    for (const cityId of cityIds) {
+      if (this.venuesByCity().has(cityId) || this.venueRequests().has(cityId)) continue;
+
+      this.venueRequests.update((pending) => new Set(pending).add(cityId));
+      const done = () =>
+        this.venueRequests.update((pending) => {
+          const next = new Set(pending);
+          next.delete(cityId);
+          return next;
+        });
+      this.venuesService
+        .getMapVenues(cityId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (venues) => {
+            done();
+            this.venuesByCity.update((byCity) => new Map(byCity).set(cityId, venues));
+          },
+          error: () => {
+            done();
+            this.venuesError.set(true);
+          },
+        });
+    }
+  }
+
+  /** Syncs the venue badges with visibleVenues(), same idea as drawMarkers():
+  badges already on the map stay put, only venues that appeared or went away
+  (layer toggled, city changed) are added/removed. */
+  private drawVenueMarkers(): void {
+    const L = this.leaflet;
+    const map = this.map;
+    if (!L || !map) return;
+
+    const previous = this.venueMarkers;
+    this.venueMarkers = new Map();
+    for (const venue of this.visibleVenues()) {
+      const existing = previous.get(venue.id);
+      if (existing) {
+        previous.delete(venue.id);
+        this.venueMarkers.set(venue.id, existing);
+        continue;
+      }
+      const marker = L.marker([venue.latitude, venue.longitude], {
+        icon: this.getVenuePinIcon(L, venue.type),
+        zIndexOffset: VENUE_PIN_Z_OFFSET,
+        title: venue.name,
+      })
+        .bindPopup(() => this.buildVenuePopup(venue), { className: 'venue-popup', closeButton: false })
+        .addTo(map);
+      this.venueMarkers.set(venue.id, marker);
+    }
+    previous.forEach((marker) => marker.remove());
+  }
+
+  /** Round badge in the type's colour with its glyph — see VENUE_PIN_COLORS. */
+  private getVenuePinIcon(L: typeof import('leaflet'), type: VenueType): DivIcon {
+    const cached = this.venuePinIconCache.get(type);
+    if (cached) return cached;
+
+    const half = VENUE_PIN_SIZE / 2;
+    const icon = L.divIcon({
+      className: 'venue-pin',
+      html: `<svg viewBox="0 0 24 24" width="${VENUE_PIN_SIZE}" height="${VENUE_PIN_SIZE}" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" fill="${VENUE_PIN_COLORS[type]}" stroke="#fff" stroke-width="2"/>
+        <path d="${VENUE_PIN_GLYPHS[type]}" fill="#fff"/>
+      </svg>`,
+      iconSize: [VENUE_PIN_SIZE, VENUE_PIN_SIZE],
+      iconAnchor: [half, half],
+      popupAnchor: [0, -half],
+    });
+
+    this.venuePinIconCache.set(type, icon);
+    return icon;
+  }
+
+  /** Popup body built from DOM nodes with textContent, never innerHTML: venue
+  names and addresses are free text from the backend. Styled globally in
+  styles.css (.venue-popup), since Leaflet renders popups outside Angular's view. */
+  private buildVenuePopup(venue: VenueMapPinDto): HTMLElement {
+    const body = document.createElement('div');
+    body.className = 'venue-popup-body';
+
+    const type = document.createElement('span');
+    type.className = 'venue-popup-type';
+    const dot = document.createElement('span');
+    dot.className = 'venue-popup-dot';
+    dot.style.background = VENUE_PIN_COLORS[venue.type];
+    type.append(dot, VENUE_TYPE_LABELS[venue.type]);
+
+    const name = document.createElement('strong');
+    name.className = 'venue-popup-name';
+    name.textContent = venue.name;
+
+    const address = document.createElement('span');
+    address.className = 'venue-popup-address';
+    address.textContent = venue.address;
+
+    body.append(type, name, address);
+    return body;
+  }
+
+  /** "Intorno a me". Only ever asked from this tap, never on page load:
+  browsers penalise permission prompts nobody asked for, and visitors tend to
+  refuse them. The position never leaves the browser — it only moves the map,
+  and the events for the new area come from the usual bounding-box fetch. */
+  protected locateMe(): void {
+    if (!this.isBrowser || this.locating()) return;
+
+    if (!window.isSecureContext) {
+      // Plain http (e.g. the dev server opened by LAN IP from a phone): the
+      // browser refuses geolocation outright, so say why instead of "denied".
+      this.showLocateMessage('La posizione richiede una connessione sicura (HTTPS).');
+      return;
+    }
+    if (!('geolocation' in navigator)) {
+      this.showLocateMessage('Questo browser non supporta la geolocalizzazione.');
+      return;
+    }
+
+    this.locating.set(true);
+    this.clearLocateMessage();
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.locating.set(false);
+        this.showUserPosition(position.coords);
+      },
+      (error) => {
+        this.locating.set(false);
+        this.showLocateMessage(this.locateErrorMessage(error));
+      },
+      LOCATE_OPTIONS,
+    );
+  }
+
+  private locateErrorMessage(error: GeolocationPositionError): string {
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        return 'Posizione non autorizzata: attivala nelle impostazioni del browser.';
+      case error.TIMEOUT:
+        return 'La posizione sta impiegando troppo, riprova.';
+      default:
+        return 'Impossibile trovare la tua posizione.';
+    }
+  }
+
+  /** Drops the "you are here" dot at `coords` (plus its accuracy circle when
+  the fix is precise enough to be worth drawing — see LOCATE_CIRCLE_MAX_METERS),
+  then moves the map there — which fires moveend, so the events around the
+  visitor load like after any pan. */
+  private showUserPosition(coords: GeolocationCoordinates): void {
+    const L = this.leaflet;
+    const map = this.map;
+    if (!L || !map) return;
+
+    const position = L.latLng(coords.latitude, coords.longitude);
+    const precise = coords.accuracy <= LOCATE_CIRCLE_MAX_METERS;
+    const dot = L.marker(position, {
+      icon: L.divIcon({
+        className: 'user-location',
+        html: '<span class="user-location-dot"></span>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      }),
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: 1000,
+    });
+
+    const layers: Layer[] = [dot];
+    if (precise) {
+      layers.unshift(
+        L.circle(position, {
+          radius: coords.accuracy,
+          stroke: false,
+          fillColor: USER_LOCATION_COLOR,
+          fillOpacity: 0.15,
+          interactive: false,
+        }),
+      );
+    }
+    this.userLocationLayer?.remove();
+    this.userLocationLayer = L.layerGroup(layers).addTo(map);
+
+    if (precise) {
+      // toBounds takes the square's side, so twice the radius: the whole circle fits.
+      map.fitBounds(position.toBounds(coords.accuracy * 2), { maxZoom: LOCATE_MAX_ZOOM });
+    } else {
+      map.setView(position, LOCATE_APPROX_ZOOM);
+      const km = Math.round(coords.accuracy / 1000);
+      this.showLocateMessage(`Posizione approssimativa (±${km} km): sul telefono, con il GPS, è molto più precisa.`);
+    }
+  }
+
+  private showLocateMessage(message: string): void {
+    this.clearLocateMessage();
+    this.locateMessage.set(message);
+    this.locateMessageTimer = setTimeout(() => this.locateMessage.set(null), LOCATE_MESSAGE_MS);
+  }
+
+  private clearLocateMessage(): void {
+    if (this.locateMessageTimer) clearTimeout(this.locateMessageTimer);
+    this.locateMessageTimer = null;
+    this.locateMessage.set(null);
+  }
+
+  protected selectLayer(layer: MapLayer): void {
+    if (layer === this.mapLayer()) return;
+    const hadEvents = this.showEvents();
+    const hadVenues = this.showVenues();
+    this.mapLayer.set(layer);
+
+    // Places switched on afresh: the error line only reflects this attempt's fetches.
+    if (!hadVenues && this.showVenues()) this.venuesError.set(false);
+
+    if (!this.showEvents()) {
+      // Events hidden: drop any in-flight fetch and the open event card.
+      this.eventsRequest?.unsubscribe();
+      this.loading.set(false);
+      this.closeDetail();
+    } else if (!hadEvents) {
+      // Back from places only: the list is stale (no fetch while hidden).
+      this.fetchEventsInView();
+    }
   }
 
   protected selectCity(cityId: number | null): void {

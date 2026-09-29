@@ -229,6 +229,118 @@ reach it. In @layer components (not unlayered) so Tailwind utilities
   }
 }
 
+/* Venue badges ("Locali e scuole" layer, see getVenuePinIcon() in map.ts):
+global for the same reason as .map-pin-wrap. The className replaces
+Leaflet's default .leaflet-div-icon, so there's no white box to undo. */
+@layer components {
+  .venue-pin svg {
+    display: block;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+  }
+}
+
+/* Venue popup on the same themed glass as the floating panels (--map-*
+tokens in map.css, inherited down into Leaflet's DOM, like the attribution
+above). Unlayered so it beats leaflet.css's own popup colours. */
+app-map .venue-popup .leaflet-popup-content-wrapper {
+  border: 1px solid var(--map-glass-border);
+  border-radius: 12px;
+  background: var(--map-glass);
+  box-shadow: var(--map-shadow);
+  color: var(--map-text);
+  backdrop-filter: blur(20px) saturate(1.4);
+}
+
+app-map .venue-popup .leaflet-popup-tip {
+  background: var(--map-glass);
+  box-shadow: none;
+}
+
+app-map .venue-popup .leaflet-popup-content {
+  margin: 10px 14px;
+  font-family: var(--font-body);
+  line-height: 1.35;
+}
+
+.venue-popup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 220px;
+}
+
+.venue-popup-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--map-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.venue-popup-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.venue-popup-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.venue-popup-address {
+  color: var(--map-text-2);
+  font-size: 12px;
+}
+
+/* "Intorno a me" dot (see showUserPosition() in map.ts): the classic blue
+"you are here", white-ringed so it reads on both basemaps, with a slow halo.
+Global for the same reason as the pins: Leaflet renders it outside Angular. */
+@layer components {
+  .user-location-dot {
+    position: relative;
+    display: block;
+    width: 16px;
+    height: 16px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: #3b82f6;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Behind the dot (z-index -1 inside the marker's own stacking context), so
+  the halo never tints the white ring. */
+  .user-location-dot::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -3px;
+    border-radius: 50%;
+    background: #3b82f6;
+    animation: user-location-halo 2s ease-out infinite;
+  }
+}
+
+@keyframes user-location-halo {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .user-location-dot::after {
+    animation: none;
+  }
+}
+
 /* app-navbar's sidebar menu buttons (Menu, Admin, Esci, Accedi): the base
 size/spacing/radius override that used to live here moved to plain Tailwind
 classes directly on each <a>/<button hlmSidebarMenuButton> in navbar.html

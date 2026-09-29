@@ -1,13 +1,19 @@
 <app-navbar />
 <app-auth-modal [(open)]="authOpen" />
 
-<main appSidebarPush class="relative h-screen pt-(--header-h) md:pt-0">
+<!-- h-dvh, not h-screen (100vh): iOS Safari sizes 100vh as if its bottom
+    toolbar were hidden, which pushed everything anchored to the bottom (Intorno
+    a me, legend, Filtri, event card) under the toolbar. dvh is the area
+    actually visible, and follows the toolbar as it shows/hides. -->
+<main appSidebarPush class="relative h-dvh pt-(--header-h) md:pt-0">
   <div class="relative h-full w-full">
     <app-map-filters [cities]="cities()" [danceStyles]="danceStyles()" [selectedCityId]="selectedCityId()"
       [selectedStyleNames]="selectedStyleNames()" [loading]="loading()" [error]="error()"
       [eventCount]="filteredEvents().length" [open]="filtersOpen()" [hideForCard]="hideFabsForCard()"
-      [isDesktop]="isDesktop()" (citySelected)="selectCity($event)" (styleToggled)="selectStyle($event)"
-      (openToggled)="toggleFilters()" />
+      [isDesktop]="isDesktop()" [layer]="mapLayer()" [venueCount]="visibleVenues().length"
+      [venuesLoading]="venuesLoading()" [venuesError]="venuesError()"
+      (citySelected)="selectCity($event)" (styleToggled)="selectStyle($event)"
+      (layerSelected)="selectLayer($event)" (openToggled)="toggleFilters()" />
 
     <div class="relative h-full w-full">
       <!-- isolate: Leaflet's own panes (tiles/markers/popups) carry z-index
@@ -15,15 +21,51 @@
           filters, legend and event card over it (all z-map-content:10). -->
       <div #mapContainer class="absolute inset-0 isolate"></div>
 
-      <!-- Backend hit its map limit: far-off events in this area may be
-          missing. Hidden while a new fetch is in flight so it never shows a
-          stale state from the previous pan. -->
-      @if (truncated() && !loading()) {
-      <p role="status"
-        class="pointer-events-none absolute top-4 left-1/2 z-map-content max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full border border-(--map-alert-border) bg-(--map-alert) px-4 py-2 text-center text-sm font-medium text-(--map-alert-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140">
-        Troppi eventi in questa zona: avvicina lo zoom per vederli tutti
-      </p>
-      }
+      <!-- Notices, stacked at the top centre so they never collide. -->
+      <div
+        class="pointer-events-none absolute top-4 left-1/2 z-map-content flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-2">
+        <!-- Backend hit its map limit: far-off events in this area may be
+            missing. Hidden while a new fetch is in flight so it never shows a
+            stale state from the previous pan. -->
+        @if (showEvents() && truncated() && !loading()) {
+        <p role="status"
+          class="rounded-full border border-(--map-alert-border) bg-(--map-alert) px-4 py-2 text-center text-sm font-medium text-(--map-alert-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140">
+          Troppi eventi in questa zona: avvicina lo zoom per vederli tutti
+        </p>
+        }
+        <!-- "Intorno a me" failed (denied, no fix, timeout...) or only got a
+            rough fix: see locateMe() / showUserPosition(). -->
+        @if (locateMessage(); as message) {
+        <p role="status"
+          class="rounded-full border border-(--map-alert-border) bg-(--map-alert) px-4 py-2 text-center text-sm font-medium text-(--map-alert-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140">
+          {{ message }}
+        </p>
+        }
+      </div>
+
+      <!-- "Intorno a me": centres the map on the visitor's position. Stacked
+          above the legend button and hidden with it, since the open legend
+          grows over this corner. -->
+      <button type="button"
+        class="absolute bottom-16 left-4 z-map-content inline-flex size-10 origin-bottom-left items-center justify-center rounded-full border border-(--map-glass-border) bg-(--map-glass) text-(--map-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out"
+        [class.scale-50]="legendOpen() || hideFabsForCard()" [class.opacity-0]="legendOpen() || hideFabsForCard()"
+        [class.pointer-events-none]="legendOpen() || hideFabsForCard()" [class.cursor-pointer]="!legendOpen() && !locating()"
+        [attr.inert]="legendOpen() || hideFabsForCard() ? '' : null" [attr.aria-busy]="locating()"
+        (click)="locateMe()" aria-label="Intorno a me" title="Intorno a me">
+        @if (locating()) {
+        <svg class="animate-spin" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round">
+          <path d="M21 12a9 9 0 1 1-6.22-8.56" />
+        </svg>
+        } @else {
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round">
+          <path d="M2 12h3M19 12h3M12 2v3M12 19v3" />
+          <circle cx="12" cy="12" r="7" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        }
+      </button>
 
       <!-- Legend: small enough to stay inline. Same themed glass as the filters
           and event card — the --map-* tokens in map.css. -->
@@ -44,6 +86,8 @@
         [class.pointer-events-none]="!legendOpen() || hideFabsForCard()" [class.cursor-pointer]="legendOpen()"
         [attr.inert]="!legendOpen() || hideFabsForCard() ? '' : null"
         aria-label="Legenda dei pin, premi per chiudere" (click)="toggleLegend()">
+        <!-- Each list only while its pins are on the map (see mapLayer). -->
+        @if (showEvents()) {
         <ul class="flex flex-col gap-2">
           @for (item of legendItems; track item.type; let i = $index) {
           <li class="flex items-center gap-2 text-sm">
@@ -56,6 +100,23 @@
           </li>
           }
         </ul>
+        }
+        @if (showVenues()) {
+        <p class="mb-2 font-mono text-[10px] tracking-[0.08em] text-(--map-muted) uppercase"
+          [class.mt-3]="showEvents()">Luoghi</p>
+        <ul class="flex flex-col gap-2">
+          @for (item of venueLegendItems; track item.type; let i = $index) {
+          <li class="flex items-center gap-2 text-sm">
+            <svg [class.legend-icon]="legendOpen()" viewBox="0 0 24 24" width="16" height="16"
+              [style.animation-delay.ms]="((showEvents() ? legendItems.length : 0) + i) * 40">
+              <circle cx="12" cy="12" r="11" [attr.fill]="item.color" stroke="#fff" stroke-width="2" />
+              <path [attr.d]="item.glyph" fill="#fff" />
+            </svg>
+            {{ item.label }}
+          </li>
+          }
+        </ul>
+        }
       </section>
 
       @if (selectedEvent(); as event) {

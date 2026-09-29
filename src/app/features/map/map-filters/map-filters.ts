@@ -4,6 +4,22 @@ import { lucideX } from '@ng-icons/lucide';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
 
+/** What the map shows: event pins (the default), venue badges only, or both. */
+export type MapLayer = 'events' | 'venues' | 'both';
+
+const LAYER_OPTIONS: { value: MapLayer; label: string }[] = [
+  { value: 'events', label: 'Eventi' },
+  { value: 'venues', label: 'Luoghi' },
+  { value: 'both', label: 'Entrambi' },
+];
+
+/** Collapsed-summary chip for a non-default layer (the default shows none). */
+const LAYER_SUMMARY: Record<MapLayer, string | null> = {
+  events: null,
+  venues: 'Solo luoghi',
+  both: 'Eventi e luoghi',
+};
+
 /** The map's filters: the floating panel (città + stile, or on desktop a
  * collapsed summary of the active ones) and the mobile "Filtri" button that
  * opens it. Presentational: MapPage owns the selection (it drives which
@@ -35,9 +51,17 @@ export class MapFilters {
   readonly hideForCard = input(false);
   /** Tracks the sm: breakpoint — see MapPage.isDesktop. */
   readonly isDesktop = input(false);
+  /** Which pins the map shows — see MapPage.mapLayer. */
+  readonly layer = input<MapLayer>('events');
+  /** Venues for the selected city (or all of them under "Tutte"), for the "N luoghi" line. */
+  readonly venueCount = input(0);
+  readonly venuesLoading = input(false);
+  /** Loading the venues failed. */
+  readonly venuesError = input(false);
 
   readonly citySelected = output<number | null>();
   readonly styleToggled = output<string>();
+  readonly layerSelected = output<MapLayer>();
   /** The mobile "Filtri" button and the panel's own close button. */
   readonly openToggled = output<void>();
 
@@ -72,8 +96,16 @@ export class MapFilters {
 
   protected readonly activeStyleNames = computed(() => Array.from(this.selectedStyleNames()));
 
+  protected readonly layerOptions = LAYER_OPTIONS;
+
+  protected readonly layerSummary = computed(() => LAYER_SUMMARY[this.layer()]);
+
+  /** Styles only count while events are showing — they don't filter venues. */
   protected readonly hasActiveFilters = computed(
-    () => this.selectedCityId() !== null || this.selectedStyleNames().size > 0,
+    () =>
+      this.selectedCityId() !== null ||
+      this.layer() !== 'events' ||
+      (this.layer() !== 'venues' && this.selectedStyleNames().size > 0),
   );
 
   protected toggleCollapsed(): void {

@@ -41,12 +41,10 @@ export class Oauth2Callback implements OnInit {
       return '/';
     }
 
-    // `hasSeenWelcome` doesn't exist on the backend yet (see UserDto), so
-    // this is always falsy for now and every login lands on /benvenuto —
-    // that's fine while the page is still being reviewed. Once the backend
-    // sends the field (and Welcome.enter() marks it seen via a PATCH), this
-    // starts sending returning users straight to /menu, unchanged.
-    const hasSeenWelcome = this.auth.currentUser()?.hasSeenWelcome ?? false;
-    return hasSeenWelcome ? '/menu' : '/benvenuto';
+    // The backend bumps loginCount on every Google login before redirecting
+    // here (see CustomOidcUserService), so the first login already reads 1.
+    const user = this.auth.currentUser();
+    if (!user) return '/'  // me faile: token cleared, nothing to personalise
+    return user.loginCount <= 3 ? '/benvenuto' : '/menu'
   }
 }

@@ -15,6 +15,16 @@
           filters, legend and event card over it (all z-map-content:10). -->
       <div #mapContainer class="absolute inset-0 isolate"></div>
 
+      <!-- Backend hit its map limit: far-off events in this area may be
+          missing. Hidden while a new fetch is in flight so it never shows a
+          stale state from the previous pan. -->
+      @if (truncated() && !loading()) {
+      <p role="status"
+        class="pointer-events-none absolute top-4 left-1/2 z-map-content max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-full border border-(--map-alert-border) bg-(--map-alert) px-4 py-2 text-center text-sm font-medium text-(--map-alert-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140">
+        Troppi eventi in questa zona: avvicina lo zoom per vederli tutti
+      </p>
+      }
+
       <!-- Legend: small enough to stay inline. Same themed glass as the filters
           and event card — the --map-* tokens in map.css. -->
       <button type="button"

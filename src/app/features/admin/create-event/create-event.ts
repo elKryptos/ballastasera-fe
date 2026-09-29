@@ -109,7 +109,7 @@ export class CreateEvent implements OnInit {
     whatsappUrl: [''],
     startAt: ['', [Validators.required]],
     endAt: ['', [Validators.required]],
-    isFree: [true],
+    free: [true],
     price: [null as number | null, [Validators.min(0)]],
     currency: ['EUR'],
     address: ['', [Validators.required]],
@@ -225,8 +225,8 @@ export class CreateEvent implements OnInit {
       whatsappUrl: value.whatsappUrl || null,
       startAt: this.toIsoString(value.startAt),
       endAt: this.toIsoString(value.endAt),
-      isFree: value.isFree,
-      price: value.isFree ? null : value.price,
+      free: value.free,
+      price: value.free ? null : value.price,
       currency: value.currency || 'EUR',
       address: value.address,
       latitude: value.latitude,
@@ -249,7 +249,7 @@ export class CreateEvent implements OnInit {
 
   protected createAnother(): void {
     this.form.enable();
-    this.form.reset({ eventType: '', isFree: true, currency: 'EUR' });
+    this.form.reset({ eventType: '', free: true, currency: 'EUR' });
     this.selectedDanceStyleIds.set(new Set());
     this.addressSearch.set('');
     this.createdEvent.set(null);

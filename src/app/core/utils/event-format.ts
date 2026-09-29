@@ -53,8 +53,8 @@ function formatClock(iso: string): string {
   return new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-export function formatPrice(event: { isFree: boolean; price: number | null; currency: string | null }): string {
-  if (event.isFree) return 'Gratis';
+export function formatPrice(event: { free: boolean; price: number | null; currency: string | null }): string {
+  if (event.free) return 'Gratis';
   if (event.price == null) return 'Prezzo su invito';
   return `${event.price} ${event.currency ?? ''}`.trim();
 }

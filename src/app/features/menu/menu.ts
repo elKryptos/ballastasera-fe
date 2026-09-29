@@ -87,7 +87,7 @@ export class Menu {
     // aggancia questa chiamata, quindi farla in SSR vorrebbe dire farla due volte.
     if (this.isBrowser) {
       this.eventsService.getMapEvents(MILANO_BOUNDS).subscribe({
-        next: (events) => this.liveCount.set(events.filter((event) => event.liveNow).length),
+        next: ({ events }) => this.liveCount.set(events.filter((event) => event.liveNow).length),
         error: () => this.liveCount.set(null),
       });
     }

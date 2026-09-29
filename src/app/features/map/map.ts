@@ -101,6 +101,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   protected readonly error = signal(false);
   protected readonly selectedEvent = signal<EventCardDto | null>(null);
 
+  /** True when the backend hit its limit and some far-off events may be missing. */
+  protected readonly truncated = signal(false);
+
   /** Clock for the event card's LIVE badge and countdown, ticked by the
    * pulse timer — the app is zoneless, so nothing else would re-render the
    * card while time moves on. */
@@ -407,8 +410,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       .getMapEvents(box, this.selectedCityId() ?? undefined)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (events) => {
+        next: ({ events, truncated }) => {
           this.events.set(events);
+          this.truncated.set(truncated);
           this.loading.set(false);
           this.restoreSelectedEvent(events);
         },

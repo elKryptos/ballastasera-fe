@@ -25,6 +25,11 @@ live in that panel's own CSS (event-map-card.css, map-filters.css). */
   --map-accent: #b9a6ff;
   --map-close-bg: rgba(255, 255, 255, 0.07);
   --map-close-bg-hover: rgba(255, 255, 255, 0.14);
+  /* "Too many events" notice: amber-tinted glass, so it reads as a warning
+  without borrowing the filters' error pink. Text >= 4.5:1 in both themes. */
+  --map-alert: rgba(120, 78, 12, 0.72);
+  --map-alert-border: rgba(251, 191, 36, 0.45);
+  --map-alert-text: #fde9c2;
 }
 
 :host-context([data-theme='light']) {
@@ -39,6 +44,9 @@ live in that panel's own CSS (event-map-card.css, map-filters.css). */
   --map-accent: #5b3cc4;
   --map-close-bg: rgba(255, 255, 255, 0.7);
   --map-close-bg-hover: rgba(255, 255, 255, 0.95);
+  --map-alert: rgba(254, 243, 199, 0.85);
+  --map-alert-border: rgba(217, 119, 6, 0.35);
+  --map-alert-text: #78350f;
 }
 
 /* What shows while tiles load (and when panning faster than they arrive):

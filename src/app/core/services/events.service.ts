@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { EventCardDto, EventDetailDto } from '../models/event.model';
+import { EventDetailDto, MapEventsDto } from '../models/event.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '../api/endpoints';
 
@@ -18,7 +18,7 @@ export class EventsService {
   private readonly baseUrl = `${environment.apiUrl}${endpoints.events.mapEvents}`;
 
   /** Published events, live or upcoming, inside the visible map bounding box. */
-  getMapEvents(bounds: MapBounds, cityId?: number): Observable<EventCardDto[]> {
+  getMapEvents(bounds: MapBounds, cityId?: number): Observable<MapEventsDto> {
     let params = new HttpParams()
       .set('minLat', bounds.minLat)
       .set('maxLat', bounds.maxLat)
@@ -27,7 +27,7 @@ export class EventsService {
 
     if (cityId != null) params = params.set('cityId', cityId);
 
-    return this.http.get<EventCardDto[]>(this.baseUrl, { params });
+    return this.http.get<MapEventsDto>(this.baseUrl, { params });
   }
 
   getEventDetail(id: string): Observable<EventDetailDto> {

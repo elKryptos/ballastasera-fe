@@ -167,7 +167,7 @@ export class CreateEventSeries {
     whatsappUrl: [''],
     startTime: ['', [Validators.required]],
     endTime: [''],
-    isFree: [true],
+    free: [true],
     price: [null as number | null, [Validators.min(0)]],
     currency: ['EUR'],
     address: ['', [Validators.required]],
@@ -338,8 +338,8 @@ export class CreateEventSeries {
       flyerUrl: null,
       instagramUrl: value.instagramUrl || null,
       whatsappUrl: value.whatsappUrl || null,
-      isFree: value.isFree,
-      price: value.isFree ? null : value.price,
+      free: value.free,
+      price: value.free ? null : value.price,
       currency: value.currency || 'EUR',
       address: value.address,
       latitude: value.latitude,
@@ -443,7 +443,7 @@ export class CreateEventSeries {
 
   protected createAnother(): void {
     this.form.enable();
-    this.form.reset({ isFree: true, currency: 'EUR' });
+    this.form.reset({ free: true, currency: 'EUR' });
     this.selectedDanceStyleIds.set(new Set());
     this.selectedRecurrenceDays.set(new Set());
     this.recurrenceDaysTouched.set(false);

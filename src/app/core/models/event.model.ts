@@ -1,10 +1,15 @@
-import { OrganizerDetailDto, OrganizerSummaryDto } from "./organizer.model";
+import { OrganizerDetailDto } from "./organizer.model";
 
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
 export type FlyerStatus = 'NONE' | 'PROCESSING' | 'READY' | 'FAILED';
 /** Mirrors java.time.DayOfWeek, used by EventSeries recurrence. */
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+export interface MapEventsDto {
+  events: EventCardDto[];
+  truncated: boolean;
+}
 
 /** Marker/card payload for the map — mirrors EventCardDto in the backend. */
 export interface EventCardDto {
@@ -18,14 +23,15 @@ export interface EventCardDto {
   startAt: string;
   endAt: string;
   liveNow: boolean;
-  isFree: boolean;
+  free: boolean;
   price: number | null;
   currency: string | null;
   latitude: number;
   longitude: number;
   address: string;
   /** Null when the organizer has been deleted. */
-  organizer: OrganizerSummaryDto | null;
+  organizerName: string | null;
+  organizerInstagram: string | null;
   venueName: string | null;
   danceStyles: string[];
   goingCount: number;
@@ -45,7 +51,7 @@ export interface EventCreateDto {
   whatsappUrl: string | null;
   startAt: string; //ISO OffDateTime
   endAt: string; //ISO OffDateTime
-  isFree: boolean;
+  free: boolean;
   price: number | null;
   currency: string | null;
   address: string;
@@ -67,7 +73,7 @@ export interface EventDetailDto {
   startAt: string;
   endAt: string;
   liveNow: boolean;
-  isFree: boolean;
+  free: boolean;
   price: number | null;
   currency: string | null;
   address: string;
@@ -97,7 +103,7 @@ export interface EventSeriesCreateDto {
   flyerUrl: string | null;
   instagramUrl: string | null;
   whatsappUrl: string | null;
-  isFree: boolean;
+  free: boolean;
   price: number | null;
   currency: string | null;
   address: string;
@@ -121,7 +127,7 @@ export interface EventSeriesDetailDto {
   whatsappUrl: string | null;
   startTime: string;
   endTime: string | null;
-  isFree: boolean;
+  free: boolean;
   price: number | null;
   currency: string | null;
   address: string;

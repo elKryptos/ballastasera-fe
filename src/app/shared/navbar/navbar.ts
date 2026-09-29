@@ -30,7 +30,7 @@ export class Navbar {
   protected readonly authOpen = signal(false);
   protected readonly authMode = signal<AuthMode>('login');
 
-  // The collapse/expand trigger only makes sense inside the desktop rail —
+  // The collapse/expand trigger only makes sense inside the desktop rail
   // mobile has its own trigger in the top bar, so the projected sidebar
   // header (rendered inside the mobile sheet too, same content either way)
   // hides it there to avoid showing two of them at once.

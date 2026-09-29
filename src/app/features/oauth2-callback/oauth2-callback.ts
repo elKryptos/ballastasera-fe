@@ -5,10 +5,10 @@ import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 
 /**
- * Landing spot for the backend's post-Google redirect (see
+ * Landing spot for the backend's post Google redirect (see
  * OAuth2LoginSuccessHandler, which appends `?token=<jwt>`). Stores the token,
- * refreshes the session, then sends first-time visitors to the welcome page
- * and everyone else straight to the menu — the map is no longer a post-login
+ * refreshes the session, then sends first time visitors to the welcome page
+ * and everyone else straight to the menu the map is no longer a post login
  * redirect target, it's reached from the menu or the welcome page's own CTA.
  */
 @Component({

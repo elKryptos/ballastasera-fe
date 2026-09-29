@@ -60,13 +60,13 @@ const DEFAULT_ZOOM = MILAN_DEFAULT_ZOOM;
 const MOVE_DEBOUNCE_MS = 400;
 
 /** Re-evaluates pin pulse state on a timer, since an event can tip into
- * "live" purely by the clock ticking, with no new fetch — and ticks the
+ * "live" purely by the clock ticking, with no new fetch and ticks the
  * `now` signal the event card's LIVE badge and "Inizia tra X min" countdown
  * read. */
 const PULSE_REFRESH_MS = 30 * 1000;
 
 /** Fraction of the map's height at which a selected pin should sit once
- * centred — high enough on the screen that the event card docked along the
+ * centred high enough on the screen that the event card docked along the
  * bottom (see event-map-card.html) never covers it. */
 const SELECTED_PIN_VERTICAL_RATIO = 0.32;
 
@@ -76,7 +76,7 @@ const VENUE_PIN_Z_OFFSET = -1000;
 const VENUE_PIN_SIZE = 20;
 
 /** "Intorno a me": GPS on phones (desktop falls back to Wi-Fi/IP, so the fix
- * can be off by hundreds of metres — the accuracy circle shows how much), a
+ * can be off by hundreds of metres the accuracy circle shows how much), a
  * reading up to a minute old is fine, and past 10s we give up and say so. */
 const LOCATE_OPTIONS: PositionOptions = { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 };
 /** A real GPS fix (a few to ~100 m on phones) gets its accuracy circle and a
@@ -91,7 +91,7 @@ const LOCATE_MESSAGE_MS = 5000;
 const USER_LOCATION_COLOR = '#3b82f6';
 
 /** The shortest credit OpenStreetMap's attribution guidelines accept, linked
- * to their copyright page — required under the ODbL for every basemap here. */
+ * to their copyright page required under the ODbL for every basemap here. */
 const OSM_ATTRIBUTION =
   '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>';
 
@@ -146,15 +146,15 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private readonly venueRequests = signal<ReadonlySet<number>>(new Set());
   protected readonly venuesLoading = computed(() => this.venueRequests().size > 0);
 
-  /** The selected city, or with "Tutte" every active one — the venues API is per city. */
+  /** The selected city, or with "Tutte" every active one the venues API is per city. */
   private readonly venueCityIds = computed(() => {
     const cityId = this.selectedCityId();
     return cityId !== null ? [cityId] : this.cities().map((city) => city.id);
   });
 
-  /** "Intorno a me" in progress — the button shows a spinner meanwhile. */
+  /** "Intorno a me" in progress the button shows a spinner meanwhile. */
   protected readonly locating = signal(false);
-  /** Why the last "Intorno a me" failed, or that its fix is only approximate —
+  /** Why the last "Intorno a me" failed, or that its fix is only approximate
    * shown briefly over the map. */
   protected readonly locateMessage = signal<string | null>(null);
 
@@ -165,12 +165,12 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   });
 
   /** Clock for the event card's LIVE badge and countdown, ticked by the
-   * pulse timer — the app is zoneless, so nothing else would re-render the
+   * pulse timer the app is zoneless, so nothing else would re-render the
    * card while time moves on. */
   protected readonly now = signal(Date.now());
 
   /** Opens the shared login dialog when a signed-out visitor taps
-   * Parteciperò/Mi piace — both require a session server-side. */
+   * Parteciperò/Mi piace both require a session server-side. */
   protected readonly authOpen = signal(false);
 
   /** Filters live in a floating card on mobile, opened from the Filtri button and
@@ -185,7 +185,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   protected readonly isDesktop = signal(false);
 
   /** The event card docks full-width along the bottom edge on mobile (see
-   * event-map-card.html), which would otherwise sit under — or behind — the Filtri/
+   * event-map-card.html), which would otherwise sit under or behind the Filtri/
    * Legenda corner buttons and the filters panel itself (also bottom-anchored
    * on mobile). Desktop's card stays a small floating box, so those corners
    * remain free there. */
@@ -219,7 +219,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   });
 
   private map: LeafletMap | null = null;
-  /** One marker per visible event, by id — see drawMarkers(). `event` is
+  /** One marker per visible event, by id see drawMarkers(). `event` is
   refreshed on every sync, so a click never opens the card with a stale copy
   (e.g. the counts from before a like). */
   private markers = new Map<string, { marker: Marker; event: EventCardDto }>();
@@ -230,7 +230,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private userLocationLayer: Layer | null = null;
   private locateMessageTimer: ReturnType<typeof setTimeout> | null = null;
   private leaflet: typeof import('leaflet') | null = null;
-  /** The basemap — see showBaseLayer(): normally the MapLibre layer, restyled
+  /** The basemap see showBaseLayer(): normally the MapLibre layer, restyled
    * to basemapStyleUrl on each theme switch; the Voyager raster instead when
    * MapLibre can't run. */
   private glLayer: MaplibreGL | null = null;
@@ -246,7 +246,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
    * call — lets the pulse timer skip the marker sync on ticks where nothing
    * actually crossed the live threshold. */
   private markerPulseSignature = '';
-  /** False while the page sits detached on another route — see
+  /** False while the page sits detached on another route see
    * onRouteDetached(). */
   private onScreen = true;
 
@@ -268,7 +268,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
         error: () => this.error.set(true),
       });
 
-      // Tailwind's sm: breakpoint — kept in sync via matchMedia rather than
+      // Tailwind's sm: breakpoint kept in sync via matchMedia rather than
       // read once, since the filters card's collapsed summary must stop
       // rendering the moment the viewport narrows past it.
       const desktopQuery = window.matchMedia('(min-width: 640px)');
@@ -307,7 +307,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     });
 
     // The card's countdown and the pins' live pulse depend on the clock, not
-    // just on the data — an event can go live with the events list untouched.
+    // just on the data an event can go live with the events list untouched.
     if (this.isBrowser) {
       interval(PULSE_REFRESH_MS)
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -351,7 +351,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     this.onScreen = false;
   }
 
-  /** Back on screen: resync what may have changed meanwhile — the container's
+  /** Back on screen: resync what may have changed meanwhile the container's
    * size, the view and open pin (openOnMap on an event's page rewrites both
    * in mapViewState), and the events themselves (a like or Parteciperò on the
    * event's page, which keeps its own copy of that state). The theme needs
@@ -359,7 +359,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   onRouteAttached(): void {
     const map = this.map;
     if (map) {
-      // Still flagged off screen, so any moveend these fire is ignored — the
+      // Still flagged off screen, so any moveend these fire is ignored the
       // fetch below replaces it.
       map.invalidateSize();
       const { center, zoom } = this.mapViewState;
@@ -392,10 +392,10 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     // Scroll-wheel and pinch zoom stay on; the on-screen +/- control is
     // redundant with those and was competing for corner space with our own UI.
     // Falls back to DEFAULT_CENTER/DEFAULT_ZOOM the first time this page is
-    // ever visited in the session — mapViewState only has something once a
+    // ever visited in the session mapViewState only has something once a
     // previous MapPage instance has actually panned/zoomed.
     // maxZoom on the map itself: Leaflet otherwise takes it from the tile
-    // layers, and the dark (vector) basemap declares none — so without this
+    // layers, and the dark (vector) basemap declares none so without this
     // the dark theme could zoom in forever, the light one stopping at 20.
     const map = L.map(container, { zoomControl: false, maxZoom: 20 }).setView(
       this.mapViewState.center ?? DEFAULT_CENTER,
@@ -403,8 +403,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     );
     this.map = map;
 
-    // Minimal attribution: OpenStreetMap — the data behind every basemap
-    // layer — credited once here, so each layer only adds its own short
+    // Minimal attribution: OpenStreetMap the data behind every basemap
+    // layer credited once here, so each layer only adds its own short
     // "© CARTO" / "© OpenMapTiles" and nothing is repeated when two are on at
     // once. Leaflet's own prefix (with its flag) stays as it is.
     map.attributionControl.addAttribution(OSM_ATTRIBUTION);
@@ -427,7 +427,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
 
   /** Puts the basemap for `theme` on the map: one MapLibre layer, created on
    * first use (MapLibre itself loads lazily) and then just restyled on a theme
-   * switch — same tiles, only the colours change, so the switch is instant and
+   * switch same tiles, only the colours change, so the switch is instant and
    * downloads nothing new. Without WebGL (see supportsWebGL), or if MapLibre
    * fails to load, CARTO Voyager's raster stands in for both themes rather than
    * leaving the map blank. */
@@ -441,7 +441,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       return;
     }
     // Already on the raster fallback (one look for both themes), or MapLibre
-    // is still loading — it picks up basemapStyleUrl once it's in.
+    // is still loading it picks up basemapStyleUrl once it's in.
     if (this.rasterLayer || this.basemapLoading) return;
 
     this.basemapLoading = true;
@@ -465,7 +465,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   /** Fallback basemap for browsers without WebGL. CARTO Voyager: the look
    * light.json is modelled on. Needs an API key (carto.com/basemaps/apikey);
    * free up to 1M tile requests a month for commercial use (5M
-   * non-commercial) under CARTO's terms of 23 September 2026 — plenty for the
+   * non-commercial) under CARTO's terms of 23 September 2026 plenty for the
    * few visitors who end up here. */
   private createRasterLayer(L: typeof import('leaflet')): Layer {
     return L.tileLayer(
@@ -520,13 +520,13 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   }
 
   /** Reopens the card for the pin that was selected before navigating away
-  (e.g. to /evento/:id) — see mapViewState. Deliberately NOT consumed/nulled
+  (e.g. to /evento/:id) see mapViewState. Deliberately NOT consumed/nulled
   out here: navigating back can momentarily spin up two MapPage instances
   in a row (router/view-transition quirk, still under investigation), and
   the second one needs the id to still be there since the first's restore
   gets wiped out when it's torn down. Only selectEvent()/closeDetail() ever
   change it after that (and openOnMap on an event's page, see
-  onRouteAttached). Re-running this on every subsequent pan is cheap — for a
+  onRouteAttached). Re-running this on every subsequent pan is cheap for a
   pin that's already open it only swaps in the fresh copy (so the card's
   counts follow the server, e.g. after a like on the event's page) and skips
   re-fetching toggle state. */
@@ -580,7 +580,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     this.markerPulseSignature = signature;
   }
 
-  /** One char per visible event (1 = live, 0 = not) — cheap way to tell the
+  /** One char per visible event (1 = live, 0 = not) cheap way to tell the
   pulse timer whether a sync is actually needed. Built the same way as the one
   drawMarkers() stores. */
   private pulseSignature(): string {
@@ -589,7 +589,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       .join('');
   }
 
-  /** Pins pulse only once the event is actually underway — before that
+  /** Pins pulse only once the event is actually underway before that
   (even "starting soon") the pin just sits there plain, no animation.
   Reads Date.now() rather than the `now` signal on purpose: drawMarkers()
   runs inside an effect, which would otherwise track `now` and resync every
@@ -716,7 +716,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     previous.forEach((marker) => marker.remove());
   }
 
-  /** Round badge in the type's colour with its glyph — see VENUE_PIN_COLORS. */
+  /** Round badge in the type's colour with its glyph see VENUE_PIN_COLORS. */
   private getVenuePinIcon(L: typeof import('leaflet'), type: VenueType): DivIcon {
     const cached = this.venuePinIconCache.get(type);
     if (cached) return cached;
@@ -765,7 +765,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
 
   /** "Intorno a me". Only ever asked from this tap, never on page load:
   browsers penalise permission prompts nobody asked for, and visitors tend to
-  refuse them. The position never leaves the browser — it only moves the map,
+  refuse them. The position never leaves the browser it only moves the map,
   and the events for the new area come from the usual bounding-box fetch. */
   protected locateMe(): void {
     if (!this.isBrowser || this.locating()) return;
@@ -808,8 +808,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   }
 
   /** Drops the "you are here" dot at `coords` (plus its accuracy circle when
-  the fix is precise enough to be worth drawing — see LOCATE_CIRCLE_MAX_METERS),
-  then moves the map there — which fires moveend, so the events around the
+  the fix is precise enough to be worth drawing see LOCATE_CIRCLE_MAX_METERS),
+  then moves the map there which fires moveend, so the events around the
   visitor load like after any pan. */
   private showUserPosition(coords: GeolocationCoordinates): void {
     const L = this.leaflet;

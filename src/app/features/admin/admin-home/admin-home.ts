@@ -18,6 +18,11 @@ interface AdminOption {
 export class AdminHome {
   protected readonly options: AdminOption[] = [
     {
+      title: 'Crea venue',
+      description: 'Aggiungi un locale, bar o discoteca',
+      routerLink: '/admin/create-venue', 
+    },
+    {
       title: 'Crea organizzatore unclaimed',
       description: 'Aggiungi un organizzatore non ancora rivendicato dal proprietario.',
       routerLink: '/admin/create-unclaimed-organizer', 
@@ -33,19 +38,19 @@ export class AdminHome {
       routerLink: '/admin/create-event-series',
     },
     {
-      title: 'Elenco organizzatori verificati, possibilita di aggiornamento e eliminazione',
-      description: 'Lista degli organizzatori che hanno completato il processo di verifica.',
+      title: 'Organizzatori verificati update/delete',
+      description: 'Organizzatori che hanno completato il processo di verifica.',
       routerLink: '/admin/verified-organizers-list', 
-    },
-    {
-      title: 'Lista organizzatori non rivendicati (DA IMPLEMENTARE)',
-      description: 'Lista degli organizzatori non ancora rivendicati dal proprietario.',
-      routerLink: '/admin/', 
     },
     {
       title: 'Organizzatori in attesa di verifica',
       description: 'Verifica gli organizzatori che si sono registrati.',
       routerLink: '/admin/pending-organizers',
+    },
+    {
+      title: 'Lista organizzatori non rivendicati (DA IMPLEMENTARE)',
+      description: 'Lista degli organizzatori non ancora rivendicati dal proprietario.',
+      routerLink: '/admin/', 
     },
     {
       title: 'Lista organizzatori non verificati (DA IMPLEMENTARE)',

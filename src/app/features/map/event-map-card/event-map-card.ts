@@ -46,7 +46,7 @@ import {
 })
 export class EventMapCard {
   readonly event = input.required<EventCardDto>();
-  /** Clock tick from MapPage — drives the LIVE badge and the countdown. The
+  /** Clock tick from MapPage drives the LIVE badge and the countdown. The
   app is zoneless, so reading Date.now() in the template would never
   refresh on its own. */
   readonly now = input.required<number>();
@@ -72,7 +72,7 @@ export class EventMapCard {
 
   /** Outline (inheriting the surrounding text colour) when not liked, filled
   with the theme's heart colour (--mc-heart, event-map-card.css) when liked
-  — shared by the count badge and the "Mi piace" button so the two spots
+  shared by the count badge and the "Mi piace" button so the two spots
   can't drift apart. lucideHeart's <svg> hardcodes fill="none" and ng-icon
   has no input for it, so the fill goes on the inner svg via an arbitrary
   variant. Same approach as heartIconClass in event-details.ts. */

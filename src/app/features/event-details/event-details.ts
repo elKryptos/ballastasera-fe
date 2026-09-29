@@ -42,7 +42,7 @@ import {
 } from '../../core/utils/event-format';
 
 /** Zoom level of the mini-map in the "Dove" card (Leaflet levels, like
- * /mappa's) — street level, enough to read the surrounding streets without
+ * /mappa's) street level, enough to read the surrounding streets without
  * being a full interactive map. */
 const MINI_MAP_ZOOM = 16;
 
@@ -93,7 +93,7 @@ export class EventDetails {
   protected readonly loading = signal(true);
 
   /** Opens the shared login dialog when a signed-out visitor taps
-   * Parteciperò/Mi piace — both require a session server-side (same pattern
+   * Parteciperò/Mi piace both require a session server-side (same pattern
    * as map.ts). */
   protected readonly authOpen = signal(false);
   protected readonly going = signal(false);
@@ -101,7 +101,7 @@ export class EventDetails {
   /** No follow-organizer endpoint yet — local-only toggle. */
   protected readonly following = signal(false);
 
-  /** Outline while not liked; filled with --ed-heart once liked — shared by
+  /** Outline while not liked; filled with --ed-heart once liked shared by
    * the "Mi piace" counter and both like buttons (which turn it white when
    * pressed, see the template). lucideHeart's <svg> hardcodes fill="none" and
    * ng-icon has no input for it, so the fill goes on the inner svg via an
@@ -142,14 +142,14 @@ export class EventDetails {
   /** Only the id, so the effect below doesn't refetch on every count change. */
   private readonly eventId = computed(() => this.event()?.id ?? null);
   private linkCopiedTimer: ReturnType<typeof setTimeout> | undefined;
-  /** Toggles with a request still in flight — a second tap is ignored until
-   * it settles, or add/remove could reach the server in the wrong order and
-   * leave the button out of sync with the backend. */
+  // Toggles with a request still in flight a second tap is ignored until
+  // it settles, or add/remove could reach the server in the wrong order and
+  // leave the button out of sync with the backend.
   private readonly pendingToggles = new Set<WritableSignal<boolean>>();
 
-  /** Ticks once a minute (browser only) so the live/soon badge moves on by
-   * itself — "Inizia tra 5 min" → "LIVE ORA" — while the page stays open.
-   * Purely local: startAt/endAt are already loaded, no backend calls. */
+  // Ticks once a minute (browser only) so the live/soon badge moves on by
+  // itself — "Inizia tra 5 min" → "LIVE ORA" — while the page stays open.
+  // Purely local: startAt/endAt are already loaded, no backend calls.
   private readonly now = signal(Date.now());
 
   constructor() {
@@ -191,7 +191,7 @@ export class EventDetails {
 
     const id = this.route.snapshot.paramMap.get('id');
     // No id or a failed fetch both end with event() still null, which the
-    // template already renders as "not found" — no separate error flag needed.
+    // template already renders as "not found" no separate error flag needed.
     if (!id) {
       this.loading.set(false);
       return;
@@ -206,10 +206,10 @@ export class EventDetails {
     });
   }
 
-  /** Back only when there's an in-app page to return to. Opened straight from
-   * a shared link, this page is the router's first navigation (navigationId
-   * 1 in history.state) and location.back() would leave the app — or do
-   * nothing in a fresh tab — so it goes to the map instead. */
+  // Back only when there's an in-app page to return to. Opened straight from
+  // a shared link, this page is the router's first navigation (navigationId
+  // 1 in history.state) and location.back() would leave the app — or do
+  // nothing in a fresh tab so it goes to the map instead.
   protected goBack(): void {
     const state = this.location.getState() as { navigationId?: number } | null;
     if ((state?.navigationId ?? 1) > 1) {
@@ -219,9 +219,9 @@ export class EventDetails {
     }
   }
 
-  /** Opens /mappa centred on this event with its card already open — the
-   * map reads both from MapViewStateService when it mounts (see
-   * restoreSelectedEvent in map.ts). */
+  // Opens /mappa centred on this event with its card already open the
+  // map reads both from MapViewStateService when it mounts (see
+  // restoreSelectedEvent in map.ts).
   protected openOnMap(event: EventDetailDto): void {
     if (event.latitude == null || event.longitude == null) return;
     this.mapViewState.center = [event.latitude, event.longitude];
@@ -260,8 +260,8 @@ export class EventDetails {
     this.following.update((active) => !active);
   }
 
-  /** navigator.share on mobile browsers that support the native sheet;
-   * falls back to copying the current URL to the clipboard. */
+  // navigator.share on mobile browsers that support the native sheet;
+  // falls back to copying the current URL to the clipboard.
   protected async share(event: EventDetailDto): Promise<void> {
     if (!this.isBrowser) return;
     const url = window.location.href;
@@ -270,7 +270,7 @@ export class EventDetails {
       try {
         await navigator.share({ title: event.title, url });
       } catch {
-        // User dismissed the native share sheet — nothing to do.
+        // User dismissed the native share sheet nothing to do.
       }
       return;
     }
@@ -299,9 +299,9 @@ export class EventDetails {
     this.flyerZoomed.update((zoomed) => !zoomed);
   }
 
-  /** Shared by toggleGoing/toggleLike: flips local state immediately, fires
-   * the matching add/remove request, and rolls back if it fails. Mirrors
-   * EventEngagementService.toggleOptimistic, adapted to a single boolean instead of a Set. */
+  // Shared by toggleGoing/toggleLike: flips local state immediately, fires
+  // the matching add/remove request, and rolls back if it fails. Mirrors
+  // EventEngagementService.toggleOptimistic, adapted to a single boolean instead of a Set.
   private toggleOptimistic(
     stateSignal: WritableSignal<boolean>,
     id: string,
@@ -343,9 +343,9 @@ export class EventDetails {
     return minutesToStart(event, this.now());
   }
 
-  /** Second line under the "Dove" heading: with a venue name as the first
-   * line, the whole address; otherwise just what's left after the street.
-   * Either way without the country, like the map's card (see withoutCountry). */
+  // Second line under the "Dove" heading: with a venue name as the first
+  // line, the whole address; otherwise just what's left after the street.
+  // Either way without the country, like the map's card (see withoutCountry).
   protected addressSubtitle(event: EventDetailDto): string | null {
     const address = withoutCountry(event.address);
     if (event.venueName) return address;
@@ -356,8 +356,8 @@ export class EventDetails {
     return EVENT_TYPE_LABELS[event.eventType];
   }
 
-  /** Same shape/glyph/colour as this event's pin on the real map, so the
-   * mini-map in the "Dove" card reads as a crop of it. */
+  // Same shape/glyph/colour as this event's pin on the real map, so the
+  // mini-map in the "Dove" card reads as a crop of it.
   protected pinShape(event: EventDetailDto): string {
     return PIN_SHAPES[event.eventType];
   }

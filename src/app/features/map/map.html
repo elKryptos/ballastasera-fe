@@ -81,7 +81,7 @@
       </button>
 
       <section
-        class="absolute bottom-4 left-4 z-map-content w-30 origin-bottom-left overflow-hidden rounded-lg border border-(--map-glass-border) bg-(--map-glass) p-3 text-(--map-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out"
+        class="absolute bottom-4 left-4 z-map-content w-30 origin-bottom-left overflow-hidden rounded-lg border border-(--map-glass-border) bg-(--map-glass) p-3 text-(--map-text) shadow-(--map-shadow) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out select-none [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent]"
         [class.scale-50]="!legendOpen() || hideFabsForCard()" [class.opacity-0]="!legendOpen() || hideFabsForCard()"
         [class.pointer-events-none]="!legendOpen() || hideFabsForCard()" [class.cursor-pointer]="legendOpen()"
         [attr.inert]="!legendOpen() || hideFabsForCard() ? '' : null"

@@ -1,6 +1,6 @@
 <!-- Los colores del filtro (tema claro y oscuro) se cambian en los tokens --map-* de map.css y --mf-* de map-filters.css. -->
 <aside
-  class="absolute right-4 bottom-4 z-map-content flex max-h-[75dvh] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col gap-5 overflow-y-auto rounded-lg border-(--map-glass-border) bg-(--map-glass) text-(--map-text) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out sm:top-4 sm:right-auto sm:bottom-auto sm:left-4 sm:max-h-[calc(100%-2rem)] sm:max-w-none sm:origin-top-left sm:scale-100 sm:pointer-events-auto sm:opacity-100"
+  class="absolute right-4 bottom-4 z-map-content flex max-h-[75dvh] max-w-[calc(100vw-2rem)] origin-bottom-right flex-col gap-5 overflow-y-auto rounded-lg border-(--map-glass-border) bg-(--map-glass) text-(--map-text) backdrop-blur-[20px] backdrop-saturate-140 transition-all duration-200 ease-out sm:top-4 sm:right-auto sm:bottom-auto sm:left-4 sm:max-h-[calc(100%-2rem)] sm:max-w-none sm:origin-top-left sm:scale-100 sm:pointer-events-auto sm:opacity-100 select-none [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent]"
   [class]="panelStateClass()" [class.scale-50]="!open() || hideForCard()" [class.opacity-0]="!open() || hideForCard()"
   [class.pointer-events-none]="!open() || hideForCard()" [attr.inert]="hideForCard() ? '' : null" aria-label="Filtri">
   <!-- Desktop-only: the collapse arrow is hidden on mobile, but collapsed

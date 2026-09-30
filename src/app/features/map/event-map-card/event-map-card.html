@@ -103,12 +103,12 @@
       <span class="text-(--mc-price)">{{ priceLabel() }}</span>
       <span class="flex items-center gap-3 text-(--map-muted)">
         <span class="flex items-center gap-1">
-          <ng-icon name="lucideUsers" class="size-3.5" [class.text-violet]="event().goingCount > 0" />
           {{ event().goingCount }}
+          <ng-icon name="lucideUsers" class="size-3.5" [class.text-violet]="event().goingCount > 0" />
         </span>
         <span class="flex items-center gap-1">
-          <ng-icon name="lucideHeart" class="size-3.5" [class]="heartIconClass()" />
           {{ event().likesCount }}
+          <ng-icon name="lucideHeart" class="size-3.5" [class]="heartIconClass()" />
         </span>
       </span>
     </div>

@@ -25,17 +25,13 @@ export const appConfig: ApplicationConfig = {
     // across navigations instead of rebuilding them on every visit.
     { provide: RouteReuseStrategy, useClass: KeepAliveReuseStrategy },
     // Starts as an icon-only rail on desktop (matches the md:pl-(--sidebar-width-icon)
-    // gutter every page reserves for it) and closes the mobile drawer as soon
-    // as a nav link inside it is clicked. The desktop rail stays open on
-    // click on purpose — pages that opt into pushing their content over
-    // (see AdminHome's sidebarState-driven --content-inset) rely on the
-    // expanded state persisting across navigation instead of auto-collapsing.
+    // gutter every page reserves for it). Widths kept in sync with --sidebar-width
+    // and --sidebar-width-icon in styles.css. The menu's links close the mobile
+    // drawer themselves (Navbar.closeDrawer) and leave the desktop rail as it is.
     provideHlmSidebarConfig({
       defaultOpen: false,
-      sidebarWidth: '13rem',
+      sidebarWidth: '18rem',
       sidebarWidthIcon: '3.5rem',
-      closeMobileSidebarOnMenuButtonClick: true,
-      closeDesktopSidebarOnMenuButtonClick: false,
     }),
     // Without this, HttpClient calls made during SSR (incl. the i18n JSON
     // the transloco loader fetches) aren't reused on the client — it just

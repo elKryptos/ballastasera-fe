@@ -67,11 +67,13 @@ internal width classes; since app-navbar doesn't use hlm-sidebar-wrapper
 defined here instead so both the sidebar and every page's compensating
 left padding agree on the same values — see provideHlmSidebarConfig in
 app.config.ts, which must be kept in sync with these. */
-  --sidebar-width: 13rem;
-  /* 3.5rem, not the library's 3rem default: fits this app's own bigger
-icons (see [hlmSidebarMenuButton] svg below) without the collapsed rail
-clipping them — a mismatch there is what made expanding the rail look like
-a resize glitch instead of a clean reveal. */
+  /* 18rem: same as the mobile drawer, room for the full menu (profile card,
+  language picker) once the rail is open. */
+  --sidebar-width: 18rem;
+  /* 3.5rem, not the library's 3rem default: fits the menu's 44px icon rows
+(see "Collapsed desktop rail" below) without the collapsed rail clipping
+them — a mismatch there is what made expanding the rail look like a resize
+glitch instead of a clean reveal. */
   --sidebar-width-icon: 3.5rem;
 }
 
@@ -100,26 +102,6 @@ a resize glitch instead of a clean reveal. */
     outline: 2px solid var(--color-amber);
     outline-offset: 3px;
     border-radius: 4px;
-  }
-
-  /* Collapsed desktop rail: Spartan forces sidebar menu buttons to a 32px
-  box (size-8!) with 8px padding (p-2!) there — a 16px content box sized for
-  its own default 16px icons, not this app's bigger ones (see
-  [hlmSidebarMenuButton] svg below), which the mismatch clipped/squeezed
-  until the rail expanded and the button was free to grow — the sudden
-  jump the icon (and the account avatar) made right as it expanded. Bumped
-  to 44px (28px content — comfortably fits the 24px avatar and ~21px icons
-  with room to spare) so nothing changes size when the rail opens, just
-  reveals the label next to it.
-  Layer position matters here, not just !important: Spartan's own classes
-  are Tailwind utilities (the `!` suffix), which live in the `utilities`
-  layer; per the cascade spec, importance flips priority order between
-  layers, so an earlier-declared layer's !important (base, here) wins over
-  the later utilities layer's !important — without that this override would
-  quietly lose despite having its own !important too. */
-  [data-collapsible='icon'] [hlmSidebarMenuButton] {
-    width: 2.75rem !important;
-    height: 2.75rem !important;
   }
 }
 
@@ -341,127 +323,172 @@ Global for the same reason as the pins: Leaflet renders it outside Angular. */
   }
 }
 
-/* app-navbar's sidebar menu buttons (Menu, Admin, Esci, Accedi): the base
-size/spacing/radius override that used to live here moved to plain Tailwind
-classes directly on each <a>/<button hlmSidebarMenuButton> in navbar.html
-(h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1.35rem]! — tune those
-in navbar.html itself, not here) — those are elements navbar.html authors
-directly, so there's no reason to reach them through a separate global
-stylesheet; the `!` modifier is there
-because Spartan's own h-8/gap-2/rounded-md/text-sm on the same element are
-also plain (non-important) Tailwind utilities, and which of two equal-
-specificity, non-important classes wins depends on Tailwind's own internal
-generation order, not on source position — `!` sidesteps that ambiguity
-outright instead of hoping for it. What's left here genuinely has to be
-CSS: the mobile drawer is a Spartan/CDK sheet, and Angular CDK overlays
-portal their content to a container appended to <body>, outside
-app-navbar's own DOM subtree, so a :host-scoped rule (which requires
-physical DOM descendance of the host) could never reach it — same reason
-.map-pin-wrap above has to be global instead of component-scoped. */
-
-/* Spartan's own hover:/active:/data-active: variants swap text to
---sidebar-accent-foreground, which styles.css maps to --color-ink (the near-
-black plum the whole app is built on) — meant for a light accent background,
-but reads as the text going broken/dark the instant you tap or hover a row.
-Kept on the light --sidebar-foreground colour in every state instead. :hover
-split out below into @media (hover: hover) — see that rule for why. */
-[hlmSidebarMenuButton]:active,
-[hlmSidebarMenuButton][data-active] {
-  color: var(--color-bone) !important;
+/* Sidebar menu (navbar.html): one menu for both the mobile drawer and the
+desktop rail. The drawer is a CDK overlay portalled to <body>, outside
+app-navbar's DOM, so these styles live here; [data-mobile='true'] is set by
+Spartan only on that sheet, [data-slot='sidebar-inner'] only on the desktop
+rail. Same colours as the top bar: the night gradient by dark, the map's
+paper with its yellow and sage glows by day. The rest is the shared tokens,
+which the daytime block below swaps on their own. Each icon gets its own
+colour (--drawer-violet/-mint/-yellow/-sky, plus rose), the light pastels by
+night turning into deeper shades by day so they still read on the paper. */
+[data-mobile='true'],
+app-navbar [data-slot='sidebar-inner'] {
+  background: linear-gradient(
+    180deg,
+    var(--color-ink) 0%,
+    var(--color-ink-2) 55%,
+    color-mix(in srgb, var(--color-rose) 20%, var(--color-ink-2)) 100%
+  );
+  --drawer-raised: color-mix(in srgb, var(--color-rose) 10%, var(--color-ink-2));
+  --drawer-edge: var(--color-line);
+  --drawer-rule: var(--color-line);
+  --drawer-soft: var(--color-lead);
+  --drawer-label: var(--color-muted);
+  --drawer-violet: color-mix(in srgb, var(--color-violet) 55%, var(--color-bone));
+  --drawer-mint: var(--color-mint);
+  --drawer-yellow: #f5c04a;
+  --drawer-sky: #6aa8ff;
+  --drawer-danger: var(--color-rose-lit);
 }
 
-/* (hover: hover), not a viewport-width breakpoint: touch has no real "hover"
-— tapping either fires it and leaves it stuck until the next unrelated tap,
-or never fires it at all depending on the browser, either way reading as a
-glitch rather than feedback. :active (the transform/tint rules below) is the
-correct, reliable feedback for a tap; this keeps :hover for devices that
-have an actual pointer to hover with. */
-@media (hover: hover) {
-  [hlmSidebarMenuButton]:hover {
-    color: var(--color-bone) !important;
+:root[data-theme='light'] [data-mobile='true'],
+:root[data-theme='light'] app-navbar [data-slot='sidebar-inner'] {
+  background:
+    radial-gradient(180px 140px at 50% 0%, rgba(255, 233, 165, 0.55), transparent 70%),
+    radial-gradient(220px 160px at 50% 100%, rgba(217, 233, 201, 0.6), transparent 70%),
+    linear-gradient(180deg, #fbf8f3 0%, #f8f3ea 55%, #f4ecdf 100%);
+  --drawer-violet: var(--color-violet);
+  --drawer-mint: #0f766e;
+  --drawer-yellow: #a16207;
+  --drawer-sky: #1d4ed8;
+  --drawer-danger: #c81e3a;
+}
+
+/* In the components layer so a Tailwind utility on the same element (e.g.
+bg-rose on the "Nuovo" chip) still wins over these defaults. */
+@layer components {
+  .drawer-label {
+    padding: 0.125rem 0.625rem 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--drawer-label);
+  }
+
+  .drawer-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem;
+    border: 1px solid var(--drawer-edge);
+    border-radius: 1.125rem;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-ink-2) 82%, transparent),
+      color-mix(in srgb, var(--color-rose) 14%, var(--color-ink-2))
+    );
+  }
+
+  .drawer-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: var(--drawer-edge);
+    object-fit: cover;
+  }
+
+  /* 44px rows while the screen has room, giving way down to 36px on short
+  ones so the whole menu fits without scrolling — the sections holding them
+  carry min-h-0 so the shrink reaches the rows (see navbar.html). */
+  .drawer-item {
+    display: flex;
+    flex: 0 1 2.75rem;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.25rem;
+    padding-inline: 0.625rem;
+    border-radius: 0.875rem;
+    color: var(--color-bone);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .drawer-item > svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .drawer-chip {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.5rem;
+    background: var(--drawer-edge);
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  /* Only the rows that already lead somewhere react to a tap — the others
+  stay plain rows until their page exists. :hover only with a real pointer:
+  touch has no hover, and a tap would leave it stuck on. */
+  a.drawer-item {
+    transition: background-color 0.15s ease;
+  }
+
+  a.drawer-item:active {
+    background: var(--drawer-raised);
+  }
+
+  @media (hover: hover) {
+    a.drawer-item:hover {
+      background: var(--drawer-raised);
+    }
   }
 }
 
-[hlmSidebarMenuButton] svg {
-  width: 1.3rem;
-  height: 1.3rem;
+/* Collapsed desktop rail (data-collapsible="icon" on hlm-sidebar, desktop
+only): the same menu folded down to its icons — every label, chip and
+control hidden, the profile card down to its avatar, each 44px icon centred
+in the 3.5rem rail. Unlayered, so it beats the Tailwind display and spacing
+utilities on those elements. */
+[data-collapsible='icon'] .drawer-nav {
+  overflow: hidden;
+  padding-inline: 0.375rem;
 }
 
-/* Mobile drawer only: more generous padding and a bigger icon than the
-desktop rail above (font-size itself is set to the same value on both now,
-via the !important Tailwind class in navbar.html — no need to repeat it
-here). [data-mobile='true'] (set by Spartan only on the sheet variant) is
-what keeps the desktop rail from also picking this up. Restyled as
-distinct rounded cards rather than a plain flat list — bigger tap targets
-read as more deliberate buttons, not just bigger text. */
-[data-mobile='true'] ul[hlmSidebarMenu] {
-  gap: 0.6rem;
+[data-collapsible='icon'] .drawer-label,
+[data-collapsible='icon'] .rail-hide,
+[data-collapsible='icon'] .drawer-item > :not(svg),
+[data-collapsible='icon'] .drawer-card > :not(.drawer-avatar) {
+  display: none;
 }
 
-[data-mobile='true'] [hlmSidebarMenuButton] {
-  padding-block: 0.9rem;
-  padding-inline: 1rem;
-  gap: 1rem;
-  border: none;
-  /* One warm, elegant card for every button — the same ink-to-rose gradient
-  language as .mobile-bar / [data-slot='sidebar-inner'] above, instead of
-  each item wearing a different saturated colour (violet/amber/rose/mint
-  side by side read as a rainbow, not a brand). Solid enough to stay
-  legible over the moving aurora/starfield behind the drawer; the per-item
-  identity now lives only in the icon colour below, kept to this app's own
-  warm sunset pair (rose/amber) — violet and mint stay reserved for where
-  they already mean something specific (dance-style tags, the map). No need
-  for :hover or :active to "reveal" the button, which doesn't work reliably
-  on touch anyway — the background is !important so Spartan's own
-  hover:bg-sidebar-accent can't flash a plain rose tint over it if a tap
-  latches :hover with no real hover to release it. */
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-ink-2) 82%, transparent),
-    color-mix(in srgb, var(--color-rose) 14%, var(--color-ink-2))
-  ) !important;
-  backdrop-filter: blur(10px);
-  transition: transform 0.12s ease;
+[data-collapsible='icon'] .drawer-item,
+[data-collapsible='icon'] .drawer-foot {
+  justify-content: center;
+  padding-inline: 0;
 }
 
-[data-mobile='true'] [hlmSidebarMenuButton]:active {
-  transform: scale(0.97);
-}
-
-[data-mobile='true'] [hlmSidebarMenuButton] svg {
-  width: 1.6rem;
-  height: 1.6rem;
-}
-
-/* Icon colour is the only thing that still varies per button — two warm
-tones, not four competing ones: amber for the routine/informational items
-(this app's existing "gold" accent), rose for the ones that act on your
-session (the site's one CTA colour, and its lighter rose-lit shade for the
-destructive Esci). Reads as one elegant, on-brand set instead of a colour
-per item. .nav-item--user has no svg of its own (it's the avatar/initial,
-styled globally in navbar.css) — nothing to tint here for that one. */
-[data-mobile='true'] .nav-item--menu svg,
-[data-mobile='true'] .nav-item--admin svg {
-  color: var(--color-amber);
-}
-
-[data-mobile='true'] .nav-item--login svg {
-  color: var(--color-rose);
-}
-
-[data-mobile='true'] .nav-item--logout svg {
-  color: var(--color-rose-lit);
+[data-collapsible='icon'] .drawer-card {
+  justify-content: center;
+  padding: 0;
+  border-color: transparent;
+  background: none;
 }
 
 /* Daytime navigation (<html data-theme="light">, see ThemeService): the
-same tokens app-navbar pins on its own :host (navbar.css), swapped for the
-/mappa basemap's own palette (CARTO Voyager): its warm paper ground and beige
-blocks, with navy text close to the map's slate labels — so the rail reads as
-part of the map next to it, not a separate sky-blue strip. Lives here rather than in navbar.css because the
-mobile drawer ([data-mobile='true']) is a CDK overlay portalled to <body>,
-outside app-navbar's DOM — one block covers both. :root[...] prefix so this
-outranks navbar.css' own `app-navbar[_nghost]` pin on specificity. Rose is
-left alone: it's the logo's colour. The --sidebar-* tokens are re-declared
+shared brand tokens (@theme above), swapped for the /mappa basemap's own
+palette (CARTO Voyager): its warm paper ground and beige blocks, with navy
+text close to the map's slate labels — so the rail reads as part of the map
+next to it, not a separate sky-blue strip. Lives here rather than in
+navbar.css because the mobile drawer ([data-mobile='true']) is a CDK overlay
+portalled to <body>, outside app-navbar's DOM — one block covers both. Rose
+is left alone: it's the logo's colour. The --sidebar-* tokens are re-declared
 so they resolve against these values instead of :root's dark ones. */
 :root[data-theme='light'] app-navbar,
 :root[data-theme='light'] [data-mobile='true'] {
@@ -474,66 +501,9 @@ so they resolve against these values instead of :root's dark ones. */
   --color-muted: #5f6d8c;
   --color-line: rgba(29, 38, 64, 0.14);
 
-  --sidebar: var(--color-ink);
   --sidebar-foreground: var(--color-bone);
   --sidebar-border: var(--color-line);
-  --sidebar-accent-foreground: var(--color-bone);
   color: var(--color-bone);
-}
-
-/* Sidebar theme toggle (navbar.html): sun and moon stacked in one clipped
-slot, sliding past each other like a sunset/sunrise. Dark theme shows the
-sun (the theme you'd switch to); switching sets it — down and out, spinning —
-while the moon drops in from above with a small overshoot, and the reverse on
-the way back. Global, not in navbar.css, because the same button also
-renders in the mobile drawer (a CDK overlay outside app-navbar's DOM). Sized
-off the same [hlmSidebarMenuButton] svg rules as every other nav icon. */
-.theme-icon {
-  position: relative;
-  display: inline-block;
-  flex-shrink: 0;
-  width: 1.3rem;
-  height: 1.3rem;
-  overflow: hidden;
-}
-
-[data-mobile='true'] .theme-icon {
-  width: 1.6rem;
-  height: 1.6rem;
-}
-
-.theme-icon svg {
-  position: absolute;
-  inset: 0;
-  transition:
-    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.35s ease;
-}
-
-.theme-icon__sun {
-  transform: translateY(0) rotate(0);
-  opacity: 1;
-}
-
-.theme-icon__moon {
-  transform: translateY(-110%) rotate(-70deg);
-  opacity: 0;
-}
-
-.theme-icon--light .theme-icon__sun {
-  transform: translateY(110%) rotate(120deg);
-  opacity: 0;
-}
-
-.theme-icon--light .theme-icon__moon {
-  transform: translateY(0) rotate(0);
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-icon svg {
-    transition: opacity 0.2s ease;
-  }
 }
 
 /* "stasera" = tonight — a scatter of tiny stars over the word itself

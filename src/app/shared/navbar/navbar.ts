@@ -1,23 +1,30 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { AuthModal } from '../auth-modal/auth-modal';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
+import { AVAILABLE_LANGS } from '../../core/config/i18n';
+import { writeLangCookie } from '../../core/i18n/lang-cookie';
+import { UserRole } from '../../core/models/user.model';
 import { ThemeService } from '../../core/services/theme.service';
+import { RailTooltip } from '../directives/rail-tooltip.directive';
 import { RoleDirective } from '../directives/role.directive';
 
 /**
  * Site navigation: a Spartan sidebar (icon rail on desktop, expandable; an
- * off-canvas sheet on mobile) plus a small always-visible mobile top bar,
- * since the sidebar itself renders nothing on screen until its sheet is
- * opened. Owns the auth dialog itself, so any page just drops in
- * `<app-navbar>`.
+ * off-canvas sheet on mobile) holding the same menu either way, plus a small
+ * always-visible mobile top bar, since the sidebar itself renders nothing on
+ * screen until its sheet is opened. Owns the auth dialog itself, so any page
+ * just drops in `<app-navbar>`.
  */
 @Component({
   selector: 'app-navbar',
-  imports: [HlmSidebarImports, AuthModal, RouterLink, RoleDirective],
+  imports: [HlmSidebarImports, NgTemplateOutlet, AuthModal, RouterLink, RoleDirective, RailTooltip],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
@@ -29,10 +36,8 @@ export class Navbar {
 
   protected readonly authOpen = signal(false);
 
-  // The collapse/expand trigger only makes sense inside the desktop rail
-  // mobile has its own trigger in the top bar, so the projected sidebar
-  // header (rendered inside the mobile sheet too, same content either way)
-  // hides it there to avoid showing two of them at once.
+  // The desktop rail adds its own collapse/expand trigger to the menu;
+  // mobile has one in the top bar instead.
   protected readonly isMobile = this.sidebarService.isMobile;
 
   // Drives the mobile trigger's accessible name (see navbar.html) so screen
@@ -47,8 +52,42 @@ export class Navbar {
 
   protected readonly theme = this.themeService.theme;
 
+  private readonly transloco = inject(TranslocoService);
+
+  protected readonly langs = AVAILABLE_LANGS;
+  protected readonly activeLang = toSignal(this.transloco.langChanges$, {
+    initialValue: this.transloco.getActiveLang(),
+  });
+  protected readonly managerRoles: UserRole[] = ['ORGANIZER', 'ADMIN'];
+
+  // No per-user totals endpoint yet — while these stay null the drawer hides
+  // the Parteciperò badge and shows the email in place of the stats line.
+  protected readonly goingCount = signal<number | null>(null);
+  protected readonly likesCount = signal<number | null>(null);
+
   protected toggleTheme(): void {
     this.themeService.toggle();
+  }
+
+  protected setLang(lang: string): void {
+    this.transloco.setActiveLang(lang);
+    writeLangCookie(lang);
+  }
+
+  /** The menu's rows aren't hlmSidebarMenuButtons, so the sidebar's own
+   * close-on-click doesn't cover them — links and actions call this. A no-op
+   * on desktop, where the rail stays as it is after navigating. */
+  protected closeDrawer(): void {
+    this.sidebarService.setOpenMobile(false);
+  }
+
+  /** On the collapsed rail, a tap on anything that isn't a link or a button
+   * itself (a row still waiting for its page, the theme or language row,
+   * the avatar) opens the rail to show that row in full. */
+  protected expandRail(event: MouseEvent): void {
+    const railCollapsed = !this.isMobile() && this.sidebarService.state() === 'collapsed';
+    if (!railCollapsed || (event.target as Element).closest('a, button')) return;
+    this.sidebarService.setOpen(true);
   }
 
   protected openAuth(): void {

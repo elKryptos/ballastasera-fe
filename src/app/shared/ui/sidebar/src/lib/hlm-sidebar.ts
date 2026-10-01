@@ -33,12 +33,15 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
         overlayClass="!top-(--header-h)"
         (stateChanged)="_sidebarService.setOpenMobile($event === 'open')"
       >
+        <!-- transition-none: the sheet's own colour transition made the
+          drawer fade into a new theme 200ms after everything else had
+          switched. The slide in/out is an animation, so it's unaffected. -->
         <hlm-sheet-content
           *hlmSheetPortal="let ctx"
           data-slot="sidebar"
           data-sidebar="sidebar"
           data-mobile="true"
-          class="bg-transparent backdrop-blur-xl text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          class="text-sidebar-foreground border-sidebar-border rounded-br-[1.75rem] w-(--sidebar-width) p-0 transition-none [&>button]:hidden"
           [style.--sidebar-width]="sidebarWidthMobile()"
           [style.top]="'var(--header-h)'"
           [style.height]="'calc(100svh - var(--header-h))'"
@@ -59,7 +62,7 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          class="bg-sidebar group-data-[state=expanded]:bg-sidebar/50 group-data-[state=expanded]:backdrop-blur-[96px] group-data-[variant=floating]:ring-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 flex size-full flex-col"
+          class="group-data-[variant=floating]:ring-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 flex size-full flex-col"
         >
           <ng-container *ngTemplateOutlet="contentContainer" />
         </div>

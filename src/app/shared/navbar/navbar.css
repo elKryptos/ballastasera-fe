@@ -61,25 +61,13 @@ normal page content does. */
     0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
-/* Same desktop rail the mobile bar above mirrors: Spartan's own bg-sidebar
-utility only gives it flat --color-ink (see --sidebar in styles.css), so
-this is layered on via ::ng-deep — plain (unlayered) component CSS always
-wins over Tailwind's own @layer utilities regardless of source order, so
-no !important is needed. Scoped to :host so it only reaches this
-navbar's own sidebar instance, not sidebars elsewhere in the app.
-[data-slot='sidebar-inner'] (not the shared [data-sidebar='sidebar']
-attribute) targets only the desktop variant — the mobile drawer sheet
-carries the same data-sidebar attribute but is already bg-transparent +
-backdrop-blur, not flat ink, so it's left alone. */
+/* The desktop rail's panel: its background (shared with the mobile drawer)
+is in styles.css ("Sidebar menu"); here it only becomes the clipping box for
+the menu while the rail animates its width, and for the star scatter below.
+[data-slot='sidebar-inner'] targets only the desktop variant. */
 :host ::ng-deep [data-slot='sidebar-inner'] {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(
-    180deg,
-    var(--color-ink) 0%,
-    var(--color-ink-2) 55%,
-    color-mix(in srgb, var(--color-rose) 20%, var(--color-ink-2)) 100%
-  );
 }
 
 /* No divider line between the rail and the page, in either theme. The
@@ -136,10 +124,10 @@ texture rather than competing with the nav items sitting on top of it. */
 The colour tokens themselves flip in styles.css (see the
 `:root[data-theme='light'] app-navbar` block there — it also has to reach
 the mobile drawer, which lives outside this component). What's here is
-only the chrome built on top of them: the bar/rail gradients become the
-/mappa basemap (CARTO Voyager) — its paper ground warming into beige
-blocks, a glow in its road yellow at the top and one in its park sage at
-the rail's foot — and the night-sky star scatter goes away. */
+only the chrome built on top of them: the bar's gradient becomes the
+/mappa basemap (CARTO Voyager) — its paper ground warming into beige, a
+glow in its road yellow at the top (the rail's daytime gradient is in
+styles.css) — and the night-sky star scatter goes away. */
 :host-context([data-theme='light']) .mobile-bar {
   background:
     radial-gradient(160px 60px at 18% 0%, rgba(255, 233, 165, 0.55), transparent 70%),
@@ -147,13 +135,6 @@ the rail's foot — and the night-sky star scatter goes away. */
   box-shadow:
     0 1px 0 rgba(196, 172, 134, 0.35),
     0 4px 16px rgba(60, 50, 35, 0.08);
-}
-
-:host-context([data-theme='light']) ::ng-deep [data-slot='sidebar-inner'] {
-  background:
-    radial-gradient(180px 140px at 50% 0%, rgba(255, 233, 165, 0.55), transparent 70%),
-    radial-gradient(220px 160px at 50% 100%, rgba(217, 233, 201, 0.6), transparent 70%),
-    linear-gradient(180deg, #fbf8f3 0%, #f8f3ea 55%, #f4ecdf 100%);
 }
 
 :host-context([data-theme='light']) .mobile-bar::after,
@@ -166,17 +147,13 @@ the rail's foot — and the night-sky star scatter goes away. */
   fill: #1a0e2e;
 }
 
-/* Sidebar menu button sizing/colour (Menu, Admin, Esci, Accedi) lives in
-global styles.css, not here — the mobile drawer is a Spartan/CDK sheet,
-and CDK overlays portal their content to a container appended to
-<body>, outside this component's own DOM subtree, so :host ::ng-deep
-(which requires physical DOM descendance of the host) never reaches it.
-See the matching comment in styles.css. */
-
 /* "stasera" = tonight — same tiny star scatter as the landing headline,
 shared globally (styles.css's .night) since it's used by both; the logo
 here just takes the default (smaller) size. */
 
+/* The mobile bar's account avatar. The sidebar menu itself is styled in
+styles.css ("Sidebar menu"), since on mobile it renders outside this
+component. */
 .avatar-img,
 .avatar-fallback {
   border: 1.5px solid var(--color-line);
@@ -185,42 +162,4 @@ here just takes the default (smaller) size. */
 .avatar-fallback {
   background: var(--color-rose);
   color: var(--color-ink);
-}
-
-/* .account-trigger and .login-trigger (the mobile-bar's avatar wrapper and
-login icon button) moved to plain Tailwind classes directly in navbar.html
-— single-occurrence elements navbar.html authors itself, with a plain
-:active state Tailwind expresses natively (unlike :hover, :active needs no
-touch-vs-pointer gating, so no @media (hover: hover) dance was needed
-there). Same for .logout-item's resting colour (now text-lead in
-navbar.html) — only its :focus-visible/:hover colour-mix stays here, since
-arbitrary-value Tailwind syntax for a multi-stop color-mix() would be
-harder to read than the CSS, not easier. */
-
-/* :focus-visible (keyboard navigation) stays unconditional — that's a real,
-distinct input state, not touch's fake "hover". :hover itself is split into
-@media (hover: hover) below since .logout-item also renders in the mobile
-drawer's own touch-only [hlmSidebarMenuButton] list (see styles.css for the
-same reasoning on the rest of the sidebar). */
-.logout-item:focus-visible {
-  background: color-mix(in srgb, #ff5b6e 14%, transparent);
-  color: #ff8a97;
-}
-
-@media (hover: hover) {
-  .logout-item:hover {
-    background: color-mix(in srgb, #ff5b6e 14%, transparent);
-    color: #ff8a97;
-  }
-}
-
-/* The light pink above disappears on the daytime paper — a deeper red there. */
-:host-context([data-theme='light']) .logout-item:focus-visible {
-  color: #c81e3a;
-}
-
-@media (hover: hover) {
-  :host-context([data-theme='light']) .logout-item:hover {
-    color: #c81e3a;
-  }
 }

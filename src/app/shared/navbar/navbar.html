@@ -1,3 +1,20 @@
+<!-- The brand mark and wordmark, shared by the top bar and the desktop
+    rail's header — only the mark's width (the template's one argument)
+    differs between them. -->
+<ng-template #brand let-markWidth>
+  <svg viewBox="0 0 200 210" aria-hidden="true" class="shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]"
+    [class]="markWidth">
+    <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="var(--color-rose)" />
+    <g fill="var(--color-ink)">
+      <rect x="74" y="66" width="13" height="30" rx="6.5" />
+      <rect x="93" y="54" width="13" height="54" rx="6.5" />
+      <rect x="112" y="62" width="13" height="38" rx="6.5" />
+    </g>
+  </svg>
+  <span class="font-display text-[0.95rem] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
+      class="night text-rose">stasera</span></span>
+</ng-template>
+
 <!-- The sidebar renders nothing on screen on mobile until its sheet is
     opened, so this small bar keeps the logo visible at all times below
     md: trigger on the left to open the drawer, logo centered, a login
@@ -9,26 +26,16 @@
 
     <a routerLink="/" aria-label="ballastasera — home"
       class="absolute left-1/2 flex -translate-x-1/2 items-center gap-1 no-underline">
-      <svg viewBox="0 0 200 210" aria-hidden="true" class="w-6 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
-        <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z"
-          fill="var(--color-rose)" />
-        <g fill="var(--color-ink)">
-          <rect x="74" y="66" width="13" height="30" rx="6.5" />
-          <rect x="93" y="54" width="13" height="54" rx="6.5" />
-          <rect x="112" y="62" width="13" height="38" rx="6.5" />
-        </g>
-      </svg>
-      <span class="font-display text-[0.95rem] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
-          class="night text-rose">stasera</span></span>
+      <ng-container *ngTemplateOutlet="brand; context: { $implicit: 'w-6' }" />
     </a>
 
     <div class="flex shrink-0 items-center gap-2">
-      @if (isAuthenticated()) {
+      @if (currentUser(); as user) {
       <!-- Status indicator only, not a control: opening the sidebar is the
           hamburger trigger's job alone, so this doesn't duplicate it. -->
       <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full outline-offset-2" aria-hidden="true">
-        @if (currentUser()?.avatarUrl) {
-        <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
+        @if (user.avatarUrl) {
+        <img [src]="user.avatarUrl" [alt]="user.displayName" referrerpolicy="no-referrer"
           class="avatar-img size-8 shrink-0 rounded-full object-cover" />
         } @else {
         <span
@@ -51,148 +58,243 @@
   </div>
 </header>
 
+<!-- One menu for both layouts: the mobile drawer (opened from the top bar's
+    trigger above) and the desktop rail, which collapses down to the icons —
+    a tooltip names each one there, and a tap on a row without a link of its
+    own opens the rail to show it in full. Rows whose page doesn't exist yet
+    are plain <div>s with the final look already in place — swap each for an
+    <a routerLink> (class drawer-item, plus (click)="closeDrawer()") once its
+    page lands. Spacing tightens with the screen height (svh) so everything
+    fits without scrolling; the scroll stays only as a last resort on very
+    short screens. Styles: the "Sidebar menu" block in styles.css — global,
+    since on mobile this renders in a CDK overlay outside this component. -->
 <hlm-sidebar side="left" collapsible="icon">
-  <!-- Desktop only (this whole block is skipped on mobile, which has its own
-      trigger + centred logo in the top bar above): the collapse/expand
-      trigger, plus the brand mark beside it once the rail is wide enough to
-      show it — the collapsed icon rail (3rem) is already fully spent on the
-      trigger button itself, padding included, so the mark only appears once
-      expanded. -->
-  @if (!isMobile()) {
-  <div hlmSidebarHeader>
-    <div class="flex items-center gap-2">
+  <nav aria-label="Menu" (click)="expandRail($event)"
+    class="drawer-nav flex h-full flex-col gap-[clamp(0.5rem,1.6svh,0.875rem)] overflow-y-auto px-3.5 py-[clamp(0.75rem,2svh,1.125rem)] whitespace-nowrap">
+    @if (!isMobile()) {
+    <!-- Desktop only: the rail's collapse/expand trigger, plus the brand mark
+        once it's wide enough (mobile has both in the top bar instead). -->
+    <div class="flex items-center gap-2 px-1.5">
       <button hlmSidebarTrigger type="button" srOnlyText="Comprimi/espandi il menu"></button>
-      <a routerLink="/" aria-label="ballastasera — home"
-        class="hidden shrink-0 items-center gap-1.5 overflow-hidden no-underline group-data-[state=expanded]:flex">
-        <svg viewBox="0 0 200 210" aria-hidden="true" class="w-5 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
-          <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="var(--color-rose)" />
-          <g fill="var(--color-ink)">
-            <rect x="74" y="66" width="13" height="30" rx="6.5" />
-            <rect x="93" y="54" width="13" height="54" rx="6.5" />
-            <rect x="112" y="62" width="13" height="38" rx="6.5" />
-          </g>
-        </svg>
-        <span class="font-display text-[0.95rem] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
-            class="night text-rose">stasera</span></span>
+      <a routerLink="/" aria-label="ballastasera — home" class="rail-hide flex shrink-0 items-center gap-1.5 no-underline">
+        <ng-container *ngTemplateOutlet="brand; context: { $implicit: 'w-5' }" />
       </a>
     </div>
-  </div>
-  }
+    }
 
-  <div hlmSidebarContent class="px-3 pt-4 pb-3 md:p-1.5">
-    <ul hlmSidebarMenu>
-      @if (mapEnabled()) {
-      <li hlmSidebarMenuItem>
-        <!-- Logged out: the map works without a session now, so it's the
-        direct entry point (/mappa). Logged in: back to the hub (/menu),
-        same as before — the map is one tap away from there anyway. -->
-        <a hlmSidebarMenuButton [routerLink]="isAuthenticated() ? '/menu' : '/mappa'"
-          [tooltip]="isAuthenticated() ? 'Menu' : 'Mappa'"
-          class="nav-item--menu h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">
-          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 20l-5.5-2V4L9 6m0 14l6-2m-6 2V6m6 12l5.5 2V6L15 4m0 14V4m0 0L9 6" />
-          </svg>
-          <span>{{ isAuthenticated() ? 'Menu' : 'Mappa' }}</span>
-        </a>
-      </li>
+    @if (currentUser(); as user) {
+    <!-- Profile: no page yet, the chevron is already there for it. -->
+    <div class="drawer-card" [appRailTooltip]="user.displayName">
+      @if (user.avatarUrl) {
+      <img [src]="user.avatarUrl" alt="" referrerpolicy="no-referrer" class="drawer-avatar" />
+      } @else {
+      <span class="drawer-avatar bg-rose text-lg font-extrabold text-ink" aria-hidden="true">{{ initial() }}</span>
       }
+      <div class="min-w-0 grow">
+        <div class="truncate text-base font-extrabold">{{ user.displayName }}</div>
+        <div class="truncate text-xs text-(--drawer-soft)">
+          @if (goingCount() !== null && likesCount() !== null) {
+          {{ goingCount() }} {{ goingCount() === 1 ? 'serata' : 'serate' }} in programma · {{ likesCount() }} like
+          } @else {
+          {{ user.email }}
+          }
+        </div>
+      </div>
+      <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 text-(--drawer-soft)" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" />
+      </svg>
+    </div>
+    } @else {
+    <button type="button" (click)="closeDrawer(); openAuth()" appRailTooltip="Accedi"
+      class="drawer-card w-full cursor-pointer text-left transition-transform active:scale-[0.98]">
+      <span class="drawer-avatar text-rose">
+        <svg viewBox="0 0 24 24" class="size-5.5" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+          <circle cx="12" cy="7.5" r="3.75" />
+        </svg>
+      </span>
+      <span class="min-w-0 grow">
+        <span class="block text-base font-extrabold">Accedi</span>
+        <span class="block text-xs text-(--drawer-soft)">Entra con Google</span>
+      </span>
+      <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 text-(--drawer-soft)" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" />
+      </svg>
+    </button>
+    }
 
-      <li *appRole="'ADMIN'" hlmSidebarMenuItem>
-        <a hlmSidebarMenuButton routerLink="/admin" tooltip="Admin"
-          class="nav-item--admin h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">
-          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7l8-4z" />
-          </svg>
-          <span>Admin</span>
-        </a>
-      </li>
-    </ul>
-  </div>
-
-  <div hlmSidebarFooter class="px-3 pb-3 md:p-2">
-    <!-- Theme: a single light/dark switch, so it still fits the collapsed
-        icon rail (label in the tooltip there). Shows the theme you'd switch
-        TO, like most toggles of this kind. -->
-    <ul hlmSidebarMenu>
-      <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" (click)="toggleTheme()"
-          [tooltip]="theme() === 'dark' ? 'Tema chiaro' : 'Tema scuro'"
-          [attr.aria-label]="theme() === 'dark' ? 'Passa al tema chiaro' : 'Passa al tema scuro'"
-          class="nav-item--theme h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]! text-lead">
-          <!-- Both icons always rendered, stacked in one clipped slot, so the
-            switch can animate: the sun sets (slides down and out, spinning)
-            while the moon drops in from above, and the reverse on the way
-            back. Styles in styles.css (.theme-icon) — the mobile drawer is a
-            CDK overlay outside this component, so they have to be global. -->
-          <span class="theme-icon" [class.theme-icon--light]="theme() === 'light'" aria-hidden="true">
-            <svg viewBox="0 0 24 24" class="theme-icon__sun" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-            </svg>
-            <svg viewBox="0 0 24 24" class="theme-icon__moon" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" />
-            </svg>
-          </span>
-          <span>{{ theme() === 'dark' ? 'Tema chiaro' : 'Tema scuro' }}</span>
-        </button>
-      </li>
-    </ul>
+    @if (mapEnabled()) {
+    <!-- Not in the mockup (the map lives in a bottom bar there), kept until
+        that bar exists so the menu still leads to it: the /menu hub when
+        signed in, the map itself otherwise — each with its own icon. -->
+    @if (isAuthenticated()) {
+    <a class="drawer-item" routerLink="/menu" (click)="closeDrawer()" appRailTooltip="Menu">
+      <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linejoin="round" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
+        <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
+        <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
+        <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
+      </svg>
+      <span class="grow">Menu</span>
+    </a>
+    } @else {
+    <a class="drawer-item" routerLink="/mappa" (click)="closeDrawer()" appRailTooltip="Mappa">
+      <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" />
+        <path d="M9 4v14M15 6v14" />
+      </svg>
+      <span class="grow">Mappa</span>
+    </a>
+    }
+    }
 
     @if (isAuthenticated()) {
-    <ul hlmSidebarMenu>
-      <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" tabindex="-1"
-          class="user-id nav-item--user h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!"
-          [tooltip]="currentUser()?.displayName ?? ''">
-          @if (currentUser()?.avatarUrl) {
-          <!-- Same size-6 in both collapsed and expanded states on purpose
-          (see the [data-collapsible='icon'] [hlmSidebarMenuButton] override
-          in styles.css, which grew the collapsed button's own content box to
-          fit this) — a size that changes between states is what made
-          expanding the rail look like a resize glitch instead of a clean
-          reveal. -->
-          <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.displayName" referrerpolicy="no-referrer"
-            class="avatar-img size-6 shrink-0 rounded-full object-cover" />
-          } @else {
-          <span
-            class="avatar-fallback flex size-6 shrink-0 items-center justify-center rounded-full text-[0.7rem] font-semibold">
-            {{ initial() }}
-          </span>
-          }
-          <span>{{ currentUser()?.displayName }}</span>
-        </button>
-      </li>
-      <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" (click)="logout()" tooltip="Esci"
-          class="nav-item--logout logout-item h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]! text-lead">
-          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8M10 12h11m0 0l-3.5-3.5M21 12l-3.5 3.5" />
-          </svg>
-          <span>Esci</span>
-        </button>
-      </li>
-    </ul>
-    } @else {
-    <ul hlmSidebarMenu>
-      <li hlmSidebarMenuItem>
-        <button hlmSidebarMenuButton type="button" (click)="openAuth()" tooltip="Accedi"
-          class="nav-item--login h-auto! min-h-11! gap-[0.7rem]! rounded-lg! text-[1rem]!">
-          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
-            <circle cx="12" cy="7.5" r="3.75" />
-          </svg>
-          <span>Accedi</span>
-        </button>
-      </li>
-    </ul>
+    <div class="flex min-h-0 flex-col gap-0.5">
+      <h2 class="drawer-label">La tua scena</h2>
+      <div class="drawer-item" appRailTooltip="Parteciperò">
+        <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M8 12.5l2.5 2.5L16 9.5" />
+        </svg>
+        <span class="grow">Parteciperò</span>
+        @if (goingCount() !== null) {
+        <span
+          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--drawer-edge) px-1.5 text-xs font-extrabold">
+          {{ goingCount() }}
+        </span>
+        }
+      </div>
+      <div class="drawer-item" appRailTooltip="Serate che ti piacciono">
+        <svg viewBox="0 0 24 24" class="text-rose" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+        </svg>
+        <span class="grow">Serate che ti piacciono</span>
+      </div>
+      <div class="drawer-item" appRailTooltip="Amici">
+        <svg viewBox="0 0 24 24" class="text-(--drawer-sky)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" aria-hidden="true">
+          <circle cx="9" cy="8" r="3.5" />
+          <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+          <circle cx="17" cy="9" r="2.5" />
+          <path d="M16 14.2c2.8.3 5 2.6 5 5.8" />
+        </svg>
+        <span class="grow">Amici</span>
+        <span class="drawer-chip">Presto</span>
+      </div>
+      <div class="drawer-item" appRailTooltip="Impara a ballare">
+        <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 3l14 9-14 9z" />
+        </svg>
+        <span class="grow">Impara a ballare</span>
+      </div>
+    </div>
+
+    <hr class="mx-1.5 border-(--drawer-rule)" />
     }
-  </div>
+
+    <ng-container *appRole="managerRoles">
+      <div class="flex min-h-0 flex-col gap-0.5">
+        <h2 class="drawer-label">Gestione</h2>
+        <div class="drawer-item" appRailTooltip="Pubblica una serata">
+          <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="3" />
+            <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" />
+          </svg>
+          <span class="grow">Pubblica una serata</span>
+          <span class="drawer-chip bg-rose font-extrabold text-ink">Nuovo</span>
+        </div>
+        <a *appRole="'ADMIN'" class="drawer-item" routerLink="/admin" (click)="closeDrawer()" appRailTooltip="Pannello admin">
+          <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" />
+          </svg>
+          <span class="grow">Pannello admin</span>
+          <span class="text-[0.6875rem] font-bold text-(--drawer-label)">solo admin</span>
+        </a>
+      </div>
+
+      <hr class="mx-1.5 border-(--drawer-rule)" />
+    </ng-container>
+
+    <div class="flex min-h-0 flex-col gap-0.5">
+      <div class="drawer-item" appRailTooltip="Tema scuro">
+        <!-- The theme you're in: the moon by night, the sun by day. -->
+        @if (theme() === 'dark') {
+        <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" />
+        </svg>
+        } @else {
+        <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </svg>
+        }
+        <span class="grow">Tema scuro</span>
+        <button type="button" role="switch" aria-label="Tema scuro" [attr.aria-checked]="theme() === 'dark'"
+          (click)="toggleTheme()"
+          class="group flex h-7.5 w-13 shrink-0 cursor-pointer rounded-full bg-(--drawer-edge) p-0.75 transition-colors duration-200 aria-checked:bg-rose">
+          <span
+            class="size-6 rounded-full bg-white shadow-sm transition-transform duration-200 group-aria-checked:translate-x-5.5"></span>
+        </button>
+      </div>
+      <div class="drawer-item" appRailTooltip="Lingua">
+        <svg viewBox="0 0 24 24" class="text-(--drawer-sky)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z" />
+        </svg>
+        <span class="grow">Lingua</span>
+        <div role="group" aria-label="Lingua"
+          class="flex rounded-xl border border-(--drawer-edge) bg-(--drawer-raised) p-0.75">
+          @for (lang of langs; track lang) {
+          <button type="button" (click)="setLang(lang)" [attr.aria-pressed]="activeLang() === lang"
+            class="h-7 min-w-9.5 cursor-pointer rounded-[0.5625rem] px-2 text-xs font-bold text-(--drawer-soft) uppercase aria-pressed:bg-rose aria-pressed:text-ink">
+            {{ lang }}
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-auto flex flex-col gap-1.5">
+      <a href="https://www.paypal.me/ballastasera/3" target="_blank" rel="noopener noreferrer" appRailTooltip="Offrici un caffè"
+        class="flex h-11 items-center justify-center gap-2 rounded-2xl border border-amber/35 bg-amber/12 text-sm font-bold text-amber transition-transform active:scale-[0.98]">
+        <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z" />
+          <path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3" />
+        </svg>
+        <span class="rail-hide">Offrici un caffè</span>
+      </a>
+      <div class="drawer-foot flex items-center justify-between px-1.5">
+        <div class="rail-hide flex gap-3.5 text-[0.8125rem] font-semibold text-(--drawer-soft)">
+          <a href="https://www.instagram.com/hans.manci/" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <span>Chi siamo</span>
+        </div>
+        @if (isAuthenticated()) {
+        <button type="button" (click)="closeDrawer(); logout()" appRailTooltip="Esci"
+          class="flex h-9 cursor-pointer items-center gap-1.5 px-2.5 text-[0.8125rem] font-bold text-(--drawer-danger)">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />
+          </svg>
+          <span class="rail-hide">Esci</span>
+        </button>
+        }
+      </div>
+    </div>
+  </nav>
 </hlm-sidebar>
 
 <app-auth-modal [(open)]="authOpen" />

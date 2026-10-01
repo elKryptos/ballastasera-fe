@@ -12,7 +12,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
-import { Navbar } from '../../shared/navbar/navbar';
 import { InstallBanner } from '../../shared/install-banner/install-banner';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
@@ -67,7 +66,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, MediaEmbed, Navbar, TranslocoPipe, SidebarPushDirective, InstallBanner, MapSnapshot],
+  imports: [RouterLink, MediaEmbed, TranslocoPipe, SidebarPushDirective, InstallBanner, MapSnapshot],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })

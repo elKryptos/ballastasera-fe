@@ -13,7 +13,6 @@ import { HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/
 import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput, BrnAutocompleteSearch } from '@spartan-ng/brain/autocomplete';
 import { AttachmentState } from '@spartan-ng/helm/attachment';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
-import { Navbar } from '../../../shared/navbar/navbar';
 import { AdminService } from '../../../core/services/admin.service';
 import { CitiesService } from '../../../core/services/cities.service';
 import { DanceStylesService } from '../../../core/services/dance-styles.service';
@@ -48,7 +47,7 @@ const toggled = <T,>(set: ReadonlySet<T>, value: T): Set<T> => {
 
 @Component({
   imports: [
-    ReactiveFormsModule, Navbar, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
+    ReactiveFormsModule, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
     BrnAutocompleteInput, BrnAutocompleteAnchor, SidebarPushDirective, DatePipe, NgIcon, HlmSpinnerImports
   ],
   providers: [provideIcons({ lucideCalendarDays, lucideFileWarning, lucideImage })],

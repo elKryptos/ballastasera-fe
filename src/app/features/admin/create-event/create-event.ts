@@ -11,7 +11,6 @@ import { AttachmentState } from '@spartan-ng/helm/attachment';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFileWarning, lucideImage, lucideRefreshCw, lucideUpload } from '@ng-icons/lucide';
-import { Navbar } from '../../../shared/navbar/navbar';
 import { AdminService } from '../../../core/services/admin.service';
 import { EventsService } from '../../../core/services/events.service';
 import { CitiesService } from '../../../core/services/cities.service';
@@ -42,7 +41,7 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
 @Component({
   selector: 'app-create-event',
   imports: [ 
-    ReactiveFormsModule, Navbar, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
+    ReactiveFormsModule, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
     BrnAutocompleteInput, BrnAutocompleteAnchor, HlmSpinnerImports, NgIcon, SidebarPushDirective
   ],
   providers: [provideIcons({ lucideImage, lucideUpload, lucideRefreshCw, lucideFileWarning })],

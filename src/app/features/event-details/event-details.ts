@@ -20,7 +20,6 @@ import {
 } from '@ng-icons/lucide';
 import { EVENT_TYPE_LABELS, PIN_COLORS, PIN_GLYPHS, PIN_SHAPES } from '../../core/config/map-pins';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
-import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MapPreview } from '../../shared/map-preview/map-preview';
@@ -58,7 +57,7 @@ const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   selector: 'app-event-details',
   templateUrl: './event-details.html',
   styleUrl: './event-details.css',
-  imports: [Navbar, AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview],
+  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview],
   // On the document, not the lightbox <div>: that div never holds focus, so a
   // keydown listener on it would never fire.
   host: { '(document:keydown.escape)': 'closeFlyer()' },

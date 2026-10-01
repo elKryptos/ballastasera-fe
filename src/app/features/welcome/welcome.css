@@ -35,8 +35,8 @@ Same paper palette as the daytime sidebar (styles.css) and the landing:
 the /mappa basemap's (CARTO Voyager) paper and beige with navy text, the
 accents deepened just enough to read on it. Only the tokens change
 (applied when <html data-theme="light">, see ThemeService); every utility
-built on them follows. Rose stays the logo's rose. app-navbar pins its own
-tokens, so this doesn't reach it. */
+built on them follows. Rose stays the logo's rose. app-navbar sits next to
+this page (in NavLayout), not inside it, so this doesn't reach it. */
 :host-context([data-theme='light']) {
   color-scheme: light;
   --color-ink: #fbf8f3;

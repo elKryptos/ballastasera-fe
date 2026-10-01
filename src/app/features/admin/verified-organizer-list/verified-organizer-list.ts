@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
-import { Navbar } from '../../../shared/navbar/navbar';
 import { BrnAlertDialogContent } from '@spartan-ng/brain/alert-dialog';
 import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -10,7 +9,7 @@ import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.di
 
 @Component({
   selector: 'app-verified-organizer-list',
-  imports: [Navbar, HlmAlertDialogImports, BrnAlertDialogContent, HlmButton, SidebarPushDirective],
+  imports: [HlmAlertDialogImports, BrnAlertDialogContent, HlmButton, SidebarPushDirective],
   templateUrl: './verified-organizer-list.html',
   styleUrl: './verified-organizer-list.css',
 })

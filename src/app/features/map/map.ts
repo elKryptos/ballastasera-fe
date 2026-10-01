@@ -16,7 +16,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, Subscription, debounceTime, interval } from 'rxjs';
 import type { DivIcon, LatLng, Layer, Map as LeafletMap, MaplibreGL, Marker } from 'leaflet';
-import { Navbar } from '../../shared/navbar/navbar';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { VenuesService } from '../../core/services/venues.service';
@@ -111,7 +110,7 @@ const OSM_ATTRIBUTION =
 
 @Component({
   selector: 'app-map',
-  imports: [Navbar, SidebarPushDirective, AuthModal, EventMapCard, MapFilters],
+  imports: [SidebarPushDirective, AuthModal, EventMapCard, MapFilters],
   templateUrl: './map.html',
   styleUrl: './map.css',
 })

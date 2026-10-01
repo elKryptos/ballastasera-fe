@@ -19,8 +19,8 @@ import { RoleDirective } from '../directives/role.directive';
  * Site navigation: a Spartan sidebar (icon rail on desktop, expandable; an
  * off-canvas sheet on mobile) holding the same menu either way, plus a small
  * always-visible mobile top bar, since the sidebar itself renders nothing on
- * screen until its sheet is opened. Owns the auth dialog itself, so any page
- * just drops in `<app-navbar>`.
+ * screen until its sheet is opened. Owns the auth dialog itself. Mounted
+ * once, by NavLayout, for every page that has the navigation.
  */
 @Component({
   selector: 'app-navbar',

@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Navbar } from '../../shared/navbar/navbar';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 
 interface WelcomeFeature {
@@ -20,7 +19,7 @@ interface WelcomeFeature {
   selector: 'app-welcome',
   templateUrl: './welcome.html',
   styleUrl: './welcome.css',
-  imports: [Navbar, SidebarPushDirective],
+  imports: [SidebarPushDirective],
 })
 export class Welcome {
   private readonly router = inject(Router);

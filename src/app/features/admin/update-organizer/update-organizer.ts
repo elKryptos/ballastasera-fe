@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { Navbar } from '../../../shared/navbar/navbar';
 import { AdminService } from '../../../core/services/admin.service';
 import { OrganizerType } from '../../../core/models/organizer.model';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
@@ -17,7 +16,7 @@ const ORGANIZER_TYPES: { value: OrganizerType; label: string }[] = [
 
 @Component({
   selector: 'app-update-organizer',
-  imports: [ReactiveFormsModule, Navbar, HlmSelectImports, SidebarPushDirective],
+  imports: [ReactiveFormsModule, HlmSelectImports, SidebarPushDirective],
   templateUrl: './update-organizer.html',
   styleUrl: './update-organizer.css',
 })

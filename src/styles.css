@@ -575,6 +575,33 @@ swap. */
   from { opacity: 0; }
 }
 
+/* The navigation chrome stays out of it: one navbar serves every page that
+has one (NavLayout), so the top bar, the desktop rail and the mobile drawer
+are the same before and after — captured on their own (view-transition-name,
+set in navbar.css and right below for the drawer, a CDK overlay outside
+app-navbar) and shown live, instead of fading out and back in with the page,
+the blink every route change used to have. A drawer still closing from the
+tap that started the navigation keeps sliding out, its stale snapshot
+hidden. */
+[data-mobile='true'] {
+  view-transition-name: sidebar-drawer;
+}
+
+::view-transition-group(mobile-bar),
+::view-transition-group(sidebar-rail),
+::view-transition-group(sidebar-drawer),
+::view-transition-new(mobile-bar),
+::view-transition-new(sidebar-rail),
+::view-transition-new(sidebar-drawer) {
+  animation: none;
+}
+
+::view-transition-old(mobile-bar),
+::view-transition-old(sidebar-rail),
+::view-transition-old(sidebar-drawer) {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root),
   ::view-transition-new(root) {

@@ -6,28 +6,11 @@ same as `transform` does — the dialog's `fixed inset-0` would then
 resolve against this element instead of the viewport, and never be
 visible.
 
-The --color-* custom properties below pin this component to the shared
-brand palette (see @theme in styles.css) no matter which page mounts it.
-Without this, a page that locally overrides these same var() names on
-its own :host (e.g. landing's own palette in landing.css) would cascade
-straight into this component too, since it's a normal DOM descendant of
-that page's host — the sidebar would then look different depending on
-which route it's rendered in, which isn't what any page actually wants
-from shared chrome. Literal values, matching @theme exactly — kept in
-sync by hand, since a page-scoped override and a "never override this"
-pin can't both live on the same custom property without one of them
-duplicating the other's value somewhere. */
+It takes the shared brand palette (@theme in styles.css) straight from
+:root: it lives in NavLayout, next to the pages rather than inside them, so
+a page's own palette on its :host (e.g. the landing's) never reaches it. */
 :host {
   display: block;
-  --color-ink: #1a0e2e;
-  --color-ink-2: #2a1640;
-  --color-rose: #ff4d6d;
-  --color-amber: #ffa24c;
-  --color-violet: #8b5cf6;
-  --color-bone: #fdf2ec;
-  --color-lead: #ead6dc;
-  --color-muted: #c2a0ae;
-  --color-line: rgba(253, 242, 236, 0.14);
 }
 
 /* Mobile-only top bar: the sidebar itself renders nothing on screen below
@@ -45,6 +28,9 @@ normal page content does. */
   z-index: var(--z-index-mobile-bar);
   height: var(--header-h);
   overflow: hidden;
+  /* Kept out of the route cross-fade — see "Route change cross-fade" in
+  styles.css. */
+  view-transition-name: mobile-bar;
   /* The flat --color-ink slab it used to be read as dead weight on the one
   bit of chrome that's always on screen — the top edge still starts as
   pure ink (matching the Android status bar above it exactly, same
@@ -79,6 +65,8 @@ the same. Scoped to the outer container only; --sidebar-border still
 drives the rail's inner separators. */
 :host ::ng-deep [data-slot='sidebar-container'] {
   border-right-width: 0;
+  /* Kept out of the route cross-fade, like .mobile-bar above. */
+  view-transition-name: sidebar-rail;
 }
 
 /* Twinkling star scatter over both — same "stasera" (tonight) motif as

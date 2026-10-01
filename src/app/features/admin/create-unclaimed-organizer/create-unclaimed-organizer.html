@@ -1,5 +1,3 @@
-<app-navbar />
-
 <main appSidebarPush class="pt-(--header-h) md:pt-0">
   @if (!createdOrganizer()) {
   <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-4xl px-6 py-4" novalidate>

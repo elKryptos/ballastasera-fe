@@ -1,20 +1,16 @@
-import { afterNextRender, Component, inject, signal } from '@angular/core';
+import { afterNextRender, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { AVAILABLE_LANGS, isAppLang } from './core/config/i18n';
 import { readLangCookie } from './core/i18n/lang-cookie';
-import { KeepAliveHooks } from './core/routing/keep-alive-reuse.strategy';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
   templateUrl: './app.html',
-  styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('ballastasera-fe');
-
   private readonly transloco = inject(TranslocoService);
 
   constructor() {
@@ -42,17 +38,6 @@ export class App {
         }
       });
     });
-  }
-
-  /** The outlet's attach/detach only fire for keep-alive routes (see
-   * KeepAliveReuseStrategy) — forwarded to the page, which otherwise has no
-   * way to tell it just went off or back on screen. */
-  protected routeAttached(component: unknown): void {
-    (component as KeepAliveHooks).onRouteAttached?.();
-  }
-
-  protected routeDetached(component: unknown): void {
-    (component as KeepAliveHooks).onRouteDetached?.();
   }
 
   private async restoreSavedLang(): Promise<void> {

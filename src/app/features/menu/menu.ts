@@ -1,7 +1,6 @@
 import { Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Navbar } from '../../shared/navbar/navbar';
 import { AuthService } from '../../core/services/auth.service';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { EventCardDto, EventType } from '../../core/models/event.model';
@@ -78,7 +77,7 @@ interface MapDot {
   selector: 'app-menu',
   templateUrl: './menu.html',
   styleUrl: './menu.css',
-  imports: [Navbar, RouterLink, SidebarPushDirective, MapSnapshot],
+  imports: [RouterLink, SidebarPushDirective, MapSnapshot],
 })
 export class Menu {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));

@@ -1,7 +1,7 @@
 import { ActivatedRouteSnapshot, BaseRouteReuseStrategy, DetachedRouteHandle, Route } from '@angular/router';
 
-/** Optional hooks for the component of a keep-alive route, called by App's
- * router outlet (see app.html) when the page is put away and brought back —
+/** Optional hooks for the component of a keep-alive route, called by
+ * NavLayout's router outlet when the page is put away and brought back —
  * it gets no ngOnDestroy/ngOnInit in between, so this is where it pauses its
  * timers and resyncs whatever may have changed while it was off screen. */
 export interface KeepAliveHooks {

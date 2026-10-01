@@ -5,7 +5,7 @@ and the intro sequence. Everything else is Tailwind, in the template. */
 shared design tokens (see @theme in styles.css) right here on the host,
 so every Tailwind utility built on them (bg-rose, text-amber, border-line,
 …) and every var(--color-*) reference in this file/template — including
-ones inherited by <app-navbar>/<app-media-embed>/<app-auth-modal>, since
+ones inherited by <app-media-embed>/<app-auth-modal>, since
 custom properties cascade through the real DOM regardless of Angular's
 view encapsulation — picks it up automatically. No other route is
 affected: their own component trees never sit under this :host. Warmer

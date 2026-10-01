@@ -46,9 +46,10 @@
 </div>
 
 @if (showNewNavbar) {
-<!-- Desktop only: app-navbar's sidebar rail is nav-only for now, so the
-    logo is pinned here instead. Mobile still gets it from app-navbar's
-    own top bar below. -->
+<!-- Desktop only: app-navbar's rail has no room for the logo while it's
+    folded down to its icons, so it's pinned here instead. Mobile gets it
+    from app-navbar's own top bar. (app-navbar itself comes from NavLayout,
+    the parent route of the landing whenever this flag is on.) -->
 <a routerLink="/" aria-label="ballastasera — home"
   class="brand-float fixed z-header hidden shrink-0 items-center gap-1.5 no-underline md:flex">
   <svg viewBox="0 0 200 210" aria-hidden="true" class="w-6 shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]">
@@ -62,13 +63,6 @@
   <span class="font-display text-[1rem] font-bold tracking-[-0.02em] whitespace-nowrap">balla<span
       class="night text-rose">stasera</span></span>
 </a>
-
-<!-- Sibling of .page, not nested inside it (like every other page's
-    <app-navbar />) — .page's own `relative z-10` makes it a stacking
-    context, which would otherwise trap the sidebar and its backdrop
-    below top-right-float/brand-float (z-header) and stop the blur from
-    ever covering them. -->
-<app-navbar />
 }
 
 <div class="page relative z-10 mx-auto flex min-h-dvh max-w-295 flex-col gap-5 px-5 pb-5 sm:gap-10 sm:px-8"

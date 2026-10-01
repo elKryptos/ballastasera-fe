@@ -5,6 +5,18 @@ senza le animazioni della hero — qui è un hub, non un'intro. */
   display: block;
   min-height: 100dvh;
   position: relative;
+
+  /* Surfaces of the Stasera cards, shortcuts and bottom bar — mixed from
+  the shared tokens, so the daytime swap below carries them along too. */
+  --menu-raised: color-mix(in srgb, var(--color-violet) 10%, var(--color-ink));
+  --menu-edge: color-mix(in srgb, var(--color-violet) 26%, var(--color-ink));
+  --menu-rule: color-mix(in srgb, var(--color-violet) 18%, var(--color-ink));
+  --menu-soft: color-mix(in srgb, var(--color-violet) 25%, var(--color-lead));
+
+  /* Text on a solid rose fill (live badge and chips, "Apri"): fixed night
+  ink, not --color-ink — by day that one turns to paper, too faint on rose
+  for text this small. */
+  --on-rose: #1a0e2e;
 }
 
 .glow {
@@ -60,33 +72,13 @@ logo's rose. app-navbar pins its own tokens, so this doesn't reach it. */
   opacity: 0.03;
 }
 
-/* The Mappa card's copy sits right on the map preview, which follows the
-theme like /mappa does: light text (bone) with a dark halo over the night
-map, dark text (bone is navy by day) with a white halo over the day one. */
-.hero {
-  --hero-halo: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.7);
-}
-
-:host-context([data-theme='light']) .hero {
-  --hero-halo: 0 1px 2px rgba(255, 255, 255, 0.9), 0 0 10px rgba(255, 255, 255, 0.7);
-}
-
 /* ---------- hero card (Mappa) ----------
-Il resto (posizione dei pin, hover, sfondo, ombra sul testo, icona
-"prossimamente") è tutto in Tailwind direttamente nel template — qui
-resta solo ciò che Tailwind non esprime nativamente: color-mix() e le
-animazioni con relative @keyframes. */
-
-/* Border: just the template's neutral border-line, like the "presto" tiles —
-no rose tint over the map. Not dropped altogether: by day the map's land and
-the page share the same paper colour, and the card would melt into it. */
-.hero {
-  background-color: var(--color-ink-2);
-}
-
-.hero .icon {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-rose) 24%, transparent);
-}
+Il resto (posizione dei pin, hover, sfondo, riga con titolo e "Apri") è
+tutto in Tailwind direttamente nel template — qui resta solo ciò che
+Tailwind non esprime nativamente: color-mix() e le animazioni con
+relative @keyframes. Il bordo è il border-line neutro, senza tinta rosa
+sulla mappa — non tolto del tutto: di giorno il terreno della mappa e la
+pagina hanno lo stesso color carta, e la card ci si confonderebbe. */
 
 .sheen {
   background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--color-amber) 22%, transparent) 50%, transparent 60%);
@@ -117,14 +109,22 @@ the page share the same paper colour, and the card would melt into it. */
   }
 }
 
-/* ---------- live badge ---------- */
+/* ---------- live badge ----------
+Solid rose pill over the map, lifted off it by a rose glow and a thin dark
+ring, so it reads at a glance on either theme's map picture. */
+
+.live-badge {
+  box-shadow:
+    0 0 0 2px rgba(26, 14, 46, 0.35),
+    0 4px 16px color-mix(in srgb, var(--color-rose) 55%, transparent);
+}
 
 .live-badge .dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--color-rose);
+  background: currentColor;
   animation: dot-pulse 1.6s ease-in-out infinite;
 }
 
@@ -138,6 +138,59 @@ the page share the same paper colour, and the card would melt into it. */
     opacity: 0.4;
     transform: scale(0.7);
   }
+}
+
+/* ---------- Stasera, shortcuts, bottom bar ---------- */
+
+.carousel {
+  scrollbar-width: none;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.event-card {
+  border: 1px solid var(--menu-edge);
+  background: var(--menu-raised);
+}
+
+.shortcut {
+  border: 1px solid var(--menu-edge);
+  background: color-mix(in srgb, var(--color-violet) 6%, var(--color-ink));
+  color: var(--color-lead);
+}
+
+.bottom-nav {
+  border-top: 1px solid var(--menu-rule);
+  background: var(--color-ink);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1875rem;
+  min-height: 3rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--menu-soft);
+}
+
+.bottom-nav-item[aria-current='page'] {
+  font-weight: 700;
+  color: var(--color-rose);
+}
+
+.bottom-nav-item svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+:host-context([data-theme='light']) .bottom-nav {
+  box-shadow: 0 -4px 16px rgba(60, 50, 35, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {

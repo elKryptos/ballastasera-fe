@@ -49,7 +49,7 @@ export function formatTimeRange(event: { startAt: string; endAt: string }): stri
 /** hour12: false pinned explicitly rather than relying on it-IT's default
  * 24h clock — Intl's per-locale default can vary by runtime/ICU version, and
  * the app is Italy-only, so it's never meant to show AM/PM. */
-function formatClock(iso: string): string {
+export function formatClock(iso: string): string {
   return new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 

@@ -1,9 +1,10 @@
 import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
+import { environment } from './environments/environment';
 
 const angularApp = new AngularAppEngine({
 	// It is safe to set allow `localhost`, so that SSR can run in local development,
 	// as, in production, Cloudflare will ensure that `localhost` is not the host.
-	allowedHosts: ['localhost', 'ballastasera.com', 'ballastasera.it'],
+	allowedHosts: ['localhost', 'ballastasera.com', 'ballastasera.it', 'ballastasera-fe-staging.kryptospace.workers.dev'],
 });
 
 const CANONICAL_HOST = 'ballastasera.it';
@@ -16,8 +17,10 @@ export const reqHandler = createRequestHandler(async (req) => {
 	// so Google was free to (and did) pick .com as the canonical over our tag,
 	// leaving the real .it homepage excluded from the index. A real 301 fixes
 	// that ambiguity — there is now exactly one indexable origin.
+	// Production build only: the staging worker (workers.dev) must serve its own
+	// pages, or /oauth2/callback would bounce the login token to the live site.
 	const url = new URL(req.url);
-	if (url.hostname !== CANONICAL_HOST && url.hostname !== 'localhost') {
+	if (environment.production && url.hostname !== CANONICAL_HOST && url.hostname !== 'localhost') {
 		url.hostname = CANONICAL_HOST;
 		return Response.redirect(url.toString(), 301);
 	}

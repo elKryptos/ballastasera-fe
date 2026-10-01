@@ -23,6 +23,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   createEventPage: false,
   eventDetailsPage: false,
   createEventSeries: false,
+  createVenuePage: false
 };
 
 export const environment = {

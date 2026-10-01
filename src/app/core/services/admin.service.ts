@@ -6,6 +6,7 @@ import { PageDto, SpringPage } from '../models/page.model';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
 import { EventCardDto, EventCreateDto, EventDetailDto, EventSeriesCreateDto, EventSeriesDetailDto, EventSeriesGenerateOccurrencesDto } from '../models/event.model';
+import { VenueCreateDto, VenueDetailDto } from '../models/venue.model';
 
 @Service()
 export class AdminService {
@@ -63,5 +64,9 @@ export class AdminService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.patch<EventDetailDto>(`${environment.apiUrl}${endpoints.admin.updateEventFlyer(id)}`, formData);
+  }
+
+  createVenue(body: VenueCreateDto): Observable<VenueDetailDto>{
+    return this.http.post<VenueDetailDto>(`${environment.apiUrl}${endpoints.admin.createVenue}` , body)
   }
 }

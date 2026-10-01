@@ -1,0 +1,201 @@
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-4xl px-6 py-4" novalidate>
+    <h1 class="text-xl font-semibold">Crea luogo</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+      <div class="space-y-1 md:col-span-2">
+        <label for="name" class="text-sm font-medium">Nome *</label>
+        <input id="name" type="text" formControlName="name" placeholder="Es. Scuola di Ballo Latino"
+          class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched" />
+        <p class="min-h-5 text-sm">
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+          <span class="text-red-600">Nome obbligatorio (max 100 caratteri).</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Tipo *</label>
+        <hlm-select class="block" formControlName="type">
+          <button type="button" brnSelectTrigger
+            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Che tipo di luogo è?"></span>
+            <span class="text-muted-foreground">▾</span>
+          </button>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (t of venueTypes; track t.value) {
+              <hlm-select-item [value]="t.value">{{ t.label }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.type.invalid && form.controls.type.touched) {
+          <span class="text-red-600">Seleziona un tipo di luogo.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Organizzatore</label>
+        <hlm-autocomplete class="block" formControlName="organizerId" [itemToString]="organizerItemToString"
+          [search]="organizerSearch()" (searchChange)="organizerSearch.set($event)">
+          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Solo se ha un profilo organizzatore"
+            class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @for (o of filteredOrganizers(); track o.id) {
+                <hlm-autocomplete-item [value]="o.id">{{ o.name }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete>
+        <p class="min-h-5 text-sm">
+          @if (selectedOrganizer(); as organizer) {
+          <span class="font-mono text-xs text-green-600">{{ organizer.id }}</span>
+          @if (form.enabled) {
+          <button type="button" (click)="clearOrganizer()" class="ml-2 text-xs text-red-600 hover:underline">
+            Rimuovi
+          </button>
+          }
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-sm font-medium">Città *</label>
+        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
+          <button type="button" brnSelectTrigger
+            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Seleziona città"></span>
+            <span class="text-muted-foreground">▾</span>
+          </button>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (c of cities(); track c.id) {
+              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
+          <span class="text-red-600">Seleziona una città.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label for="address" class="text-sm font-medium">Indirizzo *</label>
+        <hlm-autocomplete-search class="block" formControlName="address" [search]="addressSearch()"
+          (searchChange)="addressSearch.set($event)" [itemToString]="addressItemToString">
+          <input id="address" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca un indirizzo..."
+            class="w-full rounded border px-3 py-2"
+            [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"
+            (click)="openAddressDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @if (addressSearching()) {
+                <hlm-autocomplete-status>Ricerca in corso...</hlm-autocomplete-status>
+                } @else {
+                @for (suggestion of addressSuggestions(); track suggestion.label) {
+                <hlm-autocomplete-item [value]="suggestion">{{ suggestion.label }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun indirizzo trovato</hlm-autocomplete-empty>
+                }
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete-search>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.address.invalid && form.controls.address.touched) {
+          <span class="text-red-600">Indirizzo obbligatorio (max 150 caratteri).</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label for="latitude" class="text-sm font-medium">Latitudine</label>
+        <input id="latitude" type="number" step="any" formControlName="latitude"
+          class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.latitude.invalid && form.controls.latitude.touched" />
+        <p class="min-h-5 text-sm">
+          @if (form.controls.latitude.invalid && form.controls.latitude.touched) {
+          <span class="text-red-600">Latitudine tra -90 e 90.</span>
+          } @else {
+          <span class="text-muted-foreground">Se vuota, viene calcolata dall'indirizzo.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label for="longitude" class="text-sm font-medium">Longitudine</label>
+        <input id="longitude" type="number" step="any" formControlName="longitude"
+          class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.longitude.invalid && form.controls.longitude.touched" />
+        <p class="min-h-5 text-sm">
+          @if (form.controls.longitude.invalid && form.controls.longitude.touched) {
+          <span class="text-red-600">Longitudine tra -180 e 180.</span>
+          } @else {
+          <span class="text-muted-foreground">Se vuota, viene calcolata dall'indirizzo.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 md:col-span-2">
+        <label for="website" class="text-sm font-medium">Sito web *</label>
+        <input id="website" type="url" formControlName="website" placeholder="https://..."
+          class="w-full rounded border px-3 py-2"
+          [attr.aria-invalid]="form.controls.website.invalid && form.controls.website.touched" />
+        <p class="min-h-5 text-sm">
+          @if (form.controls.website.invalid && form.controls.website.touched) {
+          <span class="text-red-600">Sito web obbligatorio (max 150 caratteri).</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1 md:col-span-2 mb-4">
+        <label for="description" class="text-sm font-medium">Descrizione</label>
+        <textarea id="description" formControlName="description" rows="2" maxlength="500"
+          placeholder="Due righe sul luogo..." class="w-full rounded border px-3 py-2"></textarea>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+    <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+    }
+
+    @if (createdVenue(); as venue) {
+    <div class="rounded-lg bg-primary/10 text-primary text-sm px-4 py-3 flex items-center gap-2">
+      <span>✓</span>
+      <span><strong>{{ venue.name }}</strong> ({{ venue.cityName }}) è stato creato con successo.</span>
+    </div>
+    <div class="flex justify-end gap-3 mt-4">
+      <button type="button" (click)="createAnother()"
+        class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent">
+        Crea un altro
+      </button>
+      <button type="button" (click)="backToAdmin()"
+        class="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90">
+        Torna alla home admin
+      </button>
+    </div>
+    } @else {
+    <div class="flex justify-end">
+      <button type="submit" [disabled]="submitting()"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50">
+        @if (submitting()) {
+        <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+        }
+        {{ submitting() ? 'Creazione...' : 'Crea luogo' }}
+      </button>
+    </div>
+    }
+  </form>
+</main>

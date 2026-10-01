@@ -12,12 +12,24 @@ export interface VenueDetailDto {
   name: string;
   type: VenueType;
   address: string;
-  postalCode: string | null;
   latitude: number | null;
   longitude: number | null;
   description: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface VenueCreateDto {
+  organizerId: string | null;
+  cityId: number;
+  name: string;
+  type: VenueType;
+  address: string;
+  /** Null when not known: the backend then geocodes the address itself. */
+  latitude: number | null;
+  longitude: number | null;
+  website: string;
+  description: string | null;
 }
 
 export interface VenuesSummaryDto {

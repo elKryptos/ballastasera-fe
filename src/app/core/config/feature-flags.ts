@@ -29,6 +29,7 @@ export const FEATURE_FLAGS = {
   createEventPage: 'createEventPage',
   eventDetailsPage: 'eventDetailsPage',
   createEventSeries: 'createEventSeries',
+  createVenuePage: 'createVenuePage'
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

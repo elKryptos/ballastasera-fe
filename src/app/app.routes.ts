@@ -110,6 +110,14 @@ export const routes: Routes = [
           import('./features/admin/create-event-series/create-event-series').then(
             (m) => m.CreateEventSeries)
       },
+
+      {
+        path: 'admin/create-venue',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.createVenuePage), roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin/create-venue/create-venue').then(
+            (m) => m.CreateVenue)
+      },
     ],
   },
 

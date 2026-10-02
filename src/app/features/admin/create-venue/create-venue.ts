@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, OnInit, signal, viewChild } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
@@ -21,6 +21,83 @@ import { AddressSuggestion } from '../../../core/models/geocoding.model';
 const ADDRESS_SEARCH_MIN_LENGTH = 3;
 /** How long to wait after the last keystroke before querying Photon. */
 const ADDRESS_SEARCH_DEBOUNCE_MS = 100;
+
+// Contact patterns mirror the @URL/@Pattern on VenueCreateDto in the backend.
+const WEBSITE_PATTERN = /^https?:\/\/\S+$/;
+const WHATSAPP_PATTERN = /^\+?[0-9]{6,15}$/;
+const FACEBOOK_PATTERN = /^https:\/\/(www\.|m\.)?facebook\.com\/.+/;
+const INSTAGRAM_PATTERN = /^https:\/\/(www\.)?instagram\.com\/.+/;
+const YOUTUBE_PATTERN = /^https:\/\/(www\.)?youtube\.com\/.+/;
+const TIKTOK_PATTERN = /^https:\/\/(www\.)?tiktok\.com\/@.+/;
+
+/** Spaces, dots, dashes and brackets are fine to type; the backend only takes "+" and digits. */
+const stripPhone = (value: string): string => value.replace(/[\s().-]/g, '');
+
+const whatsappValidator: ValidatorFn = (control) => {
+  const phone = stripPhone(control.value ?? '');
+  return !phone || WHATSAPP_PATTERN.test(phone) ? null : { whatsapp: true };
+};
+
+/** Optional text fields: empty (or only spaces) goes to the backend as null. */
+const optional = (value: string): string | null => value.trim() || null;
+
+type ContactControl = 'website' | 'whatsapp' | 'email' | 'instagram' | 'facebook' | 'youtube' | 'tiktok';
+
+/** The "Contatti" section, in display order — one template block for all of them. */
+const CONTACT_FIELDS: {
+  name: ContactControl;
+  label: string;
+  type: 'url' | 'tel' | 'email';
+  placeholder: string;
+  error: string;
+  /** Spans both columns from md up. */
+  wide?: boolean;
+}[] = [
+  {
+    name: 'website',
+    label: 'Sito web',
+    type: 'url',
+    placeholder: 'https://...',
+    error: 'URL non valido: deve iniziare con http:// o https:// (max 100 caratteri).',
+    wide: true,
+  },
+  {
+    name: 'whatsapp',
+    label: 'WhatsApp',
+    type: 'tel',
+    placeholder: '+39 333 123 4567',
+    error: 'Numero con prefisso internazionale (6-15 cifre).',
+  },
+  { name: 'email', label: 'Email', type: 'email', placeholder: 'info@...', error: 'Email non valida (max 100 caratteri).' },
+  {
+    name: 'instagram',
+    label: 'Instagram',
+    type: 'url',
+    placeholder: 'https://instagram.com/...',
+    error: 'Deve essere un URL https://instagram.com/... (max 100 caratteri).',
+  },
+  {
+    name: 'facebook',
+    label: 'Facebook',
+    type: 'url',
+    placeholder: 'https://facebook.com/...',
+    error: 'Deve essere un URL https://facebook.com/... (max 100 caratteri).',
+  },
+  {
+    name: 'youtube',
+    label: 'YouTube',
+    type: 'url',
+    placeholder: 'https://youtube.com/...',
+    error: 'Deve essere un URL https://youtube.com/... (max 100 caratteri).',
+  },
+  {
+    name: 'tiktok',
+    label: 'TikTok',
+    type: 'url',
+    placeholder: 'https://tiktok.com/@...',
+    error: 'Deve essere un URL https://tiktok.com/@... (max 100 caratteri).',
+  },
+];
 
 const VENUE_TYPES: { value: VenueType; label: string }[] = [
   { value: 'SCHOOL', label: 'Scuola' },
@@ -46,6 +123,7 @@ export class CreateVenue implements OnInit {
   private readonly router = inject(Router);
 
   readonly venueTypes = VENUE_TYPES;
+  protected readonly contactFields = CONTACT_FIELDS;
 
   // Organizer is optional: only venues with an organizer profile of their own get one.
   protected readonly organizers = signal<OrganizerSummaryDto[]>([]);
@@ -86,8 +164,15 @@ export class CreateVenue implements OnInit {
     // Optional: left empty, the backend geocodes the address.
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
-    website: ['', [Validators.required, Validators.maxLength(150)]],
     description: ['', [Validators.maxLength(500)]],
+    // Contacts are all optional: empty is sent as null.
+    website: ['', [Validators.pattern(WEBSITE_PATTERN), Validators.maxLength(100)]],
+    whatsapp: ['', [whatsappValidator]],
+    email: ['', [Validators.email, Validators.maxLength(100)]],
+    facebook: ['', [Validators.pattern(FACEBOOK_PATTERN), Validators.maxLength(100)]],
+    instagram: ['', [Validators.pattern(INSTAGRAM_PATTERN), Validators.maxLength(100)]],
+    youtube: ['', [Validators.pattern(YOUTUBE_PATTERN), Validators.maxLength(100)]],
+    tiktok: ['', [Validators.pattern(TIKTOK_PATTERN), Validators.maxLength(100)]],
   });
 
   private readonly selectedOrganizerId = toSignal(this.form.controls.organizerId.valueChanges, {
@@ -161,8 +246,14 @@ export class CreateVenue implements OnInit {
       address: value.address,
       latitude: value.latitude,
       longitude: value.longitude,
-      website: value.website.trim(),
-      description: value.description.trim() || null,
+      description: optional(value.description),
+      website: optional(value.website),
+      whatsapp: stripPhone(value.whatsapp) || null,
+      email: optional(value.email),
+      facebook: optional(value.facebook),
+      instagram: optional(value.instagram),
+      youtube: optional(value.youtube),
+      tiktok: optional(value.tiktok),
     };
 
     this.adminService.createVenue(body).subscribe({

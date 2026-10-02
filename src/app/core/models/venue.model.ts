@@ -15,6 +15,13 @@ export interface VenueDetailDto {
   latitude: number | null;
   longitude: number | null;
   description: string | null;
+  website: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  tiktok: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,8 +35,14 @@ export interface VenueCreateDto {
   /** Null when not known: the backend then geocodes the address itself. */
   latitude: number | null;
   longitude: number | null;
-  website: string;
   description: string | null;
+  website: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  tiktok: string | null;
 }
 
 export interface VenuesSummaryDto {

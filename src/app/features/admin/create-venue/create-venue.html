@@ -148,23 +148,29 @@
         </p>
       </div>
 
-      <div class="space-y-1 md:col-span-2">
-        <label for="website" class="text-sm font-medium">Sito web *</label>
-        <input id="website" type="url" formControlName="website" placeholder="https://..."
-          class="w-full rounded border px-3 py-2"
-          [attr.aria-invalid]="form.controls.website.invalid && form.controls.website.touched" />
-        <p class="min-h-5 text-sm">
-          @if (form.controls.website.invalid && form.controls.website.touched) {
-          <span class="text-red-600">Sito web obbligatorio (max 150 caratteri).</span>
-          }
-        </p>
-      </div>
-
       <div class="space-y-1 md:col-span-2 mb-4">
         <label for="description" class="text-sm font-medium">Descrizione</label>
         <textarea id="description" formControlName="description" rows="2" maxlength="500"
           placeholder="Due righe sul luogo..." class="w-full rounded border px-3 py-2"></textarea>
       </div>
+    </div>
+
+    <h2 class="text-base font-semibold mb-2">Contatti</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 mb-4">
+      @for (field of contactFields; track field.name) {
+      @let control = form.controls[field.name];
+      <div class="space-y-1" [class]="field.wide ? 'md:col-span-2' : ''">
+        <label [for]="field.name" class="text-sm font-medium">{{ field.label }}</label>
+        <input [id]="field.name" [type]="field.type" [formControlName]="field.name" [placeholder]="field.placeholder"
+          class="w-full rounded border px-3 py-2" [attr.aria-invalid]="control.invalid && control.touched" />
+        <p class="min-h-5 text-sm">
+          @if (control.invalid && control.touched) {
+          <span class="text-red-600">{{ field.error }}</span>
+          }
+        </p>
+      </div>
+      }
     </div>
 
     @if (errorMessage()) {

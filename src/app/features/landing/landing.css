@@ -134,10 +134,11 @@ own top padding at every width. */
   }
 }
 
-/* Language switcher (+ the WIP badge, next to it when the new navbar is
-on): fixed top-right, just under the navbar (not inside it, so it stays
-put regardless of which header variant is shown) — same position on
-mobile, tied to --header-h like everything else up here. */
+/* The WIP badge with the new navbar, the language switcher with the legacy
+header (the new one has it in the sidebar): fixed top-right, just under the
+navbar (not inside it, so it stays put regardless of which header variant
+is shown) — same position on mobile, tied to --header-h like everything else
+up here. */
 .top-right-float {
   top: calc(var(--header-h) + 0.6rem);
   right: clamp(0.75rem, 3vw, 2rem);
@@ -150,7 +151,7 @@ mobile, tied to --header-h like everything else up here. */
 }
 
 /* Desktop-only stand-in for the sidebar's (currently absent) brand mark —
-pinned at the same height as the language switcher, just past the
+pinned at the same height as the WIP badge, just past the
 sidebar's icon rail. Only ever rendered past md (see the md:flex on the
 element itself), so no media query needed here. */
 .brand-float {

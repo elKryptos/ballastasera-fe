@@ -46,6 +46,7 @@ export const endpoints = {
   venues: {
     list: '/rest/venues',
     map: '/rest/venues/map',
+    detail: (id: string) => `/rest/venues/${id}`,
   },
 
   events: {

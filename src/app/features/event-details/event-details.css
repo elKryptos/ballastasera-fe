@@ -31,7 +31,7 @@ glass cards, the backdrop) keep a class of their own below. */
   /* Like button: rose tint matching the heart while idle; once pressed,
   solid rose with a white label and heart, like Parteciperò's solid violet
   (white on #e0245c is 4.6:1, in both themes). Same values as the map
-  card's --mc-like-*, event-map-card.css. The idle label/outline colour is
+  card's --ev-like-* (styles.css). The idle label/outline colour is
   lighter than --ed-heart so the text keeps >= 4.5:1 on the tint. */
   --ed-like-bg: rgba(255, 47, 109, 0.18);
   --ed-like-fg: #ff8fab;

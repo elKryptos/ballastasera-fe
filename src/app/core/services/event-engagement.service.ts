@@ -24,6 +24,9 @@ export class EventEngagementService {
    * the server out of order and leave the button out of sync with the backend. */
   private readonly pendingToggles = new Map<WritableSignal<ReadonlySet<string>>, Set<string>>();
 
+  /** Whose likes syncAllLikes() already loaded. */
+  private likesSyncedFor: string | null = null;
+
   isGoing(eventId: string): boolean {
     return this.goingEventIds().has(eventId);
   }
@@ -39,6 +42,24 @@ export class EventEngagementService {
   sync(eventId: string): void {
     this.syncOne(eventId, this.likedEventIds, (id) => this.eventsService.isFavorite(id));
     this.syncOne(eventId, this.goingEventIds, (id) => this.eventsService.isGoing(id));
+  }
+
+  /** Every like of the signed-in user in one request, for pages showing many
+   * hearts at once (/lista), where sync() per card would be a request each.
+   * Once per user per visit: from then on the toggles keep it current. Only
+   * likes — Parteciperò isn't shown on those cards. */
+  syncAllLikes(): void {
+    const userId = this.authService.currentUser()?.userId;
+    if (!userId || this.likesSyncedFor === userId) return;
+    this.likesSyncedFor = userId;
+
+    this.eventsService.getMyFavorites().subscribe({
+      next: (events) => this.likedEventIds.update((ids) => new Set([...ids, ...events.map((event) => event.id)])),
+      error: (err) => {
+        this.likesSyncedFor = null;
+        console.error('Failed to load liked events', err);
+      },
+    });
   }
 
   /** Returns false, without doing anything, when signed out — the caller

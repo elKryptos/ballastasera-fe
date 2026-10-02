@@ -1,5 +1,5 @@
 import { Component, DestroyRef, PLATFORM_ID, WritableSignal, computed, effect, inject, signal } from '@angular/core';
-import { Location, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -18,7 +18,9 @@ import {
   lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
+import { WHATSAPP_PATH } from '../../core/config/brand-icons';
 import { EVENT_TYPE_LABELS, PIN_COLORS, PIN_GLYPHS, PIN_SHAPES } from '../../core/config/map-pins';
+import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -82,7 +84,6 @@ const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
 export class EventDetails {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly mapViewState = inject(MapViewStateService);
   private readonly eventsService = inject(EventsService);
@@ -137,6 +138,7 @@ export class EventDetails {
   protected readonly addressSecondary = addressSecondary;
   protected readonly googleMapsUrl = googleMapsUrl;
   protected readonly instagramUrl = instagramUrl;
+  protected readonly whatsappPath = WHATSAPP_PATH;
 
   /** Only the id, so the effect below doesn't refetch on every count change. */
   private readonly eventId = computed(() => this.event()?.id ?? null);
@@ -205,18 +207,8 @@ export class EventDetails {
     });
   }
 
-  // Back only when there's an in-app page to return to. Opened straight from
-  // a shared link, this page is the router's first navigation (navigationId
-  // 1 in history.state) and location.back() would leave the app — or do
-  // nothing in a fresh tab so it goes to the map instead.
-  protected goBack(): void {
-    const state = this.location.getState() as { navigationId?: number } | null;
-    if ((state?.navigationId ?? 1) > 1) {
-      this.location.back();
-    } else {
-      this.router.navigate(['/mappa']);
-    }
-  }
+  /** Opened from a shared link, to the map instead — see injectGoBack. */
+  protected readonly goBack = injectGoBack('/mappa');
 
   // Opens /mappa centred on this event with its card already open the
   // map reads both from MapViewStateService when it mounts (see

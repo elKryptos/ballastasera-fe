@@ -141,12 +141,12 @@ app-map .leaflet-control-attribution a {
   color: inherit;
 }
 
-/* Map pin pulse — only once an event is actually underway. A pin starting
-soon shows plain (no pulse) until it crosses into --live; see isLive()
-in map.ts. Global, not component-scoped: Leaflet injects marker markup
-straight into the DOM outside Angular's view, so component styles never
-reach it. In @layer components (not unlayered) so Tailwind utilities
-(e.g. absolute on menu.html's decorative pins) still win the cascade. */
+/* Live pins — only once an event is actually underway. A pin starting soon
+shows plain until it crosses into --live; see drawMarkers() in map.ts.
+Global, not component-scoped: Leaflet injects marker markup straight into
+the DOM outside Angular's view, so component styles never reach it. In
+@layer components (not unlayered) so Tailwind utilities still win the
+cascade. */
 @layer components {
   .map-pin-wrap {
     position: relative;
@@ -155,30 +155,59 @@ reach it. In @layer components (not unlayered) so Tailwind utilities
     height: 32px;
   }
 
-  .map-pin-pulse {
+  /* Three outlined rings in the pin's colour (see MapPinIcons), staggered so
+  one is always on its way out — the pin is never still. */
+  .map-pin-ring {
     position: absolute;
     left: 50%;
     top: 12px;
     width: 24px;
     height: 24px;
     margin: -12px 0 0 -12px;
+    border: 2px solid currentColor;
     border-radius: 50%;
     opacity: 0;
+    animation: map-pin-ring 2.4s ease-out infinite;
   }
 
-  .map-pin-wrap--live .map-pin-pulse {
-    animation: map-pin-pulse 1.6s ease-out infinite;
+  /* ...and a LIVE tag on its shoulder, saying what the motion means — in
+  the event page's "LIVE ORA" red (--ed-live), white-edged so it stands off
+  a rose pin and any tile. */
+  .map-pin-live-tag {
+    position: absolute;
+    top: -9px;
+    left: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 5px 2px 4px;
+    border: 1.5px solid #fff;
+    border-radius: 999px;
+    background: #e11d48;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font: 800 9px/1 var(--font-body);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
   }
 
-  /* The pin itself breathes along with the ring, and glows so it stays
-  readable against busy tiles even between pulses. */
+  .map-pin-live-tag i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: map-pin-blink 1.2s ease-in-out infinite;
+  }
+
+  /* The live pin itself breathes, and glows so it stays readable against
+  busy tiles even between rings. */
   .map-pin-wrap--live svg {
     animation: map-pin-bounce 1.6s ease-in-out infinite;
     filter: drop-shadow(0 0 3px currentColor);
   }
 
   /* Selected pin: its own shape (per event type) is drawn inverted in
-  getPinIcon rather than styled here, plus a size bump so it still reads as
+  MapPinIcons.event() rather than styled here, plus a size bump so it still reads as
   the clear visual anchor now that its event card docks at the bottom of the
   screen instead of floating above it. Overflow visible because the shapes
   touch the viewBox edges, which would clip half of the outline stroke. */
@@ -188,30 +217,53 @@ reach it. In @layer components (not unlayered) so Tailwind utilities
     transform-origin: 50% 100%;
     filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
   }
+
+  /* Motion off (the visitor's OS setting): the rings stay hidden at rest
+  (opacity 0), the pin and the tag's dot sit still — the LIVE tag alone
+  still marks the pin. */
+  @media (prefers-reduced-motion: reduce) {
+    .map-pin-ring,
+    .map-pin-wrap--live svg,
+    .map-pin-live-tag i {
+      animation: none;
+    }
+  }
 }
 
-@keyframes map-pin-pulse {
+@keyframes map-pin-ring {
   0% {
-    transform: scale(0.6);
-    opacity: 0.7;
+    transform: scale(0.5);
+    opacity: 0.9;
   }
   100% {
-    transform: scale(2.1);
+    transform: scale(3);
     opacity: 0;
   }
 }
 
-@keyframes map-pin-bounce {
+@keyframes map-pin-blink {
   0%,
   100% {
-    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: scale(1.08);
+    opacity: 0.2;
   }
 }
 
-/* Venue badges ("Locali e scuole" layer, see getVenuePinIcon() in map.ts):
+/* The scale property, not transform: it stacks on a selected pin's own
+transform: scale(1.2) instead of replacing it while it runs. */
+@keyframes map-pin-bounce {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.08;
+  }
+}
+
+/* Venue badges ("Locali e scuole" layer, see MapPinIcons.venue()):
 global for the same reason as .map-pin-wrap. The className replaces
 Leaflet's default .leaflet-div-icon, so there's no white box to undo. */
 @layer components {
@@ -219,63 +271,15 @@ Leaflet's default .leaflet-div-icon, so there's no white box to undo. */
     display: block;
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
   }
-}
 
-/* Venue popup on the same themed glass as the floating panels (--map-*
-tokens in map.css, inherited down into Leaflet's DOM, like the attribution
-above). Unlayered so it beats leaflet.css's own popup colours. */
-app-map .venue-popup .leaflet-popup-content-wrapper {
-  border: 1px solid var(--map-glass-border);
-  border-radius: 12px;
-  background: var(--map-glass);
-  box-shadow: var(--map-shadow);
-  color: var(--map-text);
-  backdrop-filter: blur(20px) saturate(1.4);
-}
-
-app-map .venue-popup .leaflet-popup-tip {
-  background: var(--map-glass);
-  box-shadow: none;
-}
-
-app-map .venue-popup .leaflet-popup-content {
-  margin: 10px 14px;
-  font-family: var(--font-body);
-  line-height: 1.35;
-}
-
-.venue-popup-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-width: 220px;
-}
-
-.venue-popup-type {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--map-muted);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.venue-popup-dot {
-  width: 8px;
-  height: 8px;
-  flex-shrink: 0;
-  border-radius: 50%;
-}
-
-.venue-popup-name {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.venue-popup-address {
-  color: var(--map-text-2);
-  font-size: 12px;
+  /* Selected badge: drawn inverted in MapPinIcons.venue(), plus a size bump
+  around its centre (where it's anchored) so it reads as the one whose card
+  is open. */
+  .venue-pin--selected svg {
+    overflow: visible;
+    transform: scale(1.4);
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+  }
 }
 
 /* "Intorno a me" dot (see showUserPosition() in map.ts): the classic blue
@@ -321,6 +325,194 @@ Global for the same reason as the pins: Leaflet renders it outside Angular. */
   .user-location-dot::after {
     animation: none;
   }
+}
+
+/* Event browsing, /mappa and /lista: one palette for the chips, cards, bottom
+sheet and Filtri dialog both pages share (shared/event-filters, map-sheet,
+event-list), from the Claude Design canvas ("Mappa con filtri e bottom
+sheet", "Lista per giorno") translated onto the brand tokens above, like the
+menu page. Global rather than in each component: they're read by components
+of both pages, the dialog included. By day the brand tokens switch to the
+basemap's paper palette, same values as the menu's and the daytime sidebar's,
+and the few colours that don't follow from them get their own. */
+app-map,
+app-event-list {
+  --ev-surface: color-mix(in srgb, var(--color-violet) 9%, var(--color-ink));
+  --ev-raised: color-mix(in srgb, var(--color-violet) 17%, var(--color-ink));
+  --ev-edge: color-mix(in srgb, var(--color-violet) 32%, var(--color-ink));
+  --ev-text: var(--color-bone);
+  --ev-soft: color-mix(in srgb, var(--color-violet) 22%, var(--color-lead));
+  /* Dance style tags. */
+  --ev-tag-bg: color-mix(in srgb, var(--color-violet) 34%, var(--color-ink));
+  --ev-tag-text: color-mix(in srgb, var(--color-violet) 18%, var(--color-bone));
+  /* Text on rose (selected day, LIVE): fixed night ink in both themes,
+  >= 5.6:1 on #ff4d6d. */
+  --ev-on-rose: #1a0e2e;
+  /* Pressed toggles and Parteciperò: white text >= 4.5:1. */
+  --ev-primary: #6b46e0;
+  --ev-like: #ff8fab;
+  --ev-like-bg: rgba(255, 47, 109, 0.16);
+  --ev-like-on: #e0245c;
+  --ev-price: #fbbf24;
+  /* Text on a solid --ev-price fill (the "Inizia tra" badge). */
+  --ev-on-price: #1a0e2e;
+  /* Count on the Filtri button, and the distance chips once picked. */
+  --ev-badge-bg: var(--color-mint);
+  --ev-badge-text: #0e2a26;
+  --ev-zone-on-bg: color-mix(in srgb, var(--color-mint) 16%, var(--color-ink));
+  --ev-zone-on-text: #7ff2dc;
+  /* "Cerca in questa zona": inverted, so it reads as the one action on the map. */
+  --ev-invert-bg: var(--color-bone);
+  --ev-invert-text: #1a0e2e;
+  --ev-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  /* Chips floating straight on the map: tight enough not to get clipped by
+  their scrolling row. */
+  --ev-float-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --ev-link: var(--color-rose-lit);
+  --ev-error: #ff8fab;
+}
+
+:root[data-theme='light'] :is(app-map, app-event-list) {
+  --color-ink: #fbf8f3;
+  --color-ink-2: #f5ede1;
+  --color-amber: #c2410c;
+  --color-violet: #6d28d9;
+  --color-bone: #1d2640;
+  --color-lead: #36425f;
+  --color-muted: #5f6d8c;
+  --color-line: rgba(29, 38, 64, 0.14);
+
+  --ev-surface: #ffffff;
+  --ev-raised: color-mix(in srgb, var(--color-violet) 5%, #ffffff);
+  --ev-edge: rgba(29, 38, 64, 0.14);
+  --ev-soft: #4a5571;
+  --ev-tag-bg: rgba(107, 70, 224, 0.12);
+  --ev-tag-text: #5a35d1;
+  --ev-like: #be123c;
+  --ev-like-bg: rgba(224, 36, 92, 0.12);
+  --ev-price: #b45309;
+  --ev-on-price: #ffffff;
+  --ev-badge-bg: #0d7a70;
+  --ev-badge-text: #ffffff;
+  --ev-zone-on-bg: rgba(15, 118, 110, 0.12);
+  --ev-zone-on-text: #0f5f58;
+  --ev-invert-bg: #1d2640;
+  --ev-invert-text: #ffffff;
+  --ev-shadow: 0 8px 24px rgba(40, 30, 80, 0.16);
+  --ev-float-shadow: 0 2px 8px rgba(40, 30, 80, 0.18);
+  --ev-link: #be123c;
+  --ev-error: #9f1239;
+}
+
+/* Horizontal chip rows scroll by swipe, without a scrollbar under them. */
+@layer components {
+  .ev-scroll-row {
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .ev-scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* The Filtri dialog (EventFiltersDialog): a native modal <dialog>, so it sits
+in the top layer over the map, the mobile bar and Leaflet's panes alike, with
+Esc and the focus trap for free. A bottom sheet on phones, a centred card from
+md up. Global, not in the component's CSS: Angular's style scoping doesn't
+know @starting-style, which the open/close transition needs. */
+.ev-dialog {
+  width: 100%;
+  max-width: 100%;
+  max-height: min(88dvh, calc(100% - 1rem));
+  margin: auto auto 0;
+  padding: 0;
+  border: 1px solid var(--ev-edge);
+  border-bottom: 0;
+  border-radius: 1.5rem 1.5rem 0 0;
+  background: var(--ev-surface);
+  color: var(--ev-text);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.35);
+  transform: translateY(100%);
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.28s ease,
+    overlay 0.28s allow-discrete,
+    display 0.28s allow-discrete;
+}
+
+.ev-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  transform: none;
+}
+
+@starting-style {
+  .ev-dialog[open] {
+    transform: translateY(100%);
+  }
+}
+
+.ev-dialog::backdrop {
+  background: rgb(8 4 16 / 0);
+  transition:
+    background-color 0.28s ease,
+    overlay 0.28s allow-discrete,
+    display 0.28s allow-discrete;
+}
+
+.ev-dialog[open]::backdrop {
+  background: rgb(8 4 16 / 0.55);
+}
+
+@starting-style {
+  .ev-dialog[open]::backdrop {
+    background: rgb(8 4 16 / 0);
+  }
+}
+
+@media (min-width: 768px) {
+  .ev-dialog {
+    width: min(28rem, calc(100% - 2rem));
+    margin: auto;
+    border-bottom: 1px solid var(--ev-edge);
+    border-radius: 1.5rem;
+    box-shadow: var(--ev-shadow);
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  .ev-dialog[open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  @starting-style {
+    .ev-dialog[open] {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-dialog,
+  .ev-dialog::backdrop {
+    transition: none;
+  }
+}
+
+/* The page behind it stays put while it's open. */
+html:has(dialog.ev-dialog[open]) {
+  overflow: hidden;
+}
+
+/* /mappa: Leaflet's bottom corners (the attribution) ride above the bottom
+sheet instead of sitting under it — --map-inset-bottom is the sheet's
+height, measured by MapPage. Global: Leaflet builds these outside Angular. */
+app-map .leaflet-bottom {
+  bottom: var(--map-inset-bottom, 0px);
+  transition: bottom 0.2s ease-out;
 }
 
 /* Sidebar menu (navbar.html): one menu for both the mobile drawer and the

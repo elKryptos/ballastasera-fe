@@ -22,49 +22,14 @@
           <!-- Sfondo: immagine statica della mappa, una per tema (stessi stili di /mappa), vedi MapSnapshot -->
           <app-map-snapshot variant="menu" class="pointer-events-none absolute inset-0" />
 
+          <!-- Gli stessi pin della mappa vera, senza effetti: fanno solo da scenografia. -->
           @for (dot of mapDots; track dot.type) {
-            <span
-              class="map-pin-wrap map-pin-wrap--live absolute origin-bottom -translate-x-1/2 -translate-y-full scale-[1.35]"
+            <app-event-pin-icon
+              class="absolute origin-bottom -translate-x-1/2 -translate-y-full scale-[1.35]"
+              [type]="dot.type"
+              [size]="32"
               [style.left.%]="dot.x"
-              [style.top.%]="dot.y"
-              [style.color]="dot.color"
-              aria-hidden="true">
-              <span class="map-pin-pulse" [style.background]="dot.color"></span>
-              @switch (dot.type) {
-                @case ('EVENT') {
-                  <svg viewBox="0 0 24 32" width="24" height="32" class="filter-none">
-                    <path
-                      d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z"
-                      [attr.fill]="dot.color" />
-                    <path
-                      d="M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z"
-                      fill="#fff" />
-                  </svg>
-                }
-                @case ('SCHOOL') {
-                  <svg viewBox="0 0 24 32" width="24" height="32" class="filter-none">
-                    <path d="M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z" [attr.fill]="dot.color" />
-                    <path
-                      d="M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z"
-                      fill="#fff" />
-                  </svg>
-                }
-                @case ('CLUB') {
-                  <svg viewBox="0 0 24 32" width="24" height="32" class="filter-none">
-                    <path d="M12 0 23 7v14L12 32 1 21V7z" [attr.fill]="dot.color" />
-                    <path d="M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z" fill="#fff" />
-                  </svg>
-                }
-                @case ('BAR') {
-                  <svg viewBox="0 0 24 32" width="24" height="32" class="filter-none">
-                    <path
-                      d="M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z"
-                      [attr.fill]="dot.color" />
-                    <path d="M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z" fill="#fff" />
-                  </svg>
-                }
-              }
-            </span>
+              [style.top.%]="dot.y" />
           }
 
           <span class="sheen absolute inset-0" aria-hidden="true"></span>
@@ -97,12 +62,17 @@
         </div>
       </a>
 
-      <!-- Stasera: the night's events in a sideways carousel. "Vedi tutte"
-          has no list page behind it yet — shown, not linked. -->
+      <!-- Stasera: the night's events in a sideways carousel. "Vedi tutte" is
+          the list's tonight, while /lista is on (listEnabled). -->
       <section class="mt-6" aria-labelledby="tonight-title">
         <div class="flex items-baseline justify-between gap-3">
           <h2 id="tonight-title" class="font-display text-[1.1875rem] font-extrabold text-bone">Stasera</h2>
+          @if (listEnabled) {
+          <a routerLink="/lista" [queryParams]="{ quando: 'stasera' }"
+            class="text-[0.8125rem] font-bold text-rose underline-offset-4 hover:underline">Vedi tutte</a>
+          } @else {
           <span class="text-[0.8125rem] font-bold text-rose">Vedi tutte</span>
+          }
         </div>
 
         <div class="carousel -mx-4 mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:scroll-px-6 sm:px-6">
@@ -143,13 +113,21 @@
         </div>
       </section>
 
-      <!-- Shortcuts to the day / venue lists — no pages yet, shown, not linked. -->
+      <!-- Shortcuts: the list's search for that day (see shortcuts in
+          menu.ts) — shown, not linked, while /lista is off. -->
       <div class="mt-4 flex gap-2">
-        @for (shortcut of shortcuts; track shortcut) {
+        @for (shortcut of shortcuts; track shortcut.label) {
+        @if (listEnabled) {
+        <a routerLink="/lista" [queryParams]="shortcut.query"
+          class="shortcut flex h-11 flex-auto items-center justify-center rounded-[0.875rem] px-3 text-[0.8125rem] font-bold whitespace-nowrap">
+          {{ shortcut.label }}
+        </a>
+        } @else {
         <span
           class="shortcut flex h-11 flex-auto items-center justify-center rounded-[0.875rem] px-3 text-[0.8125rem] font-bold whitespace-nowrap">
-          {{ shortcut }}
+          {{ shortcut.label }}
         </span>
+        }
         }
       </div>
     </div>
@@ -157,7 +135,15 @@
 </main>
 
 <!-- Bottom bar, below md only: from md up the sidebar rail already covers
-    this. Eventi and Profilo have no page yet — shown, not linked. -->
+    this. Eventi is the list (while /lista is on); Profilo has no page yet —
+    shown, not linked. -->
+<ng-template #eventsItem>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="16" rx="3" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </svg>
+  Eventi
+</ng-template>
 <nav aria-label="Navigazione principale"
   class="bottom-nav fixed inset-x-0 bottom-0 z-header grid grid-cols-4 px-2 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
   <span aria-current="page" class="bottom-nav-item">
@@ -173,13 +159,15 @@
     </svg>
     Mappa
   </a>
+  @if (listEnabled) {
+  <a routerLink="/lista" class="bottom-nav-item">
+    <ng-container [ngTemplateOutlet]="eventsItem" />
+  </a>
+  } @else {
   <span class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="3" />
-      <path d="M3 10h18M8 3v4M16 3v4" />
-    </svg>
-    Eventi
+    <ng-container [ngTemplateOutlet]="eventsItem" />
   </span>
+  }
   <span class="bottom-nav-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
       <circle cx="12" cy="8" r="4" />

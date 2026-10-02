@@ -7,6 +7,8 @@ export const FEATURE_FLAGS = {
   /** Redesigned navbar + Google sign-in dialog — see auth-modal. */
   navbarAuth: 'navbarAuth',
   mapPage: 'mapPage',
+  /** /lista route: the map's events as a list, grouped by night. */
+  eventListPage: 'eventListPage',
   welcomePage: 'welcomePage',
   menuPage: 'menuPage',
   /** /oauth2/callback route, landed on after Google confirms login. */
@@ -29,7 +31,9 @@ export const FEATURE_FLAGS = {
   createEventPage: 'createEventPage',
   eventDetailsPage: 'eventDetailsPage',
   createEventSeries: 'createEventSeries',
-  createVenuePage: 'createVenuePage'
+  createVenuePage: 'createVenuePage',
+  /** /luogo/:id route: a venue's page, opened from its card on the map. */
+  venueDetailsPage: 'venueDetailsPage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

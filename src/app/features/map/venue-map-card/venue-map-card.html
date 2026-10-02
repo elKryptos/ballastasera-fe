@@ -1,0 +1,62 @@
+<!-- Colours: the --ev-* tokens in styles.css. Same frame as event-map-card. -->
+<article class="relative flex flex-col gap-3" aria-labelledby="venue-card-title">
+  <button type="button"
+    class="absolute -top-1 -right-1 z-10 inline-flex size-9 cursor-pointer items-center justify-center rounded-full bg-(--ev-raised) text-(--ev-text) transition-colors hover:bg-(--ev-edge)"
+    (click)="closed.emit()" aria-label="Chiudi il luogo">
+    <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" aria-hidden="true">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  </button>
+
+  <div class="flex items-center gap-3">
+    <!-- The venue's own badge, in the flyer's spot on the event card. -->
+    <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-(--ev-edge) bg-(--ev-raised)"
+      aria-hidden="true">
+      <app-venue-pin-icon [type]="venue().type" [size]="36" />
+    </span>
+
+    <div class="flex min-w-0 flex-1 flex-col gap-1 pr-8">
+      <span class="text-[0.6875rem] font-extrabold tracking-[0.06em] text-(--ev-soft) uppercase tabular-nums">
+        {{ typeLine() }}
+      </span>
+      @if (detailsEnabled()) {
+      <a id="venue-card-title" [routerLink]="['/luogo', venue().id]"
+        class="line-clamp-2 font-display text-lg leading-tight font-extrabold text-(--ev-text) hover:underline">
+        {{ venue().name }}
+      </a>
+      } @else {
+      <h3 id="venue-card-title" class="line-clamp-2 font-display text-lg leading-tight font-extrabold">
+        {{ venue().name }}
+      </h3>
+      }
+      <p class="truncate text-[0.8125rem] text-(--ev-soft)">{{ addressLine() }}</p>
+    </div>
+  </div>
+
+  <div class="flex gap-2.5">
+    @if (detailsEnabled()) {
+    <a [routerLink]="['/luogo', venue().id]"
+      class="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-(--ev-primary) text-[0.9375rem] font-bold text-white">
+      Vedi dettagli
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.4"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </a>
+    }
+    <!-- Square next to "Vedi dettagli", like on the event card; the whole row,
+        labelled, when it's the only action. -->
+    <a [href]="directionsUrl()" target="_blank" rel="noopener noreferrer"
+      class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl border border-(--ev-edge) bg-(--ev-raised) text-[0.9375rem] font-bold text-(--ev-text)"
+      [class]="detailsEnabled() ? 'w-14' : 'flex-1'" aria-label="Portami lì (Google Maps)" title="Portami lì">
+      <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 11l18-8-8 18-2-8z" />
+      </svg>
+      @if (!detailsEnabled()) {
+      Portami lì
+      }
+    </a>
+  </div>
+</article>

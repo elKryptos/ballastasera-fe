@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { EventDetailDto, MapEventsDto } from '../models/event.model';
+import { EventCardDto, EventDetailDto, MapEventsDto } from '../models/event.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '../api/endpoints';
 
@@ -57,5 +57,10 @@ export class EventsService {
 
   isFavorite(eventId: string): Observable<boolean> {
     return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isFavorite(eventId)}`);
+  }
+
+  /** Every event the signed-in user liked, in one request. */
+  getMyFavorites(): Observable<EventCardDto[]> {
+    return this.http.get<EventCardDto[]>(`${environment.apiUrl}${endpoints.users.myFavorites}`);
   }
 }

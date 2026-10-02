@@ -1,16 +1,59 @@
-/** Formatting helpers shared by the map's event card and the event detail
- * page. Each one is typed on just the fields it reads, so both EventCardDto
- * and EventDetailDto fit. */
+/** Formatting helpers shared by the map's cards and the event and venue
+ * pages. Each one is typed on just the fields it reads, so both EventCardDto
+ * and EventDetailDto fit; the address ones take a plain string, so venues
+ * fit too. */
 
 /** Window before an event's start in which the "Inizia tra X min" countdown
  * shows instead of the plain start time. */
 const STARTING_SOON_MS = 30 * 60 * 1000;
 
-/** A civico is 1-4 digits with an optional letter/slash suffix (e.g. "12",
- * "12/A"); a 5-digit Italian CAP never matches, so it's left for addressSecondary. */
+/** A civico is 1-4 digits with an optional suffix starting with a slash or a
+ * letter (e.g. "12", "12/A", "12bis"); a 5-digit Italian CAP never matches, so
+ * it's left for addressSecondary. */
 function isCivico(part: string): boolean {
-  return /^\d{1,4}(\/?[a-zA-Z0-9]{0,3})?$/.test(part);
+  return /^\d{1,4}(\/[a-zA-Z0-9]{1,3}|[a-zA-Z]{1,3})?$/.test(part);
 }
+
+const CAP = /^\d{5}$/;
+
+/** Italian regions as they show up in addresses: in English from the
+ * geocoder ("Lombardy") or in Italian when typed by hand ("Lombardia").
+ * Every address is in Italy, so next to the city the region says nothing.
+ * Lowercase, for matching. */
+const ITALIAN_REGIONS = new Set([
+  'abruzzo',
+  'basilicata',
+  'calabria',
+  'campania',
+  'emilia-romagna',
+  'emilia romagna',
+  'friuli-venezia giulia',
+  'friuli venezia giulia',
+  'lazio',
+  'liguria',
+  'lombardia',
+  'lombardy',
+  'marche',
+  'molise',
+  'piemonte',
+  'piedmont',
+  'puglia',
+  'apulia',
+  'sardegna',
+  'sardinia',
+  'sicilia',
+  'sicily',
+  'toscana',
+  'tuscany',
+  'trentino-alto adige',
+  'trentino-alto adige/südtirol',
+  'trentino-south tyrol',
+  'umbria',
+  "valle d'aosta",
+  "valle d'aosta/vallée d'aoste",
+  'aosta valley',
+  'veneto',
+]);
 
 /** Reads the clock rather than event.liveNow, which is a snapshot from the
  * last fetch and goes stale the moment an event starts. */
@@ -24,6 +67,12 @@ export function minutesToStart(event: { startAt: string }, now: number): number 
   const msToStart = new Date(event.startAt).getTime() - now;
   if (msToStart <= 0 || msToStart > STARTING_SOON_MS) return null;
   return Math.max(1, Math.round(msToStart / 60000));
+}
+
+/** Minutes left while live, for "Finisce tra 52 min"; null when not live. */
+export function minutesToEnd(event: { startAt: string; endAt: string }, now: number): number | null {
+  if (!isLiveAt(event, now)) return null;
+  return Math.max(1, Math.round((new Date(event.endAt).getTime() - now) / 60000));
 }
 
 /** Long form (e.g. "Venerdì 25 settembre 2026") — separate from
@@ -68,11 +117,25 @@ export function addressPrimary(address: string): string {
   return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];
 }
 
+/** Everything after the street, without the region and with the CAP in front
+ * of its city ("20131, Milan, Lombardy" → "20131 Milan"), the way Italian
+ * addresses are written. */
 export function addressSecondary(address: string): string | null {
   const parts = address.split(',').map((p) => p.trim());
   if (parts.length <= 1) return null;
-  const rest = isCivico(parts[1]) ? parts.slice(2) : parts.slice(1);
-  return rest.length ? rest.join(', ') : null;
+  const rest = (isCivico(parts[1]) ? parts.slice(2) : parts.slice(1)).filter(
+    (part) => !ITALIAN_REGIONS.has(part.toLowerCase()),
+  );
+  const lines: string[] = [];
+  for (const part of rest) {
+    const previous = lines.at(-1);
+    if (previous !== undefined && CAP.test(previous)) {
+      lines[lines.length - 1] = `${previous} ${part}`;
+    } else {
+      lines.push(part);
+    }
+  }
+  return lines.length ? lines.join(', ') : null;
 }
 
 /** Every event is in Italy, so a trailing country part — "Italy" as the
@@ -82,8 +145,10 @@ export function withoutCountry(address: string): string {
   return address.replace(/,\s*(italy|italia)\s*$/i, '');
 }
 
-export function googleMapsUrl(event: { venueName: string | null; address: string }): string {
-  const query = event.venueName ? `${event.venueName}, ${event.address}` : event.address;
+/** Directions to a place — an event's or a venue's. The name, when there is
+ * one, helps Google land on the right spot. */
+export function googleMapsUrl(address: string, placeName: string | null): string {
+  const query = placeName ? `${placeName}, ${address}` : address;
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 }
 

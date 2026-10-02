@@ -1,0 +1,110 @@
+<!-- Same layout and tokens as the event page (event-details.html/.css): one
+  column on mobile, two from @5xl up. Below @5xl the column wrappers are
+  display:contents and order-* sets the mobile sequence (title, dove,
+  contatti, descrizione); from @5xl up the left column holds title and
+  description, the right one where it is and how to reach it. -->
+<main appSidebarPush class="event-page @container flex min-h-dvh flex-col pt-(--header-h) md:pt-0">
+  @if (loading()) {
+  <p class="px-4 py-16 text-center text-sm text-(--ed-muted)">Caricamento…</p>
+  } @else if (venue(); as venue) {
+  <div class="ed-backdrop" aria-hidden="true">
+    <span class="ed-grain"></span>
+  </div>
+
+  <div class="relative mx-auto w-full max-w-260 flex-1 px-4 pt-3 pb-8 @5xl:px-8 @5xl:pt-6 @5xl:pb-16">
+    <div class="mb-4 flex items-center @5xl:mb-6">
+      <button type="button" class="ed-glass-btn rounded-full @5xl:pr-4.5 @5xl:pl-3.5" (click)="goBack()"
+        aria-label="Indietro">
+        <ng-icon name="lucideArrowLeft" class="size-4.5" />
+        <span class="hidden @5xl:inline">Indietro</span>
+      </button>
+    </div>
+
+    <div class="flex flex-col gap-4 @5xl:flex-row @5xl:items-start @5xl:gap-6">
+      <!-- LEFT column (desktop) -->
+      <div class="contents @5xl:flex @5xl:min-w-0 @5xl:flex-1 @5xl:flex-col @5xl:gap-6">
+        <section class="@5xl:border @5xl:border-(--ed-glass-border) @5xl:bg-(--ed-glass) @5xl:p-7 @5xl:shadow-(--ed-shadow) @5xl:backdrop-blur-[20px] @5xl:backdrop-saturate-140 rounded-lg order-1 flex flex-col gap-2 px-1">
+          <p class="text-(--ed-accent) flex items-center gap-2 text-[11px] font-bold tracking-[1.5px] uppercase @5xl:text-xs @5xl:tracking-[2px]">
+            <span class="size-2 shrink-0 rounded-full" [style.background]="pinColors[venue.type]"></span>
+            {{ typeLabels[venue.type] }} · {{ venue.cityName }}
+          </p>
+          <h1 class="font-display text-[34px] leading-none font-extrabold tracking-[-0.5px] @5xl:text-[52px] @5xl:tracking-[-1px]">
+            {{ venue.name }}
+          </h1>
+          @if (venue.organizerName; as organizerName) {
+          <p class="text-(--ed-muted) mt-1 text-sm @5xl:text-[15px]">
+            Gestito da <span class="text-(--ed-text-2) font-semibold">{{ organizerName }}</span>
+          </p>
+          }
+        </section>
+
+        @if (venue.description; as description) {
+        <section class="ed-card order-4 rounded-lg p-4 @5xl:p-6">
+          <h2 class="font-display text-lg font-bold @5xl:text-xl">Descrizione</h2>
+          <p class="text-(--ed-text-2) mt-1.5 text-[15px] leading-[1.55] whitespace-pre-line @5xl:mt-2.5 @5xl:text-base @5xl:leading-[1.6]">
+            {{ description }}</p>
+        </section>
+        }
+      </div>
+
+      <!-- RIGHT column (desktop) -->
+      <div class="contents @5xl:flex @5xl:w-85 @5xl:shrink-0 @5xl:flex-col @5xl:gap-6">
+        <!-- Dove: read-only mini-map with the venue's badge + directions. -->
+        <section class="ed-card order-2 flex flex-col gap-3 rounded-lg p-2.5">
+          @if (mapCenter(); as center) {
+          <div class="relative h-35 w-full overflow-hidden rounded-lg @5xl:h-42.5">
+            <app-map-preview class="absolute inset-0" [center]="center" [zoom]="miniMapZoom" />
+            <svg viewBox="0 0 24 24" class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 size-9 -translate-x-1/2 -translate-y-1/2"
+              aria-hidden="true">
+              <circle cx="12" cy="12" r="11" [attr.fill]="pinColors[venue.type]" stroke="#fff" stroke-width="2" />
+              <path [attr.d]="pinGlyphs[venue.type]" fill="#fff" />
+            </svg>
+          </div>
+          }
+          @if (place(); as place) {
+          <div class="flex flex-col gap-3 px-1.5 pb-1">
+            <div>
+              <p class="text-(--ed-muted) text-[11px] font-bold tracking-[1.5px] uppercase">Dove</p>
+              <p class="mt-1 text-[15px] font-semibold @5xl:text-base">{{ place.street }}</p>
+              @if (place.locality; as locality) {
+              <p class="text-(--ed-muted) text-[13px] @5xl:text-sm">{{ locality }}</p>
+              }
+            </div>
+            <a [href]="place.directionsUrl" target="_blank" rel="noopener noreferrer"
+              class="inline-flex ed-btn rounded-lg ed-btn--directions">Indicazioni</a>
+          </div>
+          }
+        </section>
+
+        @if (contacts().length) {
+        <section class="ed-card order-3 flex flex-col gap-2.5 rounded-lg px-4 py-3.5 @5xl:p-6">
+          <h2 class="font-display text-lg font-bold @5xl:text-xl">Contatti</h2>
+          @for (link of contacts(); track link.key) {
+          <a [href]="link.href" [attr.target]="link.sameTab ? null : '_blank'" rel="noopener noreferrer"
+            class="text-(--ed-text-2) flex min-w-0 items-center gap-2 text-sm hover:underline">
+            <span class="flex size-7 shrink-0 items-center justify-center rounded-lg" [class]="link.tileClass">
+              @if (link.svgPath; as path) {
+              <svg viewBox="0 0 24 24" class="size-4 fill-current" aria-hidden="true">
+                <path [attr.d]="path" />
+              </svg>
+              } @else if (link.icon; as icon) {
+              <ng-icon [name]="icon" class="size-4" />
+              }
+            </span>
+            <span class="truncate">{{ link.label }}</span>
+          </a>
+          }
+        </section>
+        }
+      </div>
+    </div>
+  </div>
+  } @else {
+  <div class="flex flex-col items-center gap-4 px-4 py-16 text-center">
+    <p class="text-(--ed-follow-fg) text-sm">Impossibile trovare questo luogo.</p>
+    <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--secondary" (click)="goBack()">
+      Torna indietro
+    </button>
+  </div>
+  }
+</main>

@@ -1,0 +1,94 @@
+<!-- Colours: the --ev-* tokens in styles.css. (close) covers Esc as well as
+    dialog.close(), so `open` follows however it was dismissed. -->
+<dialog #dialog class="ev-dialog" aria-labelledby="ev-filters-title" (close)="open.set(false)"
+  (click)="closeOnBackdrop($event)">
+  <header class="relative flex shrink-0 items-center justify-between gap-3 px-5 pt-5 pb-3">
+    <span class="absolute top-2 left-1/2 h-1.25 w-10 -translate-x-1/2 rounded-full bg-(--ev-edge) md:hidden"
+      aria-hidden="true"></span>
+    <h2 id="ev-filters-title" class="font-display text-xl font-extrabold tracking-[-0.01em]">Filtri</h2>
+    <button type="button"
+      class="inline-flex size-10 cursor-pointer items-center justify-center rounded-full bg-(--ev-raised) text-(--ev-text) transition-colors hover:bg-(--ev-edge)"
+      (click)="open.set(false)" aria-label="Chiudi i filtri">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </header>
+
+  <div class="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-5 pt-1 pb-6">
+    <!-- The page's own sections that frame the rest (the map's "Sulla
+        mappa": what the filters below even apply to) come first. -->
+    <ng-content select="[filtersLead]" />
+
+    <!-- Toggle chips: aria-pressed marks the picked ones, and Tailwind's
+        aria-pressed: variant styles them from that same attribute. -->
+    @if (showStyles()) {
+    <section class="flex flex-col gap-2.5" aria-labelledby="ev-filters-styles">
+      <h3 id="ev-filters-styles" class="text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+        Stile
+      </h3>
+      <div class="flex flex-wrap gap-2">
+        @for (style of danceStyles(); track style.id) {
+        <button type="button"
+          class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+          [attr.aria-pressed]="filters.styles().has(style.name)" (click)="filters.toggleStyle(style.name)">
+          {{ style.name }}
+        </button>
+        } @empty {
+        <p class="text-sm text-(--ev-soft)">Caricamento stili…</p>
+        }
+      </div>
+    </section>
+    }
+
+    <!-- Each type with its own pin: this is the map's legend too. -->
+    <section class="flex flex-col gap-2.5" aria-labelledby="ev-filters-types">
+      <div class="flex items-baseline justify-between gap-3">
+        <h3 id="ev-filters-types" class="text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+          Tipo di serata
+        </h3>
+        <span class="text-xs text-(--ev-soft)">La forma del pin sulla mappa</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        @for (option of typeOptions; track option.type) {
+        <button type="button"
+          class="flex h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-3 text-left text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+          [attr.aria-pressed]="filters.types().has(option.type)" (click)="filters.toggleType(option.type)">
+          <app-event-pin-icon [type]="option.type" [size]="24" />
+          {{ option.label }}
+        </button>
+        }
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-2.5" aria-labelledby="ev-filters-price">
+      <h3 id="ev-filters-price" class="text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+        Prezzo
+      </h3>
+      <div class="flex flex-wrap gap-2">
+        <button type="button"
+          class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+          [attr.aria-pressed]="filters.freeOnly()" (click)="filters.freeOnly.set(!filters.freeOnly())">
+          Solo serate gratis
+        </button>
+      </div>
+    </section>
+
+    <ng-content />
+  </div>
+
+  <footer
+    class="flex shrink-0 items-center gap-3 border-t border-(--ev-edge) px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <button type="button"
+      class="h-12 cursor-pointer rounded-xl px-3 text-sm font-bold text-(--ev-link) underline-offset-4 hover:underline disabled:cursor-default disabled:text-(--ev-soft) disabled:no-underline disabled:opacity-60"
+      [disabled]="!canClear()" (click)="clearAll()">
+      Azzera
+    </button>
+    <button type="button"
+      class="h-12 flex-1 cursor-pointer rounded-xl bg-(--ev-primary) px-4 text-[0.9375rem] font-bold text-white transition-transform active:scale-[0.98]"
+      (click)="open.set(false)">
+      {{ resultLabel() }}
+    </button>
+  </footer>
+</dialog>

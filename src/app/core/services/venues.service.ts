@@ -3,7 +3,7 @@ import { Service, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
-import { VenueMapPinDto, VenuesSummaryDto } from '../models/venue.model';
+import { VenueDetailDto, VenueMapPinDto, VenuesSummaryDto } from '../models/venue.model';
 
 @Service()
 export class VenuesService {
@@ -21,5 +21,10 @@ export class VenuesService {
   getMapVenues(cityId: number): Observable<VenueMapPinDto[]> {
     const params = new HttpParams().set('cityId', cityId);
     return this.http.get<VenueMapPinDto[]>(`${environment.apiUrl}${endpoints.venues.map}`, { params });
+  }
+
+  /** Everything about one venue, for its page (/luogo/:id). */
+  getVenueDetail(id: string): Observable<VenueDetailDto> {
+    return this.http.get<VenueDetailDto>(`${environment.apiUrl}${endpoints.venues.detail(id)}`);
   }
 }

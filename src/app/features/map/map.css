@@ -1,14 +1,12 @@
-/* Theme tokens shared by the floating panels over the map (event card,
-filters, legend): the frosted glass, its text and the round close buttons, from the
-Claude Design canvas ("Card sulla mappa", light and dark). Dark is the base,
-like the rest of the app (and what shows if the pre-paint script in
-index.html never ran); the light version applies when <html> has
-data-theme="light" (the visitor's choice in the sidebar, see ThemeService) —
-same approach as event-details.css. Declared once on MapPage's host: custom
-properties inherit across component boundaries, so every panel reads them
-through Tailwind's var shorthand (e.g. bg-(--map-glass)) — the legend, which
-stays inline in map.html, straight from here. Colours specific to one panel
-live in that panel's own CSS (event-map-card.css, map-filters.css). */
+/* Theme tokens for what Leaflet draws itself or what floats straight on the
+tiles: the attribution and the notices (frosted glass, from
+the Claude Design canvas "Card sulla mappa", light and dark). The toolbar,
+sheet and Filtri dialog use the shared --ev-* tokens instead (styles.css).
+Dark is the base, like the rest of the app (and what shows if the pre-paint
+script in index.html never ran); the light version applies when <html> has
+data-theme="light" (the visitor's choice in the sidebar, see ThemeService).
+Declared once on MapPage's host: custom properties inherit across component
+boundaries — and into Leaflet's DOM, which styles.css reads them from. */
 :host {
   color-scheme: dark;
   /* The basemap's own land colour (dark.json's / light.json's background),
@@ -20,13 +18,9 @@ live in that panel's own CSS (event-map-card.css, map-filters.css). */
   --map-glass-border: rgba(255, 255, 255, 0.1);
   --map-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   --map-text: #f4f1fa;
-  --map-text-2: #d6d1e4;
   --map-muted: #aba5bd;
-  --map-accent: #b9a6ff;
-  --map-close-bg: rgba(255, 255, 255, 0.07);
-  --map-close-bg-hover: rgba(255, 255, 255, 0.14);
   /* "Too many events" notice: amber-tinted glass, so it reads as a warning
-  without borrowing the filters' error pink. Text >= 4.5:1 in both themes. */
+  without borrowing an error pink. Text >= 4.5:1 in both themes. */
   --map-alert: rgba(120, 78, 12, 0.72);
   --map-alert-border: rgba(251, 191, 36, 0.45);
   --map-alert-text: #fde9c2;
@@ -39,11 +33,7 @@ live in that panel's own CSS (event-map-card.css, map-filters.css). */
   --map-glass-border: rgba(255, 255, 255, 0.85);
   --map-shadow: 0 16px 40px rgba(40, 30, 80, 0.14);
   --map-text: #1e1b2e;
-  --map-text-2: #3e3a4c;
   --map-muted: #5e5a6b;
-  --map-accent: #5b3cc4;
-  --map-close-bg: rgba(255, 255, 255, 0.7);
-  --map-close-bg-hover: rgba(255, 255, 255, 0.95);
   --map-alert: rgba(254, 243, 199, 0.85);
   --map-alert-border: rgba(217, 119, 6, 0.35);
   --map-alert-text: #78350f;
@@ -58,19 +48,18 @@ beats leaflet.css's own rule where a Tailwind bg-* utility wouldn't. */
   background: var(--map-land);
 }
 
-/* Each legend icon pops in with a slight overshoot, staggered per row via
-an inline animation-delay set from the template. */
-.legend-icon {
-  animation: legend-icon-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+/* Centred over the part of the map the floating UI leaves free: below the
+toolbar on phones, right of the panel from md up (--map-inset-*, measured by
+MapPage). */
+.map-top-center {
+  top: calc(var(--map-inset-top, 0px) + 0.75rem);
+  left: calc(var(--map-inset-left, 0px) + (100% - var(--map-inset-left, 0px)) / 2);
+  max-width: calc(100% - var(--map-inset-left, 0px) - 2rem);
 }
 
-@keyframes legend-icon-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* Clear of the sheet on phones and of Leaflet's attribution, which rides on
+top of it (styles.css, app-map .leaflet-bottom). */
+.map-locate {
+  bottom: calc(var(--map-inset-bottom, 0px) + 1.75rem);
+  transition: bottom 0.2s ease-out;
 }

@@ -1,0 +1,79 @@
+<!-- Colours: the --ev-* tokens in styles.css. On phones the chips float on
+    the map one by one (each with its own small shadow, --ev-chip-shadow) and
+    every row scrolls edge to edge; from md up it's one card, chips flat. -->
+<ng-template #filtersButton>
+  <button type="button"
+    class="pointer-events-auto flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-(--ev-edge) bg-(--ev-surface) px-3 text-sm font-semibold text-(--ev-text) shadow-(--ev-chip-shadow)"
+    (click)="filtersOpened.emit()" aria-haspopup="dialog"
+    [attr.aria-label]="chips().length ? 'Filtri, ' + chips().length + ' attivi' : 'Filtri'">
+    <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" aria-hidden="true">
+      <path d="M4 6h16M7 12h10M10 18h4" />
+    </svg>
+    Filtri
+    @if (chips().length) {
+    <span
+      class="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-(--ev-badge-bg) px-1 text-[0.6875rem] font-extrabold text-(--ev-badge-text)"
+      aria-hidden="true">{{ chips().length }}</span>
+    }
+  </button>
+</ng-template>
+
+<div
+  class="flex flex-col gap-2 pt-3 select-none max-md:pointer-events-none [--ev-chip-shadow:var(--ev-float-shadow)] [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] md:gap-2.5 md:rounded-[1.25rem] md:border md:border-(--ev-edge) md:bg-(--ev-surface) md:p-3 md:shadow-(--ev-shadow) md:[--ev-chip-shadow:none]">
+  <!-- Phones: the switch alone, centred. md up: switch and Filtri share the row. -->
+  <div class="flex items-center justify-center md:justify-between" [class]="listEnabled() ? '' : 'max-md:hidden'">
+    @if (listEnabled()) {
+    <app-view-switch active="map" class="pointer-events-auto" />
+    }
+    <div class="max-md:hidden">
+      <ng-container [ngTemplateOutlet]="filtersButton" />
+    </div>
+  </div>
+
+  <!-- md up: what the map shows, one click away. Phones keep it in Filtri
+      (its first section), where the floating rows have no room for it. -->
+  <div class="flex gap-1 rounded-xl border border-(--ev-edge) bg-(--ev-raised) p-1 max-md:hidden" role="group"
+    aria-label="Sulla mappa">
+    @for (option of layerOptions; track option.value) {
+    <button type="button"
+      class="h-8 flex-1 cursor-pointer rounded-lg px-2 text-[0.8125rem] font-semibold whitespace-nowrap text-(--ev-soft) transition-colors hover:text-(--ev-text) aria-pressed:bg-(--ev-primary) aria-pressed:font-bold aria-pressed:text-white"
+      [attr.aria-pressed]="layer() === option.value" (click)="layerChanged.emit(option.value)">
+      {{ option.label }}
+    </button>
+    }
+  </div>
+
+  <div class="flex items-center">
+    <div class="pl-4 md:hidden">
+      <ng-container [ngTemplateOutlet]="filtersButton" />
+    </div>
+    <app-date-range-chips class="min-w-0 flex-1 [--ev-row-pad:0.75rem] md:[--ev-row-pad:0px]" />
+  </div>
+
+  @if (chips().length) {
+  <div class="flex items-center gap-2 pr-4 md:pr-0" [class]="hasDesktopChips() ? '' : 'md:hidden'">
+    <ul class="ev-scroll-row flex min-w-0 flex-1 gap-2 overflow-x-auto py-1 pl-4 md:flex-wrap md:pl-0"
+      aria-label="Filtri attivi">
+      @for (chip of chips(); track chip.key) {
+      <li class="shrink-0" [class]="chip.mobileOnly ? 'md:hidden' : ''">
+        <button type="button"
+          class="pointer-events-auto flex h-8 cursor-pointer items-center gap-1 rounded-[0.625rem] bg-(--ev-primary) pr-2 pl-3 text-[0.8125rem] font-semibold text-white shadow-(--ev-chip-shadow)"
+          (click)="chip.remove()" [attr.aria-label]="'Togli il filtro ' + chip.label">
+          {{ chip.label }}
+          <svg viewBox="0 0 24 24" class="size-3.5" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </li>
+      }
+    </ul>
+    <button type="button"
+      class="pointer-events-auto h-8 shrink-0 cursor-pointer self-start rounded-full bg-(--ev-surface) px-3 text-[0.8125rem] font-bold text-(--ev-link) shadow-(--ev-chip-shadow) max-md:mt-1 md:bg-transparent md:px-1"
+      (click)="clearAll()">
+      Azzera
+    </button>
+  </div>
+  }
+</div>

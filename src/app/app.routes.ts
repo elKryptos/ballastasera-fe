@@ -49,6 +49,14 @@ export const routes: Routes = [
       },
 
       {
+        // The map's search as a list, grouped by night — the "Lista" half of
+        // the Mappa | Lista switch. Same filters (EventFiltersService).
+        path: 'lista',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.eventListPage)],
+        loadComponent: () => import('./features/event-list/event-list').then((m) => m.EventList),
+      },
+
+      {
         path: 'admin',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
         loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),
@@ -101,6 +109,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/event-details/event-details').then(
             (m) => m.EventDetails),
+      },
+
+      {
+        // A venue's page, opened from its card on /mappa.
+        path: 'luogo/:id',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.venueDetailsPage)],
+        loadComponent: () =>
+          import('./features/venue-details/venue-details').then(
+            (m) => m.VenueDetails),
       },
 
       {

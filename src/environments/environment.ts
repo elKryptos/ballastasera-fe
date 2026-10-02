@@ -11,6 +11,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   // Off until apiUrl above points at a real backend — see the TODO.
   googleAuth: false,
   mapPage: false,
+  eventListPage: false,
   welcomePage: false,
   menuPage: false,
   oauth2Callback: false,
@@ -23,7 +24,8 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   createEventPage: false,
   eventDetailsPage: false,
   createEventSeries: false,
-  createVenuePage: false
+  createVenuePage: false,
+  venueDetailsPage: false,
 };
 
 export const environment = {

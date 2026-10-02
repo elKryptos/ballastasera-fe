@@ -162,6 +162,24 @@ ring, so it reads at a glance on either theme's map picture. */
   color: var(--color-lead);
 }
 
+/* Only the linked ones react (see listEnabled in menu.ts): :hover only with
+a real pointer — touch has no hover, and a tap would leave it stuck on. */
+a.shortcut {
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+a.shortcut:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) {
+  a.shortcut:hover {
+    border-color: var(--color-rose);
+  }
+}
+
 .bottom-nav {
   border-top: 1px solid var(--menu-rule);
   background: var(--color-ink);

@@ -76,7 +76,7 @@ export const VENUE_PIN_GLYPHS: Record<VenueType, string> = {
 /** Every VenueType, in the order the legend shows them. */
 export const VENUE_TYPES: VenueType[] = ['SCHOOL', 'CLUB', 'BAR', 'OTHER'];
 
-/** Italian label per VenueType, for the legend and the venue popup. */
+/** Italian label per VenueType, for the legend, the venue card and the venue's page. */
 export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
   SCHOOL: 'Scuola',
   CLUB: 'Discoteca',

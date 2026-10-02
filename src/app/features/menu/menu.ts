@@ -1,7 +1,9 @@
 import { Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { FeatureFlagService } from '../../core/services/feature-flag.service';
+import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import {
@@ -12,6 +14,7 @@ import {
   withoutCountry,
 } from '../../core/utils/event-format';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
 
 /**
@@ -50,34 +53,25 @@ interface TonightCard {
   going: number;
 }
 
-/** Same palette as the real map markers — see map.ts's PIN_COLORS. */
-const PIN_COLORS: Record<EventType, string> = {
-  EVENT: 'var(--color-rose)',
-  SCHOOL: 'var(--color-violet)',
-  CLUB: 'var(--color-mint)',
-  BAR: 'var(--color-amber)',
-};
-
-/** A pin on the decorative background map, in % of the card same four
- * types (and icons) as the real map markers (see map.ts's PIN_SHAPES). */
+/** A pin on the decorative background map, in % of the card — drawn by
+ * EventPinIcon, so it's the real map's pin for that type. */
 interface MapDot {
   x: number;
   y: number;
   type: EventType;
-  color: string;
 }
 
 /**
  * Hub post-login: da qui l'utente sceglie cosa fare. Ogni login atterra qui
- * (vedi Oauth2Callback.postLoginUrl e Welcome.enter()). Collegate per ora:
- * la mappa e le card di stasera; le scorciatoie e la barra in basso (tranne
- * Mappa) sono già al loro posto ma aspettano le loro pagine.
+ * (vedi Oauth2Callback.postLoginUrl e Welcome.enter()). Collegate: la mappa,
+ * le card di stasera e — con /lista accesa — "Vedi tutte", le scorciatoie ed
+ * Eventi nella barra in basso. Profilo aspetta ancora la sua pagina.
  */
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.html',
   styleUrl: './menu.css',
-  imports: [RouterLink, SidebarPushDirective, MapSnapshot],
+  imports: [RouterLink, SidebarPushDirective, MapSnapshot, NgTemplateOutlet, EventPinIcon],
 })
 export class Menu {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -127,19 +121,27 @@ export class Menu {
     return live > 0 ? `${nights} · ${live} in corso` : nights;
   });
 
-  /** No list page behind these yet — shown, not linked. */
-  protected readonly shortcuts = ['Domani', 'Weekend', 'Scuole e locali'];
+  /** /lista is on (feature flag): "Vedi tutte", the shortcuts and the bottom
+   * bar's Eventi lead there; otherwise they're shown, not linked. */
+  protected readonly listEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventListPage);
+
+  /** Straight to the list's search for that day — see EventList, which
+   * reads these params once. "Scuole e locali": the nights at schools, clubs
+   * and bars, all week. */
+  protected readonly shortcuts: { label: string; query: Record<string, string> }[] = [
+    { label: 'Domani', query: { quando: 'domani' } },
+    { label: 'Weekend', query: { quando: 'weekend' } },
+    { label: 'Scuole e locali', query: { quando: 'settimana', tipo: 'scuola,discoteca,bar' } },
+  ];
 
   /** Decorative only positioned over the card's map picture (MapSnapshot),
    * not tied to any real event. */
-  protected readonly mapDots: MapDot[] = (
-    [
-      { x: 16, y: 72, type: 'EVENT' },
-      { x: 58, y: 18, type: 'SCHOOL' },
-      { x: 40, y: 40, type: 'CLUB' },
-      { x: 90, y: 20, type: 'BAR' },
-    ] as const
-  ).map((dot) => ({ ...dot, color: PIN_COLORS[dot.type] }));
+  protected readonly mapDots: MapDot[] = [
+    { x: 16, y: 72, type: 'EVENT' },
+    { x: 58, y: 18, type: 'SCHOOL' },
+    { x: 40, y: 40, type: 'CLUB' },
+    { x: 90, y: 20, type: 'BAR' },
+  ];
 
   constructor() {
     // Solo client: stesso motivo di MapPage la HTTP transfer cache non

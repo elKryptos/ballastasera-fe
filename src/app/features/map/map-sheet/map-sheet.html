@@ -1,0 +1,114 @@
+<!-- Colours: the --ev-* tokens in styles.css. A bottom sheet on phones; from
+    md up the lower card of the left-hand panel, always open. -->
+<section
+  class="flex max-h-[min(62dvh,28rem)] flex-col rounded-t-[1.75rem] border-t border-(--ev-edge) bg-(--ev-surface) text-(--ev-text) shadow-[0_-8px_28px_rgba(0,0,0,0.28)] select-none [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] md:max-h-none md:min-h-0 md:rounded-[1.25rem] md:border md:shadow-(--ev-shadow)"
+  aria-label="Serate in questa zona">
+  <!-- Header, and on phones the handle to pull it up or down: a swipe
+      anywhere on it, or a tap on the handle itself. -->
+  <div class="shrink-0 touch-none px-4 pt-1.5 pb-3 md:touch-auto md:pt-4" (pointerdown)="startDrag($event)"
+    (pointerup)="endDrag($event)" (pointercancel)="cancelDrag()">
+    <button type="button" class="mx-auto flex h-6 w-20 cursor-pointer items-center justify-center md:hidden"
+      (click)="toggleExpanded()" [attr.aria-expanded]="showBody()"
+      [attr.aria-label]="showBody() ? 'Riduci le serate' : 'Mostra le serate'">
+      <span class="h-1.25 w-10 rounded-full bg-(--ev-edge)" aria-hidden="true"></span>
+    </button>
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0" role="status">
+        <h2 class="font-display text-[1.0625rem] leading-tight font-extrabold">{{ title() }}</h2>
+        @if (showsEvents() && error()) {
+        <button type="button" class="cursor-pointer text-[0.8125rem] font-bold text-(--ev-link) underline-offset-4 hover:underline"
+          (click)="searchRequested.emit()">Riprova</button>
+        } @else {
+        <p class="truncate text-[0.8125rem] text-(--ev-soft)">{{ subtitle() }}</p>
+        }
+      </div>
+      @if (listEnabled() && showsEvents()) {
+      <a routerLink="/lista"
+        class="flex h-8 shrink-0 items-center gap-1 text-[0.8125rem] font-bold whitespace-nowrap text-(--ev-link) underline-offset-4 hover:underline">
+        Vedi in lista
+        <svg viewBox="0 0 24 24" class="size-3.5" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </a>
+      }
+    </div>
+  </div>
+
+  <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))] md:pb-4"
+    [class]="showBody() ? '' : 'max-md:hidden'">
+    @if (selected(); as event) {
+    <div class="px-4 pt-1">
+      <app-event-map-card [event]="event" [now]="now()" [going]="going()" [liked]="liked()"
+        [distanceKm]="distanceKm()" (closed)="closed.emit()" (goingToggled)="goingToggled.emit()"
+        (likeToggled)="likeToggled.emit()" />
+    </div>
+    } @else if (selectedVenue(); as venue) {
+    <div class="px-4 pt-1">
+      <app-venue-map-card [venue]="venue" [distanceKm]="distanceKm()" [detailsEnabled]="venuePageEnabled()"
+        (closed)="closed.emit()" />
+    </div>
+    } @else if (unsearched()) {
+    <div class="px-4">
+      <button type="button"
+        class="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-(--ev-primary) text-sm font-bold text-white"
+        (click)="searchRequested.emit()">
+        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4" />
+        </svg>
+        Cerca in questa zona
+      </button>
+    </div>
+    } @else if (isEmpty()) {
+    <div class="mx-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-(--ev-edge) p-4">
+      <p class="text-sm leading-relaxed text-(--ev-soft)">
+        Prova un'altra data, togli qualche filtro o sposta la mappa e cerca di nuovo.
+      </p>
+      @if (canWiden() || filters.activeCount() > 0) {
+      <div class="flex flex-wrap gap-2">
+        @if (canWiden()) {
+        <button type="button"
+          class="h-10 cursor-pointer rounded-xl bg-(--ev-primary) px-4 text-sm font-bold text-white"
+          (click)="filters.range.set('week')">Vedi tutta la settimana</button>
+        }
+        @if (filters.activeCount() > 0) {
+        <button type="button"
+          class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-bold"
+          (click)="filters.clear()">Togli i filtri</button>
+        }
+      </div>
+      }
+    </div>
+    } @else if (showsEvents() && cards().length) {
+    <!-- A sideways row on phones (snapping card by card), a list from md up. -->
+    <ul
+      class="ev-scroll-row flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto px-4 pt-0.5 pb-1 md:snap-none md:flex-col md:overflow-x-visible">
+      @for (card of cards(); track card.event.id) {
+      <li class="w-64 shrink-0 snap-start md:w-auto">
+        <button type="button"
+          class="flex w-full cursor-pointer flex-col gap-1 rounded-2xl border border-(--ev-edge) bg-(--ev-raised) p-3 text-left transition-colors hover:border-(--ev-primary)"
+          (click)="eventSelected.emit(card.event)">
+          <span class="flex items-center gap-1.5 text-[0.6875rem] font-extrabold tracking-[0.04em] text-(--ev-soft) uppercase tabular-nums">
+            <span class="size-2 shrink-0 rounded-full" [style.background]="card.color" aria-hidden="true"></span>
+            @if (card.live) {
+            <span class="rounded-md bg-rose px-1.5 py-px text-(--ev-on-rose)">{{ card.when }}</span>
+            } @else {
+            {{ card.when }}
+            }
+          </span>
+          <span class="line-clamp-2 font-display text-base leading-tight font-extrabold">{{ card.event.title }}</span>
+          <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ card.place }}</span>
+        </button>
+      </li>
+      }
+    </ul>
+    } @else if (showsEvents() && loading()) {
+    <div class="flex gap-2.5 overflow-hidden px-4 md:flex-col" aria-hidden="true">
+      @for (placeholder of [1, 2]; track placeholder) {
+      <div class="h-24 w-64 shrink-0 animate-pulse rounded-2xl bg-(--ev-raised) md:w-auto"></div>
+      }
+    </div>
+    }
+  </div>
+</section>

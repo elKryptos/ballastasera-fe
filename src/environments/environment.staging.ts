@@ -10,6 +10,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   stagingDemo: true,
   navbarAuth: true,
   mapPage: true,
+  eventListPage: true,
   welcomePage: true,
   menuPage: true,
   oauth2Callback: true,
@@ -22,7 +23,8 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   createEventPage: true,
   eventDetailsPage: true,
   createEventSeries: true,
-  createVenuePage: true
+  createVenuePage: true,
+  venueDetailsPage: true,
 };
 
 export const environment = {

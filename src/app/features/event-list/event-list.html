@@ -1,0 +1,212 @@
+<app-auth-modal [(open)]="authOpen" />
+
+<!-- Colours: the --ev-* tokens in styles.css (the host carries the page's
+    ground, bg-(--color-ink), which turns to paper by day). -->
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <!-- The search stays in reach while the list scrolls under it. -->
+  <header
+    class="sticky top-(--header-h) z-10 border-b border-(--ev-edge) bg-(--color-ink)/95 backdrop-blur-md select-none [-webkit-tap-highlight-color:transparent] md:top-0">
+    <div class="mx-auto flex max-w-3xl flex-col gap-2.5 py-3">
+      <app-view-switch active="list" class="self-center" />
+
+      <!-- Dove: the city, then how far from the visitor. -->
+      <div class="ev-scroll-row flex items-center gap-2 overflow-x-auto px-4 py-0.5" role="group" aria-label="Dove">
+        <span class="flex shrink-0 items-center gap-1 pr-1 text-[0.8125rem] font-bold">
+          <svg viewBox="0 0 24 24" class="size-4 text-(--ev-badge-bg)" fill="none" stroke="currentColor"
+            stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+            <circle cx="12" cy="9.5" r="2.5" />
+          </svg>
+          @if (cities().length > 1) {
+          <label class="relative flex items-center">
+            <span class="sr-only">Città</span>
+            <select
+              class="h-8 cursor-pointer appearance-none rounded-lg bg-transparent pr-6 pl-1 font-bold text-(--ev-text)"
+              (change)="selectCity($event)">
+              @for (option of cities(); track option.id) {
+              <option [value]="option.id" [selected]="option.id === cityId()">{{ option.name }}</option>
+              }
+            </select>
+            <svg viewBox="0 0 24 24" class="pointer-events-none absolute right-1 size-3.5" fill="none"
+              stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </label>
+          } @else {
+          {{ city()?.name ?? '…' }}
+          }
+        </span>
+        @for (option of areas; track option.id) {
+        <button type="button"
+          class="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-(--ev-edge) px-3 text-[0.8125rem] font-semibold whitespace-nowrap text-(--ev-soft) transition-colors aria-pressed:border-(--ev-badge-bg) aria-pressed:bg-(--ev-zone-on-bg) aria-pressed:text-(--ev-zone-on-text)"
+          [attr.aria-pressed]="area() === option.id" [disabled]="locating()" (click)="selectArea(option.id)">
+          {{ option.label }}
+        </button>
+        }
+        @if (locating()) {
+        <svg class="size-4 shrink-0 animate-spin text-(--ev-soft)" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-label="Cerco la tua posizione">
+          <path d="M21 12a9 9 0 1 1-6.22-8.56" />
+        </svg>
+        }
+      </div>
+
+      <app-date-range-chips class="[--ev-row-pad:1rem]" />
+
+      <!-- Stili inline (the dialog has types and price). -->
+      <div class="flex items-center">
+        <button type="button"
+          class="ml-4 flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-(--ev-edge) bg-(--ev-surface) px-3 text-sm font-semibold"
+          (click)="filtersOpen.set(true)" aria-haspopup="dialog"
+          [attr.aria-label]="dialogFilterCount() ? 'Filtri, ' + dialogFilterCount() + ' attivi' : 'Filtri'">
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" aria-hidden="true">
+            <path d="M4 6h16M7 12h10M10 18h4" />
+          </svg>
+          Filtri
+          @if (dialogFilterCount()) {
+          <span
+            class="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-(--ev-badge-bg) px-1 text-[0.6875rem] font-extrabold text-(--ev-badge-text)"
+            aria-hidden="true">{{ dialogFilterCount() }}</span>
+          }
+        </button>
+        <span class="mx-2 h-6 w-px shrink-0 bg-(--ev-edge)" aria-hidden="true"></span>
+        <div class="ev-scroll-row flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5 pr-4" role="group"
+          aria-label="Stile">
+          @for (style of danceStyles(); track style.id) {
+          <button type="button"
+            class="h-9 shrink-0 cursor-pointer rounded-[0.625rem] border border-(--ev-edge) px-3.5 text-[0.8125rem] font-semibold whitespace-nowrap text-(--ev-soft) transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+            [attr.aria-pressed]="filters.styles().has(style.name)" (click)="filters.toggleStyle(style.name)">
+            {{ style.name }}
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-3xl px-4 pt-3 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">
+    <div class="flex items-center justify-between gap-3 text-[0.8125rem] text-(--ev-soft)">
+      <span role="status">{{ hasData() ? countLabel() : '' }}</span>
+      <label class="relative flex shrink-0 items-center gap-1">
+        Ordina:
+        <select
+          class="h-8 cursor-pointer appearance-none bg-transparent pr-5 font-bold text-(--ev-text)"
+          [value]="sort()" (change)="selectSort($event)">
+          <option value="time">orario</option>
+          <option value="distance">distanza</option>
+          <option value="popular">più popolari</option>
+        </select>
+        <svg viewBox="0 0 24 24" class="pointer-events-none absolute right-0 size-3.5" fill="none" stroke="currentColor"
+          stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </label>
+    </div>
+
+    @if (locateMessage(); as message) {
+    <p role="status"
+      class="mt-3 rounded-xl border border-(--ev-edge) bg-(--ev-surface) px-3 py-2 text-[0.8125rem] text-(--ev-soft)">
+      {{ message }}
+    </p>
+    }
+
+    @if (!hasData() && error()) {
+    <div class="mt-8 flex flex-col items-center gap-3 text-center">
+      <p class="font-display text-[1.0625rem] font-extrabold">Non riusciamo a caricare le serate</p>
+      <button type="button" class="h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
+        (click)="retry()">Riprova</button>
+    </div>
+    } @else if (!hasData()) {
+    <div class="mt-4 flex flex-col gap-3" aria-hidden="true">
+      @for (placeholder of [1, 2, 3]; track placeholder) {
+      <div class="h-32 animate-pulse rounded-[1.25rem] bg-(--ev-raised)"></div>
+      }
+    </div>
+    } @else {
+    @for (group of groups(); track group.night) {
+    <section class="mt-5 flex flex-col gap-2.5" [attr.aria-labelledby]="'night-' + group.night">
+      <h2 [id]="'night-' + group.night"
+        class="text-xs font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+        {{ group.heading }}
+      </h2>
+      @for (row of group.rows; track row.id) {
+      <!-- The title's link covers the whole card (after:absolute); the like
+          button sits above it (relative z-10). isolate keeps that z-10 inside
+          the card: without it the button competed with the sticky header
+          (z-10 too, earlier in the DOM) and scrolled over it. -->
+      <article
+        class="relative isolate flex gap-3.5 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-raised) p-3.5 transition-colors hover:border-(--ev-primary)">
+        <div class="flex w-12 shrink-0 flex-col gap-0.5 tabular-nums">
+          <span class="text-[1.0625rem] font-extrabold">{{ row.start }}</span>
+          <span class="text-xs text-(--ev-soft)">{{ row.end }}</span>
+        </div>
+        <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+          @if (row.live; as live) {
+          <span
+            class="inline-flex items-center gap-1.5 self-start rounded-lg bg-rose px-2 py-0.5 text-[0.6875rem] font-extrabold tracking-[0.03em] text-(--ev-on-rose) uppercase">
+            <span class="size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+            {{ live }}
+          </span>
+          }
+          <span class="flex items-center gap-1.5 text-[0.6875rem] font-bold tracking-[0.06em] text-(--ev-soft) uppercase">
+            <span class="size-2 shrink-0 rounded-full" [style.background]="row.color" aria-hidden="true"></span>
+            {{ row.meta }}
+          </span>
+          <h3 class="font-display text-[1.0625rem] leading-tight font-extrabold">
+            <a [routerLink]="['/evento', row.id]" class="after:absolute after:inset-0 after:rounded-[1.25rem]">
+              {{ row.title }}
+            </a>
+          </h3>
+          <p class="truncate text-[0.8125rem] text-(--ev-soft)">{{ row.place }}</p>
+          @if (row.styles.length) {
+          <ul class="flex flex-wrap gap-1.5" aria-label="Stili">
+            @for (style of row.styles; track $index) {
+            <li class="rounded-lg bg-(--ev-tag-bg) px-2 py-0.5 text-xs font-semibold text-(--ev-tag-text)">{{ style }}</li>
+            }
+          </ul>
+          }
+          <div class="mt-0.5 flex items-center gap-2 text-[0.8125rem] text-(--ev-soft) tabular-nums">
+            <span class="text-sm font-extrabold text-(--ev-price)">{{ row.price }}</span>
+            <span aria-hidden="true">·</span>
+            <span><strong class="font-bold text-(--ev-text)">{{ row.going }}</strong> ci vanno</span>
+            <button type="button"
+              class="relative z-10 ml-auto flex h-9 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-like-on) aria-pressed:bg-(--ev-like-bg) aria-pressed:text-(--ev-like)"
+              [attr.aria-pressed]="row.liked" (click)="toggleLike(row.id)" aria-label="Mi piace">
+              <svg viewBox="0 0 24 24" class="size-4" [attr.fill]="row.liked ? 'currentColor' : 'none'"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+              </svg>
+              <span>{{ row.likes }}</span>
+            </button>
+          </div>
+        </div>
+      </article>
+      }
+    </section>
+    } @empty {
+    <div
+      class="mt-8 flex flex-col items-center gap-2.5 rounded-[1.25rem] border border-dashed border-(--ev-edge) p-6 text-center">
+      <p class="font-display text-[1.0625rem] font-extrabold">Nessuna serata con questi filtri</p>
+      <p class="text-sm leading-relaxed text-(--ev-soft)">
+        Prova ad allargare la zona, togliere uno stile o guardare tutta la settimana.
+      </p>
+      <button type="button"
+        class="mt-1.5 h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
+        (click)="showEverything()">
+        Tutta {{ city()?.name ?? 'la città' }}, questa settimana
+      </button>
+    </div>
+    }
+
+    @if (truncatedForRange()) {
+    <p class="mt-5 text-center text-[0.8125rem] text-(--ev-soft)">
+      Ci sono tante serate in arrivo: qui vedi le prime. Scegli dei giorni più vicini per vederle tutte.
+    </p>
+    }
+    }
+  </div>
+</main>
+
+<app-event-filters-dialog [(open)]="filtersOpen" [danceStyles]="danceStyles()" [showStyles]="false"
+  [resultCount]="resultCount()" />

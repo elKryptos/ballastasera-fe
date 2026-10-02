@@ -81,7 +81,7 @@ on rose (a light one would drop well below readable contrast). */
   filter: blur(6px);
 }
 
-/* ---------- the three pins: drop in one after another, then idle-float ---------- */
+/* ---------- the four pins: drop in one after another, then idle-float ---------- */
 
 .pin {
   animation: drop 0.9s cubic-bezier(0.22, 1.4, 0.4, 1) backwards, float 3s ease-in-out infinite;
@@ -92,45 +92,6 @@ on rose (a light one would drop well below readable contrast). */
 .pin--b { animation-delay: 0.3s, 1.2s; }
 .pin--c { animation-delay: 0.5s, 1.4s; }
 .pin--d { animation-delay: 0.7s, 1.6s; }
-
-/* Ground ring under each pin — same idea as .map-pin-pulse on the real map
-(see styles.css), just sized as a % of the pin instead of a fixed px ring
-so it scales with each icon's own size. Centred on the pin's head, not its
-tip, same as the map markers. */
-.pin-ring {
-  position: absolute;
-  left: 50%;
-  top: 38%;
-  width: 85%;
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 50%;
-  opacity: 0;
-  animation: pin-ring-pulse 1.8s ease-out infinite;
-}
-
-.pin-ring--rose { background: var(--color-rose); }
-.pin-ring--violet { background: var(--color-violet); }
-.pin-ring--mint { background: var(--color-mint); }
-.pin-ring--amber { background: var(--color-amber); }
-
-/* Starts once each pin has landed, staggered the same as its float. */
-.pin--a .pin-ring { animation-delay: 1s; }
-.pin--b .pin-ring { animation-delay: 1.2s; }
-.pin--c .pin-ring { animation-delay: 1.4s; }
-.pin--d .pin-ring { animation-delay: 1.6s; }
-
-@keyframes pin-ring-pulse {
-  0% {
-    scale: 0.55;
-    opacity: 0.65;
-  }
-  70%,
-  100% {
-    scale: 1.9;
-    opacity: 0;
-  }
-}
 
 @keyframes drop {
   from {
@@ -299,19 +260,15 @@ the tile's own edges (~67%/167%) — -180%/320% leaves comfortable margin. */
 
 @media (prefers-reduced-motion: reduce) {
   .pin,
-  .pin-ring,
   .eyebrow,
   .line,
   .lead,
   .hint,
   .card,
-  .icon,
-  .icon-glow,
   .cta {
     animation: none;
   }
 
-  .pin-ring,
   .sheen {
     display: none;
   }

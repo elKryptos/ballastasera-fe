@@ -8,46 +8,14 @@
       <!-- Animated mini map: the four pin types from the interactive map, dropping in one after another -->
       <div class="stage relative mb-8 flex h-36 w-64 items-end justify-center" aria-hidden="true">
         <div class="mapglow absolute inset-0"></div>
-        <!-- EVENT: teardrop + star -->
-        <span class="pin pin--a absolute bottom-3 left-0">
-          <span class="pin-ring pin-ring--rose"></span>
-          <svg viewBox="0 0 24 32" class="h-10 w-10">
-            <path
-              d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z"
-              fill="var(--color-rose)" />
-            <path
-              d="M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z"
-              fill="var(--color-ink)" />
-          </svg>
-        </span>
-        <!-- SCHOOL: shield + graduation cap -->
-        <span class="pin pin--b absolute bottom-12 left-18">
-          <span class="pin-ring pin-ring--violet"></span>
-          <svg viewBox="0 0 24 32" class="h-12 w-12">
-            <path d="M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z" fill="var(--color-violet)" />
-            <path
-              d="M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z"
-              fill="var(--color-ink)" />
-          </svg>
-        </span>
-        <!-- CLUB: hexagon + music note -->
-        <span class="pin pin--c absolute bottom-5 left-38">
-          <span class="pin-ring pin-ring--mint"></span>
-          <svg viewBox="0 0 24 32" class="h-10 w-10">
-            <path d="M12 0 23 7v14L12 32 1 21V7z" fill="var(--color-mint)" />
-            <path d="M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z" fill="var(--color-ink)" />
-          </svg>
-        </span>
-        <!-- BAR: rounded square + cocktail glass -->
-        <span class="pin pin--d absolute right-0 bottom-0">
-          <span class="pin-ring pin-ring--amber"></span>
-          <svg viewBox="0 0 24 32" class="h-9 w-9">
-            <path
-              d="M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z"
-              fill="var(--color-amber)" />
-            <path d="M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z" fill="var(--color-ink)" />
-          </svg>
-        </span>
+        <app-event-pin-icon class="pin pin--a absolute bottom-3 left-0" type="EVENT" [size]="40"
+          fill="var(--color-rose)" glyphFill="var(--color-ink)" />
+        <app-event-pin-icon class="pin pin--b absolute bottom-12 left-18" type="SCHOOL" [size]="48"
+          fill="var(--color-violet)" glyphFill="var(--color-ink)" />
+        <app-event-pin-icon class="pin pin--c absolute bottom-5 left-38" type="CLUB" [size]="40"
+          fill="var(--color-mint)" glyphFill="var(--color-ink)" />
+        <app-event-pin-icon class="pin pin--d absolute right-0 bottom-0" type="BAR" [size]="36"
+          fill="var(--color-amber)" glyphFill="var(--color-ink)" />
       </div>
 
       <p class="eyebrow font-mono text-xs tracking-[0.25em] text-rose uppercase">Prima di iniziare</p>

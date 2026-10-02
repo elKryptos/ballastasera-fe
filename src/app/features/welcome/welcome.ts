@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 
 interface WelcomeFeature {
   icon: 'pins' | 'map' | 'bell';
@@ -19,7 +20,7 @@ interface WelcomeFeature {
   selector: 'app-welcome',
   templateUrl: './welcome.html',
   styleUrl: './welcome.css',
-  imports: [SidebarPushDirective],
+  imports: [SidebarPushDirective, EventPinIcon],
 })
 export class Welcome {
   private readonly router = inject(Router);

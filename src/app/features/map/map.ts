@@ -115,7 +115,8 @@ const MAP_BOUNDS: [[number, number], [number, number]] = [
 const MAP_MIN_ZOOM = 5;
 
 /** The shortest credit OpenStreetMap's attribution guidelines accept, linked
- * to their copyright page — required under the ODbL for every basemap here. */
+ * to their copyright page — required under the ODbL for every basemap here.
+ * Shown but not tappable on /mappa (see the attribution rule in styles.css). */
 const OSM_ATTRIBUTION =
   '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>';
 

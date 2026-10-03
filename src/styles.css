@@ -123,9 +123,12 @@ outside Angular's view. */
 
 /* /mappa's attribution: the legally required credits, kept small and quiet,
 on the same themed glass as the floating panels (--map-* tokens in map.css,
-inherited down into Leaflet's DOM). Scoped to app-map: the landing's
-mini-map has no attribution control. */
+inherited down into Leaflet's DOM). Shown, not tappable: right by the sheet
+and "Intorno a me", its links (Leaflet's, OSM's and the basemap style's own)
+were too easy to open by mistake, so taps go through to the map. Scoped to
+app-map: the landing's mini-map has no attribution control. */
 app-map .leaflet-container .leaflet-control-attribution {
+  pointer-events: none;
   margin: 0;
   padding: 1px 6px;
   border-top-left-radius: 6px;

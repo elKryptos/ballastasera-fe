@@ -148,22 +148,24 @@ the DOM outside Angular's view, so component styles never reach it. In
 @layer components (not unlayered) so Tailwind utilities still win the
 cascade. */
 @layer components {
+  /* EVENT_PIN_WIDTH x EVENT_PIN_HEIGHT in map-pin-icons.ts. */
   .map-pin-wrap {
     position: relative;
     display: block;
-    width: 24px;
-    height: 32px;
+    width: 30px;
+    height: 40px;
   }
 
   /* Three outlined rings in the pin's colour (see MapPinIcons), staggered so
-  one is always on its way out — the pin is never still. */
+  one is always on its way out — the pin is never still. Centred on the
+  pin's head: half its width down from the top. */
   .map-pin-ring {
     position: absolute;
     left: 50%;
-    top: 12px;
-    width: 24px;
-    height: 24px;
-    margin: -12px 0 0 -12px;
+    top: 15px;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
     border: 2px solid currentColor;
     border-radius: 50%;
     opacity: 0;
@@ -176,7 +178,7 @@ cascade. */
   .map-pin-live-tag {
     position: absolute;
     top: -9px;
-    left: 15px;
+    left: 19px;
     display: inline-flex;
     align-items: center;
     gap: 3px;
@@ -207,14 +209,12 @@ cascade. */
   }
 
   /* Selected pin: its own shape (per event type) is drawn inverted in
-  MapPinIcons.event() rather than styled here, plus a size bump so it still reads as
-  the clear visual anchor now that its event card docks at the bottom of the
-  screen instead of floating above it. Overflow visible because the shapes
-  touch the viewBox edges, which would clip half of the outline stroke. */
+  MapPinIcons.event() rather than styled here — at the pins' size, the
+  inversion alone reads clearly, so it stays the same size. Overflow visible
+  because the shapes touch the viewBox edges, which would clip half of the
+  outline stroke. */
   .map-pin-wrap--selected svg {
     overflow: visible;
-    transform: scale(1.2);
-    transform-origin: 50% 100%;
     filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
   }
 
@@ -251,8 +251,6 @@ cascade. */
   }
 }
 
-/* The scale property, not transform: it stacks on a selected pin's own
-transform: scale(1.2) instead of replacing it while it runs. */
 @keyframes map-pin-bounce {
   0%,
   100% {
@@ -272,12 +270,10 @@ Leaflet's default .leaflet-div-icon, so there's no white box to undo. */
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
   }
 
-  /* Selected badge: drawn inverted in MapPinIcons.venue(), plus a size bump
-  around its centre (where it's anchored) so it reads as the one whose card
-  is open. */
+  /* Selected badge: drawn inverted in MapPinIcons.venue(), same size — the
+  inversion alone says it's the one whose card is open. */
   .venue-pin--selected svg {
     overflow: visible;
-    transform: scale(1.4);
     filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
   }
 }

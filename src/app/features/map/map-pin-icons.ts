@@ -3,7 +3,12 @@ import { EventType } from '../../core/models/event.model';
 import { VenueType } from '../../core/models/venue.model';
 import { PIN_COLORS, PIN_GLYPHS, PIN_SHAPES, VENUE_PIN_COLORS, VENUE_PIN_GLYPHS } from '../../core/config/map-pins';
 
-const VENUE_PIN_SIZE = 20;
+/** Big enough not to pass for the basemap's own transit and POI icons at
+ * city zoom. The event pin is 3:4 like its viewBox; .map-pin-wrap and its
+ * live marks in styles.css are sized to match. */
+const EVENT_PIN_WIDTH = 30;
+const EVENT_PIN_HEIGHT = 40;
+const VENUE_PIN_SIZE = 26;
 
 /** Leaflet icons for the map's markers, built once per look and then reused:
  * an unchanged state is the very same object, which is how MapPage's marker
@@ -44,14 +49,14 @@ export class MapPinIcons {
       className: 'map-pin',
       html: `<span class="map-pin-wrap${liveClass}${selectedClass}" style="color:${color}">
         ${liveMarks}
-        <svg viewBox="0 0 24 32" width="24" height="32" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 24 32" width="${EVENT_PIN_WIDTH}" height="${EVENT_PIN_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
           <path d="${PIN_SHAPES[eventType]}" ${shapeAttrs}/>
           <path d="${PIN_GLYPHS[eventType]}" fill="${glyphFill}"/>
         </svg>
         ${liveTag}
       </span>`,
-      iconSize: [24, 32],
-      iconAnchor: [12, 32],
+      iconSize: [EVENT_PIN_WIDTH, EVENT_PIN_HEIGHT],
+      iconAnchor: [EVENT_PIN_WIDTH / 2, EVENT_PIN_HEIGHT],
     });
 
     this.eventIcons.set(cacheKey, icon);
@@ -60,7 +65,7 @@ export class MapPinIcons {
 
   /** Round badge in the type's colour with its glyph — see VENUE_PIN_COLORS.
    * Selected, it's drawn inverted (white disc, ring and glyph in the type
-   * colour) and grows, the same way a selected event pin stands out. */
+   * colour), the same way a selected event pin stands out. */
   venue(type: VenueType, selected: boolean): DivIcon {
     const cacheKey = `${type}:${selected ? 'selected' : 'idle'}`;
     const cached = this.venueIcons.get(cacheKey);

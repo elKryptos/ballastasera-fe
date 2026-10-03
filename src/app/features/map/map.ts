@@ -185,6 +185,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private readonly panel = viewChild<ElementRef<HTMLDivElement>>('panel');
   private readonly toolbar = viewChild(MapToolbar, { read: ElementRef });
   private readonly sheet = viewChild(MapSheet, { read: ElementRef });
+  /** The same sheet as a component, for its unfold(). */
+  private readonly sheetComponent = viewChild(MapSheet);
 
   protected readonly cities = signal<CityDto[]>([]);
   protected readonly danceStyles = signal<DanceStyleDto[]>([]);
@@ -861,10 +863,12 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   }
 
   /** Opens the venue's card in the sheet (in place of an open event's: one
-  card at a time). Its page is one tap further, on the card. */
+  card at a time), unfolding it if it was pulled down. Its page is one tap
+  further, on the card. */
   private selectVenue(venue: VenueMapPinDto, position: LatLng): void {
     this.closeEvent();
     this.selectedVenue.set(venue);
+    this.sheetComponent()?.unfold();
     this.centerOn(position);
   }
 

@@ -27,7 +27,8 @@ interface SheetCard {
  * filters, those nights as cards (a sideways row on phones, a list in the
  * left-hand panel from md up), and the tapped pin's (or venue badge's) full
  * card in their place.
- * Pulled down on a phone it shrinks to its header, leaving the map whole.
+ * Pulled down on a phone it shrinks to its header, leaving the map whole;
+ * over places only, that folds the open venue card away until pulled back up.
  * Presentational: MapPage owns the data and the selection.
  */
 @Component({
@@ -70,14 +71,32 @@ export class MapSheet {
   /** "Riprova" after an error, or "Cerca in questa zona" from the sheet. */
   readonly searchRequested = output<void>();
 
-  /** Phones only: the cards showing, or just the header. */
-  protected readonly expanded = signal(true);
+  protected readonly showsEvents = computed(() => this.layer() !== 'venues');
+
   /** An open card, event or venue. */
   private readonly hasSelection = computed(() => this.selected() !== null || this.selectedVenue() !== null);
-  /** An open card always shows, even pulled down. */
-  protected readonly showBody = computed(() => this.hasSelection() || this.expanded());
-
-  protected readonly showsEvents = computed(() => this.layer() !== 'venues');
+  /** Phones only: the body showing, or just the header. */
+  protected readonly expanded = signal(true);
+  /** Anything under the header — the template's branches, in its order. Over
+   * places only that's just the open card; with no body, the handle has
+   * nothing to pull up and steps aside. */
+  protected readonly hasBody = computed(
+    () =>
+      this.hasSelection() ||
+      this.unsearched() ||
+      this.isEmpty() ||
+      (this.showsEvents() && (this.events().length > 0 || this.loading())),
+  );
+  /** The handle closes the open card when the nights' list is behind it;
+   * over places only it folds the card away instead, and brings it back. */
+  private readonly closesCard = computed(() => this.showsEvents() && this.hasSelection());
+  /** A card the handle closes always shows, even pulled down. */
+  protected readonly showBody = computed(() => this.closesCard() || (this.hasBody() && this.expanded()));
+  protected readonly handleLabel = computed(() => {
+    if (this.closesCard()) return 'Torna alle serate';
+    if (this.showsEvents()) return this.showBody() ? 'Riduci le serate' : 'Mostra le serate';
+    return this.showBody() ? 'Riduci il luogo' : 'Mostra il luogo';
+  });
 
   protected readonly cards = computed<SheetCard[]>(() => {
     const now = this.now();
@@ -144,8 +163,15 @@ export class MapSheet {
 
   private dragStartY: number | null = null;
 
+  /** Pulls the sheet back up. MapPage calls it on every venue badge tap: a
+   * tap on the open venue's badge, its card folded away, is no change to
+   * `selectedVenue`, so the inputs alone can't tell. */
+  unfold(): void {
+    this.expanded.set(true);
+  }
+
   protected toggleExpanded(): void {
-    if (this.hasSelection()) {
+    if (this.closesCard()) {
       this.closed.emit();
       return;
     }
@@ -157,13 +183,14 @@ export class MapSheet {
     if (event.pointerType !== 'mouse') this.dragStartY = event.clientY;
   }
 
-  /** Down closes the open card first, then shrinks the sheet; up grows it back. */
+  /** Down closes the open card first (see closesCard), then shrinks the
+   * sheet; up grows it back. */
   protected endDrag(event: PointerEvent): void {
     if (this.dragStartY === null) return;
     const dy = event.clientY - this.dragStartY;
     this.dragStartY = null;
     if (dy > SWIPE_PX) {
-      if (this.hasSelection()) this.closed.emit();
+      if (this.closesCard()) this.closed.emit();
       else this.expanded.set(false);
     } else if (dy < -SWIPE_PX) {
       this.expanded.set(true);

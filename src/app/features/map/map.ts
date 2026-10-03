@@ -77,8 +77,9 @@ const CLOCK_TICK_MS = 30 * 1000;
 const SEARCH_TOLERANCE = 0.25;
 
 /** The sheet grows to the full card once a pin is tapped, so the pin is
- * centred clear of at least this much at the bottom on phones. */
-const SELECTED_CARD_MIN_PX = 300;
+ * centred clear of at least this much at the bottom on phones: the sheet's
+ * header plus an event card with its 3:4 flyer and buttons, about 290-320px. */
+const SELECTED_CARD_MIN_PX = 320;
 
 /** Stacking for pins close enough to overlap, on top of Leaflet's own
  * (further south = in front), which a pin's height of offset already beats:

@@ -164,7 +164,7 @@ export class CreateVenue implements OnInit {
     // Optional: left empty, the backend geocodes the address.
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
-    description: ['', [Validators.maxLength(500)]],
+    description: ['', [Validators.maxLength(1000)]],
     // Contacts are all optional: empty is sent as null.
     website: ['', [Validators.pattern(WEBSITE_PATTERN), Validators.maxLength(100)]],
     whatsapp: ['', [whatsappValidator]],

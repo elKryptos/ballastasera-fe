@@ -29,8 +29,8 @@ const featureFlags: Record<FeatureFlag, boolean> = {
 
 export const environment = {
   production: false,
-  //apiUrl: 'https://api-staging.ballastasera.it',
-  apiUrl: 'http://localhost:8080',
+  apiUrl: 'https://api-staging.ballastasera.it',
+  //apiUrl: 'http://localhost:8080',
   featureFlags,
   // Free key from https://carto.com/basemaps/apikey/ — 5M tile requests/month fair-use limit.
   cartoApiKey: 'cb1_3ie6_1_e078712b029a513ed802a563',

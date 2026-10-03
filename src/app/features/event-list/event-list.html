@@ -137,11 +137,20 @@
           (z-10 too, earlier in the DOM) and scrolled over it. -->
       <article
         class="relative isolate flex gap-3.5 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-raised) p-3.5 transition-colors hover:border-(--ev-primary)">
-        <div class="flex w-12 shrink-0 flex-col gap-0.5 tabular-nums">
-          <span class="text-[1.0625rem] font-extrabold">{{ row.start }}</span>
-          <span class="text-xs text-(--ev-soft)">{{ row.end }}</span>
+        <!-- The flyer alone on the left, the text beside it. On phones it runs
+            the card's height, 3:4 at the least (the text is kept tight so
+            the two come out about as tall); from md up it stays 3:4, wider.
+            Absolute, so the picture's own size never stretches the card.
+            Under the title's link, so a tap on it opens the event too. -->
+        <div class="relative flex min-h-32 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-(--ev-edge) bg-(--ev-surface) md:aspect-3/4 md:min-h-0 md:w-32 md:self-start"
+          aria-hidden="true">
+          @if (row.flyerUrl; as flyer) {
+          <img class="absolute inset-0 size-full object-cover" [src]="flyer" alt="" loading="lazy" decoding="async" />
+          } @else {
+          <app-event-pin-icon [type]="row.eventType" [size]="44" />
+          }
         </div>
-        <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+        <div class="flex min-w-0 flex-1 flex-col gap-1 md:gap-1.5">
           @if (row.live; as live) {
           <span
             class="inline-flex items-center gap-1.5 self-start rounded-lg bg-live px-2 py-0.5 text-[0.6875rem] font-extrabold tracking-[0.03em] text-white uppercase">
@@ -149,29 +158,39 @@
             {{ live }}
           </span>
           }
-          <span class="flex items-center gap-1.5 text-[0.6875rem] font-bold tracking-[0.06em] text-(--ev-soft) uppercase">
-            <span class="size-2 shrink-0 rounded-full" [style.background]="row.color" aria-hidden="true"></span>
-            {{ row.meta }}
-          </span>
+          <p class="flex min-w-0 items-baseline gap-1.5 text-[0.6875rem] font-bold tracking-[0.06em] text-(--ev-soft) uppercase">
+            <span class="shrink-0 text-[0.8125rem] font-extrabold tracking-normal whitespace-nowrap text-(--ev-text) tabular-nums">
+              {{ row.start }}–{{ row.end }}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span class="truncate">{{ row.meta }}</span>
+          </p>
           <h3 class="font-display text-[1.0625rem] leading-tight font-extrabold">
             <a [routerLink]="['/evento', row.id]" class="after:absolute after:inset-0 after:rounded-[1.25rem]">
               {{ row.title }}
             </a>
           </h3>
           <p class="truncate text-[0.8125rem] text-(--ev-soft)">{{ row.place }}</p>
+          <!-- On phones one line of them (h-5, a tag's height): the ones that
+              wrap are cut off, leaving the room to the flyer. The event's
+              page lists them all. -->
           @if (row.styles.length) {
-          <ul class="flex flex-wrap gap-1.5" aria-label="Stili">
+          <ul class="flex flex-wrap gap-1.5 max-md:max-h-5 max-md:overflow-hidden" aria-label="Stili">
             @for (style of row.styles; track $index) {
             <li class="rounded-lg bg-(--ev-tag-bg) px-2 py-0.5 text-xs font-semibold text-(--ev-tag-text)">{{ style }}</li>
             }
           </ul>
           }
-          <div class="mt-0.5 flex items-center gap-2 text-[0.8125rem] text-(--ev-soft) tabular-nums">
-            <span class="text-sm font-extrabold text-(--ev-price)">{{ row.price }}</span>
+          <!-- mt-auto: level with the flyer's bottom when the text is the
+              shorter of the two. Beside the flyer a small phone has ~190px
+              here: "ci vanno" gives way first ("Prezzo su invito" is long),
+              so the row never spills out of the card. -->
+          <div class="mt-auto flex items-center gap-1.5 pt-0.5 text-[0.8125rem] text-(--ev-soft) tabular-nums md:gap-2">
+            <span class="shrink-0 text-sm font-extrabold text-(--ev-price)">{{ row.price }}</span>
             <span aria-hidden="true">·</span>
-            <span><strong class="font-bold text-(--ev-text)">{{ row.going }}</strong> ci vanno</span>
+            <span class="min-w-0 truncate"><strong class="font-bold text-(--ev-text)">{{ row.going }}</strong> ci vanno</span>
             <button type="button"
-              class="relative z-10 ml-auto flex h-9 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-like-on) aria-pressed:bg-(--ev-like-bg) aria-pressed:text-(--ev-like)"
+              class="relative z-10 ml-auto flex h-8 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-like-on) aria-pressed:bg-(--ev-like-bg) aria-pressed:text-(--ev-like) md:h-9"
               [attr.aria-pressed]="row.liked" (click)="toggleLike(row.id)" aria-label="Mi piace">
               <svg viewBox="0 0 24 24" class="size-4" [attr.fill]="row.liked ? 'currentColor' : 'none'"
                 stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">

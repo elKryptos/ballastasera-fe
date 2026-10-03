@@ -3,10 +3,10 @@ import { Location, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
-import { EVENT_TYPE_LABELS, MILAN_CENTER, PIN_COLORS } from '../../core/config/map-pins';
+import { EVENT_TYPE_LABELS, MILAN_CENTER } from '../../core/config/map-pins';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
-import { EventCardDto } from '../../core/models/event.model';
+import { EventCardDto, EventType } from '../../core/models/event.model';
 import { CitiesService } from '../../core/services/cities.service';
 import { CityEventsService } from '../../core/services/city-events.service';
 import { DanceStylesService } from '../../core/services/dance-styles.service';
@@ -37,6 +37,7 @@ import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { DateRangeChips } from '../../shared/event-filters/date-range-chips';
 import { EventFiltersDialog } from '../../shared/event-filters/event-filters-dialog';
+import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { ViewSwitch } from '../../shared/event-filters/view-switch';
 
 /** Keeps the LIVE badges and "finisce tra" current, and drops a night once
@@ -72,7 +73,9 @@ interface ListRow {
   live: string | null;
   /** "Discoteca · 2,4 km". */
   meta: string;
-  color: string;
+  /** No flyer: the type's pin stands in, as on the map's card. */
+  flyerUrl: string | null;
+  eventType: EventType;
   place: string;
   styles: string[];
   price: string;
@@ -97,7 +100,7 @@ interface ListGroup {
  */
 @Component({
   selector: 'app-event-list',
-  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, ViewSwitch],
+  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, ViewSwitch],
   templateUrl: './event-list.html',
   host: { class: 'block min-h-dvh bg-(--color-ink) text-(--ev-text)' },
 })
@@ -360,7 +363,8 @@ export class EventList {
       end: formatClock(event.endAt),
       live,
       meta: [EVENT_TYPE_LABELS[event.eventType], km !== null ? formatDistance(km) : null].filter(Boolean).join(' · '),
-      color: PIN_COLORS[event.eventType],
+      flyerUrl: event.flyerUrl,
+      eventType: event.eventType,
       place: event.venueName ? `${event.venueName} · ${address}` : address,
       styles: event.danceStyles,
       price: formatPrice(event),

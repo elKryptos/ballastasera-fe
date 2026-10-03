@@ -93,7 +93,10 @@
           <span class="flex items-center gap-1.5 text-[0.6875rem] font-extrabold tracking-[0.04em] text-(--ev-soft) uppercase tabular-nums">
             <span class="size-2 shrink-0 rounded-full" [style.background]="card.color" aria-hidden="true"></span>
             @if (card.live) {
-            <span class="rounded-md bg-rose px-1.5 py-px text-(--ev-on-rose)">{{ card.when }}</span>
+            <span class="inline-flex items-center gap-1 rounded-md bg-live px-1.5 py-px text-white">
+              <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+              {{ card.when }}
+            </span>
             } @else {
             {{ card.when }}
             }

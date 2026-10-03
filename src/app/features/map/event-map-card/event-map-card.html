@@ -25,8 +25,8 @@
       @switch (status().tone) {
       @case ('live') {
       <span
-        class="inline-flex items-center gap-1.5 self-start rounded-lg bg-rose px-2 py-0.5 text-[0.6875rem] font-extrabold tracking-[0.03em] text-(--ev-on-rose) uppercase">
-        <span class="size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+        class="inline-flex items-center gap-1.5 self-start rounded-lg bg-live px-2 py-0.5 text-[0.6875rem] font-extrabold tracking-[0.03em] text-white uppercase">
+        <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
         {{ status().text }}
       </span>
       }

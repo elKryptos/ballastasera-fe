@@ -37,7 +37,7 @@ export class MapPinIcons {
     const liveMarks = live
       ? [0, 0.8, 1.6].map((delay) => `<span class="map-pin-ring" style="animation-delay:-${delay}s"></span>`).join('')
       : '';
-    const liveTag = live ? '<span class="map-pin-live-tag"><i></i>LIVE</span>' : '';
+    const liveTag = live ? '<span class="map-pin-live-tag"><i class="live-dot"></i>LIVE</span>' : '';
     // Selected pin is drawn inverted (white body, outline and glyph in the type
     // colour): the one hollow pin among filled ones stands out on both basemaps
     // and still reads as its type.

@@ -16,6 +16,10 @@ skyline sunset sits on once the sun's down. */
 sunset. Everything loud is this colour. */
   --color-rose: #ff4d6d;
   --color-rose-lit: #ff6e88;
+  /* LIVE badges (cards, the map pin's tag, the event page): white text and
+  a blinking .live-dot on it. Rose taken darker, so the white reads at badge
+  size: 4.7:1, where white on rose is 3.2:1. */
+  --color-live: #e11d48;
   /* Secondary, reserved for the held beats and the build status — the
 orange half of the sunset gradient. */
   --color-amber: #ffa24c;
@@ -176,8 +180,8 @@ cascade. */
   }
 
   /* ...and a LIVE tag on its shoulder, saying what the motion means — in
-  the event page's "LIVE ORA" red (--ed-live), white-edged so it stands off
-  a rose pin and any tile. */
+  the LIVE badges' red (--color-live), white-edged so it stands off a rose
+  pin and any tile. */
   .map-pin-live-tag {
     position: absolute;
     top: -9px;
@@ -188,7 +192,7 @@ cascade. */
     padding: 2px 5px 2px 4px;
     border: 1.5px solid #fff;
     border-radius: 999px;
-    background: #e11d48;
+    background: var(--color-live);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     color: #fff;
     font: 800 9px/1 var(--font-body);
@@ -196,12 +200,12 @@ cascade. */
     white-space: nowrap;
   }
 
+  /* Its dot blinks as a .live-dot (below). */
   .map-pin-live-tag i {
     width: 5px;
     height: 5px;
     border-radius: 50%;
     background: currentColor;
-    animation: map-pin-blink 1.2s ease-in-out infinite;
   }
 
   /* The live pin itself breathes, and glows so it stays readable against
@@ -222,12 +226,11 @@ cascade. */
   }
 
   /* Motion off (the visitor's OS setting): the rings stay hidden at rest
-  (opacity 0), the pin and the tag's dot sit still — the LIVE tag alone
-  still marks the pin. */
+  (opacity 0), the pin and the tag's dot (.live-dot) sit still — the LIVE
+  tag alone still marks the pin. */
   @media (prefers-reduced-motion: reduce) {
     .map-pin-ring,
-    .map-pin-wrap--live svg,
-    .map-pin-live-tag i {
+    .map-pin-wrap--live svg {
       animation: none;
     }
   }
@@ -244,16 +247,6 @@ cascade. */
   }
 }
 
-@keyframes map-pin-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
-}
-
 @keyframes map-pin-bounce {
   0%,
   100% {
@@ -261,6 +254,31 @@ cascade. */
   }
   50% {
     scale: 1.08;
+  }
+}
+
+/* The blinking dot on every LIVE badge (bg-live text-white) and on the map
+pin's tag. Size and colour come from where it's used (size-1.5 rounded-full
+bg-current on the badges). */
+@layer components {
+  .live-dot {
+    animation: live-blink 1.2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot {
+      animation: none;
+    }
+  }
+}
+
+@keyframes live-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
   }
 }
 
@@ -344,8 +362,8 @@ app-event-list {
   /* Dance style tags. */
   --ev-tag-bg: color-mix(in srgb, var(--color-violet) 34%, var(--color-ink));
   --ev-tag-text: color-mix(in srgb, var(--color-violet) 18%, var(--color-bone));
-  /* Text on rose (selected day, LIVE): fixed night ink in both themes,
-  >= 5.6:1 on #ff4d6d. */
+  /* Text on rose (the selected day): fixed night ink in both themes,
+  >= 5.6:1 on #ff4d6d. LIVE badges are white on --color-live instead. */
   --ev-on-rose: #1a0e2e;
   /* Pressed toggles and Parteciperò: white text >= 4.5:1. */
   --ev-primary: #6b46e0;

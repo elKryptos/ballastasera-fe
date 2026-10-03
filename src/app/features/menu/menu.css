@@ -13,9 +13,9 @@ senza le animazioni della hero — qui è un hub, non un'intro. */
   --menu-rule: color-mix(in srgb, var(--color-violet) 18%, var(--color-ink));
   --menu-soft: color-mix(in srgb, var(--color-violet) 25%, var(--color-lead));
 
-  /* Text on a solid rose fill (live badge and chips, "Apri"): fixed night
-  ink, not --color-ink — by day that one turns to paper, too faint on rose
-  for text this small. */
+  /* Text on a solid rose fill ("Apri"): fixed night ink, not --color-ink —
+  by day that one turns to paper, too faint on rose for text this small.
+  LIVE badges are white on --color-live instead (styles.css). */
   --on-rose: #1a0e2e;
 }
 
@@ -111,34 +111,14 @@ pagina hanno lo stesso color carta, e la card ci si confonderebbe. */
 }
 
 /* ---------- live badge ----------
-Solid rose pill over the map, lifted off it by a rose glow and a thin dark
-ring, so it reads at a glance on either theme's map picture. */
+Solid LIVE pill over the map, lifted off it by a glow in its own red and a
+thin dark ring, so it reads at a glance on either theme's map picture. Its
+dot is the shared .live-dot (styles.css). */
 
 .live-badge {
   box-shadow:
     0 0 0 2px rgba(26, 14, 46, 0.35),
-    0 4px 16px color-mix(in srgb, var(--color-rose) 55%, transparent);
-}
-
-.live-badge .dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-  animation: dot-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes dot-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.4;
-    transform: scale(0.7);
-  }
+    0 4px 16px color-mix(in srgb, var(--color-live) 55%, transparent);
 }
 
 /* ---------- Stasera, shortcuts, bottom bar ---------- */
@@ -215,9 +195,5 @@ a.shortcut:active {
 @media (prefers-reduced-motion: reduce) {
   .sheen {
     display: none;
-  }
-
-  .live-badge .dot {
-    animation: none;
   }
 }

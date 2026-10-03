@@ -9,7 +9,6 @@ shorthand (e.g. text-(--ed-muted)); only multi-property pieces (buttons,
 glass cards, the backdrop) keep a class of their own below. */
 .event-page {
   color-scheme: dark;
-  --ed-live: #e11d48;
   --ed-heart: #ff2f6d;
   /* Same ground the landing shows in dark: the body's --color-ink (styles.css). */
   --ed-bg: #1a0e2e;
@@ -148,27 +147,6 @@ that one changes. */
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-}
-
-/* "LIVE ORA" dot: a slow on-air blink. */
-.ed-live-dot {
-  animation: ed-live-blink 1.2s ease-in-out infinite;
-}
-
-@keyframes ed-live-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ed-live-dot {
-    animation: none;
-  }
 }
 
 /* Action buttons: tinted when idle, stronger once toggled on, so

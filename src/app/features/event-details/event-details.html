@@ -17,8 +17,8 @@
   <ng-template #statusBadge>
     @if (isLiveNow(event)) {
     <span
-      class="bg-(--ed-live) text-white inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-bold tracking-[0.5px] @5xl:h-6.5 @5xl:text-xs">
-      <span class="ed-live-dot size-1.5 rounded-full bg-white @5xl:size-1.75"></span> LIVE ORA
+      class="bg-live text-white inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-bold tracking-[0.5px] @5xl:h-6.5 @5xl:text-xs">
+      <span class="live-dot size-1.5 rounded-full bg-white @5xl:size-1.75"></span> LIVE ORA
     </span>
     } @else if (startsInMinutes(event); as minutes) {
     <span

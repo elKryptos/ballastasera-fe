@@ -1,0 +1,10 @@
+# Response headers for the static assets Cloudflare serves (dist/browser).
+# Without a rule they go out as "max-age=0, must-revalidate": the browser asks
+# again on every visit before showing a file it already has.
+
+# The menu's and the landing's map pictures (scripts/build-map-snapshots.mjs).
+# Not fingerprinted, so not immutable: a day fresh, then up to a week shown
+# from cache while it's checked again in the background — a re-render
+# reaches everyone within a day or so.
+/map-snapshots/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

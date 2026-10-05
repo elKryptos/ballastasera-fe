@@ -1,10 +1,15 @@
 /* Dark is the app's base; the light picture replaces it under
 data-theme="light". Behind them, the map styles' land colour (same values as
---map-land in map.css), shown while the image loads. */
+--map-land in map.css), shown while the image loads.
+
+The background image is only set in `eager` mode (--snapshot-* on the host,
+see MapSnapshot); otherwise the vars are unset, the image falls back to none
+and the <img> elements draw the picture instead. Only the declaration that
+applies gets its image fetched. */
 :host {
   display: block;
   overflow: hidden;
-  background: #1d2230;
+  background: #1d2230 var(--snapshot-dark, none) center / cover no-repeat;
 }
 
 .snapshot {
@@ -19,7 +24,7 @@ data-theme="light". Behind them, the map styles' land colour (same values as
 }
 
 :host-context([data-theme='light']) {
-  background: #fbf8f3;
+  background: #fbf8f3 var(--snapshot-light, none) center / cover no-repeat;
 }
 
 :host-context([data-theme='light']) .snapshot--dark {

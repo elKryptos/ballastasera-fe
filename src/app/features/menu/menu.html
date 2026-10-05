@@ -19,8 +19,9 @@
         routerLink="/mappa"
         class="hero group relative mt-4 flex flex-col overflow-hidden rounded-lg border border-line transition-transform duration-300 hover:-translate-y-0.75 active:-translate-y-0.75 sm:mt-6">
         <div class="relative h-50 overflow-hidden">
-          <!-- Sfondo: immagine statica della mappa, una per tema (stessi stili di /mappa), vedi MapSnapshot -->
-          <app-map-snapshot variant="menu" class="pointer-events-none absolute inset-0" />
+          <!-- Sfondo: immagine statica della mappa, una per tema (stessi stili di /mappa), vedi MapSnapshot.
+              eager: è in cima alla pagina, va caricata subito. -->
+          <app-map-snapshot variant="menu" eager class="pointer-events-none absolute inset-0" />
 
           <!-- Gli stessi pin della mappa vera, senza effetti: fanno solo da scenografia. -->
           @for (dot of mapDots; track dot.type) {

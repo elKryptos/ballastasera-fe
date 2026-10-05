@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { AdminService } from '../../../core/services/admin.service';
 import { OrganizerType } from '../../../core/models/organizer.model';
+import { instagramHandle } from '../../../core/utils/event-format';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 
 const ORGANIZER_TYPES: { value: OrganizerType; label: string }[] = [
@@ -62,7 +63,7 @@ export class UpdateOrganizer {
           website: organizer.website ?? '',
           phone: organizer.phone ?? '',
           contactEmail: organizer.contactEmail ?? '',
-          instagram: organizer.instagram ?? '',
+          instagram: instagramHandle(organizer.instagram ?? ''),
           facebook: organizer.facebook ?? '',
         });
         this.loading.set(false);
@@ -84,7 +85,11 @@ export class UpdateOrganizer {
     this.errorMessage.set(null);
 
     const value = this.form.getRawValue();
-    this.admin.updateOrganizer(this.organizerId, { ...value, type: value.type as OrganizerType }).subscribe({
+    this.admin.updateOrganizer(this.organizerId, {
+      ...value,
+      type: value.type as OrganizerType,
+      instagram: instagramHandle(value.instagram),
+    }).subscribe({
       next: () => {
         this.submitting.set(false);
         this.saved.set(true);

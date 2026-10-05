@@ -1,10 +1,10 @@
-import { Component, computed, DestroyRef, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { DatePipe, registerLocaleData } from '@angular/common';
 import localeIt from '@angular/common/locales/it';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { catchError, combineLatest, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCalendarDays, lucideFileWarning, lucideImage } from '@ng-icons/lucide';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
@@ -16,34 +16,19 @@ import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { AdminService } from '../../../core/services/admin.service';
 import { CitiesService } from '../../../core/services/cities.service';
 import { DanceStylesService } from '../../../core/services/dance-styles.service';
-import { GeocodingService } from '../../../core/services/geocoding.service';
-import { VenuesService } from '../../../core/services/venues.service';
 import { DayOfWeek, EventCardDto, EventSeriesCreateDto, EventSeriesDetailDto } from '../../../core/models/event.model';
-import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
-import { AddressSuggestion } from '../../../core/models/geocoding.model';
-import { VenuesSummaryDto } from '../../../core/models/venue.model';
+import { instagramUrl, waMeUrl } from '../../../core/utils/event-format';
+import { toggled } from '../../../core/utils/sets';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
+import { injectAddressSearch, injectOrganizerPicker, injectVenuePicker } from '../admin-pickers';
 
 registerLocaleData(localeIt);
-
-/** Photon needs at least this many characters before a search is worth firing. */
-const ADDRESS_SEARCH_MIN_LENGTH = 3;
-/** How long to wait after the last keystroke before querying the venues or Photon. */
-const SEARCH_DEBOUNCE_MS = 300;
 
 /** Local (not UTC) yyyy-MM-dd, which is what `<input type="date">` expects. */
 const toIsoDate = (date: Date): string =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-const toggled = <T,>(set: ReadonlySet<T>, value: T): Set<T> => {
-  const next = new Set(set);
-  if (!next.delete(value)) {
-    next.add(value);
-  }
-  return next;
-};
 
 @Component({
   imports: [
@@ -59,46 +44,15 @@ export class CreateEventSeries {
   private readonly admin = inject(AdminService);
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
-  private readonly geocodingService = inject(GeocodingService);
-  private readonly venuesService = inject(VenuesService);
   private readonly router = inject(Router);
 
   /** Shared by the recurrence-day and dance-style chips. */
   protected readonly chipClass =
     'inline-flex cursor-pointer items-center rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors select-none has-checked:border-primary has-checked:bg-primary has-checked:text-primary-foreground not-has-checked:bg-transparent not-has-checked:text-muted-foreground not-has-checked:hover:border-primary/50 not-has-checked:hover:text-foreground';
 
-  protected readonly organizers = toSignal(
-    this.admin.getVerifiedOrganizers(0, 100).pipe(
-      map((page) => page.content),
-      catchError(() => of<OrganizerSummaryDto[]>([])),
-    ),
-    { initialValue: [] as OrganizerSummaryDto[] },
-  );
-  protected readonly organizerSearch = signal('');
-  protected readonly filteredOrganizers = computed(() => {
-    const term = this.organizerSearch().trim().toLowerCase();
-    const list = this.organizers();
-    if (!term) {
-      return list;
-    }
-    return list.filter((o) => o.name.toLowerCase().includes(term));
-  });
-  protected readonly organizerItemToString = (id: string): string =>
-    this.organizers().find((o) => o.id === id)?.name ?? '';
   private readonly organizerAutocomplete = viewChild('organizerAutocomplete', { read: BrnAutocomplete });
-
-  protected openOrganizerDropdown(): void {
-    this.organizerAutocomplete()?.open();
-  }
-
-  protected readonly venueSearch = signal('');
-  protected readonly venueItemToString = (id: string): string =>
-    this.venues().find((v) => v.id === id)?.name ?? '';
   private readonly venueAutocomplete = viewChild('venueAutocomplete', { read: BrnAutocomplete });
-
-  protected openVenueDropdown(): void {
-    this.venueAutocomplete()?.open();
-  }
+  private readonly addressAutocomplete = viewChild(HlmAutocompleteSearch, { read: BrnAutocompleteSearch });
 
   protected readonly cities = toSignal(
     this.citiesService.getCities().pipe(catchError(() => of<CityDto[]>([]))),
@@ -174,114 +128,28 @@ export class CreateEventSeries {
     longitude: [null as number | null],
   });
 
-  private readonly selectedOrganizerId = toSignal(this.form.controls.organizerId.valueChanges, {
-    initialValue: this.form.controls.organizerId.value,
-  });
-  /** Compared by id: the organizers list is loaded once, but this must never re-trigger the contact autofill. */
-  protected readonly selectedOrganizer = computed(
-    () => this.organizers().find((o) => o.id === this.selectedOrganizerId()) ?? null,
-    { equal: (a, b) => a?.id === b?.id },
-  );
+  protected readonly organizer = injectOrganizerPicker(this.form.controls.organizerId);
+  protected readonly address = injectAddressSearch(this.form.controls);
+  protected readonly venue = injectVenuePicker(this.form.controls, this.address.search);
 
-  private readonly selectedVenueId = toSignal(this.form.controls.venueId.valueChanges, {
-    initialValue: this.form.controls.venueId.value,
-  });
-  private readonly selectedCityId = toSignal(this.form.controls.cityId.valueChanges, {
-    initialValue: this.form.controls.cityId.value,
-  });
-  /** Venues of the selected city, filtered server-side by the search term. */
-  protected readonly venues = toSignal(
-    combineLatest([
-      toObservable(this.selectedCityId),
-      toObservable(this.venueSearch).pipe(
-        map((term) => term.trim()),
-        debounceTime(SEARCH_DEBOUNCE_MS),
-        distinctUntilChanged(),
-      ),
-    ]).pipe(
-      switchMap(([cityId, search]) =>
-        cityId === ''
-          ? of<VenuesSummaryDto[]>([])
-          : this.venuesService.getVenues(cityId, search || undefined).pipe(
-              catchError(() => of<VenuesSummaryDto[]>([])),
-            ),
-      ),
-    ),
-    { initialValue: [] as VenuesSummaryDto[] },
-  );
-  /** Compared by id: refetching venues returns fresh objects, which must not re-trigger the autofill. */
-  protected readonly selectedVenue = computed(
-    () => this.venues().find((v) => v.id === this.selectedVenueId()) ?? null,
-    { equal: (a, b) => a?.id === b?.id },
-  );
+  protected openOrganizerDropdown(): void {
+    this.organizerAutocomplete()?.open();
+  }
 
-  /** Picking a venue prefills its location; clearing it leaves whatever is already in the form. */
-  private readonly venueAutofillEffect = effect(() => {
-    const venue = this.selectedVenue();
-    if (!venue) {
-      return;
-    }
-    this.form.controls.address.setValue(venue.address);
-    this.form.controls.latitude.setValue(venue.latitude);
-    this.form.controls.longitude.setValue(venue.longitude);
-    this.addressSearch.set(venue.address);
-  });
-
-  protected readonly addressSearch = signal('');
-  protected readonly addressSearching = signal(false);
-  protected readonly addressSuggestions = toSignal(
-    toObservable(this.addressSearch).pipe(
-      map((term) => term.trim()),
-      debounceTime(SEARCH_DEBOUNCE_MS),
-      distinctUntilChanged(),
-      switchMap((term) => {
-        if (term.length < ADDRESS_SEARCH_MIN_LENGTH) {
-          this.addressSearching.set(false);
-          return of<AddressSuggestion[]>([]);
-        }
-        this.addressSearching.set(true);
-        return this.geocodingService.searchAddress(term).pipe(
-          catchError(() => of<AddressSuggestion[]>([])),
-          tap(() => this.addressSearching.set(false)),
-        );
-      }),
-    ),
-    { initialValue: [] as AddressSuggestion[] },
-  );
-  protected readonly addressItemToString = (suggestion: AddressSuggestion): string => suggestion.label;
-  private readonly addressAutocomplete = viewChild(HlmAutocompleteSearch, { read: BrnAutocompleteSearch });
+  protected openVenueDropdown(): void {
+    this.venueAutocomplete()?.open();
+  }
 
   protected openAddressDropdown(): void {
     this.addressAutocomplete()?.open();
   }
 
-  /** Fills in lat/lng only when the address matches a fetched suggestion; free typing never clears them. */
-  private readonly addressAutofillEffect = effect(() => {
-    if (this.addressSearching()) {
-      return;
-    }
-    const address = this.addressSearch();
-    const suggestion = this.addressSuggestions().find((s) => s.label === address);
-    if (suggestion) {
-      this.form.controls.latitude.setValue(suggestion.latitude);
-      this.form.controls.longitude.setValue(suggestion.longitude);
-    }
-  });
-
   constructor() {
-    // A venue belongs to one city, so changing the city invalidates the selected venue and its search.
-    this.form.controls.cityId.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
-      this.form.controls.venueId.setValue('');
-      this.venueSearch.set('');
-    });
-
     // The organizer's socials prefill the series' links; switchMap drops a stale phone lookup on re-selection.
-    toObservable(this.selectedOrganizer)
+    toObservable(this.organizer.selected)
       .pipe(
         tap((organizer) =>
-          this.form.controls.instagramUrl.setValue(
-            organizer?.instagram ? `https://instagram.com/${organizer.instagram}` : '',
-          ),
+          this.form.controls.instagramUrl.setValue(organizer?.instagram ? instagramUrl(organizer.instagram) : ''),
         ),
         switchMap((organizer) =>
           organizer
@@ -293,10 +161,7 @@ export class CreateEventSeries {
         ),
         takeUntilDestroyed(),
       )
-      .subscribe((phone) => {
-        const digits = phone?.replace(/[^\d+]/g, '');
-        this.form.controls.whatsappUrl.setValue(digits ? `https://wa.me/${digits}` : '');
-      });
+      .subscribe((phone) => this.form.controls.whatsappUrl.setValue(waMeUrl(phone) ?? ''));
 
     this.occurrencesForm.controls.startDate.valueChanges.pipe(takeUntilDestroyed()).subscribe((start) => {
       const endControl = this.occurrencesForm.controls.endDate;
@@ -446,7 +311,11 @@ export class CreateEventSeries {
     this.selectedDanceStyleIds.set(new Set());
     this.selectedRecurrenceDays.set(new Set());
     this.recurrenceDaysTouched.set(false);
-    this.addressSearch.set('');
+    // reset() empties the inputs but not the autocompletes' search terms,
+    // which would keep filtering the next lists.
+    this.organizer.search.set('');
+    this.venue.search.set('');
+    this.address.search.set('');
     this.createdSeries.set(null);
     this.occurrencesForm.reset();
     this.generatedOccurrences.set(null);

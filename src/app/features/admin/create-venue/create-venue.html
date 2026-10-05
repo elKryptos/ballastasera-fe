@@ -40,14 +40,14 @@
 
       <div class="space-y-1">
         <label class="text-sm font-medium">Organizzatore</label>
-        <hlm-autocomplete class="block" formControlName="organizerId" [itemToString]="organizerItemToString"
-          [search]="organizerSearch()" (searchChange)="organizerSearch.set($event)">
+        <hlm-autocomplete class="block" formControlName="organizerId" [itemToString]="organizer.itemToString"
+          [search]="organizer.search()" (searchChange)="organizer.search.set($event)">
           <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Solo se ha un profilo organizzatore"
             class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
               <div hlmAutocompleteList>
-                @for (o of filteredOrganizers(); track o.id) {
+                @for (o of organizer.filtered(); track o.id) {
                 <hlm-autocomplete-item [value]="o.id">{{ o.name }}</hlm-autocomplete-item>
                 }
                 <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
@@ -56,8 +56,8 @@
           </ng-template>
         </hlm-autocomplete>
         <p class="min-h-5 text-sm">
-          @if (selectedOrganizer(); as organizer) {
-          <span class="font-mono text-xs text-green-600">{{ organizer.id }}</span>
+          @if (organizer.selected(); as selected) {
+          <span class="font-mono text-xs text-green-600">{{ selected.id }}</span>
           @if (form.enabled) {
           <button type="button" (click)="clearOrganizer()" class="ml-2 text-xs text-red-600 hover:underline">
             Rimuovi
@@ -92,8 +92,8 @@
 
       <div class="space-y-1">
         <label for="address" class="text-sm font-medium">Indirizzo *</label>
-        <hlm-autocomplete-search class="block" formControlName="address" [search]="addressSearch()"
-          (searchChange)="addressSearch.set($event)" [itemToString]="addressItemToString">
+        <hlm-autocomplete-search class="block" formControlName="address" [search]="address.search()"
+          (searchChange)="address.search.set($event)" [itemToString]="address.itemToString">
           <input id="address" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca un indirizzo..."
             class="w-full rounded border px-3 py-2"
             [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"
@@ -101,10 +101,10 @@
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
               <div hlmAutocompleteList>
-                @if (addressSearching()) {
+                @if (address.searching()) {
                 <hlm-autocomplete-status>Ricerca in corso...</hlm-autocomplete-status>
                 } @else {
-                @for (suggestion of addressSuggestions(); track suggestion.label) {
+                @for (suggestion of address.suggestions(); track suggestion.label) {
                 <hlm-autocomplete-item [value]="suggestion">{{ suggestion.label }}</hlm-autocomplete-item>
                 }
                 <hlm-autocomplete-empty>Nessun indirizzo trovato</hlm-autocomplete-empty>

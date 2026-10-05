@@ -23,9 +23,9 @@
               {{ org.type }}
               @if (org.instagram) {
               ·
-              <a [href]="'https://instagram.com/' + org.instagram" target="_blank" rel="noopener noreferrer"
+              <a [href]="instagramUrl(org.instagram)" target="_blank" rel="noopener noreferrer"
                 (click)="$event.stopPropagation()" class="font-semibold text-rose hover:underline">
-                &#64;{{ org.instagram }}
+                &#64;{{ instagramHandle(org.instagram) }}
               </a>
               }
             </p>

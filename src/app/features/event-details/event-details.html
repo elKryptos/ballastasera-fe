@@ -265,7 +265,8 @@
               <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-lg">
                 <ng-icon name="lucideInstagram" class="size-4.5 text-white" />
               </span>
-              {{ handle }}
+              <!-- The bare handle, even where an older record holds a URL. -->
+              {{ instagramHandle(handle) }}
             </a>
             }
 

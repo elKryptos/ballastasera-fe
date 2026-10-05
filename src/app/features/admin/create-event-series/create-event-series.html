@@ -7,14 +7,14 @@
       <div class="space-y-1">
         <label for="organizer" class="text-sm font-medium">Organizzatore *</label>
         <hlm-autocomplete #organizerAutocomplete class="block" formControlName="organizerId"
-          [itemToString]="organizerItemToString" [search]="organizerSearch()"
-          (searchChange)="organizerSearch.set($event)">
+          [itemToString]="organizer.itemToString" [search]="organizer.search()"
+          (searchChange)="organizer.search.set($event)">
           <input id="organizer" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca organizzatore..."
             class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
               <div hlmAutocompleteList>
-                @for (o of filteredOrganizers(); track o.id) {
+                @for (o of organizer.filtered(); track o.id) {
                 <hlm-autocomplete-item [value]="o.id">{{ o.name }}</hlm-autocomplete-item>
                 }
                 <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
@@ -25,9 +25,9 @@
         <p class="min-h-5 text-sm">
           @if (form.controls.organizerId.invalid && form.controls.organizerId.touched) {
           <span class="text-red-600">Seleziona un organizzatore.</span>
-          } @else if (selectedOrganizer(); as organizer) {
+          } @else if (organizer.selected(); as selected) {
           <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{
-            organizer.id }}</span>
+            selected.id }}</span>
           }
         </p>
       </div>
@@ -58,13 +58,13 @@
       <div class="space-y-1 md:col-span-2">
         <label for="venue" class="text-sm font-medium">Locale</label>
         <hlm-autocomplete #venueAutocomplete class="block" formControlName="venueId"
-          [itemToString]="venueItemToString" [search]="venueSearch()" (searchChange)="venueSearch.set($event)">
+          [itemToString]="venue.itemToString" [search]="venue.search()" (searchChange)="venue.search.set($event)">
           <input id="venue" brnAutocompleteInput brnAutocompleteAnchor placeholder="Seleziona prima una città, poi cerca il locale..."
             class="w-full rounded border px-3 py-2" (click)="openVenueDropdown()" />
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
               <div hlmAutocompleteList>
-                @for (v of venues(); track v.id) {
+                @for (v of venue.venues(); track v.id) {
                 <hlm-autocomplete-item [value]="v.id">{{ v.name }}</hlm-autocomplete-item>
                 }
                 <hlm-autocomplete-empty>Nessun locale trovato</hlm-autocomplete-empty>
@@ -73,9 +73,9 @@
           </ng-template>
         </hlm-autocomplete>
         <p class="min-h-5 text-sm">
-          @if (selectedVenue(); as venue) {
+          @if (venue.selected(); as selected) {
           <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{
-            venue.id }}</span>
+            selected.id }}</span>
           }
         </p>
       </div>
@@ -170,8 +170,8 @@
 
       <div class="space-y-1 mb-4 relative md:col-span-2">
         <label for="address" class="text-sm font-medium">Indirizzo *</label>
-        <hlm-autocomplete-search class="block" formControlName="address" [search]="addressSearch()"
-          (searchChange)="addressSearch.set($event)" [itemToString]="addressItemToString">
+        <hlm-autocomplete-search class="block" formControlName="address" [search]="address.search()"
+          (searchChange)="address.search.set($event)" [itemToString]="address.itemToString">
           <input id="address" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca un indirizzo..."
             class="w-full rounded border px-3 py-2"
             [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"
@@ -179,10 +179,10 @@
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
               <div hlmAutocompleteList>
-                @if (addressSearching()) {
+                @if (address.searching()) {
                 <hlm-autocomplete-status>Ricerca in corso...</hlm-autocomplete-status>
                 } @else {
-                @for (suggestion of addressSuggestions(); track suggestion.label) {
+                @for (suggestion of address.suggestions(); track suggestion.label) {
                 <hlm-autocomplete-item [value]="suggestion">{{ suggestion.label }}</hlm-autocomplete-item>
                 }
                 <hlm-autocomplete-empty>Nessun indirizzo trovato</hlm-autocomplete-empty>

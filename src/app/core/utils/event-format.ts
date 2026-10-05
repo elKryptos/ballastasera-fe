@@ -152,6 +152,26 @@ export function googleMapsUrl(address: string, placeName: string | null): string
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 }
 
-export function instagramUrl(handle: string): string {
-  return `https://www.instagram.com/${handle}/`;
+/** The bare handle ("zoo_club_disco") from the handle itself, "@handle" or a
+ * pasted profile URL ("https://www.instagram.com/zoo_club_disco/?hl=it").
+ * Handles are what gets stored; older records may still hold a URL. */
+export function instagramHandle(value: string): string {
+  return value
+    .trim()
+    .replace(/^(https?:\/\/)?(www\.|m\.)?instagram\.com\//i, '')
+    .replace(/^@/, '')
+    .replace(/[/?#].*$/, '');
+}
+
+/** The profile link for a handle — or for a URL stored by mistake, which
+ * would otherwise come out doubled (instagram.com/https://instagram.com/...). */
+export function instagramUrl(handleOrUrl: string): string {
+  return `https://www.instagram.com/${instagramHandle(handleOrUrl)}/`;
+}
+
+/** A WhatsApp chat link. wa.me wants the bare international number: digits
+ * only, no "+", spaces or dashes. Null when there's no number to link. */
+export function waMeUrl(phone: string | null | undefined): string | null {
+  const digits = phone?.replace(/\D/g, '');
+  return digits ? `https://wa.me/${digits}` : null;
 }

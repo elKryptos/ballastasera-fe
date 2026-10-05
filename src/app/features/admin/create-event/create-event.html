@@ -4,15 +4,16 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
       <div class="space-y-1">
-        <label class="text-sm font-medium">Organizzatore *</label>
-        <hlm-autocomplete class="block" formControlName="organizerId" [itemToString]="organizerItemToString"
-          [search]="organizerSearch()" (searchChange)="organizerSearch.set($event)">
-          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca organizzatore..."
+        <label for="organizer" class="text-sm font-medium">Organizzatore *</label>
+        <hlm-autocomplete #organizerAutocomplete class="block" formControlName="organizerId"
+          [itemToString]="organizer.itemToString" [search]="organizer.search()"
+          (searchChange)="organizer.search.set($event)">
+          <input id="organizer" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca organizzatore..."
             class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
               <div hlmAutocompleteList>
-                @for (o of filteredOrganizers(); track o.id) {
+                @for (o of organizer.filtered(); track o.id) {
                 <hlm-autocomplete-item [value]="o.id">{{ o.name }}</hlm-autocomplete-item>
                 }
                 <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
@@ -23,17 +24,17 @@
         <p class="min-h-5 text-sm">
           @if (form.controls.organizerId.invalid && form.controls.organizerId.touched) {
           <span class="text-red-600">Seleziona un organizzatore.</span>
-          } @else if (selectedOrganizer(); as organizer) {
+          } @else if (organizer.selected(); as selected) {
           <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{
-            organizer.id }}</span>
+            selected.id }}</span>
           }
         </p>
       </div>
 
       <div class="space-y-1">
-        <label class="text-sm font-medium">Tipo *</label>
+        <label for="eventType" class="text-sm font-medium">Tipo *</label>
         <hlm-select class="block" formControlName="eventType">
-          <button type="button" brnSelectTrigger
+          <button id="eventType" type="button" brnSelectTrigger
             class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
             <span brnSelectValue placeholder="Che tipo di evento è?"></span>
             <span class="text-muted-foreground">▾</span>
@@ -49,6 +50,57 @@
         <p class="min-h-5 text-sm">
           @if (form.controls.eventType.invalid && form.controls.eventType.touched) {
           <span class="text-red-600">Seleziona un tipo di evento.</span>
+          }
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label for="city" class="text-sm font-medium">Città *</label>
+        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
+          <button id="city" type="button" brnSelectTrigger
+            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+            <span brnSelectValue placeholder="Seleziona città"></span>
+            <span class="text-muted-foreground">▾</span>
+          </button>
+          <ng-template hlmSelectPortal>
+            <hlm-select-content>
+              @for (c of cities(); track c.id) {
+              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
+              }
+            </hlm-select-content>
+          </ng-template>
+        </hlm-select>
+        <p class="min-h-5 text-sm">
+          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
+          <span class="text-red-600">Seleziona una città.</span>
+          }
+        </p>
+      </div>
+
+      <!-- Picking a venue fills in its address and coordinates, and its Instagram
+          and WhatsApp (the organizer's where it has none). -->
+      <div class="space-y-1">
+        <label for="venue" class="text-sm font-medium">Locale</label>
+        <hlm-autocomplete #venueAutocomplete class="block" formControlName="venueId"
+          [itemToString]="venue.itemToString" [search]="venue.search()" (searchChange)="venue.search.set($event)">
+          <input id="venue" brnAutocompleteInput brnAutocompleteAnchor
+            placeholder="Seleziona prima una città, poi cerca il locale..."
+            class="w-full rounded border px-3 py-2" (click)="openVenueDropdown()" />
+          <ng-template hlmAutocompletePortal>
+            <hlm-autocomplete-content>
+              <div hlmAutocompleteList>
+                @for (v of venue.venues(); track v.id) {
+                <hlm-autocomplete-item [value]="v.id">{{ v.name }}</hlm-autocomplete-item>
+                }
+                <hlm-autocomplete-empty>Nessun locale trovato</hlm-autocomplete-empty>
+              </div>
+            </hlm-autocomplete-content>
+          </ng-template>
+        </hlm-autocomplete>
+        <p class="min-h-5 text-sm">
+          @if (venue.selected(); as selected) {
+          <span class="font-mono text-xs text-yellow-400">UUID:</span><span class="font-mono text-xs text-green-600">{{
+            selected.id }}</span>
           }
         </p>
       </div>
@@ -92,10 +144,14 @@
 
       <div class="space-y-1 mb-4 relative">
         <label for="endAt" class="text-sm font-medium">Fine *</label>
+        <!-- min: the picker starts from the start; endAfterStart checks what's typed. -->
         <input id="endAt" type="datetime-local" formControlName="endAt" class="w-full rounded border px-3 py-2"
-          [attr.aria-invalid]="form.controls.endAt.invalid && form.controls.endAt.touched" />
+          [min]="form.controls.startAt.value"
+          [attr.aria-invalid]="form.controls.endAt.touched && (form.controls.endAt.invalid || form.hasError('endBeforeStart'))" />
         @if (form.controls.endAt.invalid && form.controls.endAt.touched) {
         <p class="absolute top-full left-0 text-sm text-red-600">Data di fine obbligatoria.</p>
+        } @else if (form.hasError('endBeforeStart') && form.controls.endAt.touched) {
+        <p class="absolute top-full left-0 text-sm text-red-600">La fine deve essere dopo l'inizio.</p>
         }
       </div>
 
@@ -127,33 +183,10 @@
         }
       </div>
 
-      <div class="space-y-1">
-        <label class="text-sm font-medium">Città *</label>
-        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
-          <button type="button" brnSelectTrigger
-            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
-            <span brnSelectValue placeholder="Seleziona città"></span>
-            <span class="text-muted-foreground">▾</span>
-          </button>
-          <ng-template hlmSelectPortal>
-            <hlm-select-content>
-              @for (c of cities(); track c.id) {
-              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
-              }
-            </hlm-select-content>
-          </ng-template>
-        </hlm-select>
-        <p class="min-h-5 text-sm">
-          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
-          <span class="text-red-600">Seleziona una città.</span>
-          }
-        </p>
-      </div>
-
-      <div class="space-y-1 mb-4 relative">
+      <div class="space-y-1 mb-4 relative md:col-span-2">
         <label for="address" class="text-sm font-medium">Indirizzo *</label>
-        <hlm-autocomplete-search class="block" formControlName="address" [search]="addressSearch()"
-          (searchChange)="addressSearch.set($event)" [itemToString]="addressItemToString">
+        <hlm-autocomplete-search class="block" formControlName="address" [search]="address.search()"
+          (searchChange)="address.search.set($event)" [itemToString]="address.itemToString">
           <input id="address" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca un indirizzo..."
             class="w-full rounded border px-3 py-2"
             [attr.aria-invalid]="form.controls.address.invalid && form.controls.address.touched"
@@ -161,10 +194,10 @@
           <ng-template hlmAutocompletePortal>
             <hlm-autocomplete-content>
               <div hlmAutocompleteList>
-                @if (addressSearching()) {
+                @if (address.searching()) {
                 <hlm-autocomplete-status>Ricerca in corso...</hlm-autocomplete-status>
                 } @else {
-                @for (suggestion of addressSuggestions(); track suggestion.label) {
+                @for (suggestion of address.suggestions(); track suggestion.label) {
                 <hlm-autocomplete-item [value]="suggestion">{{ suggestion.label }}</hlm-autocomplete-item>
                 }
                 <hlm-autocomplete-empty>Nessun indirizzo trovato</hlm-autocomplete-empty>

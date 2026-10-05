@@ -6,6 +6,7 @@ import { BrnAlertDialogContent } from '@spartan-ng/brain/alert-dialog';
 import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
+import { instagramHandle, instagramUrl } from '../../../core/utils/event-format';
 
 @Component({
   selector: 'app-verified-organizer-list',
@@ -22,6 +23,9 @@ export class VerifiedOrganizerList {
   protected readonly page = signal<number>(0);
   protected readonly totalPages = signal<number>(0);
   protected readonly deletingId = signal<string | null>(null);
+  /** Older organizers may hold a profile URL instead of the handle. */
+  protected readonly instagramUrl = instagramUrl;
+  protected readonly instagramHandle = instagramHandle;
   
   constructor() {
     this.load();

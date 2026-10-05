@@ -1,11 +1,11 @@
-import { Component, computed, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { catchError, debounceTime, distinctUntilChanged, map, of, Subscription, switchMap, tap, timer } from 'rxjs';
+import { catchError, combineLatest, map, of, switchMap, timer } from 'rxjs';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
-import { HlmAutocomplete, HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
+import { HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
 import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput, BrnAutocompleteSearch } from '@spartan-ng/brain/autocomplete';
 import { AttachmentState } from '@spartan-ng/helm/attachment';
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
@@ -15,18 +15,29 @@ import { AdminService } from '../../../core/services/admin.service';
 import { EventsService } from '../../../core/services/events.service';
 import { CitiesService } from '../../../core/services/cities.service';
 import { DanceStylesService } from '../../../core/services/dance-styles.service';
-import { GeocodingService } from '../../../core/services/geocoding.service';
+import { VenuesService } from '../../../core/services/venues.service';
 import { EventCreateDto, EventDetailDto, EventType } from '../../../core/models/event.model';
-import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
-import { AddressSuggestion } from '../../../core/models/geocoding.model';
+import { instagramUrl as toInstagramUrl, waMeUrl } from '../../../core/utils/event-format';
+import { toggled } from '../../../core/utils/sets';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
+import { injectAddressSearch, injectOrganizerPicker, injectVenuePicker } from '../admin-pickers';
 
-/** Photon needs at least this many characters before a search is worth firing. */
-const ADDRESS_SEARCH_MIN_LENGTH = 3;
-/** How long to wait after the last keystroke before querying Photon. */
-const ADDRESS_SEARCH_DEBOUNCE_MS = 300;
+/** The event's links, as the form takes them; null where the source has none. */
+interface Contacts {
+  instagramUrl: string | null;
+  whatsappUrl: string | null;
+}
+const NO_CONTACTS: Contacts = { instagramUrl: null, whatsappUrl: null };
+
+/** The end must come after the start. datetime-local values share one
+ * format (yyyy-MM-ddTHH:mm), so comparing them as strings keeps their order. */
+const endAfterStart = (group: AbstractControl): ValidationErrors | null => {
+  const start = group.get('startAt')?.value;
+  const end = group.get('endAt')?.value;
+  return start && end && end <= start ? { endBeforeStart: true } : null;
+};
 
 /** Minimum time the flyer widget stays in the "processing" state, so the backend's conversion work is visible even when the response is fast. */
 const FLYER_PROCESSING_MIN_MS = 5000;
@@ -40,7 +51,7 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
 
 @Component({
   selector: 'app-create-event',
-  imports: [ 
+  imports: [
     ReactiveFormsModule, HlmSelectImports, BrnSelectTrigger, BrnSelectValue, HlmAutocompleteImports,
     BrnAutocompleteInput, BrnAutocompleteAnchor, HlmSpinnerImports, NgIcon, SidebarPushDirective
   ],
@@ -48,38 +59,30 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
   templateUrl: './create-event.html',
   styleUrl: './create-event.css',
 })
-export class CreateEvent implements OnInit {
+export class CreateEvent {
   private readonly fb = inject(FormBuilder);
   private readonly admin = inject(AdminService);
   private readonly eventsService = inject(EventsService);
   private readonly citiesService = inject(CitiesService);
   private readonly danceStylesService = inject(DanceStylesService);
-  private readonly geocodingService = inject(GeocodingService);
+  private readonly venuesService = inject(VenuesService);
   private readonly router = inject(Router);
 
   readonly eventTypes = EVENT_TYPES;
-  protected readonly organizers = signal<OrganizerSummaryDto[]>([]);
-  protected readonly organizerSearch = signal('');
-  protected readonly filteredOrganizers = computed(() => {
-    const term = this.organizerSearch().trim().toLowerCase();
-    const list = this.organizers();
-    if (!term) {
-      return list;
-    }
-    return list.filter((o) => o.name.toLowerCase().includes(term));
-  });
-  protected readonly organizerItemToString = (id: string): string =>
-    this.organizers().find((o) => o.id === id)?.name ?? '';
-  private readonly organizerAutocomplete = viewChild(HlmAutocomplete, { read: BrnAutocomplete });
+  private readonly organizerAutocomplete = viewChild('organizerAutocomplete', { read: BrnAutocomplete });
+  private readonly venueAutocomplete = viewChild('venueAutocomplete', { read: BrnAutocomplete });
+  private readonly addressAutocomplete = viewChild(HlmAutocompleteSearch, { read: BrnAutocompleteSearch });
 
-  protected openOrganizerDropdown(): void {
-    this.organizerAutocomplete()?.open();
-  }
-
-  protected readonly cities = signal<CityDto[]>([]);
+  protected readonly cities = toSignal(
+    this.citiesService.getCities().pipe(catchError(() => of<CityDto[]>([]))),
+    { initialValue: [] as CityDto[] },
+  );
   protected readonly cityItemToString = (id: number | ''): string =>
     this.cities().find((c) => c.id === id)?.name ?? '';
-  protected readonly danceStyles = signal<DanceStyleDto[]>([]);
+  protected readonly danceStyles = toSignal(
+    this.danceStylesService.getDanceStyles().pipe(catchError(() => of<DanceStyleDto[]>([]))),
+    { initialValue: [] as DanceStyleDto[] },
+  );
   protected readonly selectedDanceStyleIds = signal<Set<number>>(new Set());
 
   protected readonly submitting = signal(false);
@@ -100,6 +103,7 @@ export class CreateEvent implements OnInit {
 
   protected readonly form = this.fb.nonNullable.group({
     organizerId: ['', [Validators.required]],
+    venueId: [''],
     cityId: ['' as number | '', [Validators.required]],
     title: ['', [Validators.required, Validators.maxLength(150)]],
     eventType: ['' as EventType | '', [Validators.required]],
@@ -114,91 +118,68 @@ export class CreateEvent implements OnInit {
     address: ['', [Validators.required]],
     latitude: [null as number | null],
     longitude: [null as number | null],
-  });
+  }, { validators: endAfterStart });
 
-  private readonly selectedOrganizerId = toSignal(this.form.controls.organizerId.valueChanges, {
-    initialValue: this.form.controls.organizerId.value,
-  });
-  protected readonly selectedOrganizer = computed(
-    () => this.organizers().find((o) => o.id === this.selectedOrganizerId()) ?? null,
-  );
+  protected readonly organizer = injectOrganizerPicker(this.form.controls.organizerId);
+  protected readonly address = injectAddressSearch(this.form.controls);
+  protected readonly venue = injectVenuePicker(this.form.controls, this.address.search);
 
-  private organizerPhoneSubscription?: Subscription;
+  protected openOrganizerDropdown(): void {
+    this.organizerAutocomplete()?.open();
+  }
 
-  private readonly organizerAutofillEffect = effect(() => {
-    const organizer = this.selectedOrganizer();
-    this.organizerPhoneSubscription?.unsubscribe();
-
-    this.form.controls.instagramUrl.setValue(
-      organizer?.instagram ? `https://instagram.com/${organizer.instagram}` : '',
-    );
-
-    if (!organizer) {
-      this.form.controls.whatsappUrl.setValue('');
-      return;
-    }
-
-    this.organizerPhoneSubscription = this.admin.getOrganizer(organizer.id).subscribe((detail) => {
-      const digits = detail.phone?.replace(/[^\d+]/g, '');
-      this.form.controls.whatsappUrl.setValue(digits ? `https://wa.me/${digits}` : '');
-    });
-  });
-
-  protected readonly addressSearch = signal('');
-  protected readonly addressSearching = signal(false);
-  protected readonly addressSuggestions = toSignal(
-    toObservable(this.addressSearch).pipe(
-      map((term) => term.trim()),
-      debounceTime(ADDRESS_SEARCH_DEBOUNCE_MS),
-      distinctUntilChanged(),
-      switchMap((term) => {
-        if (term.length < ADDRESS_SEARCH_MIN_LENGTH) {
-          this.addressSearching.set(false);
-          return of<AddressSuggestion[]>([]);
-        }
-        this.addressSearching.set(true);
-        return this.geocodingService.searchAddress(term).pipe(
-          catchError(() => of<AddressSuggestion[]>([])),
-          tap(() => this.addressSearching.set(false)),
-        );
-      }),
-    ),
-    { initialValue: [] as AddressSuggestion[] },
-  );
-  protected readonly addressItemToString = (suggestion: AddressSuggestion): string => suggestion.label;
-  private readonly addressAutocomplete = viewChild(HlmAutocompleteSearch, { read: BrnAutocompleteSearch });
+  protected openVenueDropdown(): void {
+    this.venueAutocomplete()?.open();
+  }
 
   protected openAddressDropdown(): void {
     this.addressAutocomplete()?.open();
   }
 
-  /** Fills in lat/lng only when the address matches a fetched suggestion; free typing never clears them. */
-  private readonly addressAutofillEffect = effect(() => {
-    if (this.addressSearching()) {
-      return;
-    }
-    const address = this.addressSearch();
-    const suggestion = this.addressSuggestions().find((s) => s.label === address);
-    if (suggestion) {
-      this.form.controls.latitude.setValue(suggestion.latitude);
-      this.form.controls.longitude.setValue(suggestion.longitude);
-    }
-  });
+  constructor() {
+    // The event's links: field by field, the venue's when it has one, the organizer's otherwise.
+    // switchMap drops a stale lookup when the organizer or the venue changes again.
+    const organizerContacts$ = toObservable(this.organizer.selected).pipe(
+      switchMap((organizer) => {
+        if (!organizer) {
+          return of(NO_CONTACTS);
+        }
+        // The summary has the Instagram handle; the phone needs the detail.
+        const instagramUrl = organizer.instagram ? toInstagramUrl(organizer.instagram) : null;
+        return this.admin.getOrganizer(organizer.id).pipe(
+          map((detail): Contacts => ({ instagramUrl, whatsappUrl: waMeUrl(detail.phone) })),
+          catchError(() => of<Contacts>({ instagramUrl, whatsappUrl: null })),
+        );
+      }),
+    );
+    // By the form's venueId, not venue.selected: that one goes null when a new search leaves
+    // the venue out of the list, while the venue still stays picked (and gets saved).
+    const venueContacts$ = toObservable(this.venue.id).pipe(
+      switchMap((venueId) =>
+        venueId
+          ? this.venuesService.getVenueDetail(venueId).pipe(
+              // Empty counts as none, so the organizer's still fills in.
+              map((venue): Contacts => ({
+                instagramUrl: venue.instagram ? toInstagramUrl(venue.instagram) : null,
+                whatsappUrl: waMeUrl(venue.whatsapp),
+              })),
+              catchError(() => of(NO_CONTACTS)),
+            )
+          : of(NO_CONTACTS),
+      ),
+    );
+    combineLatest([organizerContacts$, venueContacts$])
+      .pipe(takeUntilDestroyed())
+      .subscribe(([organizer, venue]) => {
+        this.form.controls.instagramUrl.setValue(venue.instagramUrl ?? organizer.instagramUrl ?? '');
+        this.form.controls.whatsappUrl.setValue(venue.whatsappUrl ?? organizer.whatsappUrl ?? '');
+      });
 
-  ngOnInit(): void {
-    this.admin.getVerifiedOrganizers(0, 100).subscribe((page) => this.organizers.set(page.content));
-    this.citiesService.getCities().subscribe((cities) => this.cities.set(cities));
-    this.danceStylesService.getDanceStyles().subscribe((styles) => this.danceStyles.set(styles));
+    inject(DestroyRef).onDestroy(() => this.clearStagedFlyer());
   }
 
   protected toggleDanceStyle(id: number): void {
-    const current = new Set(this.selectedDanceStyleIds());
-    if (current.has(id)) {
-      current.delete(id);
-    } else {
-      current.add(id);
-    }
-    this.selectedDanceStyleIds.set(current);
+    this.selectedDanceStyleIds.update((current) => toggled(current, id));
   }
 
   protected submit(): void {
@@ -213,7 +194,8 @@ export class CreateEvent implements OnInit {
     const value = this.form.getRawValue();
     const body: EventCreateDto = {
       organizerId: value.organizerId,
-      venueId: null,
+      // Clearing the venue's autocomplete writes null, despite the nonNullable form.
+      venueId: value.venueId || null,
       seriesId: null,
       cityId: value.cityId as number,
       title: value.title,
@@ -250,7 +232,11 @@ export class CreateEvent implements OnInit {
     this.form.enable();
     this.form.reset({ eventType: '', free: true, currency: 'EUR' });
     this.selectedDanceStyleIds.set(new Set());
-    this.addressSearch.set('');
+    // reset() empties the inputs but not the autocompletes' search terms,
+    // which would keep filtering the next lists.
+    this.organizer.search.set('');
+    this.venue.search.set('');
+    this.address.search.set('');
     this.createdEvent.set(null);
     this.flyerState.set('idle');
     this.flyerError.set(null);

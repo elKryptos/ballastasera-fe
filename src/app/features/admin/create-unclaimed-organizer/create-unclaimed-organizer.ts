@@ -1,9 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
-import { OrganizerCreateDto, OrganizerDetailDto, OrganizerType } from '../../../core/models/organizer.model';
+import { OrganizerCreateDto, OrganizerType } from '../../../core/models/organizer.model';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { Router } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
+import { instagramHandle } from '../../../core/utils/event-format';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 
 const ORGANIZER_TYPES: { value: OrganizerType; label: string }[] = [
@@ -52,7 +53,11 @@ export class CreateUnclaimedOrganizer {
     this.errorMessage.set(null);
 
     const value = this.form.getRawValue();
-    this.admin.createUnclaimedOrganizer({ ...value, type: value.type as OrganizerType }).subscribe({
+    this.admin.createUnclaimedOrganizer({
+      ...value,
+      type: value.type as OrganizerType,
+      instagram: instagramHandle(value.instagram),
+    }).subscribe({
       next: (organizer) => {
         this.submitting.set(false);
         this.createdOrganizer.set(organizer);

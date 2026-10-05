@@ -1,9 +1,9 @@
-import { Component, computed, effect, inject, OnInit, signal, viewChild } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, inject, signal, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { catchError, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+import { catchError, of } from 'rxjs';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocomplete, HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
@@ -11,22 +11,20 @@ import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput, BrnAutoco
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { AdminService } from '../../../core/services/admin.service';
 import { CitiesService } from '../../../core/services/cities.service';
-import { GeocodingService } from '../../../core/services/geocoding.service';
 import { VenueCreateDto, VenueDetailDto, VenueType } from '../../../core/models/venue.model';
-import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
 import { CityDto } from '../../../core/models/city.model';
-import { AddressSuggestion } from '../../../core/models/geocoding.model';
+import { instagramHandle } from '../../../core/utils/event-format';
+import { injectAddressSearch, injectOrganizerPicker } from '../admin-pickers';
 
-/** Photon needs at least this many characters before a search is worth firing. */
-const ADDRESS_SEARCH_MIN_LENGTH = 3;
-/** How long to wait after the last keystroke before querying Photon. */
+/** Quicker than the other forms' Photon search (300 ms). */
 const ADDRESS_SEARCH_DEBOUNCE_MS = 100;
 
 // Contact patterns mirror the @URL/@Pattern on VenueCreateDto in the backend.
 const WEBSITE_PATTERN = /^https?:\/\/\S+$/;
 const WHATSAPP_PATTERN = /^\+?[0-9]{6,15}$/;
 const FACEBOOK_PATTERN = /^https:\/\/(www\.|m\.)?facebook\.com\/.+/;
-const INSTAGRAM_PATTERN = /^https:\/\/(www\.)?instagram\.com\/.+/;
+/** Instagram is stored as the bare handle, like organizers' and users'. */
+const INSTAGRAM_HANDLE_PATTERN = /^[A-Za-z0-9._]{1,30}$/;
 const YOUTUBE_PATTERN = /^https:\/\/(www\.)?youtube\.com\/.+/;
 const TIKTOK_PATTERN = /^https:\/\/(www\.)?tiktok\.com\/@.+/;
 
@@ -38,6 +36,12 @@ const whatsappValidator: ValidatorFn = (control) => {
   return !phone || WHATSAPP_PATTERN.test(phone) ? null : { whatsapp: true };
 };
 
+/** The handle, "@handle" or a pasted profile URL: what's checked (and saved) is the handle. */
+const instagramValidator: ValidatorFn = (control) => {
+  const handle = instagramHandle(control.value ?? '');
+  return !handle || INSTAGRAM_HANDLE_PATTERN.test(handle) ? null : { instagram: true };
+};
+
 /** Optional text fields: empty (or only spaces) goes to the backend as null. */
 const optional = (value: string): string | null => value.trim() || null;
 
@@ -47,7 +51,7 @@ type ContactControl = 'website' | 'whatsapp' | 'email' | 'instagram' | 'facebook
 const CONTACT_FIELDS: {
   name: ContactControl;
   label: string;
-  type: 'url' | 'tel' | 'email';
+  type: 'url' | 'tel' | 'email' | 'text';
   placeholder: string;
   error: string;
   /** Spans both columns from md up. */
@@ -72,9 +76,9 @@ const CONTACT_FIELDS: {
   {
     name: 'instagram',
     label: 'Instagram',
-    type: 'url',
-    placeholder: 'https://instagram.com/...',
-    error: 'Deve essere un URL https://instagram.com/... (max 100 caratteri).',
+    type: 'text',
+    placeholder: 'nome_account',
+    error: 'Solo il nome dell\'account: lettere, numeri, punti e _ (max 30).',
   },
   {
     name: 'facebook',
@@ -115,26 +119,15 @@ const VENUE_TYPES: { value: VenueType; label: string }[] = [
   templateUrl: './create-venue.html',
   styleUrl: './create-venue.css',
 })
-export class CreateVenue implements OnInit {
+export class CreateVenue {
   private readonly fb = inject(FormBuilder);
   private readonly adminService = inject(AdminService);
   private readonly citiesService = inject(CitiesService);
-  private readonly geocodingService = inject(GeocodingService);
   private readonly router = inject(Router);
 
   readonly venueTypes = VENUE_TYPES;
   protected readonly contactFields = CONTACT_FIELDS;
 
-  // Organizer is optional: only venues with an organizer profile of their own get one.
-  protected readonly organizers = signal<OrganizerSummaryDto[]>([]);
-  protected readonly organizerSearch = signal('');
-  protected readonly filteredOrganizers = computed(() => {
-    const term = this.organizerSearch().trim().toLowerCase();
-    const list = this.organizers();
-    return term ? list.filter((o) => o.name.toLowerCase().includes(term)) : list;
-  });
-  protected readonly organizerItemToString = (id: string): string =>
-    this.organizers().find((o) => o.id === id)?.name ?? '';
   private readonly organizerAutocomplete = viewChild(HlmAutocomplete, { read: BrnAutocomplete });
 
   protected openOrganizerDropdown(): void {
@@ -143,10 +136,13 @@ export class CreateVenue implements OnInit {
 
   protected clearOrganizer(): void {
     this.form.controls.organizerId.setValue('');
-    this.organizerSearch.set('');
+    this.organizer.search.set('');
   }
 
-  protected readonly cities = signal<CityDto[]>([]);
+  protected readonly cities = toSignal(
+    this.citiesService.getCities().pipe(catchError(() => of<CityDto[]>([]))),
+    { initialValue: [] as CityDto[] },
+  );
   protected readonly cityItemToString = (id: number | ''): string =>
     this.cities().find((c) => c.id === id)?.name ?? '';
 
@@ -170,62 +166,18 @@ export class CreateVenue implements OnInit {
     whatsapp: ['', [whatsappValidator]],
     email: ['', [Validators.email, Validators.maxLength(100)]],
     facebook: ['', [Validators.pattern(FACEBOOK_PATTERN), Validators.maxLength(100)]],
-    instagram: ['', [Validators.pattern(INSTAGRAM_PATTERN), Validators.maxLength(100)]],
+    instagram: ['', [instagramValidator, Validators.maxLength(100)]],
     youtube: ['', [Validators.pattern(YOUTUBE_PATTERN), Validators.maxLength(100)]],
     tiktok: ['', [Validators.pattern(TIKTOK_PATTERN), Validators.maxLength(100)]],
   });
 
-  private readonly selectedOrganizerId = toSignal(this.form.controls.organizerId.valueChanges, {
-    initialValue: this.form.controls.organizerId.value,
-  });
-  protected readonly selectedOrganizer = computed(
-    () => this.organizers().find((o) => o.id === this.selectedOrganizerId()) ?? null,
-  );
-
-  protected readonly addressSearch = signal('');
-  protected readonly addressSearching = signal(false);
-  protected readonly addressSuggestions = toSignal(
-    toObservable(this.addressSearch).pipe(
-      map((term) => term.trim()),
-      debounceTime(ADDRESS_SEARCH_DEBOUNCE_MS),
-      distinctUntilChanged(),
-      switchMap((term) => {
-        if (term.length < ADDRESS_SEARCH_MIN_LENGTH) {
-          this.addressSearching.set(false);
-          return of<AddressSuggestion[]>([]);
-        }
-        this.addressSearching.set(true);
-        return this.geocodingService.searchAddress(term).pipe(
-          catchError(() => of<AddressSuggestion[]>([])),
-          tap(() => this.addressSearching.set(false)),
-        );
-      }),
-    ),
-    { initialValue: [] as AddressSuggestion[] },
-  );
-  protected readonly addressItemToString = (suggestion: AddressSuggestion): string => suggestion.label;
+  // Organizer is optional: only venues with an organizer profile of their own get one.
+  protected readonly organizer = injectOrganizerPicker(this.form.controls.organizerId);
+  protected readonly address = injectAddressSearch(this.form.controls, ADDRESS_SEARCH_DEBOUNCE_MS);
   private readonly addressAutocomplete = viewChild(HlmAutocompleteSearch, { read: BrnAutocompleteSearch });
 
   protected openAddressDropdown(): void {
     this.addressAutocomplete()?.open();
-  }
-
-  /** Fills in lat/lng only when the address matches a fetched suggestion; free typing never clears them. */
-  private readonly addressAutofillEffect = effect(() => {
-    if (this.addressSearching()) {
-      return;
-    }
-    const address = this.addressSearch();
-    const suggestion = this.addressSuggestions().find((s) => s.label === address);
-    if (suggestion) {
-      this.form.controls.latitude.setValue(suggestion.latitude);
-      this.form.controls.longitude.setValue(suggestion.longitude);
-    }
-  });
-
-  ngOnInit(): void {
-    this.adminService.getVerifiedOrganizers(0, 100).subscribe((page) => this.organizers.set(page.content));
-    this.citiesService.getCities().subscribe((cities) => this.cities.set(cities));
   }
 
   protected submit(): void {
@@ -251,7 +203,7 @@ export class CreateVenue implements OnInit {
       whatsapp: stripPhone(value.whatsapp) || null,
       email: optional(value.email),
       facebook: optional(value.facebook),
-      instagram: optional(value.instagram),
+      instagram: instagramHandle(value.instagram) || null,
       youtube: optional(value.youtube),
       tiktok: optional(value.tiktok),
     };
@@ -280,8 +232,8 @@ export class CreateVenue implements OnInit {
   protected createAnother(): void {
     this.form.enable();
     this.form.reset();
-    this.organizerSearch.set('');
-    this.addressSearch.set('');
+    this.organizer.search.set('');
+    this.address.search.set('');
     this.createdVenue.set(null);
   }
 

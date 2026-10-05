@@ -36,6 +36,7 @@ import {
   formatPrice,
   formatTimeRange,
   googleMapsUrl,
+  instagramHandle,
   instagramUrl,
   isLiveAt,
   minutesToStart,
@@ -138,6 +139,7 @@ export class EventDetails {
   protected readonly addressSecondary = addressSecondary;
   protected readonly googleMapsUrl = googleMapsUrl;
   protected readonly instagramUrl = instagramUrl;
+  protected readonly instagramHandle = instagramHandle;
   protected readonly whatsappPath = WHATSAPP_PATH;
 
   /** Only the id, so the effect below doesn't refetch on every count change. */

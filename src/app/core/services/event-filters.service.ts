@@ -1,6 +1,7 @@
 import { Service, computed, signal } from '@angular/core';
 import { EventType } from '../models/event.model';
 import { DateRange, EventFilterState } from '../utils/event-filters';
+import { toggled } from '../utils/sets';
 
 /**
  * What the visitor is looking for — day, styles, kind of night, price —
@@ -40,10 +41,4 @@ export class EventFiltersService {
     this.types.set(new Set());
     this.freeOnly.set(false);
   }
-}
-
-function toggled<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {
-  const next = new Set(set);
-  if (!next.delete(value)) next.add(value);
-  return next;
 }

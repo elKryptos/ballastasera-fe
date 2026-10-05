@@ -7,10 +7,12 @@ export interface GeoPoint {
 }
 
 const EARTH_RADIUS_KM = 6371;
+const KM_PER_DEGREE = (Math.PI * EARTH_RADIUS_KM) / 180;
+
+const toRad = (deg: number): number => (deg * Math.PI) / 180;
 
 /** Straight-line (haversine) distance — what "1,2 km" on a card means. */
 export function distanceKm(a: GeoPoint, b: GeoPoint): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(b.lat - a.lat);
   const dLng = toRad(b.lng - a.lng);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
@@ -75,15 +77,22 @@ export function nearestCity(cities: CityDto[], point: GeoPoint, maxKm = 40): Cit
   return best;
 }
 
-/** Box around a city, about 25 km a side: wide enough for its whole urban
- * area — what /lista asks the backend for (with the city's id on top, so a
- * neighbouring town inside the box stays out). Same size as the menu's
- * Milano box. */
-export function cityBounds(city: CityDto): MapBounds {
+/** How far a city's events reach: its province too. Nights out in the
+ * hinterland (Brianza, 20+ km from Milano's centre) belong to the city. */
+const CITY_AREA_KM = 50;
+
+/** Box reaching CITY_AREA_KM from a city's centre each way — what /lista and
+ * the menu ask the backend for. /lista adds the city's id on top, so another
+ * city inside the box stays out. A tighter box (it was ~12 km) silently left
+ * the hinterland's nights out of "in tutta Milano". */
+export function cityBounds(city: Pick<CityDto, 'latitude' | 'longitude'>): MapBounds {
+  const dLat = CITY_AREA_KM / KM_PER_DEGREE;
+  // A degree of longitude shrinks with the latitude.
+  const dLng = CITY_AREA_KM / (KM_PER_DEGREE * Math.cos(toRad(city.latitude)));
   return {
-    minLat: city.latitude - 0.11,
-    maxLat: city.latitude + 0.11,
-    minLng: city.longitude - 0.17,
-    maxLng: city.longitude + 0.17,
+    minLat: city.latitude - dLat,
+    maxLat: city.latitude + dLat,
+    minLng: city.longitude - dLng,
+    maxLng: city.longitude + dLng,
   };
 }

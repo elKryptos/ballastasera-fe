@@ -47,10 +47,13 @@ const CLOCK_TICK_MS = 30 * 1000;
 /** Past this, "finisce tra 3 h 20 min" says less than "fino alle 03:00". */
 const ENDING_SOON_MINUTES = 90;
 
-type AreaId = 'city' | 'near3' | 'near1';
+type AreaId = 'city' | 'near10' | 'near3' | 'near1';
 
 const AREAS: { id: AreaId; label: string; km: number | null }[] = [
+  // The city with its province (cityBounds): up to ~50 km out.
   { id: 'city', label: 'Tutta la città', km: null },
+  // The city without the farther hinterland.
+  { id: 'near10', label: 'Entro 10 km', km: 10 },
   { id: 'near3', label: 'Entro 3 km', km: 3 },
   { id: 'near1', label: 'Entro 1,5 km', km: 1.5 },
 ];

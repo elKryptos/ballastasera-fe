@@ -4,7 +4,9 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
-import { EventsService, MapBounds } from '../../core/services/events.service';
+import { EventsService } from '../../core/services/events.service';
+import { MILAN_CENTER } from '../../core/config/map-pins';
+import { cityBounds } from '../../core/utils/geo';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import {
   addressPrimary,
@@ -18,17 +20,13 @@ import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
 
 /**
- * Rough bounding box around Milano wide enough to catch every event in the
- * only city the app currently supports — feeds the Mappa card's live badge
- * and counts and the Stasera carousel. Swap for a real "events in this city"
- * endpoint (no bounds needed) once the backend has one.
+ * Milano and its province — the same box /lista asks for (cityBounds), so the
+ * menu counts the same nights — in the only city the app currently supports.
+ * Feeds the Mappa card's live badge and counts and the Stasera carousel. Swap
+ * for a real "events in this city" endpoint (no bounds needed) once the
+ * backend has one.
  */
-const MILANO_BOUNDS: MapBounds = {
-  minLat: 45.35,
-  maxLat: 45.56,
-  minLng: 9.0,
-  maxLng: 9.35,
-};
+const MILANO_BOUNDS = cityBounds({ latitude: MILAN_CENTER[0], longitude: MILAN_CENTER[1] });
 
 /** A night out runs past midnight: anything starting before this hour of
  * the next morning still counts as "stasera". */

@@ -868,6 +868,70 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
     flex-shrink: 0;
   }
 
+  /* The theme row's icon: the moon by night, the sun by day, both drawn in
+  the one svg (navbar.html). Flipping the theme spins the moon away as it
+  shrinks into the sun's core, which swells out of it as the rays spin in —
+  and back. Keyed off <html data-theme> rather than an Angular binding: the
+  inline script in index.html sets it before first paint, so the right one
+  shows from the start and only a real switch animates. Each part's delay
+  is its entering one, so the leaving part clears the way first. */
+  .theme-icon {
+    overflow: visible;
+    color: var(--drawer-violet);
+  }
+
+  .theme-icon > * {
+    transform-origin: 12px 12px;
+  }
+
+  .theme-icon-moon {
+    transition-delay: 0.06s;
+  }
+
+  .theme-icon-core {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  .theme-icon-rays {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.4);
+  }
+
+  :root[data-theme='light'] .theme-icon {
+    color: var(--drawer-yellow);
+  }
+
+  :root[data-theme='light'] .theme-icon-moon {
+    opacity: 0;
+    transform: rotate(120deg) scale(0.5);
+    transition-delay: 0s;
+  }
+
+  :root[data-theme='light'] .theme-icon-core {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.06s;
+  }
+
+  :root[data-theme='light'] .theme-icon-rays {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.14s;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .theme-icon {
+      transition: color 0.5s ease;
+    }
+
+    .theme-icon > * {
+      transition-property: transform, opacity;
+      transition-duration: 0.5s, 0.3s;
+      transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1), ease;
+    }
+  }
+
   .drawer-chip {
     padding: 0.125rem 0.5rem;
     border-radius: 0.5rem;
@@ -876,19 +940,19 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
     font-weight: 700;
   }
 
-  /* Only the rows that already lead somewhere react to a tap — the others
-  stay plain rows until their page exists. :hover only with a real pointer:
-  touch has no hover, and a tap would leave it stuck on. */
-  a.drawer-item {
+  /* Only the rows that already do something (links, the theme switch) react
+  to a tap — the others stay plain rows until their page exists. :hover only
+  with a real pointer: touch has no hover, and a tap would leave it stuck on. */
+  :is(a, button).drawer-item {
     transition: background-color 0.15s ease;
   }
 
-  a.drawer-item:active {
+  :is(a, button).drawer-item:active {
     background: var(--drawer-raised);
   }
 
   @media (hover: hover) {
-    a.drawer-item:hover {
+    :is(a, button).drawer-item:hover {
       background: var(--drawer-raised);
     }
   }

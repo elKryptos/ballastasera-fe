@@ -51,6 +51,9 @@ export class Navbar {
   protected readonly initial = computed(() => this.currentUser()?.displayName.trim().charAt(0).toUpperCase() ?? '');
 
   protected readonly theme = this.themeService.theme;
+  /** The theme row names the theme you're in. The switch itself stays "Tema
+   * scuro", on or off, for screen readers. */
+  protected readonly themeLabel = computed(() => (this.theme() === 'dark' ? 'Tema scuro' : 'Tema chiaro'));
 
   private readonly transloco = inject(TranslocoService);
 
@@ -82,8 +85,9 @@ export class Navbar {
   }
 
   /** On the collapsed rail, a tap on anything that isn't a link or a button
-   * itself (a row still waiting for its page, the theme or language row,
-   * the avatar) opens the rail to show that row in full. */
+   * itself (a row still waiting for its page, the language row, the avatar)
+   * opens the rail to show that row in full. The theme row is a button: it
+   * flips the theme right there. */
   protected expandRail(event: MouseEvent): void {
     const railCollapsed = !this.isMobile() && this.sidebarService.state() === 'collapsed';
     if (!railCollapsed || (event.target as Element).closest('a, button')) return;

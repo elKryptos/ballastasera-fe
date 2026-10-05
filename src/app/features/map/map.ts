@@ -90,6 +90,20 @@ const VENUE_PIN_Z_OFFSET = -1000;
 const LIVE_PIN_Z_OFFSET = 500;
 const SELECTED_PIN_Z_OFFSET = 1000;
 
+/** Zoomed in past the city view (DEFAULT_ZOOM, where a jump to a city or
+ * "Intorno a me" lands), every live pin in view plays its full effect: one
+ * pinch in is enough — few go further, they're browsing the city. At city
+ * zoom they rest, or a whole city's night would be a light show (see the live
+ * pins in styles.css). */
+const CLOSE_ZOOM = 15;
+
+/** A live pin's entrance (see playIntro()): the full effect for this long
+ * after its drop, staggered outward from the pin nearest the middle of the
+ * view, by distance. */
+const INTRO_MS = 3000;
+const INTRO_STAGGER_MS_PER_PX = 3;
+const INTRO_STAGGER_MAX_MS = 1200;
+
 /** "Intorno a me": a real GPS fix (a few to ~100 m on phones) gets its
  * accuracy circle and a zoom that fits it, capped at LOCATE_MAX_ZOOM. Past
  * PRECISE_FIX_METERS the fix is Wi-Fi/IP guesswork (desktops: often several
@@ -359,8 +373,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private map: LeafletMap | null = null;
   /** One marker per pinned event, by id — see drawMarkers(). `event` is
   refreshed on every sync, so a click never opens the card with a stale copy
-  (e.g. the counts from before a like). */
-  private markers = new Map<string, { marker: Marker; event: EventCardDto }>();
+  (e.g. the counts from before a like); `live`, so the sync can tell a pin
+  that just went live. */
+  private markers = new Map<string, { marker: Marker; event: EventCardDto; live: boolean }>();
   /** One marker per visible venue, by id — see drawVenueMarkers(). */
   private venueMarkers = new Map<string, Marker>();
   /** The "you are here" dot plus its accuracy circle, replaced on each locate. */
@@ -552,6 +567,12 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     });
     this.viewBounds.set(toMapBounds(map.getBounds()));
 
+    // Zooming in turns on every live pin's full effect, in CSS alone: no
+    // icon is rebuilt, so their animations carry on.
+    const markZoomedIn = () => container.classList.toggle('map-pins--close', map.getZoom() >= CLOSE_ZOOM);
+    map.on('zoomend', markZoomedIn);
+    markZoomedIn();
+
     // The one search nobody asks for: the first view.
     this.searchArea();
     // The layer may have been switched on while Leaflet was still loading.
@@ -719,7 +740,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   events that appeared or went away are added/removed. Rebuilding every
   marker instead restarted every live pin's pulse animation on each
   selection, search or like. Icons come from MapPinIcons' cache, so an
-  unchanged state is the very same object. */
+  unchanged state is the very same object. Live pins that just showed up
+  (the first search, a new area, a filter letting them back) or just went
+  live make their entrance. */
   private drawMarkers(): void {
     const L = this.leaflet;
     const map = this.map;
@@ -729,6 +752,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     const selectedId = untracked(() => this.selectedEvent()?.id);
     const now = Date.now();
     const previous = this.markers;
+    const entering: Marker[] = [];
     this.markers = new Map();
     for (const event of untracked(() => this.pinnedEvents())) {
       // Pins go live only once the event is actually underway — before that
@@ -748,15 +772,44 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
         }
         const { lat, lng } = existing.marker.getLatLng();
         if (lat !== event.latitude || lng !== event.longitude) existing.marker.setLatLng([event.latitude, event.longitude]);
+        if (live && !existing.live) entering.push(existing.marker);
+        existing.live = live;
         this.markers.set(event.id, existing);
       } else {
         const marker = L.marker([event.latitude, event.longitude], { icon, zIndexOffset }).addTo(map);
-        const entry = { marker, event };
+        const entry = { marker, event, live };
         marker.on('click', () => this.selectEvent(entry.event, marker.getLatLng()));
+        if (live) entering.push(marker);
         this.markers.set(event.id, entry);
       }
     }
     previous.forEach(({ marker }) => marker.remove());
+    this.playIntro(entering);
+  }
+
+  /** A live pin's entrance: it drops in with a shockwave and plays its full
+  effect for INTRO_MS, then rests — the pins nearest the middle of the view
+  first, the rest rippling outward. A class on Leaflet's marker element, not
+  an icon of its own: going back to rest rebuilds nothing. Should the icon
+  change meanwhile (the pin is tapped), Leaflet resets the class itself. */
+  private playIntro(markers: Marker[]): void {
+    const map = this.map;
+    if (!map || !this.onScreen || markers.length === 0) return;
+
+    const middle = map.getSize().divideBy(2);
+    const distances = markers.map((marker) => map.latLngToContainerPoint(marker.getLatLng()).distanceTo(middle));
+    const nearest = Math.min(...distances);
+    let lastDelay = 0;
+    markers.forEach((marker, i) => {
+      const delay = Math.round(Math.min((distances[i] - nearest) * INTRO_STAGGER_MS_PER_PX, INTRO_STAGGER_MAX_MS));
+      lastDelay = Math.max(lastDelay, delay);
+      const element = marker.getElement();
+      element?.style.setProperty('--map-pin-delay', `${delay}ms`);
+      element?.classList.add('map-pin--intro');
+    });
+    setTimeout(() => {
+      for (const marker of markers) marker.getElement()?.classList.remove('map-pin--intro');
+    }, lastDelay + INTRO_MS);
   }
 
   private selectEvent(event: EventCardDto, position: LatLng): void {

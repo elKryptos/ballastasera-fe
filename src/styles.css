@@ -153,7 +153,18 @@ shows plain until it crosses into --live; see drawMarkers() in map.ts.
 Global, not component-scoped: Leaflet injects marker markup straight into
 the DOM outside Angular's view, so component styles never reach it. In
 @layer components (not unlayered) so Tailwind utilities still win the
-cascade. */
+cascade.
+
+A live pin floats over light rising from its tip (LIVE_FX in
+map-pin-icons.ts), in two strengths. At rest: a glow on the ground, one ring
+and a white dot at the tip — a busy night shouldn't turn the map into a
+light show. The full effect adds a beam, two more rings with a ripple
+between them, sparks, and a glow on the pin itself. It's the reward for
+looking closer: the open pin (--selected, still drawn inverted), zooming
+in past the city view (.map-pins--close on the map's container, see
+CLOSE_ZOOM in map.ts) and a pin's first seconds
+on the map (.map-pin--intro on Leaflet's marker, see playIntro() in map.ts),
+when it also drops in with a shockwave. */
 @layer components {
   /* EVENT_PIN_WIDTH x EVENT_PIN_HEIGHT in map-pin-icons.ts. */
   .map-pin-wrap {
@@ -163,23 +174,148 @@ cascade. */
     height: 40px;
   }
 
-  /* Three outlined rings in the pin's colour (see MapPinIcons), staggered so
-  one is always on its way out — the pin is never still. Centred on the
-  pin's head: half its width down from the top. */
-  .map-pin-ring {
-    position: absolute;
-    left: 50%;
-    top: 15px;
-    width: 30px;
-    height: 30px;
-    margin: -15px 0 0 -15px;
-    border: 2px solid currentColor;
-    border-radius: 50%;
-    opacity: 0;
-    animation: map-pin-ring 2.4s ease-out infinite;
+  .map-pin-wrap--live svg {
+    transform-origin: 50% 100%;
   }
 
-  /* ...and a LIVE tag on its shoulder, saying what the motion means — in
+  /* The point at the pin's tip every mark is centred on. Behind the pin
+  (z-index -1, inside the marker's own stacking context, which Leaflet's
+  z-index on it makes) rather than the pin raised over it: a positioned svg
+  would pick up leaflet.css's `.leaflet-map-pane svg { z-index: 200 }` —
+  unlayered, so it beats this layer — and cover the LIVE tag. Decorative:
+  taps go through to the map, or the rings' reach would open the pin from
+  afar. */
+  .map-pin-fx {
+    position: absolute;
+    z-index: -1;
+    top: 100%;
+    left: 50%;
+    pointer-events: none;
+  }
+
+  .map-pin-fx > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  /* A pool of light on the ground, breathing (opacity for motion off). */
+  .map-pin-glow {
+    width: 45px;
+    height: 16px;
+    margin: -8px 0 0 -22.5px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, currentColor, transparent);
+    opacity: 0.6;
+  }
+
+  /* Rings spreading flat along the ground, each thinner than the last, and
+  the entrance's one-off shockwave, which spreads further. */
+  .map-pin-ring,
+  .map-pin-ripple,
+  .map-pin-shock {
+    width: 30px;
+    height: 11px;
+    margin: -5.5px 0 0 -15px;
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .map-pin-ring,
+  .map-pin-shock {
+    border: 2px solid currentColor;
+  }
+
+  .map-pin-ring--2 {
+    border-width: 1.5px;
+  }
+
+  .map-pin-ring--3 {
+    border-width: 1px;
+  }
+
+  /* Filled in between the rings, so the wave has body. */
+  .map-pin-ripple {
+    background: radial-gradient(closest-side, transparent 50%, currentColor 100%);
+  }
+
+  /* A faint column of light rising from the tip, behind the pin. */
+  .map-pin-beam {
+    top: auto;
+    bottom: 0;
+    width: 20px;
+    height: 68px;
+    margin-left: -10px;
+    background: linear-gradient(to top, currentColor, transparent);
+    clip-path: polygon(35% 100%, 65% 100%, 100% 0, 0 0);
+    opacity: 0.26;
+  }
+
+  /* Sparks lifting off the ground, each drifting its own way. */
+  .map-pin-spark {
+    width: 4px;
+    height: 4px;
+    margin: -2px 0 0 -2px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 5px currentColor;
+    opacity: 0;
+  }
+
+  .map-pin-spark--1 {
+    --map-pin-spark-dx: -12px;
+  }
+
+  .map-pin-spark--2 {
+    --map-pin-spark-dx: 10px;
+  }
+
+  .map-pin-spark--3 {
+    --map-pin-spark-dx: -4px;
+  }
+
+  .map-pin-tip {
+    width: 9px;
+    height: 4px;
+    margin: -2px 0 0 -4.5px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 5px 1px currentColor;
+  }
+
+  /* At rest, the full effect's own marks stay out. */
+  .map-pin-beam,
+  .map-pin-ripple,
+  .map-pin-ring--2,
+  .map-pin-ring--3,
+  .map-pin-spark {
+    display: none;
+  }
+
+  :is(.map-pins--close, .map-pin--intro, .map-pin-wrap--selected)
+    :is(.map-pin-beam, .map-pin-ripple, .map-pin-ring--2, .map-pin-ring--3, .map-pin-spark) {
+    display: block;
+  }
+
+  /* Full effect: the pin glows in its colour too. */
+  :is(.map-pins--close, .map-pin--intro) .map-pin-wrap--live svg {
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+
+  /* Selected pin: drawn inverted in MapPinIcons.event() rather than styled
+  here — at the pins' size, the inversion alone reads clearly, so it stays
+  the same size. Overflow visible because the shapes touch the viewBox
+  edges, which would clip half of the outline stroke. */
+  .map-pin-wrap--selected svg {
+    overflow: visible;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+  }
+
+  .map-pin-wrap--selected.map-pin-wrap--live svg {
+    filter: drop-shadow(0 0 3px currentColor) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+  }
+
+  /* The LIVE tag on the pin's shoulder, saying what the light means — in
   the LIVE badges' red (--color-live), white-edged so it stands off a rose
   pin and any tile. */
   .map-pin-live-tag {
@@ -208,52 +344,150 @@ cascade. */
     background: currentColor;
   }
 
-  /* The live pin itself breathes, and glows so it stays readable against
-  busy tiles even between rings. */
-  .map-pin-wrap--live svg {
-    animation: map-pin-bounce 1.6s ease-in-out infinite;
-    filter: drop-shadow(0 0 3px currentColor);
-  }
-
-  /* Selected pin: its own shape (per event type) is drawn inverted in
-  MapPinIcons.event() rather than styled here — at the pins' size, the
-  inversion alone reads clearly, so it stays the same size. Overflow visible
-  because the shapes touch the viewBox edges, which would clip half of the
-  outline stroke. */
-  .map-pin-wrap--selected svg {
-    overflow: visible;
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
-  }
-
-  /* Motion off (the visitor's OS setting): the rings stay hidden at rest
-  (opacity 0), the pin and the tag's dot (.live-dot) sit still — the LIVE
-  tag alone still marks the pin. */
-  @media (prefers-reduced-motion: reduce) {
-    .map-pin-ring,
+  /* Motion is opt-in: with it off (the visitor's OS setting), the rings,
+  ripple, sparks and shockwave stay hidden at rest (opacity 0) and the pin
+  sits still over its glow, beam and tip dot — the LIVE tag still says it. */
+  @media (prefers-reduced-motion: no-preference) {
     .map-pin-wrap--live svg {
-      animation: none;
+      animation: map-pin-hover 1.6s ease-in-out infinite;
+    }
+
+    .map-pin-glow {
+      animation: map-pin-glow 1.6s ease-in-out infinite;
+    }
+
+    .map-pin-beam {
+      animation: map-pin-beam 2.4s ease-in-out infinite;
+    }
+
+    /* Staggered by negative delays, so they're already spread out on their
+    first frame — and when the full effect switches on. */
+    .map-pin-ring,
+    .map-pin-ripple {
+      animation: map-pin-ground 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+    }
+
+    .map-pin-ripple {
+      animation-timing-function: ease-out;
+      animation-delay: -2s;
+    }
+
+    .map-pin-ring--2 {
+      animation-delay: -1.6s;
+    }
+
+    .map-pin-ring--3 {
+      animation-delay: -0.8s;
+    }
+
+    .map-pin-spark {
+      animation: map-pin-spark 2.4s ease-out infinite;
+    }
+
+    .map-pin-spark--1 {
+      animation-delay: -2.2s;
+    }
+
+    .map-pin-spark--2 {
+      animation-delay: -1.4s;
+    }
+
+    .map-pin-spark--3 {
+      animation-delay: -0.7s;
+    }
+
+    /* Entrance, after the pin's turn in the stagger (--map-pin-delay, set
+    by playIntro()). */
+    .map-pin--intro .map-pin-wrap--live svg {
+      animation: map-pin-drop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) var(--map-pin-delay, 0ms) both;
+    }
+
+    .map-pin--intro .map-pin-live-tag {
+      animation: map-pin-drop 0.4s ease-out calc(var(--map-pin-delay, 0ms) + 0.25s) both;
+    }
+
+    .map-pin--intro .map-pin-shock {
+      animation: map-pin-shock 1.4s ease-out calc(var(--map-pin-delay, 0ms) + 0.3s);
     }
   }
 }
 
-@keyframes map-pin-ring {
+@keyframes map-pin-hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes map-pin-glow {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes map-pin-beam {
+  0%,
+  100% {
+    opacity: 0.16;
+  }
+  50% {
+    opacity: 0.36;
+  }
+}
+
+@keyframes map-pin-ground {
   0% {
-    transform: scale(0.5);
-    opacity: 0.9;
+    transform: scale(0.3);
+    opacity: 1;
   }
   100% {
-    transform: scale(3);
+    transform: scale(3.2);
     opacity: 0;
   }
 }
 
-@keyframes map-pin-bounce {
-  0%,
-  100% {
-    scale: 1;
+@keyframes map-pin-spark {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
   }
-  50% {
-    scale: 1.08;
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--map-pin-spark-dx), -35px) scale(0.4);
+    opacity: 0;
+  }
+}
+
+@keyframes map-pin-drop {
+  0% {
+    transform: translateY(-18px) scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes map-pin-shock {
+  0% {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(7);
+    opacity: 0;
   }
 }
 

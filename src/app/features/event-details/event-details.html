@@ -165,11 +165,8 @@
             class="relative block h-35 w-full shrink-0 cursor-pointer overflow-hidden rounded-lg @5xl:h-42.5 @5xl:w-75"
             (click)="openOnMap(event)" aria-label="Vedi sulla mappa">
             <app-map-preview class="absolute inset-0" [center]="center" [zoom]="miniMapZoom" />
-            <svg viewBox="0 0 24 32" class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 h-12 w-9 -translate-x-1/2 -translate-y-full"
-              aria-hidden="true">
-              <path [attr.d]="pinShape(event)" [attr.fill]="pinColor(event)" />
-              <path [attr.d]="pinGlyph(event)" fill="#fff" />
-            </svg>
+            <app-event-pin-icon [type]="event.eventType" [size]="48"
+              class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full" />
           </button>
           }
           <div class="flex flex-1 flex-col gap-3 @5xl:gap-3.5 @5xl:pr-3">

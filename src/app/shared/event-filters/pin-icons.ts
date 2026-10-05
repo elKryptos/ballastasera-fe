@@ -11,8 +11,9 @@ import {
 
 /** An event type's map pin, drawn small — the Filtri dialog's "Tipo di
  * serata" chips double as the map's legend, cards without a flyer show it
- * in its place, and the menu and welcome pages decorate with it. Same shapes
- * and colours as the real markers (map-pins.ts). */
+ * in its place, the event page drops it on its mini-map, the landing lists
+ * it in its legend, and the menu and welcome pages decorate with it. Same
+ * shapes and colours as the real markers (map-pins.ts). */
 @Component({
   selector: 'app-event-pin-icon',
   template: `
@@ -38,7 +39,8 @@ export class EventPinIcon {
   protected readonly color = computed(() => this.fill() ?? PIN_COLORS[this.type()]);
 }
 
-/** A venue's round map badge, for the "Sulla mappa" legend. */
+/** A venue's round map badge, for the "Sulla mappa" legend, the venue card
+ * and the venue page's mini-map. */
 @Component({
   selector: 'app-venue-pin-icon',
   template: `

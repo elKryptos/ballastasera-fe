@@ -3,13 +3,14 @@ import { ActivatedRoute } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucideFacebook, lucideGlobe, lucideInstagram, lucideMail, lucideYoutube } from '@ng-icons/lucide';
 import { TIKTOK_PATH, WHATSAPP_PATH } from '../../core/config/brand-icons';
-import { VENUE_PIN_COLORS, VENUE_PIN_GLYPHS, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
+import { VENUE_PIN_COLORS, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
 import { injectGoBack } from '../../core/routing/go-back';
 import { VenuesService } from '../../core/services/venues.service';
 import { VenueDetailDto } from '../../core/models/venue.model';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MapPreview } from '../../shared/map-preview/map-preview';
-import { addressPrimary, addressSecondary, googleMapsUrl, withoutCountry } from '../../core/utils/event-format';
+import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
+import { addressPrimary, addressSecondary, googleMapsUrl, instagramUrl, waMeUrl, withoutCountry } from '../../core/utils/event-format';
 
 /** Same street-level zoom as the event page's "Dove" mini-map. */
 const MINI_MAP_ZOOM = 16;
@@ -24,7 +25,8 @@ interface ContactKind {
   tileClass: string;
   icon?: string;
   svgPath?: string;
-  /** Defaults to the value itself (the URL the admin entered). */
+  /** Defaults to the value itself (the URL the admin entered); Instagram
+   * holds just the handle. */
   href?: (value: string) => string;
   label: (value: string) => string;
   /** mailto: stays in this tab — a new one would just open blank. */
@@ -37,11 +39,16 @@ const CONTACT_KINDS: ContactKind[] = [
     key: 'whatsapp',
     tileClass: 'bg-[#25D366] text-white',
     svgPath: WHATSAPP_PATH,
-    // wa.me wants the bare international number: no "+".
-    href: (phone) => `https://wa.me/${phone.replace(/\D/g, '')}`,
+    href: (phone) => waMeUrl(phone) ?? '',
     label: (phone) => phone,
   },
-  { key: 'instagram', tileClass: 'instagram-gradient text-white', icon: 'lucideInstagram', label: () => 'Instagram' },
+  {
+    key: 'instagram',
+    tileClass: 'instagram-gradient text-white',
+    icon: 'lucideInstagram',
+    href: instagramUrl,
+    label: () => 'Instagram',
+  },
   { key: 'website', tileClass: 'bg-(--ed-chip-bg) text-(--ed-chip-fg)', icon: 'lucideGlobe', label: hostname },
   {
     key: 'email',
@@ -74,7 +81,7 @@ function hostname(url: string): string {
   selector: 'app-venue-details',
   templateUrl: './venue-details.html',
   styleUrl: '../event-details/event-details.css',
-  imports: [SidebarPushDirective, NgIcon, MapPreview],
+  imports: [SidebarPushDirective, NgIcon, MapPreview, VenuePinIcon],
   providers: [
     provideIcons({ lucideArrowLeft, lucideFacebook, lucideGlobe, lucideInstagram, lucideMail, lucideYoutube }),
   ],
@@ -89,10 +96,9 @@ export class VenueDetails {
   protected readonly goBack = injectGoBack('/mappa');
 
   protected readonly typeLabels = VENUE_TYPE_LABELS;
-  /** Same colour and glyph as the venue's badge on the map, so the mini-map
-   * reads as a crop of it. */
+  /** Same colour as the venue's badge on the map (drawn on the mini-map,
+   * which reads as a crop of it). */
   protected readonly pinColors = VENUE_PIN_COLORS;
-  protected readonly pinGlyphs = VENUE_PIN_GLYPHS;
   protected readonly miniMapZoom = MINI_MAP_ZOOM;
 
   /** Null when the venue has no coordinates: the "Dove" card then shows text only. */

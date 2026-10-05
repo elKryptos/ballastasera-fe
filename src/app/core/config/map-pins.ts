@@ -28,16 +28,35 @@ export const PIN_SHAPES: Record<EventType, string> = {
   BAR: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
 };
 
-/** Inner glyph per EventType, drawn in white centred around (12, 12). */
+/** Inner glyph per EventType, drawn in white centred around (12, 12). One
+ * path each, so every surface draws it the same way (a single <path>): what
+ * the design draws in the pin's colour over the white — the disco ball's
+ * seams, the olive — is a gap in the path instead, which shows the pin's body
+ * through it, white on a selected (inverted) pin. */
 export const PIN_GLYPHS: Record<EventType, string> = {
-  // Star.
-  EVENT: 'M12 7.2l1.4 3 3.3.3-2.5 2.2.8 3.3-3-1.8-3 1.8.8-3.3-2.5-2.2 3.3-.3z',
+  // A couple dancing, holding hands, his other arm raised.
+  EVENT:
+    'M7.6 6.6a1.7 1.7 0 1 1 3.4 0a1.7 1.7 0 1 1-3.4 0zM13.2 6.6a1.7 1.7 0 1 1 3.4 0a1.7 1.7 0 1 1-3.4 0z' +
+    'M9.3 8.9 12 15.8H6.6zM13.8 8.9h2.15l1.48-1.87a.6.6 0 0 1 .94.74L16 10.77v5.13h-2.2V11l-3.16.2a.6.6 0 0 1-.08-1.2l3.24-.2z',
   // Graduation cap.
   SCHOOL: 'M12 6.5 5 9.5l7 3 7-3zm-4.5 5.2V15c0 1.1 2 2 4.5 2s4.5-.9 4.5-2v-3.3L12 14z',
-  // Music note.
-  CLUB: 'M14.5 5.5v8.3a2.7 2.7 0 1 1-1-2.1V8h2.8V5.5z',
-  // Cocktail glass.
-  BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7z',
+  // Disco ball on its string, with a sparkle (a music note passed for a
+  // concert). The ball is drawn as its facets: the seams are the gaps.
+  CLUB:
+    'M11.4 4.6h1.2v2.15h-1.2z' +
+    'M13.15 7.33A5 5 0 0 1 16.58 10.2L14.37 10.2A2.55 5.45 0 0 0 13.15 7.33z' +
+    'M10.85 7.33A2.55 5.45 0 0 0 9.63 10.2L7.42 10.2A5 5 0 0 1 10.85 7.33zM10.52 10.2A1.65 4.55 0 0 1 13.48 10.2z' +
+    'M14.49 11L16.85 11A5 5 0 0 1 16.98 11.8L14.54 11.8A2.55 5.45 0 0 0 14.49 11z' +
+    'M7.15 11L9.51 11A2.55 5.45 0 0 0 9.46 11.8L7.02 11.8A5 5 0 0 1 7.15 11z' +
+    'M10.41 11L13.59 11A1.65 4.55 0 0 1 13.64 11.8L10.36 11.8A1.65 4.55 0 0 1 10.41 11z' +
+    'M14.54 12.6L16.98 12.6A5 5 0 0 1 16.85 13.4L14.49 13.4A2.55 5.45 0 0 0 14.54 12.6z' +
+    'M7.02 12.6L9.46 12.6A2.55 5.45 0 0 0 9.51 13.4L7.15 13.4A5 5 0 0 1 7.02 12.6z' +
+    'M10.36 12.6L13.64 12.6A1.65 4.55 0 0 1 13.59 13.4L10.41 13.4A1.65 4.55 0 0 1 10.36 12.6z' +
+    'M14.37 14.2L16.58 14.2A5 5 0 0 1 13.15 17.07A2.55 5.45 0 0 0 14.37 14.2z' +
+    'M7.42 14.2L9.63 14.2A2.55 5.45 0 0 0 10.85 17.07A5 5 0 0 1 7.42 14.2zM10.52 14.2L13.48 14.2A1.65 4.55 0 0 1 10.52 14.2z' +
+    'M18.2 5.2l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z',
+  // Cocktail glass with an olive (wound the other way: a hole).
+  BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7zM13.5 7.6a1 1 0 1 0 2 0a1 1 0 1 0-2 0z',
 };
 
 /** Every EventType, in the order the legend (and any pin listing) shows them. */
@@ -57,7 +76,7 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
  * share with EventType reuse its colour and glyph — a school is violet with a
  * graduation cap whether it's the place or one of its events; OTHER (halls,
  * theatres, squares...) gets a neutral slate and a building glyph. Glyphs are
- * the same paths as PIN_GLYPHS, centred around (12, 12) in a 24x24 viewBox. */
+ * the same paths as PIN_GLYPHS, which fit the badge's 24x24 viewBox too. */
 export const VENUE_PIN_COLORS: Record<VenueType, string> = {
   SCHOOL: PIN_COLORS.SCHOOL,
   CLUB: PIN_COLORS.CLUB,

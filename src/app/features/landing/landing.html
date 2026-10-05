@@ -219,10 +219,7 @@
         <div class="flex flex-wrap items-center gap-x-5 gap-y-2.5 border-t border-line pt-4">
           @for (pin of legendPins; track pin.label) {
           <div class="flex items-center gap-1.5">
-            <svg viewBox="0 0 24 32" class="h-7 w-auto shrink-0" aria-hidden="true">
-              <path [attr.d]="pin.shape" [attr.fill]="pin.color" />
-              <path [attr.d]="pin.glyph" fill="#fff" />
-            </svg>
+            <app-event-pin-icon [type]="pin.type" [fill]="pin.color" [size]="28" />
             <span class="font-mono text-[0.66rem] tracking-widest text-muted uppercase">{{ pin.label | transloco }}</span>
           </div>
           }

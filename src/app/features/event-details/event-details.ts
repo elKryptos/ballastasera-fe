@@ -19,12 +19,13 @@ import {
   lucideX,
 } from '@ng-icons/lucide';
 import { WHATSAPP_PATH } from '../../core/config/brand-icons';
-import { EVENT_TYPE_LABELS, PIN_COLORS, PIN_GLYPHS, PIN_SHAPES } from '../../core/config/map-pins';
+import { EVENT_TYPE_LABELS } from '../../core/config/map-pins';
 import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MapPreview } from '../../shared/map-preview/map-preview';
+import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EventDetailDto } from '../../core/models/event.model';
@@ -60,7 +61,7 @@ const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
   selector: 'app-event-details',
   templateUrl: './event-details.html',
   styleUrl: './event-details.css',
-  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview],
+  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon],
   // On the document, not the lightbox <div>: that div never holds focus, so a
   // keydown listener on it would never fire.
   host: { '(document:keydown.escape)': 'closeFlyer()' },
@@ -347,20 +348,6 @@ export class EventDetails {
 
   protected eventTypeLabel(event: EventDetailDto): string {
     return EVENT_TYPE_LABELS[event.eventType];
-  }
-
-  // Same shape/glyph/colour as this event's pin on the real map, so the
-  // mini-map in the "Dove" card reads as a crop of it.
-  protected pinShape(event: EventDetailDto): string {
-    return PIN_SHAPES[event.eventType];
-  }
-
-  protected pinGlyph(event: EventDetailDto): string {
-    return PIN_GLYPHS[event.eventType];
-  }
-
-  protected pinColor(event: EventDetailDto): string {
-    return PIN_COLORS[event.eventType];
   }
 
   protected organizerTypeLabel(organizer: OrganizerDetailDto): string {

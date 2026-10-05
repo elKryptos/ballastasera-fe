@@ -18,7 +18,9 @@ import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
-import { PIN_GLYPHS, PIN_SHAPES, PIN_TYPES } from '../../core/config/map-pins';
+import { PIN_TYPES } from '../../core/config/map-pins';
+import { EventType } from '../../core/models/event.model';
+import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 
 interface PartnerCard {
   /** Which drawing sits on top of the card when there is nothing else to show. */
@@ -46,10 +48,9 @@ interface PartnerCard {
 /** One pin kind from the real map's legend, reproduced here so visitors
  * already recognise the shapes and colours once the map itself opens. */
 interface PinLegendItem {
+  type: EventType;
   label: string;
   color: string;
-  shape: string;
-  glyph: string;
 }
 
 interface MediaItem {
@@ -66,7 +67,7 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, MediaEmbed, TranslocoPipe, SidebarPushDirective, InstallBanner, MapSnapshot],
+  imports: [RouterLink, MediaEmbed, TranslocoPipe, SidebarPushDirective, InstallBanner, MapSnapshot, EventPinIcon],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
@@ -303,13 +304,12 @@ export class Landing implements AfterViewInit, OnDestroy {
     BAR: 'var(--color-amber)',
   };
 
-  /** Shape/glyph sourced from the same map-pins config the real map and the
-   * live preview above use, so all three surfaces can't drift apart. */
+  /** Drawn by the same EventPinIcon as the real map's legend, so the
+   * surfaces can't drift apart. */
   protected readonly legendPins: PinLegendItem[] = PIN_TYPES.map((type) => ({
+    type,
     label: Landing.LEGEND_LABEL_KEYS[type],
     color: Landing.LEGEND_COLOR_VARS[type],
-    shape: PIN_SHAPES[type],
-    glyph: PIN_GLYPHS[type],
   }));
 
   protected isHeld(beat: number): boolean {

@@ -10,6 +10,23 @@ const EVENT_PIN_WIDTH = 30;
 const EVENT_PIN_HEIGHT = 40;
 const VENUE_PIN_SIZE = 26;
 
+/** A live pin's light, all of it rising from its tip (styled in styles.css):
+ * the shockwave of its entrance, a beam, a glow pooling on the ground, three
+ * rings with a ripple between them, sparks, and a white dot at the tip. At
+ * rest only the glow, the first ring and the dot show; the rest is the full
+ * effect — selected, entering (MapPage.playIntro()) or zoomed in (CLOSE_ZOOM). */
+const LIVE_FX = `<span class="map-pin-fx">
+  <span class="map-pin-shock"></span><span class="map-pin-beam"></span><span class="map-pin-glow"></span>
+  <span class="map-pin-ripple"></span><span class="map-pin-ring"></span>
+  <span class="map-pin-ring map-pin-ring--2"></span><span class="map-pin-ring map-pin-ring--3"></span>
+  <span class="map-pin-spark map-pin-spark--1"></span><span class="map-pin-spark map-pin-spark--2"></span>
+  <span class="map-pin-spark map-pin-spark--3"></span><span class="map-pin-tip"></span>
+</span>`;
+
+/** The LIVE tag on a live pin's shoulder, saying what the light means — it
+ * stays with motion off. */
+const LIVE_TAG = '<span class="map-pin-live-tag"><i class="live-dot"></i>LIVE</span>';
+
 /** Leaflet icons for the map's markers, built once per look and then reused:
  * an unchanged state is the very same object, which is how MapPage's marker
  * sync tells a pin needs no setIcon(). Takes Leaflet in, since MapPage only
@@ -30,17 +47,9 @@ export class MapPinIcons {
     const color = PIN_COLORS[eventType];
     const liveClass = live ? ' map-pin-wrap--live' : '';
     const selectedClass = selected ? ' map-pin-wrap--selected' : '';
-    // Live: three outlined rings, staggered by a third of the cycle (negative
-    // delays, so they're already spread out on the first frame), plus a LIVE
-    // tag that says what the motion means — and stays with motion turned off.
-    // Only live pins carry them.
-    const liveMarks = live
-      ? [0, 0.8, 1.6].map((delay) => `<span class="map-pin-ring" style="animation-delay:-${delay}s"></span>`).join('')
-      : '';
-    const liveTag = live ? '<span class="map-pin-live-tag"><i class="live-dot"></i>LIVE</span>' : '';
     // Selected pin is drawn inverted (white body, outline and glyph in the type
     // colour): the one hollow pin among filled ones stands out on both basemaps
-    // and still reads as its type.
+    // and still reads as its type. Live, it also plays the full effect.
     const shapeAttrs = selected
       ? `fill="#fff" stroke="${color}" stroke-width="2" stroke-linejoin="round"`
       : `fill="${color}"`;
@@ -48,12 +57,12 @@ export class MapPinIcons {
     const icon = this.L.divIcon({
       className: 'map-pin',
       html: `<span class="map-pin-wrap${liveClass}${selectedClass}" style="color:${color}">
-        ${liveMarks}
+        ${live ? LIVE_FX : ''}
         <svg viewBox="0 0 24 32" width="${EVENT_PIN_WIDTH}" height="${EVENT_PIN_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
           <path d="${PIN_SHAPES[eventType]}" ${shapeAttrs}/>
           <path d="${PIN_GLYPHS[eventType]}" fill="${glyphFill}"/>
         </svg>
-        ${liveTag}
+        ${live ? LIVE_TAG : ''}
       </span>`,
       iconSize: [EVENT_PIN_WIDTH, EVENT_PIN_HEIGHT],
       iconAnchor: [EVENT_PIN_WIDTH / 2, EVENT_PIN_HEIGHT],

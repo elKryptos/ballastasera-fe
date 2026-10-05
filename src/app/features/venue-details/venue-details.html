@@ -54,11 +54,8 @@
           @if (mapCenter(); as center) {
           <div class="relative h-35 w-full overflow-hidden rounded-lg @5xl:h-42.5">
             <app-map-preview class="absolute inset-0" [center]="center" [zoom]="miniMapZoom" />
-            <svg viewBox="0 0 24 24" class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 size-9 -translate-x-1/2 -translate-y-1/2"
-              aria-hidden="true">
-              <circle cx="12" cy="12" r="11" [attr.fill]="pinColors[venue.type]" stroke="#fff" stroke-width="2" />
-              <path [attr.d]="pinGlyphs[venue.type]" fill="#fff" />
-            </svg>
+            <app-venue-pin-icon [type]="venue.type" [size]="36"
+              class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
           </div>
           }
           @if (place(); as place) {

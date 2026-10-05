@@ -49,6 +49,9 @@ interface TonightCard {
   place: string;
   price: string;
   going: number;
+  /** No flyer: the type's pin stands in, as on the map's and the list's cards. */
+  flyerUrl: string | null;
+  eventType: EventType;
 }
 
 /** A pin on the decorative background map, in % of the card — drawn by
@@ -106,6 +109,8 @@ export class Menu {
         place: event.venueName ?? addressPrimary(withoutCountry(event.address)),
         price: formatPrice(event),
         going: event.goingCount,
+        flyerUrl: event.flyerUrl,
+        eventType: event.eventType,
       }));
   });
 

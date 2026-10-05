@@ -82,33 +82,46 @@
           } @else if (tonight(); as cards) {
           @for (card of cards; track card.id) {
           <a [routerLink]="['/evento', card.id]"
-            class="event-card flex w-60 shrink-0 snap-start flex-col gap-1.5 rounded-[1.25rem] p-3.5 text-bone transition-transform active:scale-[0.98]">
-            @if (card.live) {
-            <span
-              class="inline-flex items-center gap-1.5 self-start rounded-lg bg-live px-2 py-0.5 text-[0.6875rem] font-extrabold text-white uppercase">
-              <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
-              {{ card.when }}
+            class="event-card flex w-72 shrink-0 snap-start gap-3 rounded-[1.25rem] p-3.5 text-bone transition-transform active:scale-[0.98]">
+            <!-- The flyer (or the type's pin) on the left, as on the map's and
+                the list's cards: the card's height, 3:4 at the least. Absolute,
+                so the picture's own size never stretches the card. -->
+            <span class="relative flex min-h-18 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--menu-edge) bg-(--color-ink)"
+              aria-hidden="true">
+              @if (card.flyerUrl; as flyer) {
+              <img class="absolute inset-0 size-full object-cover" [src]="flyer" alt="" loading="lazy" decoding="async" />
+              } @else {
+              <app-event-pin-icon [type]="card.eventType" [size]="32" />
+              }
             </span>
-            } @else {
-            <span
-              class="self-start rounded-lg bg-(--menu-edge) px-2 py-0.5 text-[0.6875rem] font-extrabold tabular-nums">
-              {{ card.when }}
+            <span class="flex min-w-0 flex-1 flex-col gap-1.5">
+              @if (card.live) {
+              <span
+                class="inline-flex items-center gap-1.5 self-start rounded-lg bg-live px-2 py-0.5 text-[0.6875rem] font-extrabold text-white uppercase">
+                <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+                {{ card.when }}
+              </span>
+              } @else {
+              <span
+                class="self-start rounded-lg bg-(--menu-edge) px-2 py-0.5 text-[0.6875rem] font-extrabold tabular-nums">
+                {{ card.when }}
+              </span>
+              }
+              <span class="line-clamp-2 text-[1.0625rem] leading-tight font-extrabold">{{ card.title }}</span>
+              <span class="truncate text-[0.8125rem] text-(--menu-soft)">{{ card.place }} · {{ card.price }}</span>
+              @if (card.going > 0) {
+              <span class="text-[0.8125rem] text-(--menu-soft)">
+                <strong class="font-bold text-bone">{{ card.going }}</strong> ci vanno
+              </span>
+              }
             </span>
-            }
-            <span class="line-clamp-2 text-[1.0625rem] leading-tight font-extrabold">{{ card.title }}</span>
-            <span class="truncate text-[0.8125rem] text-(--menu-soft)">{{ card.place }} · {{ card.price }}</span>
-            @if (card.going > 0) {
-            <span class="text-[0.8125rem] text-(--menu-soft)">
-              <strong class="font-bold text-bone">{{ card.going }}</strong> ci vanno
-            </span>
-            }
           </a>
           } @empty {
           <p class="text-sm text-(--menu-soft)">Stasera non c'è ancora nessuna serata in programma.</p>
           }
           } @else {
           @for (placeholder of [1, 2]; track placeholder) {
-          <div class="event-card h-30 w-60 shrink-0 animate-pulse rounded-[1.25rem]" aria-hidden="true"></div>
+          <div class="event-card h-30 w-72 shrink-0 animate-pulse rounded-[1.25rem]" aria-hidden="true"></div>
           }
           }
         </div>

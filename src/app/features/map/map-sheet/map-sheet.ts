@@ -1,6 +1,5 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PIN_COLORS } from '../../../core/config/map-pins';
 import { EventCardDto } from '../../../core/models/event.model';
 import { VenueMapPinDto } from '../../../core/models/venue.model';
 import { EventFiltersService } from '../../../core/services/event-filters.service';
@@ -9,6 +8,7 @@ import { DATE_RANGE_PHRASES, nightShortLabel } from '../../../core/utils/event-f
 import { EventMapCard } from '../event-map-card/event-map-card';
 import { VenueMapCard } from '../venue-map-card/venue-map-card';
 import { MapLayer } from '../map-layer';
+import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
 
 /** A swipe on the header shorter than this is a tap. */
 const SWIPE_PX = 32;
@@ -19,7 +19,6 @@ interface SheetCard {
   live: boolean;
   when: string;
   place: string;
-  color: string;
 }
 
 /**
@@ -33,7 +32,7 @@ interface SheetCard {
  */
 @Component({
   selector: 'app-map-sheet',
-  imports: [EventMapCard, VenueMapCard, RouterLink],
+  imports: [EventMapCard, VenueMapCard, EventPinIcon, RouterLink],
   templateUrl: './map-sheet.html',
   host: { class: 'block' },
 })
@@ -109,7 +108,6 @@ export class MapSheet {
           ? `Live · fino alle ${formatClock(event.endAt)}`
           : `${nightShortLabel(event, now)} · ${formatClock(event.startAt)}`,
         place: `${event.venueName ?? addressPrimary(withoutCountry(event.address))} · ${formatPrice(event)}`,
-        color: PIN_COLORS[event.eventType],
       };
     });
   });

@@ -86,23 +86,36 @@
     <ul
       class="ev-scroll-row flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto px-4 pt-0.5 pb-1 md:snap-none md:flex-col md:overflow-x-visible">
       @for (card of cards(); track card.event.id) {
-      <li class="w-64 shrink-0 snap-start md:w-auto">
+      <li class="w-72 shrink-0 snap-start md:w-auto">
         <button type="button"
-          class="flex w-full cursor-pointer flex-col gap-1 rounded-2xl border border-(--ev-edge) bg-(--ev-raised) p-3 text-left transition-colors hover:border-(--ev-primary)"
+          class="flex w-full cursor-pointer gap-3 rounded-2xl border border-(--ev-edge) bg-(--ev-raised) p-3 text-left transition-colors hover:border-(--ev-primary)"
           (click)="eventSelected.emit(card.event)">
-          <span class="flex items-center gap-1.5 text-[0.6875rem] font-extrabold tracking-[0.04em] text-(--ev-soft) uppercase tabular-nums">
-            <span class="size-2 shrink-0 rounded-full" [style.background]="card.color" aria-hidden="true"></span>
-            @if (card.live) {
-            <span class="inline-flex items-center gap-1 rounded-md bg-live px-1.5 py-px text-white">
-              <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
-              {{ card.when }}
-            </span>
+          <!-- The flyer (or the type's pin) on the left, where the open card and
+              the list's cards have it: the card's height, 3:4 at the least.
+              Absolute, so the picture's own size never stretches the card. -->
+          <span class="relative flex min-h-18 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--ev-edge) bg-(--ev-surface)"
+            aria-hidden="true">
+            @if (card.event.flyerUrl; as flyer) {
+            <img class="absolute inset-0 size-full object-cover" [src]="flyer" alt="" loading="lazy" decoding="async" />
             } @else {
-            {{ card.when }}
+            <app-event-pin-icon [type]="card.event.eventType" [size]="32" />
             }
           </span>
-          <span class="line-clamp-2 font-display text-base leading-tight font-extrabold">{{ card.event.title }}</span>
-          <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ card.place }}</span>
+          <span class="flex min-w-0 flex-1 flex-col gap-1">
+            <!-- No type dot: the flyer or the type's pin, on the left, says it. -->
+            <span class="flex items-center gap-1.5 text-[0.6875rem] font-extrabold tracking-[0.04em] text-(--ev-soft) uppercase tabular-nums">
+              @if (card.live) {
+              <span class="inline-flex items-center gap-1 rounded-md bg-live px-1.5 py-px text-white">
+                <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+                {{ card.when }}
+              </span>
+              } @else {
+              {{ card.when }}
+              }
+            </span>
+            <span class="line-clamp-2 font-display text-base leading-tight font-extrabold">{{ card.event.title }}</span>
+            <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ card.place }}</span>
+          </span>
         </button>
       </li>
       }
@@ -110,7 +123,7 @@
     } @else if (showsEvents() && loading()) {
     <div class="flex gap-2.5 overflow-hidden px-4 md:flex-col" aria-hidden="true">
       @for (placeholder of [1, 2]; track placeholder) {
-      <div class="h-24 w-64 shrink-0 animate-pulse rounded-2xl bg-(--ev-raised) md:w-auto"></div>
+      <div class="h-24 w-72 shrink-0 animate-pulse rounded-2xl bg-(--ev-raised) md:w-auto"></div>
       }
     </div>
     }

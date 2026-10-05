@@ -578,16 +578,18 @@ Global for the same reason as the pins: Leaflet renders it outside Angular. */
   }
 }
 
-/* Event browsing, /mappa and /lista: one palette for the chips, cards, bottom
-sheet and Filtri dialog both pages share (shared/event-filters, map-sheet,
-event-list), from the Claude Design canvas ("Mappa con filtri e bottom
-sheet", "Lista per giorno") translated onto the brand tokens above, like the
-menu page. Global rather than in each component: they're read by components
-of both pages, the dialog included. By day the brand tokens switch to the
-basemap's paper palette, same values as the menu's and the daytime sidebar's,
-and the few colours that don't follow from them get their own. */
+/* Event browsing, /mappa, /lista and an event's page: one palette for the
+chips, cards, bottom sheet and Filtri dialog they share (shared/event-filters,
+map-sheet, event-list, event-details), from the Claude Design canvas ("Mappa
+con filtri e bottom sheet", "Lista per giorno", "Scheda evento") translated
+onto the brand tokens above, like the menu page. Global rather than in each
+component: they're read by components of all three, the dialog included. By
+day the brand tokens switch to the basemap's paper palette, same values as
+the menu's and the daytime sidebar's, and the few colours that don't follow
+from them get their own. */
 app-map,
-app-event-list {
+app-event-list,
+app-event-details {
   --ev-surface: color-mix(in srgb, var(--color-violet) 9%, var(--color-ink));
   --ev-raised: color-mix(in srgb, var(--color-violet) 17%, var(--color-ink));
   --ev-edge: color-mix(in srgb, var(--color-violet) 32%, var(--color-ink));
@@ -621,9 +623,15 @@ app-event-list {
   --ev-float-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   --ev-link: var(--color-rose-lit);
   --ev-error: #ff8fab;
+  /* Round buttons floating over a picture or the page (the event page's
+  back and share): frosted glass, lighter than the ground, so they read on a
+  dark flyer and on the dark page alike. */
+  --ev-glass: rgba(255, 255, 255, 0.16);
+  --ev-glass-edge: rgba(255, 255, 255, 0.3);
+  --ev-glass-text: #ffffff;
 }
 
-:root[data-theme='light'] :is(app-map, app-event-list) {
+:root[data-theme='light'] :is(app-map, app-event-list, app-event-details) {
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
   --color-amber: #c2410c;
@@ -653,10 +661,20 @@ app-event-list {
   --ev-float-shadow: 0 2px 8px rgba(40, 30, 80, 0.18);
   --ev-link: #be123c;
   --ev-error: #9f1239;
+  --ev-glass: rgba(255, 255, 255, 0.82);
+  --ev-glass-edge: rgba(29, 38, 64, 0.14);
+  --ev-glass-text: #1d2640;
 }
 
 /* Horizontal chip rows scroll by swipe, without a scrollbar under them. */
 @layer components {
+  /* Instagram's own icon gradient, so a link reads as "Instagram" at a
+  glance instead of just another monochrome glyph (the event and venue
+  pages' contacts). */
+  .instagram-gradient {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+  }
+
   .ev-scroll-row {
     scrollbar-width: none;
     overscroll-behavior-x: contain;

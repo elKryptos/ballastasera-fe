@@ -1,317 +1,307 @@
 <app-auth-modal [(open)]="authOpen" />
 
-<!-- Layout from the Claude Design canvas "Pagina evento" (desktop + mobile).
-    @container: the one-vs-two column switch below reacts to the width left
-    after appSidebarPush's padding, not the raw viewport, so the fixed 340px
-    right column never collides with the sidebar when it expands. That's why
-    the layout uses container variants (@5xl: = 1024px, @7xl: = 1280px of
-    <main>'s width) instead of the viewport breakpoints sm:/md:/lg:. Colours
-    come from the .event-page tokens in event-details.css (light or dark, per
-    the theme chosen in the sidebar — see ThemeService). -->
-<main appSidebarPush class="event-page @container flex min-h-dvh flex-col pt-(--header-h) md:pt-0">
+<!-- "Scheda evento" from the Claude Design canvas: the flyer, then who
+    organizes it, when and how much, who's going, the description and where,
+    with Parteciperò and Mi piace in a bar at the bottom. Colours: the --ev-*
+    tokens in styles.css, shared with /mappa and /lista. From @5xl up the
+    flyer and the two buttons move to a sticky column on the left: a
+    container query (1024px of <main>'s width, after appSidebarPush's
+    padding), so the sidebar opening never squeezes the two columns. -->
+<main appSidebarPush class="@container flex min-h-dvh flex-col pt-(--header-h) md:pt-0">
   @if (loading()) {
-  <p class="px-4 py-16 text-center text-sm text-(--ed-muted)">Caricamento evento…</p>
+  <p class="px-4 py-16 text-center text-sm text-(--ev-soft)">Caricamento evento…</p>
   } @else if (event(); as event) {
-  <!-- Live/soon badge, shared by its two spots: overlaid on the flyer, or
-    next to the eyebrow above the title when there's no flyer. -->
+  <!-- Live/soon badge, shared by its two spots: on the flyer, or next to the
+    eyebrow when there's no flyer. -->
   <ng-template #statusBadge>
-    @if (isLiveNow(event)) {
-    <span
-      class="bg-live text-white inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-bold tracking-[0.5px] @5xl:h-6.5 @5xl:text-xs">
-      <span class="live-dot size-1.5 rounded-full bg-white @5xl:size-1.75"></span> LIVE ORA
-    </span>
-    } @else if (startsInMinutes(event); as minutes) {
-    <span
-      class="bg-(--ed-soon) text-(--ed-on-solid) inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-bold @5xl:h-6.5 @5xl:text-xs">
-      Inizia tra {{ minutes }} min
+    @if (status(); as status) {
+    <span class="inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-extrabold tracking-[0.03em] uppercase"
+      [class]="status.live ? 'bg-live text-white' : 'bg-(--ev-price) text-(--ev-on-price)'">
+      @if (status.live) {
+      <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+      }
+      {{ status.text }}
     </span>
     }
   </ng-template>
 
-  <div class="ed-backdrop" aria-hidden="true">
-    <span class="ed-grain"></span>
-  </div>
-
-  <div class="relative mx-auto w-full max-w-260 flex-1 px-4 pt-3 pb-8 @5xl:px-8 @5xl:pt-6 @5xl:pb-16">
-    <!-- Top bar: icon-only circles on mobile, labelled back pill from @5xl up. -->
-    <div class="mb-4 flex items-center justify-between @5xl:mb-6">
-      <button type="button" class="ed-glass-btn rounded-full @5xl:pr-4.5 @5xl:pl-3.5" (click)="goBack()"
-        aria-label="Indietro">
-        <ng-icon name="lucideArrowLeft" class="size-4.5" />
+  <!-- On phones one column, in this order: the flyer, the content, the
+    buttons' bar. From @5xl up a grid: the top bar across, then the sticky
+    column on the left (its wrapper is display:contents until then) and the
+    content on the right. -->
+  <div
+    class="relative mx-auto flex w-full max-w-300 flex-1 flex-col @5xl:grid @5xl:grid-cols-[22rem_minmax(0,1fr)] @5xl:content-start @5xl:gap-x-10 @5xl:gap-y-6 @5xl:px-8 @5xl:py-6">
+    <!-- Back and share: over the flyer on phones, a row of their own without
+      one, and from @5xl up. Frosted glass (--ev-glass*), so they stand out on
+      the flyer and on the page alike. -->
+    <div class="inset-x-0 top-0 z-10 flex items-center justify-between p-4 @5xl:static @5xl:col-span-2 @5xl:p-0"
+      [class.absolute]="!!event.flyerUrl">
+      <button type="button" (click)="goBack()" aria-label="Indietro"
+        class="inline-flex size-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-(--ev-glass-edge) bg-(--ev-glass) text-(--ev-glass-text) shadow-(--ev-float-shadow) backdrop-blur-md @5xl:w-auto @5xl:pr-4.5 @5xl:pl-3.5 @5xl:font-semibold">
+        <ng-icon name="lucideArrowLeft" class="size-5" />
         <span class="hidden @5xl:inline">Indietro</span>
       </button>
-      <button type="button" class="ed-glass-btn rounded-full" (click)="share(event)" aria-label="Condividi">
-        <ng-icon [name]="linkCopied() ? 'lucideCheck' : 'lucideShare2'" class="size-4.5" />
+      <button type="button" (click)="share(event)" aria-label="Condividi"
+        class="inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-(--ev-glass-edge) bg-(--ev-glass) text-(--ev-glass-text) shadow-(--ev-float-shadow) backdrop-blur-md">
+        <ng-icon [name]="copied() === 'link' ? 'lucideCheck' : 'lucideShare2'" class="size-5" />
       </button>
     </div>
 
-    <!-- One set of cards for both layouts. Below @5xl the two column
-      wrappers are display:contents, so every card becomes a direct item of
-      the outer column and order-* sets the mobile sequence (flyer, title,
-      quando, dove, descrizione, organizzatore — logistics first, reading
-      last). From @5xl up the wrappers become real columns and the
-      @5xl:order-* values restore DOM order (descrizione before dove). -->
-    <div class="flex flex-col gap-4 @5xl:flex-row @5xl:items-start @5xl:gap-6">
-      <!-- LEFT column (desktop) -->
-      <div class="contents @5xl:flex @5xl:min-w-0 @5xl:flex-1 @5xl:flex-col @5xl:gap-6">
-        <!-- Info: bare title + a "quando/numeri" card on mobile, one big
-          glass card on desktop (with address row and actions too) — the
-          glass moves from the inner "quando" block to this section at @5xl. -->
-        <section class="@5xl:border @5xl:border-(--ed-glass-border) @5xl:bg-(--ed-glass) @5xl:p-7 @5xl:shadow-(--ed-shadow) @5xl:backdrop-blur-[20px] @5xl:backdrop-saturate-140 rounded-lg order-2 flex flex-col gap-4 @5xl:gap-4.5">
-          <div class="flex flex-col gap-2 px-1 @5xl:px-0">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <p class="text-(--ed-accent) text-[11px] font-bold tracking-[1.5px] uppercase @5xl:text-xs @5xl:tracking-[2px]">
-                {{ eventTypeLabel(event) }} · {{ event.cityName }}
-              </p>
-              <!-- Without a flyer there's nothing to overlay the live/soon
-                badge on, so it sits here, right of the eyebrow, instead. -->
-              @if (!event.flyerUrl) {
-              <ng-container [ngTemplateOutlet]="statusBadge" />
-              }
-            </div>
-            <h1
-              class="font-display text-[34px] leading-none font-extrabold tracking-[-0.5px] @5xl:text-[52px] @5xl:tracking-[-1px]">
-              {{ event.title }}
-            </h1>
-            @if (event.danceStyles.length) {
-            <div class="mt-0.5 flex flex-wrap gap-1.5 @5xl:mt-1 @5xl:gap-2">
-              @for (style of event.danceStyles; track $index) {
-              <span class="bg-(--ed-chip-bg) text-(--ed-chip-fg) rounded-sm px-2.5 py-1 text-xs font-semibold @5xl:px-3 @5xl:py-1.5 @5xl:text-[13px]">
-                {{ style }}
-              </span>
-              }
-            </div>
-            }
-          </div>
+    <div class="contents @5xl:sticky @5xl:top-6 @5xl:col-start-1 @5xl:row-start-2 @5xl:flex @5xl:flex-col @5xl:gap-4 @5xl:self-start">
+      <!-- The flyer fills its frame edge to edge (object-cover, so a poster of
+        another shape loses a strip at the edges); tap for the lightbox, which
+        shows it whole. On phones the frame is 4:5, an Instagram post's:
+        what flyers are mostly made for. -->
+      @if (event.flyerUrl; as flyer) {
+      <button type="button" (click)="openFlyer()" aria-label="Apri il flyer a tutto schermo"
+        class="relative order-1 block aspect-4/5 w-full shrink-0 cursor-zoom-in overflow-hidden bg-(--ev-raised) p-0 @5xl:aspect-3/4 @5xl:rounded-3xl @5xl:border @5xl:border-(--ev-edge)">
+        <img [src]="flyer" [alt]="event.title" fetchpriority="high" class="absolute inset-0 size-full object-cover" />
+        <!-- Shades for what sits on it: back and share up top (phones only,
+          where they float over it), the badge at the bottom. -->
+        <span class="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/40 to-transparent @5xl:hidden" aria-hidden="true"></span>
+        <span class="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/50 to-transparent" aria-hidden="true"></span>
+        <span class="absolute bottom-4 left-4 flex">
+          <ng-container [ngTemplateOutlet]="statusBadge" />
+        </span>
+        <span class="absolute right-4 bottom-4 inline-flex size-9 items-center justify-center rounded-full border border-(--ev-glass-edge) bg-(--ev-glass) text-(--ev-glass-text) shadow-(--ev-float-shadow) backdrop-blur-md"
+          aria-hidden="true">
+          <ng-icon name="lucideMaximize2" class="size-4" />
+        </span>
+      </button>
+      } @else {
+      <!-- From @5xl up, the column keeps its shape without a flyer: the
+        event type's pin. -->
+      <div class="hidden aspect-3/4 items-center justify-center rounded-3xl border border-(--ev-edge) bg-(--ev-raised) @5xl:flex"
+        aria-hidden="true">
+        <app-event-pin-icon [type]="event.eventType" [size]="96" />
+      </div>
+      }
 
-          <div class="border border-(--ed-glass-border) bg-(--ed-glass) p-4 shadow-(--ed-shadow) @5xl:border-0 @5xl:bg-transparent @5xl:p-0 @5xl:shadow-none rounded-lg flex flex-col gap-3.5">
-            <div class="flex items-center gap-3 @5xl:gap-3.5">
-              <span class="border border-(--ed-tile-border) bg-(--ed-tile) text-(--ed-accent) flex size-10 shrink-0 items-center justify-center rounded-lg">
-                <ng-icon name="lucideClock" class="size-5" />
-              </span>
-              <div>
-                <p class="text-[15px] font-semibold @5xl:text-base">{{ formatDate(event) }}</p>
-                <p class="text-(--ed-muted) text-[13px] @5xl:text-sm">{{ formatTimeRange(event) }}</p>
-              </div>
-            </div>
+      <!-- Parteciperò and Mi piace: a bar stuck to the bottom on phones, under
+        the flyer from @5xl up. Pressed styling comes from aria-pressed. -->
+      <div
+        class="sticky bottom-0 z-10 order-3 mt-auto flex gap-2.5 border-t border-(--ev-edge) bg-(--color-ink)/90 px-4 pt-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] backdrop-blur-md @5xl:static @5xl:mt-0 @5xl:border-0 @5xl:bg-transparent @5xl:p-0 @5xl:backdrop-blur-none">
+        <button type="button" [attr.aria-pressed]="going()" (click)="toggleGoing()"
+          class="flex h-13 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-primary) bg-transparent text-base font-bold text-(--ev-text) tabular-nums transition-colors aria-pressed:bg-(--ev-primary) aria-pressed:text-white">
+          <ng-icon name="lucideCircleCheck" class="size-5" />
+          Parteciperò · {{ event.goingCount }}
+        </button>
+        <button type="button" [attr.aria-pressed]="liked()" (click)="toggleLike()" [attr.aria-label]="'Mi piace, ' + event.likesCount"
+          class="flex h-13 w-23 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-(--ev-like-bg) text-[0.9375rem] font-bold text-(--ev-like) tabular-nums transition-colors aria-pressed:bg-(--ev-like-on) aria-pressed:text-white">
+          <ng-icon name="lucideHeart" class="size-5" [class]="heartIconClass()" />
+          {{ event.likesCount }}
+        </button>
+      </div>
+    </div>
 
-            @if (event.venueName || event.address) {
-            <div class="hidden items-center gap-3.5 @5xl:flex">
-              <span class="border border-(--ed-tile-border) bg-(--ed-tile) text-(--ed-accent) flex size-10 shrink-0 items-center justify-center rounded-lg">
-                <ng-icon name="lucideMapPin" class="size-5" />
-              </span>
-              <div class="min-w-0">
-                <p class="text-base font-semibold">{{ event.venueName || addressPrimary(event.address) }}</p>
-                <p class="text-(--ed-muted) text-sm">{{ addressSubtitle(event) }}</p>
-              </div>
-            </div>
-            }
-
-            <div class="grid grid-cols-3 gap-2 @5xl:mt-1 @5xl:gap-3">
-              <div class="border border-(--ed-tile-border) bg-(--ed-tile) rounded-lg px-3 py-2 @5xl:px-4 @5xl:py-3">
-                <p class="text-(--ed-muted) text-[10px] font-bold tracking-[1.2px] uppercase @5xl:text-[11px] @5xl:tracking-[1.5px]">
-                  Prezzo</p>
-                <p class="text-(--ed-price) text-base font-bold tabular-nums @5xl:mt-0.5 @5xl:text-lg">{{
-                  formatPrice(event) }}</p>
-              </div>
-              <div class="border border-(--ed-tile-border) bg-(--ed-tile) rounded-lg px-3 py-2 @5xl:px-4 @5xl:py-3">
-                <p class="text-(--ed-muted) text-[10px] font-bold tracking-[1.2px] uppercase @5xl:text-[11px] @5xl:tracking-[1.5px]">
-                  Partecipano</p>
-                <p class="flex items-center gap-1.5 text-base font-bold tabular-nums @5xl:mt-0.5 @5xl:text-lg">
-                  {{ event.goingCount }}
-                  <ng-icon name="lucideUsers" class="size-4" [class.text-(--ed-accent)]="event.goingCount > 0" />
-                </p>
-              </div>
-              <div class="border border-(--ed-tile-border) bg-(--ed-tile) rounded-lg px-3 py-2 @5xl:px-4 @5xl:py-3">
-                <p class="text-(--ed-muted) text-[10px] font-bold tracking-[1.2px] uppercase @5xl:text-[11px] @5xl:tracking-[1.5px]">
-                  Mi piace</p>
-                <p class="flex items-center gap-1.5 text-base font-bold tabular-nums @5xl:mt-0.5 @5xl:text-lg">
-                  {{ event.likesCount }}
-                  <ng-icon name="lucideHeart" class="size-4" [class]="heartIconClass()" />
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Desktop actions; on mobile they live in the sticky bar below. -->
-          <div class="mt-1 hidden gap-3 @5xl:flex">
-            <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--primary flex-1" [attr.aria-pressed]="going()"
-              (click)="toggleGoing()">
-              <ng-icon name="lucideCircleCheck" class="size-4.5" />
-              Parteciperò
-            </button>
-            <button type="button" class="group inline-flex ed-btn rounded-lg ed-btn--like flex-1" [attr.aria-pressed]="liked()"
-              (click)="toggleLike()">
-              <ng-icon name="lucideHeart" class="size-4.5 group-aria-pressed:text-white" [class]="heartIconClass()" />
-              Mi piace
-            </button>
-          </div>
-        </section>
-
-        @if (event.description; as description) {
-        <section class="ed-card order-4 rounded-lg p-4 @5xl:order-3 @5xl:p-6">
-          <h2 class="font-display text-lg font-bold @5xl:text-xl">Descrizione</h2>
-          <p class="text-(--ed-text-2) mt-1.5 text-[15px] leading-[1.55] whitespace-pre-line @5xl:mt-2.5 @5xl:text-base @5xl:leading-[1.6]">
-            {{ description }}</p>
-        </section>
-        }
-
-        <!-- Dove: read-only mini-map (tap = /mappa centred on this event) + directions. -->
-        @if (event.venueName || event.address) {
-        <section
-          class="ed-card order-3 flex flex-col gap-3 rounded-lg p-2.5 @5xl:order-4 @5xl:flex-row @5xl:items-center @5xl:gap-5 @5xl:p-3">
-          @if (mapCenter(); as center) {
-          <button type="button"
-            class="relative block h-35 w-full shrink-0 cursor-pointer overflow-hidden rounded-lg @5xl:h-42.5 @5xl:w-75"
-            (click)="openOnMap(event)" aria-label="Vedi sulla mappa">
-            <app-map-preview class="absolute inset-0" [center]="center" [zoom]="miniMapZoom" />
-            <app-event-pin-icon [type]="event.eventType" [size]="48"
-              class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full" />
-          </button>
+    <div class="order-2 flex flex-col gap-5 px-4 pt-5 pb-8 @5xl:col-start-2 @5xl:row-start-2 @5xl:gap-6 @5xl:p-0 @5xl:pb-16">
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="flex items-center gap-1.5 text-xs font-bold tracking-[0.08em] text-(--ev-soft) uppercase">
+            <app-event-pin-icon [type]="event.eventType" [size]="16" />
+            {{ eventTypeLabel(event) }} · {{ event.cityName }}
+          </p>
+          @if (!event.flyerUrl) {
+          <ng-container [ngTemplateOutlet]="statusBadge" />
           }
-          <div class="flex flex-1 flex-col gap-3 @5xl:gap-3.5 @5xl:pr-3">
-            <div class="px-1.5 @5xl:px-0">
-              <p class="text-(--ed-muted) hidden text-[11px] font-bold tracking-[1.5px] uppercase @5xl:block">Dove</p>
-              <p class="text-[15px] font-semibold @5xl:mt-1 @5xl:text-base">{{ event.venueName ||
-                addressPrimary(event.address) }}</p>
-              <p class="text-(--ed-muted) text-[13px] @5xl:text-sm">{{ addressSubtitle(event) }}</p>
-            </div>
-            <!-- Side by side on mobile and wide desktop; stacked in the narrow
-              @5xl–@7xl range (1024–1280px), where two columns squeeze the labels. -->
-            <div class="flex gap-2 @5xl:flex-col @7xl:flex-row">
-              @if (mapCenter()) {
-              <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--map flex-1" (click)="openOnMap(event)">Vedi sulla mappa</button>
-              }
-              <a [href]="googleMapsUrl(event.address, event.venueName)" target="_blank" rel="noopener noreferrer"
-                class="inline-flex ed-btn rounded-lg ed-btn--directions flex-1">Indicazioni</a>
-            </div>
-          </div>
-        </section>
+        </div>
+        <h1 class="font-display text-[2rem] leading-[1.1] font-extrabold tracking-[-0.02em] @5xl:text-5xl">{{ event.title }}</h1>
+        @if (event.danceStyles.length) {
+        <ul class="mt-0.5 flex flex-wrap gap-1.5" aria-label="Stili">
+          @for (style of event.danceStyles; track $index) {
+          <li class="rounded-lg bg-(--ev-tag-bg) px-2.5 py-1 text-[0.8125rem] font-semibold text-(--ev-tag-text)">{{ style }}</li>
+          }
+        </ul>
         }
       </div>
 
-      <!-- RIGHT column (desktop) -->
-      <div class="contents @5xl:flex @5xl:w-85 @5xl:shrink-0 @5xl:flex-col @5xl:gap-6">
-        <!-- Flyer: fills the 3:4 frame (object-cover, may crop the edges);
-          tap to open the lightbox, which shows the whole poster. Skipped
-          without a flyer. -->
-        @if (event.flyerUrl) {
-        <button type="button"
-          class="border border-(--ed-glass-border) bg-(--ed-flyer-bg) shadow-(--ed-shadow) relative order-1 aspect-3/4 w-full cursor-zoom-in overflow-hidden rounded-lg p-0"
-          (click)="openFlyer()" aria-label="Apri il flyer a tutto schermo">
-          <img [src]="event.flyerUrl" [alt]="event.title" fetchpriority="high"
-            class="size-full object-cover" />
-
-          <div class="absolute top-3 left-3 flex">
-            <ng-container [ngTemplateOutlet]="statusBadge" />
+      <!-- The organizer's card and the when-and-how-much one: stacked, side by
+        side from @6xl up (1152px of <main>), where each still has room. -->
+      <div class="contents @6xl:grid @6xl:grid-cols-2 @6xl:gap-4">
+      <!-- Organizer, and the event's contacts. The organizer is null once
+        deleted; the card then only keeps the event's own links. -->
+      @if (event.organizer || contacts().length) {
+      <section class="flex flex-col gap-3 rounded-[1.125rem] border border-(--ev-edge) bg-(--ev-surface) p-3">
+        @if (event.organizer; as organizer) {
+        <div class="flex items-center gap-3">
+          @if (organizer.logoUrl) {
+          <img [src]="organizer.logoUrl" alt="" class="size-11 shrink-0 rounded-[0.875rem] object-cover" />
+          } @else {
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-(--ev-primary) font-display font-extrabold text-white"
+            aria-hidden="true">{{ organizerInitials(organizer) }}</span>
+          }
+          <div class="min-w-0 flex-1">
+            <p class="text-xs text-(--ev-soft)">Organizzato da</p>
+            <p class="flex items-center gap-1.5 text-[0.9375rem] font-bold">
+              <span class="truncate">{{ organizer.name }}</span>
+              @if (organizer.verified) {
+              <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-(--ev-badge-bg)" role="img" aria-label="Verificato">
+                <path fill="currentColor"
+                  d="M12 2l2.4 2.1 3.2-.3.7 3.1 2.7 1.7-1.3 2.9 1.3 2.9-2.7 1.7-.7 3.1-3.2-.3L12 22l-2.4-2.1-3.2.3-.7-3.1-2.7-1.7L4.3 12 3 9.1l2.7-1.7.7-3.1 3.2.3z" />
+                <path d="M8.5 12.2l2.3 2.3 4.7-4.7" fill="none" class="stroke-(--ev-badge-text)" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              }
+            </p>
           </div>
-
-          <span
-            class="bg-(--ed-overlay-pill) text-(--ed-text) backdrop-blur-md absolute right-3 bottom-3 inline-flex size-9 items-center justify-center gap-1.5 rounded-full text-xs font-bold @5xl:h-8 @5xl:w-auto @5xl:px-3">
-            <ng-icon name="lucideMaximize2" class="size-3.5" />
-            <span class="hidden @5xl:inline">Ingrandisci</span>
-          </span>
-        </button>
+          <button type="button" [attr.aria-pressed]="following()" (click)="toggleFollow()"
+            class="h-9 shrink-0 cursor-pointer rounded-xl border border-(--ev-edge) px-3.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white">
+            {{ following() ? 'Segui già' : 'Segui' }}
+          </button>
+        </div>
+        @if (organizer.description; as bio) {
+        <p class="text-sm leading-relaxed text-(--ev-soft)">{{ bio }}</p>
+        }
         }
 
-        <!-- Organizer: compact row on mobile, full card on desktop. The organizer
-          is null once deleted; the card then only keeps the event's WhatsApp link. -->
-        @if (event.organizer || event.whatsappUrl) {
-        <section class="ed-card order-5 flex flex-col gap-3.5 rounded-lg px-4 py-3.5 @5xl:p-6">
-          @if (event.organizer; as organizer) {
-          <div class="flex items-center gap-3">
-            @if (organizer.logoUrl) {
-            <img [src]="organizer.logoUrl" [alt]="organizer.name"
-              class="size-11 shrink-0 rounded-full object-cover @5xl:size-12" />
-            } @else {
-            <span
-              class="bg-(--ed-chip-bg) text-(--ed-chip-fg) flex size-11 shrink-0 items-center justify-center rounded-full font-display text-lg font-extrabold @5xl:size-12 @5xl:text-xl">
-              {{ organizerInitials(organizer) }}
-            </span>
-            }
-            <div class="min-w-0 flex-1">
-              <p class="flex items-center gap-1.5 truncate text-[15px] font-bold @5xl:text-[17px]">
-                {{ organizer.name }}
-                @if (organizer.verified) {
-                <ng-icon name="lucideBadgeCheck" class="text-(--ed-accent) size-4 shrink-0" aria-label="Verificato" />
-                }
-              </p>
-              <p class="text-(--ed-muted) text-xs @5xl:text-[13px]">{{ organizerTypeLabel(organizer) }}</p>
-            </div>
-            <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--outline-follow shrink-0 px-4 @5xl:hidden"
-              [attr.aria-pressed]="following()" (click)="toggleFollow()">
-              {{ following() ? 'Segui già' : 'Segui' }}
-            </button>
-          </div>
-
-          @if (organizer.description; as bio) {
-          <p class="text-(--ed-text-2) text-sm leading-relaxed @5xl:text-[15px]">{{ bio }}</p>
-          }
-
-          <button type="button" class="ed-btn rounded-lg ed-btn--outline-follow hidden @5xl:inline-flex"
-            [attr.aria-pressed]="following()" (click)="toggleFollow()">
-            {{ following() ? 'Segui già' : 'Segui organizzatore' }}
-          </button>
-          }
-
-          @if (event.organizer?.instagram || event.whatsappUrl || event.organizer?.website) {
-          <div class="border-(--ed-divider) flex flex-col gap-2 text-sm" [class]="event.organizer ? 'border-t pt-3.5' : ''">
-            @if (event.organizer?.instagram; as handle) {
-            <a [href]="instagramUrl(handle)" target="_blank" rel="noopener noreferrer"
-              class="text-(--ed-text-2) flex items-center gap-2 hover:underline">
-              <span class="instagram-gradient flex size-7 shrink-0 items-center justify-center rounded-lg">
-                <ng-icon name="lucideInstagram" class="size-4.5 text-white" />
+        @if (contacts().length) {
+        <ul class="flex flex-wrap gap-2" aria-label="Contatti">
+          @for (contact of contacts(); track contact.kind) {
+          <li>
+            <a [href]="contact.href" target="_blank" rel="noopener noreferrer"
+              class="inline-flex h-9 items-center gap-2 rounded-xl border border-(--ev-edge) bg-(--ev-raised) pr-3 pl-1.5 text-[0.8125rem] font-semibold text-(--ev-text)">
+              @switch (contact.kind) {
+              @case ('instagram') {
+              <span class="instagram-gradient flex size-6 items-center justify-center rounded-lg">
+                <ng-icon name="lucideInstagram" class="size-3.5 text-white" />
               </span>
-              <!-- The bare handle, even where an older record holds a URL. -->
-              {{ instagramHandle(handle) }}
-            </a>
-            }
-
-            @if (event.whatsappUrl; as whatsappUrl) {
-            <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer"
-              class="text-(--ed-text-2) flex items-center gap-2 hover:underline">
-              <span class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#25D366]">
+              }
+              @case ('whatsapp') {
+              <span class="flex size-6 items-center justify-center rounded-lg bg-[#25D366]">
                 <!-- Official WhatsApp logo (brand-icons.ts) -->
-                <svg viewBox="0 0 24 24" class="size-4.5 fill-white" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="size-3.5 fill-white" aria-hidden="true">
                   <path [attr.d]="whatsappPath" />
                 </svg>
               </span>
-              WhatsApp
-            </a>
-            }
-
-            @if (event.organizer?.website; as website) {
-            <a [href]="website" target="_blank" rel="noopener noreferrer"
-              class="text-(--ed-text-2) flex items-center gap-2 hover:underline">
-              <span class="bg-(--ed-chip-bg) text-(--ed-chip-fg) flex size-7 shrink-0 items-center justify-center rounded-lg">
+              }
+              @default {
+              <span class="flex size-6 items-center justify-center rounded-lg bg-(--ev-tag-bg) text-(--ev-tag-text)">
                 <ng-icon name="lucideGlobe" class="size-3.5" />
               </span>
-              Sito web
+              }
+              }
+              {{ contact.label }}
             </a>
+          </li>
+          }
+        </ul>
+        }
+      </section>
+      }
+
+      <!-- When and how much. Its two rows share whatever height the card
+        next to it gives it. -->
+      <section class="flex flex-col overflow-hidden rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) @6xl:only:col-span-2">
+        <div class="flex flex-1 items-center gap-3 p-3.5">
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-(--ev-raised) text-(--ev-tag-text)">
+            <ng-icon name="lucideClock" class="size-5" />
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="text-[0.9375rem] font-bold">{{ dateLabel() }}</p>
+            <p class="text-[0.8125rem] text-(--ev-soft) tabular-nums">{{ formatTimeRange(event) }}</p>
+          </div>
+          <button type="button" (click)="addToCalendar(event)"
+            class="-mr-1 h-11 shrink-0 cursor-pointer px-1 text-[0.8125rem] font-bold text-(--ev-link)">
+            + Calendario
+          </button>
+        </div>
+        <div class="h-px bg-(--ev-edge)"></div>
+        <div class="flex flex-1 items-center gap-3 p-3.5">
+          <span class="flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-(--ev-raised) text-(--ev-price)">
+            <ng-icon name="lucideTag" class="size-5" />
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="text-[0.9375rem] font-bold text-(--ev-price) tabular-nums">{{ formatPrice(event) }}</p>
+            <p class="text-[0.8125rem] text-(--ev-soft)">Ingresso</p>
+          </div>
+        </div>
+      </section>
+      </div>
+
+      <!-- Who's going: their faces and names once EventsService.getAttendees
+        answers, the count until then. A "Vedi tutti" next to the heading
+        will open the whole list, once that dialog exists. -->
+      @if (crowd(); as crowd) {
+      <section class="flex flex-col gap-3">
+        <h2 class="font-display text-[1.1875rem] font-extrabold">Chi ci va</h2>
+        <div class="flex items-center gap-3">
+          <div class="flex shrink-0" aria-hidden="true">
+            @for (face of crowd.faces; track face.userId; let first = $first) {
+            @if (face.avatarUrl) {
+            <img [src]="face.avatarUrl" alt="" class="size-10 rounded-full border-3 border-(--color-ink) object-cover"
+              [class.-ml-3]="!first" />
+            } @else {
+            <span class="flex size-10 items-center justify-center rounded-full border-3 border-(--color-ink) text-sm font-extrabold"
+              [class]="face.tone" [class.-ml-3]="!first">{{ face.initial }}</span>
+            }
+            } @empty {
+            <span class="flex size-10 items-center justify-center rounded-full bg-(--ev-raised) text-(--ev-tag-text)">
+              <ng-icon name="lucideUsers" class="size-5" />
+            </span>
+            }
+            @if (crowd.faces.length && crowd.more > 0) {
+            <span
+              class="-ml-3 flex size-10 items-center justify-center rounded-full border-3 border-(--color-ink) bg-(--ev-tag-bg) text-xs font-extrabold text-(--ev-tag-text) tabular-nums">
+              +{{ crowd.more }}
+            </span>
             }
           </div>
-          }
-        </section>
-        }
-      </div>
-    </div>
-  </div>
+          <p class="text-sm leading-snug text-(--ev-soft)">
+            @if (crowd.total === 0) {
+            Ancora nessuno: sii il primo!
+            } @else if (crowd.names) {
+            <strong class="font-bold text-(--ev-text)">{{ crowd.names }}</strong>
+            @if (crowd.others > 0) {
+            e {{ crowd.others === 1 ? 'un altro' : 'altri ' + crowd.others }}
+            }
+            {{ crowd.total === 1 ? 'partecipa' : 'partecipano' }}
+            } @else {
+            <strong class="font-bold text-(--ev-text) tabular-nums">{{ crowd.total }}</strong>
+            {{ crowd.total === 1 ? 'partecipa' : 'partecipano' }}
+            }
+          </p>
+        </div>
+      </section>
+      }
 
-  <!-- Mobile action bar: sticky at the bottom of <main> (not fixed), so it
-    never slides under the sidebar when the container is narrow but the
-    viewport is md+. The only element there with a backdrop blur, so
-    scrolling stays cheap on low-end phones. -->
-  <div class="border-t border-(--ed-glass-border) bg-(--ed-bar) backdrop-blur-[20px] backdrop-saturate-140 sticky bottom-0 z-10 flex items-center justify-center gap-2 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] @5xl:hidden">
-    <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--primary ed-btn--sm" [attr.aria-pressed]="going()"
-      (click)="toggleGoing()">
-      <ng-icon name="lucideCircleCheck" class="size-5" />
-      Parteciperò
-    </button>
-    <button type="button" class="group inline-flex ed-btn rounded-lg ed-btn--like ed-btn--sm" [attr.aria-pressed]="liked()"
-      (click)="toggleLike()">
-      <ng-icon name="lucideHeart" class="size-5 group-aria-pressed:text-white" [class]="heartIconClass()" />
-      Mi piace
-    </button>
+      @if (event.description; as description) {
+      <section class="flex flex-col gap-2.5">
+        <h2 class="font-display text-[1.1875rem] font-extrabold">Descrizione</h2>
+        <p class="text-[0.9375rem] leading-relaxed whitespace-pre-line text-(--color-lead)">{{ description }}</p>
+      </section>
+      }
+
+      <!-- Dove: a read-only mini-map (a tap opens /mappa on this event), the
+        place, and the way there. -->
+      <section class="flex flex-col gap-3">
+        <h2 class="font-display text-[1.1875rem] font-extrabold">Dove</h2>
+        @if (mapCenter(); as center) {
+        <button type="button" (click)="openOnMap(event)" aria-label="Vedi sulla mappa"
+          class="relative block h-37.5 w-full cursor-pointer overflow-hidden rounded-[1.125rem] border border-(--ev-edge) p-0">
+          <app-map-preview class="absolute inset-0" [center]="center" [zoom]="miniMapZoom" />
+          <app-event-pin-icon [type]="event.eventType" [size]="48"
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)]" />
+        </button>
+        }
+        <div>
+          <p class="font-bold">{{ event.venueName || addressPrimary(event.address) }}</p>
+          @if (addressSubtitle(event); as subtitle) {
+          <p class="text-sm text-(--ev-soft)">{{ subtitle }}</p>
+          }
+        </div>
+        <div class="flex gap-2.5">
+          <a [href]="googleMapsUrl(event.address, event.venueName)" target="_blank" rel="noopener noreferrer"
+            class="flex h-11.5 flex-1 items-center justify-center gap-2 rounded-[0.875rem] border border-(--ev-edge) bg-(--ev-raised) text-sm font-bold text-(--ev-text)">
+            <ng-icon name="lucideNavigation" class="size-4.5" />
+            Portami lì
+          </a>
+          <button type="button" (click)="copyAddress(event)"
+            class="flex h-11.5 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[0.875rem] border border-(--ev-edge) bg-(--ev-raised) text-sm font-bold text-(--ev-text)">
+            <ng-icon [name]="copied() === 'address' ? 'lucideCheck' : 'lucideCopy'" class="size-4.5" />
+            {{ copied() === 'address' ? 'Indirizzo copiato' : 'Copia indirizzo' }}
+          </button>
+        </div>
+      </section>
+    </div>
   </div>
 
   <!-- Flyer lightbox: tap the image to toggle between fit-to-screen and
@@ -335,8 +325,9 @@
   }
   } @else {
   <div class="flex flex-col items-center gap-4 px-4 py-16 text-center">
-    <p class="text-(--ed-follow-fg) text-sm">Impossibile trovare questo evento.</p>
-    <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--secondary" (click)="goBack()">
+    <p class="text-sm text-(--ev-soft)">Impossibile trovare questo evento.</p>
+    <button type="button" (click)="goBack()"
+      class="h-11 cursor-pointer rounded-2xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-bold">
       Torna indietro
     </button>
   </div>

@@ -93,6 +93,16 @@ export interface EventDetailDto {
   interestedCount: number;
 }
 
+/** One of the people going, for "Chi ci va" on the event's page (GET
+ * /events/{id}/attendees, a SpringPage of these). Shaped after UserDto:
+ * the fields still to be checked against the backend's, which so far has
+ * only answered with empty pages. */
+export interface EventAttendeeDto {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
 export interface EventSeriesCreateDto {
   organizerId: string;
   venueId: string | null;

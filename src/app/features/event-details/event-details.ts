@@ -5,16 +5,17 @@ import { Observable } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft,
-  lucideBadgeCheck,
   lucideCheck,
   lucideCircleCheck,
   lucideClock,
+  lucideCopy,
   lucideGlobe,
   lucideHeart,
   lucideInstagram,
-  lucideMapPin,
   lucideMaximize2,
+  lucideNavigation,
   lucideShare2,
+  lucideTag,
   lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
@@ -28,56 +29,69 @@ import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
-import { EventDetailDto } from '../../core/models/event.model';
-import { OrganizerDetailDto, OrganizerType } from '../../core/models/organizer.model';
+import { EventAttendeeDto, EventDetailDto } from '../../core/models/event.model';
+import { OrganizerDetailDto } from '../../core/models/organizer.model';
+import { eventIcs } from '../../core/utils/calendar';
+import { nightDateLabel } from '../../core/utils/event-filters';
 import {
   addressPrimary,
   addressSecondary,
-  formatEventDate,
+  eventBadge,
   formatPrice,
   formatTimeRange,
   googleMapsUrl,
   instagramHandle,
   instagramUrl,
-  isLiveAt,
-  minutesToStart,
   withoutCountry,
 } from '../../core/utils/event-format';
 
-/** Zoom level of the mini-map in the "Dove" card (Leaflet levels, like
- * /mappa's) street level, enough to read the surrounding streets without
+/** Zoom level of the mini-map in the "Dove" section (Leaflet levels, like
+ * /mappa's): street level, enough to read the surrounding streets without
  * being a full interactive map. */
 const MINI_MAP_ZOOM = 16;
 
-const ORGANIZER_TYPE_LABELS: Record<OrganizerType, string> = {
-  PERSON: 'Organizzatore',
-  VENUE: 'Locale',
-  CLUB: 'Discoteca',
-  SCHOOL: 'Scuola',
-  ASSOCIATION: 'Associazione',
-};
+/** Faces shown in "Chi ci va" before the "+N". */
+const CROWD_FACES = 3;
+/** Their colours when there's no photo: the canvas' sky, mint and yellow,
+ * each with a dark initial on it. */
+const FACE_TONES = [
+  'bg-[#6aa8ff] text-[#0d1a33]',
+  'bg-(--color-mint) text-[#0e2a26]',
+  'bg-[#f5c04a] text-[#2a1d05]',
+];
 
+type ContactKind = 'instagram' | 'whatsapp' | 'website';
+
+/** How long "Copiato" stays on the button that copied something. */
+const COPIED_MS = 2000;
+
+/** An event's page, from the "Scheda evento" artboard of the Claude Design
+ * canvas: the flyer, who organizes it, when and how much, who's going, the
+ * description and where, with Parteciperò and Mi piace always in reach. */
 @Component({
   selector: 'app-event-details',
   templateUrl: './event-details.html',
-  styleUrl: './event-details.css',
   imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon],
-  // On the document, not the lightbox <div>: that div never holds focus, so a
-  // keydown listener on it would never fire.
-  host: { '(document:keydown.escape)': 'closeFlyer()' },
+  host: {
+    class: 'block min-h-dvh bg-(--color-ink) text-(--ev-text)',
+    // On the document, not the lightbox <div>: that div never holds focus, so a
+    // keydown listener on it would never fire.
+    '(document:keydown.escape)': 'closeFlyer()',
+  },
   providers: [
     provideIcons({
       lucideArrowLeft,
-      lucideBadgeCheck,
       lucideCheck,
       lucideCircleCheck,
       lucideClock,
+      lucideCopy,
       lucideGlobe,
       lucideHeart,
       lucideInstagram,
-      lucideMapPin,
       lucideMaximize2,
+      lucideNavigation,
       lucideShare2,
+      lucideTag,
       lucideUsers,
       lucideX,
     }),
@@ -93,9 +107,12 @@ export class EventDetails {
 
   protected readonly event = signal<EventDetailDto | null>(null);
   protected readonly loading = signal(true);
+  /** Who's going, by name — see loadAttendees(). Empty until it answers,
+   * or if it can't: "Chi ci va" then goes by goingCount alone. */
+  private readonly attendees = signal<EventAttendeeDto[]>([]);
 
   /** Opens the shared login dialog when a signed-out visitor taps
-   * Parteciperò/Mi piace both require a session server-side (same pattern
+   * Parteciperò/Mi piace: both require a session server-side (same pattern
    * as map.ts). */
   protected readonly authOpen = signal(false);
   protected readonly going = signal(false);
@@ -103,27 +120,23 @@ export class EventDetails {
   /** No follow-organizer endpoint yet — local-only toggle. */
   protected readonly following = signal(false);
 
-  /** Outline while not liked; filled with --ed-heart once liked shared by
-   * the "Mi piace" counter and both like buttons (which turn it white when
-   * pressed, see the template). lucideHeart's <svg> hardcodes fill="none" and
-   * ng-icon has no input for it, so the fill goes on the inner svg via an
-   * arbitrary variant. Same approach as heartIconClass in event-map-card.ts. */
-  protected readonly heartIconClass = computed(() =>
-    this.liked() ? 'text-(--ed-heart) [&_svg]:fill-current' : '',
-  );
-  /** Briefly swaps the share icon for a checkmark after copying the link
-   * (clipboard fallback for browsers without navigator.share). */
-  protected readonly linkCopied = signal(false);
+  /** lucideHeart's <svg> hardcodes fill="none" and ng-icon has no input for
+   * it, so a liked heart is filled through an arbitrary variant on the inner
+   * svg. Its colour follows the button's. */
+  protected readonly heartIconClass = computed(() => (this.liked() ? '[&_svg]:fill-current' : ''));
+  /** The button that just copied something shows "Copiato" for a moment:
+   * the share fallback (the page's link) or "Copia indirizzo". */
+  protected readonly copied = signal<'link' | 'address' | null>(null);
 
   /** Fullscreen flyer lightbox: tap the hero to open, tap the image again to
    * toggle between fit-to-screen and full-size (pannable via scroll). */
   protected readonly flyerOpen = signal(false);
   protected readonly flyerZoomed = signal(false);
 
-  /** Where the "Dove" card's mini-map is centred (MapPreview, with this
-   * event's pin drawn over it); null when the event has no coordinates (the
-   * card then shows text only). Compared by value, so a count change on the
-   * event doesn't hand the map a "new" centre. */
+  /** Where the "Dove" mini-map is centred (MapPreview, with this event's pin
+   * drawn over it); null when the event has no coordinates (the section then
+   * shows text only). Compared by value, so a count change on the event
+   * doesn't hand the map a "new" centre. */
   protected readonly mapCenter = computed(
     () => {
       const event = this.event();
@@ -133,28 +146,75 @@ export class EventDetails {
   );
   protected readonly miniMapZoom = MINI_MAP_ZOOM;
 
+  // Ticks once a minute (browser only) so the badge and the date move on by
+  // themselves ("Inizia tra 5 min" → "Live · finisce tra…") while the page
+  // stays open. Purely local: startAt/endAt are already loaded.
+  private readonly now = signal(Date.now());
+
+  /** On the flyer (or, without one, next to the eyebrow): "Live · finisce
+   * tra 52 min" or "Inizia tra 12 min"; nothing otherwise. */
+  protected readonly status = computed(() => {
+    const event = this.event();
+    return event ? eventBadge(event, this.now()) : null;
+  });
+
+  /** "Stasera, gio 1 ott", "Domani, …" or "Sabato 3 ottobre". */
+  protected readonly dateLabel = computed(() => {
+    const event = this.event();
+    return event ? nightDateLabel(event, this.now()) : '';
+  });
+
+  /** The event's own links (set when it was created, from its venue or its
+   * organizer), the organizer's Instagram where the event has none, and
+   * the organizer's website. */
+  protected readonly contacts = computed(() => {
+    const event = this.event();
+    if (!event) return [];
+    const contacts: { kind: ContactKind; href: string; label: string }[] = [];
+    const instagram = event.instagramUrl || event.organizer?.instagram;
+    if (instagram) contacts.push({ kind: 'instagram', href: instagramUrl(instagram), label: `@${instagramHandle(instagram)}` });
+    if (event.whatsappUrl) contacts.push({ kind: 'whatsapp', href: event.whatsappUrl, label: 'WhatsApp' });
+    if (event.organizer?.website) contacts.push({ kind: 'website', href: event.organizer.website, label: 'Sito web' });
+    return contacts;
+  });
+
+  /** "Chi ci va": a few faces of the people going and a "+N" for the rest,
+   * then who they are in words ("Sara e Luca e altri 10"). goingCount is the
+   * total — it already counts a tap on Parteciperò — while the names, first
+   * names only, come from the attendees, when there are any. */
+  protected readonly crowd = computed(() => {
+    const event = this.event();
+    if (!event) return null;
+    const people = this.attendees();
+    const total = Math.max(event.goingCount, people.length);
+    const faces = people.slice(0, CROWD_FACES).map((person, i) => ({
+      ...person,
+      initial: person.displayName.trim().charAt(0).toUpperCase(),
+      tone: FACE_TONES[i % FACE_TONES.length],
+    }));
+    const names = people.slice(0, 2).map((person) => person.displayName.trim().split(/\s+/)[0]);
+    return {
+      total,
+      faces,
+      more: total - faces.length,
+      names: names.join(' e '),
+      others: total - names.length,
+    };
+  });
+
   protected readonly formatPrice = formatPrice;
-  protected readonly formatDate = formatEventDate;
   protected readonly formatTimeRange = formatTimeRange;
   protected readonly addressPrimary = addressPrimary;
-  protected readonly addressSecondary = addressSecondary;
   protected readonly googleMapsUrl = googleMapsUrl;
-  protected readonly instagramUrl = instagramUrl;
-  protected readonly instagramHandle = instagramHandle;
   protected readonly whatsappPath = WHATSAPP_PATH;
 
   /** Only the id, so the effect below doesn't refetch on every count change. */
   private readonly eventId = computed(() => this.event()?.id ?? null);
-  private linkCopiedTimer: ReturnType<typeof setTimeout> | undefined;
-  // Toggles with a request still in flight a second tap is ignored until
+  private copiedTimer: ReturnType<typeof setTimeout> | undefined;
+  // Toggles with a request still in flight: a second tap is ignored until
   // it settles, or add/remove could reach the server in the wrong order and
   // leave the button out of sync with the backend.
   private readonly pendingToggles = new Set<WritableSignal<boolean>>();
-
-  // Ticks once a minute (browser only) so the live/soon badge moves on by
-  // itself — "Inizia tra 5 min" → "LIVE ORA" — while the page stays open.
-  // Purely local: startAt/endAt are already loaded, no backend calls.
-  private readonly now = signal(Date.now());
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -169,7 +229,7 @@ export class EventDetails {
     const clock = this.isBrowser ? setInterval(() => this.now.set(Date.now()), 60_000) : undefined;
     destroyRef.onDestroy(() => {
       if (this.isBrowser) document.body.style.overflow = '';
-      clearTimeout(this.linkCopiedTimer);
+      clearTimeout(this.copiedTimer);
       clearInterval(clock);
     });
 
@@ -195,7 +255,7 @@ export class EventDetails {
 
     const id = this.route.snapshot.paramMap.get('id');
     // No id or a failed fetch both end with event() still null, which the
-    // template already renders as "not found" no separate error flag needed.
+    // template already renders as "not found": no separate error flag needed.
     if (!id) {
       this.loading.set(false);
       return;
@@ -205,6 +265,7 @@ export class EventDetails {
       next: (event) => {
         this.event.set(event);
         this.loading.set(false);
+        this.loadAttendees(event.id);
       },
       error: () => this.loading.set(false),
     });
@@ -213,7 +274,7 @@ export class EventDetails {
   /** Opened from a shared link, to the map instead — see injectGoBack. */
   protected readonly goBack = injectGoBack('/mappa');
 
-  // Opens /mappa centred on this event with its card already open the
+  // Opens /mappa centred on this event with its card already open: the
   // map reads both from MapViewStateService when it mounts (see
   // restoreSelectedEvent in map.ts).
   protected openOnMap(event: EventDetailDto): void {
@@ -234,6 +295,8 @@ export class EventDetails {
       (id) => this.eventsService.addAttendance(id),
       (id) => this.eventsService.removeAttendance(id),
       (activating) => this.adjustCount('goingCount', activating ? 1 : -1),
+      // The visitor joins (or leaves) "Chi ci va" by name too.
+      () => this.loadAttendees(event.id),
     );
   }
 
@@ -264,20 +327,28 @@ export class EventDetails {
       try {
         await navigator.share({ title: event.title, url });
       } catch {
-        // User dismissed the native share sheet nothing to do.
+        // User dismissed the native share sheet: nothing to do.
       }
       return;
     }
+    await this.copy(url, 'link');
+  }
 
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      // No clipboard API (insecure context) or permission denied — nothing to show.
-      return;
-    }
-    this.linkCopied.set(true);
-    clearTimeout(this.linkCopiedTimer);
-    this.linkCopiedTimer = setTimeout(() => this.linkCopied.set(false), 2000);
+  protected copyAddress(event: EventDetailDto): Promise<void> {
+    return this.copy(withoutCountry(event.address), 'address');
+  }
+
+  /** "+ Calendario": hands the browser an .ics file (see eventIcs). */
+  protected addToCalendar(event: EventDetailDto): void {
+    if (!this.isBrowser) return;
+    const file = new Blob([eventIcs(event, window.location.href)], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(file);
+    link.download = `${event.slug || 'serata'}.ics`;
+    link.click();
+    // Later rather than right away: some browsers start the download after
+    // click() returns.
+    setTimeout(() => URL.revokeObjectURL(link.href), 10_000);
   }
 
   protected openFlyer(): void {
@@ -293,15 +364,40 @@ export class EventDetails {
     this.flyerZoomed.update((zoomed) => !zoomed);
   }
 
+  /** The first few people going (EventsService.getAttendees), asked only
+   * here — the map's and the list's cards just show the count. Browser only:
+   * it's not worth a request during server rendering. */
+  private loadAttendees(id: string): void {
+    if (!this.isBrowser) return;
+    this.eventsService.getAttendees(id, CROWD_FACES).subscribe({
+      next: (page) => this.attendees.set(page.content),
+      error: () => this.attendees.set([]),
+    });
+  }
+
+  private async copy(text: string, what: 'link' | 'address'): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // No clipboard API (insecure context) or permission denied: nothing to show.
+      return;
+    }
+    this.copied.set(what);
+    clearTimeout(this.copiedTimer);
+    this.copiedTimer = setTimeout(() => this.copied.set(null), COPIED_MS);
+  }
+
   // Shared by toggleGoing/toggleLike: flips local state immediately, fires
   // the matching add/remove request, and rolls back if it fails. Mirrors
-  // EventEngagementService.toggleOptimistic, adapted to a single boolean instead of a Set.
+  // EventEngagementService.toggleOptimistic, adapted to a single boolean
+  // instead of a Set.
   private toggleOptimistic(
     stateSignal: WritableSignal<boolean>,
     id: string,
     add: (id: string) => Observable<void>,
     remove: (id: string) => Observable<void>,
     adjustCount: (activating: boolean) => void,
+    saved?: () => void,
   ): void {
     if (!this.authService.isAuthenticated()) {
       this.authOpen.set(true);
@@ -316,7 +412,10 @@ export class EventDetails {
 
     const request = wasActive ? remove(id) : add(id);
     request.subscribe({
-      complete: () => this.pendingToggles.delete(stateSignal),
+      complete: () => {
+        this.pendingToggles.delete(stateSignal);
+        saved?.();
+      },
       error: () => {
         this.pendingToggles.delete(stateSignal);
         stateSignal.set(wasActive);
@@ -329,29 +428,16 @@ export class EventDetails {
     this.event.update((event) => (event ? { ...event, [field]: Math.max(0, event[field] + delta) } : event));
   }
 
-  protected isLiveNow(event: EventDetailDto): boolean {
-    return isLiveAt(event, this.now());
-  }
-
-  protected startsInMinutes(event: EventDetailDto): number | null {
-    return minutesToStart(event, this.now());
-  }
-
-  // Second line under the "Dove" heading: with a venue name as the first
+  // Second line under the place's name: with a venue name as the first
   // line, the whole address; otherwise just what's left after the street.
   // Either way without the country, like the map's card (see withoutCountry).
   protected addressSubtitle(event: EventDetailDto): string | null {
     const address = withoutCountry(event.address);
-    if (event.venueName) return address;
-    return this.addressSecondary(address);
+    return event.venueName ? address : addressSecondary(address);
   }
 
   protected eventTypeLabel(event: EventDetailDto): string {
     return EVENT_TYPE_LABELS[event.eventType];
-  }
-
-  protected organizerTypeLabel(organizer: OrganizerDetailDto): string {
-    return ORGANIZER_TYPE_LABELS[organizer.type];
   }
 
   /** Two-letter fallback avatar for organizers without a logoUrl. */

@@ -4,20 +4,15 @@ import { EVENT_TYPE_LABELS } from '../../../core/config/map-pins';
 import { EventCardDto } from '../../../core/models/event.model';
 import {
   addressPrimary,
-  formatClock,
+  eventBadge,
   formatPrice,
   formatTimeRange,
   googleMapsUrl,
-  minutesToEnd,
-  minutesToStart,
   withoutCountry,
 } from '../../../core/utils/event-format';
 import { nightShortLabel } from '../../../core/utils/event-filters';
 import { formatDistance } from '../../../core/utils/geo';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
-
-/** Past this, "Finisce tra 3 h 20 min" says less than "Fino alle 03:00". */
-const ENDING_SOON_MINUTES = 90;
 
 /** The tapped pin's event, in the map's bottom sheet (MapSheet).
  * Presentational only: MapPage owns the selection and the Parteciperò/Mi
@@ -47,13 +42,8 @@ export class EventMapCard {
   protected readonly status = computed(() => {
     const event = this.event();
     const now = this.now();
-    const left = minutesToEnd(event, now);
-    if (left !== null) {
-      const tail = left <= ENDING_SOON_MINUTES ? `finisce tra ${left} min` : `fino alle ${formatClock(event.endAt)}`;
-      return { tone: 'live' as const, text: `Live · ${tail}` };
-    }
-    const toStart = minutesToStart(event, now);
-    if (toStart !== null) return { tone: 'soon' as const, text: `Inizia tra ${toStart} min` };
+    const badge = eventBadge(event, now);
+    if (badge) return { tone: badge.live ? ('live' as const) : ('soon' as const), text: badge.text };
     return { tone: 'plain' as const, text: `${nightShortLabel(event, now)} · ${formatTimeRange(event)}` };
   });
 

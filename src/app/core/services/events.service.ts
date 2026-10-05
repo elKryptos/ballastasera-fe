@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { EventCardDto, EventDetailDto, MapEventsDto } from '../models/event.model';
+import { EventAttendeeDto, EventCardDto, EventDetailDto, MapEventsDto } from '../models/event.model';
+import { SpringPage } from '../models/page.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '../api/endpoints';
 
@@ -32,6 +33,15 @@ export class EventsService {
 
   getEventDetail(id: string): Observable<EventDetailDto> {
     return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`);
+  }
+
+  /** The first `size` people going, for "Chi ci va" — only the event's page
+   * asks, once it's open. */
+  getAttendees(eventId: string, size: number): Observable<SpringPage<EventAttendeeDto>> {
+    const params = new HttpParams().set('size', size);
+    return this.http.get<SpringPage<EventAttendeeDto>>(`${environment.apiUrl}${endpoints.events.attendees(eventId)}`, {
+      params,
+    });
   }
 
   addAttendance(eventId: string): Observable<void> {

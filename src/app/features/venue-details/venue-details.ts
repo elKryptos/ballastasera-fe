@@ -74,13 +74,13 @@ function hostname(url: string): string {
 
 /**
  * A venue's page (school, club, bar...), opened from its card on /mappa.
- * Same look as the event page: it borrows event-details.css (theme tokens,
- * glass cards, buttons) instead of copying it, so the two stay in step.
+ * Still on the event page's former look (theme tokens, glass cards,
+ * buttons: venue-details.css), until it moves to the --ev-* palette too.
  */
 @Component({
   selector: 'app-venue-details',
   templateUrl: './venue-details.html',
-  styleUrl: '../event-details/event-details.css',
+  styleUrl: './venue-details.css',
   imports: [SidebarPushDirective, NgIcon, MapPreview, VenuePinIcon],
   providers: [
     provideIcons({ lucideArrowLeft, lucideFacebook, lucideGlobe, lucideInstagram, lucideMail, lucideYoutube }),

@@ -7,6 +7,9 @@
  * shows instead of the plain start time. */
 const STARTING_SOON_MS = 30 * 60 * 1000;
 
+/** Past this, "finisce tra 3 h 20 min" says less than "fino alle 03:00". */
+const ENDING_SOON_MINUTES = 90;
+
 /** A civico is 1-4 digits with an optional suffix starting with a slash or a
  * letter (e.g. "12", "12/A", "12bis"); a 5-digit Italian CAP never matches, so
  * it's left for addressSecondary. */
@@ -63,29 +66,39 @@ export function isLiveAt(event: { startAt: string; endAt: string }, now: number)
 
 /** Minutes to start, only while inside STARTING_SOON_MS; null once the event
  * is live or too far out to flag. */
-export function minutesToStart(event: { startAt: string }, now: number): number | null {
+function minutesToStart(event: { startAt: string }, now: number): number | null {
   const msToStart = new Date(event.startAt).getTime() - now;
   if (msToStart <= 0 || msToStart > STARTING_SOON_MS) return null;
   return Math.max(1, Math.round(msToStart / 60000));
 }
 
 /** Minutes left while live, for "Finisce tra 52 min"; null when not live. */
-export function minutesToEnd(event: { startAt: string; endAt: string }, now: number): number | null {
+function minutesToEnd(event: { startAt: string; endAt: string }, now: number): number | null {
   if (!isLiveAt(event, now)) return null;
   return Math.max(1, Math.round((new Date(event.endAt).getTime() - now) / 60000));
 }
 
-/** Long form (e.g. "Venerdì 25 settembre 2026") — separate from
- * formatTimeRange below, since the card and the event page both render the
- * date and the start-end time on their own lines. */
-export function formatEventDate(event: { startAt: string }): string {
-  const date = new Date(event.startAt).toLocaleDateString('it-IT', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-  return date.charAt(0).toUpperCase() + date.slice(1);
+/** What a live event's badge says: "Live · finisce tra 52 min", or "Live ·
+ * fino alle 03:00" while the end is further off than ENDING_SOON_MINUTES.
+ * Null when it isn't live. Shared by the map's card, the list and the event's
+ * page. */
+export function liveLabel(event: { startAt: string; endAt: string }, now: number): string | null {
+  const left = minutesToEnd(event, now);
+  if (left === null) return null;
+  return `Live · ${left <= ENDING_SOON_MINUTES ? `finisce tra ${left} min` : `fino alle ${formatClock(event.endAt)}`}`;
+}
+
+/** The badge an event wears right now: live (see liveLabel) or about to
+ * start ("Inizia tra 12 min"); null otherwise. The map's card and the
+ * event's page. */
+export function eventBadge(
+  event: { startAt: string; endAt: string },
+  now: number,
+): { live: boolean; text: string } | null {
+  const live = liveLabel(event, now);
+  if (live !== null) return { live: true, text: live };
+  const minutes = minutesToStart(event, now);
+  return minutes === null ? null : { live: false, text: `Inizia tra ${minutes} min` };
 }
 
 /** Start-end range rather than just the start time, since these are

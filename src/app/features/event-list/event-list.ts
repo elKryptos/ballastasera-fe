@@ -18,8 +18,7 @@ import {
   addressPrimary,
   formatClock,
   formatPrice,
-  isLiveAt,
-  minutesToEnd,
+  liveLabel,
   withoutCountry,
 } from '../../core/utils/event-format';
 import {
@@ -44,8 +43,6 @@ import { ViewSwitch } from '../../shared/event-filters/view-switch';
  * it's over, with the page left open. */
 const CLOCK_TICK_MS = 30 * 1000;
 
-/** Past this, "finisce tra 3 h 20 min" says less than "fino alle 03:00". */
-const ENDING_SOON_MINUTES = 90;
 
 type AreaId = 'city' | 'near10' | 'near3' | 'near1';
 
@@ -354,10 +351,7 @@ export class EventList {
   }
 
   private toRow({ event, km }: ListItem, now: number): ListRow {
-    const left = minutesToEnd(event, now);
-    const live = isLiveAt(event, now)
-      ? `Live · ${left !== null && left <= ENDING_SOON_MINUTES ? `finisce tra ${left} min` : `fino alle ${formatClock(event.endAt)}`}`
-      : null;
+    const live = liveLabel(event, now);
     const address = addressPrimary(withoutCountry(event.address));
     return {
       id: event.id,

@@ -151,16 +151,21 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/** A night's date: "giovedì 1 ottobre", or "gio 1 ott" short. The day number
+ * is a UTC midnight (see nightOf), so it's formatted in UTC. */
+function nightDate(night: number, style: 'long' | 'short'): string {
+  return new Date(night * DAY_MS).toLocaleDateString('it-IT', {
+    weekday: style,
+    day: 'numeric',
+    month: style,
+    timeZone: 'UTC',
+  });
+}
+
 /** Day heading of a night: "Stasera · giovedì 1 ottobre", "Domani · …", then
  * "Sabato 3 ottobre". */
 export function nightHeading(night: number, now: number): string {
-  // The day number is a UTC midnight (see nightOf), so it's formatted in UTC.
-  const long = new Date(night * DAY_MS).toLocaleDateString('it-IT', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'UTC',
-  });
+  const long = nightDate(night, 'long');
   const tonight = nightOf(now);
   if (night === tonight) return `Stasera · ${long}`;
   if (night === tonight + 1) return `Domani · ${long}`;
@@ -173,11 +178,16 @@ export function nightShortLabel(event: { startAt: string }, now: number): string
   const tonight = nightOf(now);
   if (night === tonight) return 'Stasera';
   if (night === tonight + 1) return 'Domani';
-  const short = new Date(night * DAY_MS).toLocaleDateString('it-IT', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-  });
-  return capitalize(short);
+  return capitalize(nightDate(night, 'short'));
+}
+
+/** The event page's date line: "Stasera, gio 1 ott", "Domani, ven 2 ott", or
+ * "Sabato 3 ottobre" further out. By the night it starts on (not eventNight:
+ * a page can be opened long after, from a shared link). */
+export function nightDateLabel(event: { startAt: string }, now: number): string {
+  const night = nightOf(Date.parse(event.startAt));
+  const tonight = nightOf(now);
+  if (night === tonight) return `Stasera, ${nightDate(night, 'short')}`;
+  if (night === tonight + 1) return `Domani, ${nightDate(night, 'short')}`;
+  return capitalize(nightDate(night, 'long'));
 }

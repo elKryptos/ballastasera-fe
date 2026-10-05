@@ -1,12 +1,15 @@
 <app-auth-modal [(open)]="authOpen" />
 
 <!-- Colours: the --ev-* tokens in styles.css (the host carries the page's
-    ground, bg-(--color-ink), which turns to paper by day). -->
-<main appSidebarPush class="pt-(--header-h) md:pt-0">
+    ground, bg-(--color-ink), which turns to paper by day). As wide as an
+    event's page (max-w-300, 32px sides from @5xl up), with the cards in two
+    columns there: a container query on <main>, like the event page's, so the
+    sidebar opening never squeezes them. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
   <!-- The search stays in reach while the list scrolls under it. -->
   <header
     class="sticky top-(--header-h) z-10 border-b border-(--ev-edge) bg-(--color-ink)/95 backdrop-blur-md select-none [-webkit-tap-highlight-color:transparent] md:top-0">
-    <div class="mx-auto flex max-w-3xl flex-col gap-2.5 py-3">
+    <div class="mx-auto flex max-w-300 flex-col gap-2.5 py-3 @5xl:px-4">
       <app-view-switch active="list" class="self-center" />
 
       <!-- Dove: the city, then how far from the visitor. -->
@@ -85,7 +88,7 @@
     </div>
   </header>
 
-  <div class="mx-auto max-w-3xl px-4 pt-3 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">
+  <div class="mx-auto max-w-300 px-4 pt-3 pb-[calc(2.5rem+env(safe-area-inset-bottom))] @5xl:px-8">
     <div class="flex items-center justify-between gap-3 text-[0.8125rem] text-(--ev-soft)">
       <span role="status">{{ hasData() ? countLabel() : '' }}</span>
       <label class="relative flex shrink-0 items-center gap-1">
@@ -118,7 +121,7 @@
         (click)="retry()">Riprova</button>
     </div>
     } @else if (!hasData()) {
-    <div class="mt-4 flex flex-col gap-3" aria-hidden="true">
+    <div class="mt-4 grid gap-3 @5xl:grid-cols-2" aria-hidden="true">
       @for (placeholder of [1, 2, 3]; track placeholder) {
       <div class="h-32 animate-pulse rounded-[1.25rem] bg-(--ev-raised)"></div>
       }
@@ -130,6 +133,7 @@
         class="text-xs font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
         {{ group.heading }}
       </h2>
+      <div class="grid gap-2.5 @5xl:grid-cols-2">
       @for (row of group.rows; track row.id) {
       <!-- The title's link covers the whole card (after:absolute); the like
           button sits above it (relative z-10). isolate keeps that z-10 inside
@@ -202,6 +206,7 @@
         </div>
       </article>
       }
+      </div>
     </section>
     } @empty {
     <div

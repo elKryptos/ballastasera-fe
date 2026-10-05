@@ -50,6 +50,7 @@ import {
   nearestCity,
   pointInBounds,
 } from '../../core/utils/geo';
+import { loadStylesheet } from '../../core/utils/stylesheet';
 import { supportsWebGL } from '../../core/utils/webgl';
 import { environment } from '../../../environments/environment';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -456,7 +457,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     // production bundle can synthesize a namespace that only has the module
     // under `.default` instead of spreading it onto the namespace itself
     // (works either way in dev, breaks silently in the optimized prod build).
-    const leafletModule = await import('leaflet');
+    // Its stylesheet isn't in the initial bundle either (angular.json): only
+    // this page uses it. Fetched alongside, and the map waits for both.
+    const [leafletModule] = await Promise.all([import('leaflet'), loadStylesheet('leaflet.css')]);
     // Page left while Leaflet loaded: ngOnDestroy has already run, so a map
     // built now would never be removed.
     if (this.destroyRef.destroyed) return;

@@ -10,10 +10,17 @@
   </button>
 
   <div class="flex items-center gap-3">
-    <!-- The venue's own badge, in the flyer's spot on the event card. -->
-    <span class="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-(--ev-edge) bg-(--ev-raised)"
+    <!-- Its logo, or else the venue's own badge, in the flyer's spot on the
+        event card. The logo fills the tile edge to edge (object-cover), like
+        the flyer there; the venue's page shows it whole. -->
+    <span
+      class="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-(--ev-edge) bg-(--ev-raised)"
       aria-hidden="true">
+      @if (venue().logoUrl; as logoUrl) {
+      <img [src]="logoUrl" alt="" class="size-full object-cover" />
+      } @else {
       <app-venue-pin-icon [type]="venue().type" [size]="36" />
+      }
     </span>
 
     <div class="flex min-w-0 flex-1 flex-col gap-1 pr-8">

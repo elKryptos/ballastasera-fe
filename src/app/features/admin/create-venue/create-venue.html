@@ -173,6 +173,87 @@
       }
     </div>
 
+    <div
+      class="mb-4 space-y-3 rounded-xl border border-accent/30 bg-linear-to-br from-accent/10 via-primary/5 to-accent/10 p-4">
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-2.5 py-1 text-xs font-semibold tracking-wide text-accent">
+        <ng-icon name="lucideImage" class="size-3.5" />
+        LOGO
+      </span>
+
+      @if (createdVenue(); as venue) {
+      <div class="flex flex-col sm:flex-row items-start gap-4">
+        <div
+          class="relative flex size-32 sm:size-40 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted"
+          [class.border-destructive]="logoState() === 'error'">
+          @if (logoBusy()) {
+          <hlm-spinner />
+          } @else if (logoImageUrl()) {
+          <img [src]="logoImageUrl()" alt="Logo" class="h-full w-full object-contain" />
+          } @else if (logoState() === 'error') {
+          <ng-icon name="lucideFileWarning" class="size-8 text-destructive" />
+          } @else {
+          <ng-icon name="lucideImage" class="size-8 text-muted-foreground" />
+          }
+        </div>
+
+        <div class="flex flex-1 flex-col gap-2 pt-1">
+          <p class="min-h-5 text-sm">
+            @switch (logoState()) {
+            @case ('uploading') { <span class="text-accent">Caricamento in corso...</span> }
+            @case ('removing') { <span class="text-accent">Rimozione in corso...</span> }
+            @case ('error') { <span class="text-red-600">{{ logoError() }}</span> }
+            @default { <span class="text-muted-foreground">{{ logoFile()?.name ?? (venue.logoUrl ? 'Logo caricato' :
+              'PNG, JPG o WEBP') }}</span> }
+            }
+          </p>
+
+          <div class="flex flex-wrap gap-2">
+            @if (!logoBusy()) {
+            <button type="button" (click)="openLogoPicker()"
+              class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-accent/10">
+              <ng-icon name="lucideImage" class="size-4" />
+              {{ logoImageUrl() ? 'Cambia immagine' : 'Scegli immagine' }}
+            </button>
+            }
+
+            @if (logoState() === 'error' && logoFile()) {
+            <button type="button" (click)="uploadLogo()"
+              class="inline-flex items-center gap-2 rounded-lg bg-destructive/10 text-destructive px-3 py-2 text-sm font-medium hover:bg-destructive/20">
+              <ng-icon name="lucideRefreshCw" class="size-4" />
+              Riprova
+            </button>
+            } @else if (logoFile() && !logoBusy()) {
+            <button type="button" (click)="uploadLogo()"
+              class="inline-flex items-center gap-2 rounded-lg bg-accent text-accent-foreground px-3 py-2 text-sm font-medium hover:bg-accent/90">
+              <ng-icon name="lucideUpload" class="size-4" />
+              {{ venue.logoUrl ? 'Aggiorna' : 'Carica' }}
+            </button>
+            }
+
+            <!-- Only the saved logo can be removed: a staged file is just
+                replaced by picking another. -->
+            @if (venue.logoUrl && !logoFile() && !logoBusy()) {
+            <button type="button" (click)="removeLogo()"
+              class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-destructive/10">
+              <ng-icon name="lucideTrash2" class="size-4" />
+              Rimuovi logo
+            </button>
+            }
+          </div>
+        </div>
+      </div>
+      <input #logoFileInput type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
+        (change)="onLogoFileSelected($event)" />
+      } @else {
+      <div class="flex items-center gap-4 opacity-60">
+        <div class="flex size-32 sm:size-40 shrink-0 items-center justify-center rounded-lg border border-dashed bg-muted">
+          <ng-icon name="lucideImage" class="size-8 text-muted-foreground" />
+        </div>
+        <p class="text-sm text-muted-foreground">Disponibile dopo il salvataggio del luogo</p>
+      </div>
+      }
+    </div>
+
     @if (errorMessage()) {
     <p class="text-sm text-red-600">{{ errorMessage() }}</p>
     }

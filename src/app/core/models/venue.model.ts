@@ -22,6 +22,8 @@ export interface VenueDetailDto {
   instagram: string | null;
   youtube: string | null;
   tiktok: string | null;
+  /** Null until the admin uploads one (AdminService.uploadVenueLogo). */
+  logoUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,6 +63,8 @@ export interface VenueMapPinDto {
   id: string;
   name: string;
   type: VenueType;
+  /** Null until the admin uploads one. */
+  logoUrl: string | null;
   address: string;
   latitude: number;
   longitude: number;

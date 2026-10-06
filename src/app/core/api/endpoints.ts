@@ -25,6 +25,8 @@ export const endpoints = {
     createVenue: '/rest/admin/venues',
     updateVenue: (id: string) => `/rest/admin/venues/${id}`,
     deleteVenue: (id: string) => `/rest/admin/venues/${id}`,
+    updateVenueLogo: (id: string) => `/rest/admin/venues/${id}/logo`,//Used
+    deleteVenueLogo: (id: string) => `/rest/admin/venues/${id}/logo`,//Used
   },
 
   users: {

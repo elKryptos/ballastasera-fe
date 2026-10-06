@@ -1,4 +1,4 @@
-import { Component, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
@@ -8,6 +8,9 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocomplete, HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
 import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput, BrnAutocompleteSearch } from '@spartan-ng/brain/autocomplete';
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideFileWarning, lucideImage, lucideRefreshCw, lucideTrash2, lucideUpload } from '@ng-icons/lucide';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { AdminService } from '../../../core/services/admin.service';
 import { CitiesService } from '../../../core/services/cities.service';
@@ -114,8 +117,9 @@ const VENUE_TYPES: { value: VenueType; label: string }[] = [
   selector: 'app-create-venue',
   imports: [
     ReactiveFormsModule, SidebarPushDirective, HlmSelectImports, BrnSelectTrigger, BrnSelectValue,
-    HlmAutocompleteImports, BrnAutocompleteInput, BrnAutocompleteAnchor,
+    HlmAutocompleteImports, BrnAutocompleteInput, BrnAutocompleteAnchor, HlmSpinnerImports, NgIcon,
   ],
+  providers: [provideIcons({ lucideImage, lucideUpload, lucideRefreshCw, lucideFileWarning, lucideTrash2 })],
   templateUrl: './create-venue.html',
   styleUrl: './create-venue.css',
 })
@@ -150,6 +154,18 @@ export class CreateVenue {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly createdVenue = signal<VenueDetailDto | null>(null);
 
+  // The logo needs the venue's id, so it's uploaded once the venue exists —
+  // same flow as the event's flyer (CreateEvent), minus the processing step:
+  // the backend answers with the venue and its logoUrl right away.
+  protected readonly logoState = signal<'idle' | 'uploading' | 'removing' | 'error'>('idle');
+  protected readonly logoError = signal<string | null>(null);
+  protected readonly logoFile = signal<File | null>(null);
+  protected readonly logoPreviewUrl = signal<string | null>(null);
+  /** The staged file's preview first; otherwise the logo already saved on the venue. */
+  protected readonly logoImageUrl = computed(() => this.logoPreviewUrl() ?? this.createdVenue()?.logoUrl ?? null);
+  protected readonly logoBusy = computed(() => this.logoState() === 'uploading' || this.logoState() === 'removing');
+  private readonly logoFileInput = viewChild<ElementRef<HTMLInputElement>>('logoFileInput');
+
   // Limits mirror the @Size/@DecimalMin/@DecimalMax on VenueCreateDto in the backend.
   protected readonly form = this.fb.nonNullable.group({
     organizerId: [''],
@@ -178,6 +194,10 @@ export class CreateVenue {
 
   protected openAddressDropdown(): void {
     this.addressAutocomplete()?.open();
+  }
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.clearStagedLogo());
   }
 
   protected submit(): void {
@@ -235,6 +255,82 @@ export class CreateVenue {
     this.organizer.search.set('');
     this.address.search.set('');
     this.createdVenue.set(null);
+    this.logoState.set('idle');
+    this.logoError.set(null);
+    this.clearStagedLogo();
+  }
+
+  protected openLogoPicker(): void {
+    this.logoFileInput()?.nativeElement.click();
+  }
+
+  protected onLogoFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    this.clearStagedLogo();
+    this.logoState.set('idle');
+    this.logoError.set(null);
+    this.logoFile.set(file);
+    this.logoPreviewUrl.set(URL.createObjectURL(file));
+  }
+
+  /** Uploads the staged file, replacing the venue's logo if it had one. */
+  protected uploadLogo(): void {
+    const file = this.logoFile();
+    const venue = this.createdVenue();
+    if (!file || !venue) {
+      return;
+    }
+
+    this.logoError.set(null);
+    this.logoState.set('uploading');
+
+    this.adminService.uploadVenueLogo(venue.id, file).subscribe({
+      next: (updated) => {
+        this.createdVenue.set(updated);
+        this.logoState.set('idle');
+        this.clearStagedLogo();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.logoState.set('error');
+        this.logoError.set(err.error?.message ?? 'Caricamento del logo non riuscito. Riprova.');
+      },
+    });
+  }
+
+  protected removeLogo(): void {
+    const venue = this.createdVenue();
+    if (!venue) {
+      return;
+    }
+
+    this.logoError.set(null);
+    this.logoState.set('removing');
+
+    this.adminService.deleteVenueLogo(venue.id).subscribe({
+      next: () => {
+        this.logoState.set('idle');
+        this.createdVenue.set({ ...venue, logoUrl: null });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.logoState.set('error');
+        this.logoError.set(err.error?.message ?? 'Rimozione del logo non riuscita. Riprova.');
+      },
+    });
+  }
+
+  private clearStagedLogo(): void {
+    const previewUrl = this.logoPreviewUrl();
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    this.logoFile.set(null);
+    this.logoPreviewUrl.set(null);
   }
 
   protected backToAdmin(): void {

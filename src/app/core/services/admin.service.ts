@@ -69,4 +69,15 @@ export class AdminService {
   createVenue(body: VenueCreateDto): Observable<VenueDetailDto>{
     return this.http.post<VenueDetailDto>(`${environment.apiUrl}${endpoints.admin.createVenue}` , body)
   }
+
+  /** Uploads or replaces the venue's logo; the backend reads the file from the "logo" part. */
+  uploadVenueLogo(id: string, file: File): Observable<VenueDetailDto> {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return this.http.patch<VenueDetailDto>(`${environment.apiUrl}${endpoints.admin.updateVenueLogo(id)}`, formData);
+  }
+
+  deleteVenueLogo(id: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${endpoints.admin.deleteVenueLogo(id)}`);
+  }
 }

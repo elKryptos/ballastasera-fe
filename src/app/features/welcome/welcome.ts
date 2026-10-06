@@ -12,9 +12,9 @@ interface WelcomeFeature {
 }
 
 /**
- * Landed on right after a user's first login (see Oauth2Callback.postLoginUrl).
- * Until the backend adds `hasSeenWelcome` to UserDto, every login counts as
- * "first" and lands here see the TODO in enter() for what closes that loop.
+ * Landed on after each of a user's first three logins (loginCount <= 3, see
+ * Oauth2Callback.postLoginUrl); from the fourth on, login goes straight to
+ * /menu.
  */
 @Component({
   selector: 'app-welcome',
@@ -47,10 +47,6 @@ export class Welcome {
   ];
 
   protected enter(): void {
-    // TODO: once the backend exposes `hasSeenWelcome` (see UserDto) and a
-    // way to set it (e.g. PATCH /rest/auth/me), call that here before
-    // navigating away that's what stops this page from reappearing on
-    // every subsequent login, not just the redirect logic in Oauth2Callback.
     this.router.navigateByUrl('/menu');
   }
 }

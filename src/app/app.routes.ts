@@ -24,10 +24,9 @@ export const routes: Routes = [
       },
 
       {
-        // Landed on right after a user's first login (see Oauth2Callback). Not
-        // yet gated on a per-user "already seen it" flag — that needs a
-        // `hasSeenWelcome`-style field on the backend user first — so for now
-        // every login goes here whenever the flag below is on.
+        // Landed on after each of a user's first three logins (loginCount <= 3,
+        // see Oauth2Callback.postLoginUrl); from the fourth on, login goes
+        // straight to /menu. Only while the flag below is on.
         path: 'benvenuto',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.welcomePage)],
         loadComponent: () => import('./features/welcome/welcome').then((m) => m.Welcome),

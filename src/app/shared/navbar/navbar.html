@@ -91,7 +91,18 @@
       <span class="drawer-avatar bg-rose text-lg font-extrabold text-ink" aria-hidden="true">{{ initial() }}</span>
       }
       <div class="min-w-0 grow">
-        <div class="truncate text-base font-extrabold">{{ user.displayName }}</div>
+        <div class="flex items-center gap-1.5 text-base font-extrabold">
+          <span class="truncate">{{ user.displayName }}</span>
+          @if (user.role === 'ORGANIZER') {
+          <span role="img" aria-label="Organizzatore verificato"
+            class="flex size-4 shrink-0 items-center justify-center rounded-full bg-(--drawer-mint) text-ink">
+            <svg viewBox="0 0 24 24" class="size-2.5" fill="none" stroke="currentColor" stroke-width="3.4"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+          </span>
+          }
+        </div>
         <div class="truncate text-xs text-(--drawer-soft)">
           @if (goingCount() !== null && likesCount() !== null) {
           {{ goingCount() }} {{ goingCount() === 1 ? 'serata' : 'serate' }} in programma · {{ likesCount() }} like
@@ -200,6 +211,44 @@
     <hr class="mx-1.5 border-(--drawer-rule)" />
     }
 
+    <!-- Users only, where Gestione stands for organizers and admins: the way
+        in to becoming an organizer. The request pages don't exist yet, so the
+        button is shown, not linked — swap it for an <a routerLink> (plus
+        (click)="closeDrawer()") once they land. The collapsed rail keeps just
+        the icon. -->
+    <ng-container *appRole="'USER'">
+      <div class="flex flex-col gap-1.5">
+        <h2 class="drawer-label pb-0">Organizza</h2>
+        <div class="drawer-promo" appRailTooltip="Diventa organizzatore">
+          <div class="flex items-start gap-3">
+            <span class="drawer-promo-icon">
+              <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="3" />
+                <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" />
+              </svg>
+            </span>
+            <div class="rail-hide min-w-0 whitespace-normal">
+              <div class="text-[0.9375rem] font-extrabold">Organizzi serate?</div>
+              <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--drawer-soft)">
+                Pubblica le tue serate e fatti trovare sulla mappa.
+              </p>
+            </div>
+          </div>
+          <span
+            class="rail-hide flex h-11 items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-ink">
+            Diventa organizzatore
+            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <hr class="mx-1.5 border-(--drawer-rule)" />
+    </ng-container>
+
     <ng-container *appRole="managerRoles">
       <div class="flex min-h-0 flex-col gap-0.5">
         <h2 class="drawer-label">Gestione</h2>
@@ -212,6 +261,26 @@
           <span class="grow">Pubblica una serata</span>
           <span class="drawer-chip bg-rose font-extrabold text-ink">Nuovo</span>
         </div>
+        <!-- Organizers only: their own nights and public page. Neither has a
+            page yet. -->
+        <ng-container *appRole="'ORGANIZER'">
+          <div class="drawer-item" appRailTooltip="Le mie serate">
+            <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" aria-hidden="true">
+              <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+            </svg>
+            <span class="grow">Le mie serate</span>
+          </div>
+          <div class="drawer-item" appRailTooltip="Profilo organizzatore">
+            <svg viewBox="0 0 24 24" class="text-(--drawer-sky)" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="3" />
+              <circle cx="9" cy="11" r="2" />
+              <path d="M6.5 16c.5-1.5 1.5-2.2 2.5-2.2s2 .7 2.5 2.2M14 10h4M14 14h3" />
+            </svg>
+            <span class="grow">Profilo organizzatore</span>
+          </div>
+        </ng-container>
         <a *appRole="'ADMIN'" class="drawer-item" routerLink="/admin" (click)="closeDrawer()" appRailTooltip="Pannello admin">
           <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linejoin="round" aria-hidden="true">

@@ -852,6 +852,30 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
     );
   }
 
+  /* The "Diventa organizzatore" card, for users only (navbar.html): tinted
+  in the menu's mint so it reads as an invitation, not one more row. */
+  .drawer-promo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    border: 1px solid color-mix(in srgb, var(--drawer-mint) 38%, transparent);
+    border-radius: 1.125rem;
+    background: color-mix(in srgb, var(--drawer-mint) 8%, transparent);
+  }
+
+  .drawer-promo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--drawer-mint) 16%, transparent);
+    color: var(--drawer-mint);
+  }
+
   .drawer-avatar {
     display: flex;
     align-items: center;
@@ -999,8 +1023,11 @@ utilities on those elements. */
   padding-inline: 0;
 }
 
-[data-collapsible='icon'] .drawer-card {
+/* The profile card down to its avatar, the organizer card (a column) down to
+its icon tile: both centred whichever way they run. */
+[data-collapsible='icon'] :is(.drawer-card, .drawer-promo) {
   justify-content: center;
+  align-items: center;
   padding: 0;
   border-color: transparent;
   background: none;

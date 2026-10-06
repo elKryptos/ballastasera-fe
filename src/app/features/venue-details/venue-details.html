@@ -1,105 +1,215 @@
-<!-- Same layout and tokens as the event page (event-details.html/.css): one
-  column on mobile, two from @5xl up. Below @5xl the column wrappers are
-  display:contents and order-* sets the mobile sequence (title, dove,
-  contatti, descrizione); from @5xl up the left column holds title and
-  description, the right one where it is and how to reach it. -->
-<main appSidebarPush class="event-page @container flex min-h-dvh flex-col pt-(--header-h) md:pt-0">
+<!-- "A · Profilo" from the Claude Design canvas "Pagina luogo – mobile". On
+    phones one column: the cover with back and share on it, the logo across its
+    bottom edge, the name, a row of quick actions, then Dove, Chi siamo and
+    Contatti. From @5xl up the cover gets rounded corners and the cards two
+    columns: Chi siamo and Contatti on the left, Dove on the right (below @5xl
+    the column wrappers are display:contents and order-* sets the sequence). -->
+<main appSidebarPush class="@container flex min-h-dvh flex-col pt-(--header-h) md:pt-0">
   @if (loading()) {
-  <p class="px-4 py-16 text-center text-sm text-(--ed-muted)">Caricamento…</p>
+  <p class="px-4 py-16 text-center text-sm text-(--ev-soft)">Caricamento…</p>
   } @else if (venue(); as venue) {
-  <div class="ed-backdrop" aria-hidden="true">
-    <span class="ed-grain"></span>
-  </div>
+  <!-- A contact's icon, on its brand tile in the quick actions and in
+    Contatti alike. -->
+  <ng-template #contactIcon let-contact>
+    <span class="flex size-7.5 shrink-0 items-center justify-center rounded-[0.5625rem]" [class]="contact.tileClass">
+      @if (contact.svgPath; as path) {
+      <svg viewBox="0 0 24 24" class="size-4 fill-current" aria-hidden="true">
+        <path [attr.d]="path" />
+      </svg>
+      } @else if (contact.icon; as icon) {
+      <ng-icon [name]="icon" class="size-4" />
+      }
+    </span>
+  </ng-template>
 
-  <div class="relative mx-auto w-full max-w-260 flex-1 px-4 pt-3 pb-8 @5xl:px-8 @5xl:pt-6 @5xl:pb-16">
-    <div class="mb-4 flex items-center @5xl:mb-6">
-      <button type="button" class="ed-glass-btn rounded-full @5xl:pr-4.5 @5xl:pl-3.5" (click)="goBack()"
-        aria-label="Indietro">
-        <ng-icon name="lucideArrowLeft" class="size-4.5" />
-        <span class="hidden @5xl:inline">Indietro</span>
-      </button>
+  <div class="relative mx-auto w-full max-w-300 flex-1 pb-10 @5xl:px-8 @5xl:pt-6 @5xl:pb-16">
+    <!-- Cover: the logo's own colours, blurred, or without one the type's
+      colour with its glyph, large and faint. Fades into the page at the
+      bottom, where the logo sits. -->
+    <div class="relative h-44 overflow-hidden bg-(--ev-raised) @5xl:h-56 @5xl:rounded-3xl"
+      [style.background-color]="venue.logoUrl ? null : pinColors[venue.type]">
+      @if (venue.logoUrl; as logoUrl) {
+      <img [src]="logoUrl" alt="" aria-hidden="true"
+        class="absolute -top-14 -left-14 size-[calc(100%+7rem)] max-w-none object-cover opacity-85 blur-[36px] saturate-[1.2]" />
+      } @else {
+      <span class="absolute inset-0 bg-ink/45" aria-hidden="true"></span>
+      <svg viewBox="0 0 24 24" class="absolute -top-7 -right-9 size-58 opacity-20" aria-hidden="true">
+        <path [attr.d]="pinGlyphs[venue.type]" fill="#fff" />
+      </svg>
+      }
+      <span class="absolute inset-0 bg-linear-to-b from-black/20 via-transparent via-40% to-ink" aria-hidden="true"></span>
+
+      <!-- Back and share: frosted glass (--ev-glass*), as on the event page. -->
+      <div class="absolute inset-x-4 top-4 flex items-center justify-between @5xl:inset-x-6 @5xl:top-6">
+        <button type="button" (click)="goBack()" aria-label="Indietro"
+          class="inline-flex size-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-(--ev-glass-edge) bg-(--ev-glass) text-(--ev-glass-text) shadow-(--ev-float-shadow) backdrop-blur-md @5xl:w-auto @5xl:pr-4.5 @5xl:pl-3.5 @5xl:font-semibold">
+          <ng-icon name="lucideArrowLeft" class="size-5" />
+          <span class="hidden @5xl:inline">Indietro</span>
+        </button>
+        <button type="button" (click)="share(venue)" aria-label="Condividi"
+          class="inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-(--ev-glass-edge) bg-(--ev-glass) text-(--ev-glass-text) shadow-(--ev-float-shadow) backdrop-blur-md">
+          <ng-icon [name]="copied() === 'link' ? 'lucideCheck' : 'lucideShare2'" class="size-5" />
+        </button>
+      </div>
     </div>
 
-    <div class="flex flex-col gap-4 @5xl:flex-row @5xl:items-start @5xl:gap-6">
+    <!-- The logo across the cover's bottom edge: it fills its tile (the
+      lightbox shows it whole), ringed in the page's own colour so it reads as
+      cut out of the cover. Without one, the type's badge. -->
+    <div class="relative -mt-15.5 flex flex-col px-4 @5xl:px-6">
+      @if (venue.logoUrl; as logoUrl) {
+      <div class="relative size-27">
+        <button type="button" (click)="openLogo()" aria-label="Ingrandisci il logo"
+          class="block size-full cursor-zoom-in overflow-hidden rounded-[1.875rem] border-4 border-ink bg-(--ev-raised) p-0 shadow-(--ev-shadow)">
+          <img [src]="logoUrl" alt="" class="size-full object-cover" />
+        </button>
+        <span
+          class="pointer-events-none absolute -right-1.5 -bottom-1.5 flex size-7.5 items-center justify-center rounded-full border-3 border-ink bg-(--ev-raised)"
+          aria-hidden="true">
+          <ng-icon name="lucideMaximize2" class="size-3.5" />
+        </span>
+      </div>
+      } @else {
+      <span class="flex size-27 items-center justify-center rounded-[1.875rem] border-4 border-ink bg-(--ev-raised) shadow-(--ev-shadow)"
+        aria-hidden="true">
+        <app-venue-pin-icon [type]="venue.type" [size]="58" />
+      </span>
+      }
+
+      <p class="mt-3.5 flex items-center gap-1.5 text-xs font-bold tracking-[0.08em] text-(--ev-soft) uppercase">
+        <app-venue-pin-icon [type]="venue.type" [size]="16" />
+        {{ typeLabels[venue.type] }} · {{ venue.cityName }}
+      </p>
+      <h1 class="mt-1.5 font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em] @5xl:text-5xl">
+        {{ venue.name }}
+      </h1>
+      @if (venue.organizerName; as organizerName) {
+      <p class="mt-1.5 text-sm text-(--ev-soft)">
+        Gestito da <span class="font-bold text-(--ev-text)">{{ organizerName }}</span>
+      </p>
+      }
+    </div>
+
+    <!-- Quick actions: directions, then the venue's most direct contacts. One
+      column each; icon over label with three or more, side by side with
+      fewer. -->
+    <nav aria-label="Azioni rapide" class="mt-5 grid gap-2 px-4 @5xl:max-w-xl @5xl:px-6"
+      [class]="actionsLayout().columns">
+      @if (place(); as place) {
+      <a [href]="place.directionsUrl" target="_blank" rel="noopener noreferrer"
+        class="flex items-center justify-center rounded-[1.125rem] border border-(--ev-primary) bg-(--ev-primary) font-bold text-white"
+        [class]="actionsLayout().stacked ? 'flex-col gap-1.5 px-1 py-3 text-xs' : 'h-13 gap-2 text-sm'">
+        <ng-icon name="lucideNavigation" class="size-5.5" />
+        Indicazioni
+      </a>
+      }
+      @for (contact of quickContacts(); track contact.key) {
+      <a [href]="contact.href" [attr.target]="contact.sameTab ? null : '_blank'" rel="noopener noreferrer"
+        class="flex items-center justify-center rounded-[1.125rem] border border-(--ev-edge) bg-(--ev-surface) font-bold text-(--ev-text)"
+        [class]="actionsLayout().stacked ? 'flex-col gap-1.5 px-1 py-2.5 text-xs' : 'h-13 gap-2 text-sm'">
+        <ng-container [ngTemplateOutlet]="contactIcon" [ngTemplateOutletContext]="{ $implicit: contact }" />
+        {{ contact.quickLabel }}
+      </a>
+      }
+    </nav>
+
+    <div class="mt-7 flex flex-col gap-4 px-4 @5xl:grid @5xl:grid-cols-[minmax(0,1fr)_22rem] @5xl:items-start @5xl:gap-6 @5xl:px-0">
       <!-- LEFT column (desktop) -->
-      <div class="contents @5xl:flex @5xl:min-w-0 @5xl:flex-1 @5xl:flex-col @5xl:gap-6">
-        <section class="@5xl:border @5xl:border-(--ed-glass-border) @5xl:bg-(--ed-glass) @5xl:p-7 @5xl:shadow-(--ed-shadow) @5xl:backdrop-blur-[20px] @5xl:backdrop-saturate-140 rounded-lg order-1 flex flex-col gap-2 px-1">
-          <p class="text-(--ed-accent) flex items-center gap-2 text-[11px] font-bold tracking-[1.5px] uppercase @5xl:text-xs @5xl:tracking-[2px]">
-            <span class="size-2 shrink-0 rounded-full" [style.background]="pinColors[venue.type]"></span>
-            {{ typeLabels[venue.type] }} · {{ venue.cityName }}
-          </p>
-          <h1 class="font-display text-[34px] leading-none font-extrabold tracking-[-0.5px] @5xl:text-[52px] @5xl:tracking-[-1px]">
-            {{ venue.name }}
-          </h1>
-          @if (venue.organizerName; as organizerName) {
-          <p class="text-(--ed-muted) mt-1 text-sm @5xl:text-[15px]">
-            Gestito da <span class="text-(--ed-text-2) font-semibold">{{ organizerName }}</span>
-          </p>
+      <div class="contents @5xl:flex @5xl:flex-col @5xl:gap-6">
+        @if (venue.description; as description) {
+        <section class="order-2 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-4.5">
+          <h2 class="font-display text-lg font-extrabold">Chi siamo</h2>
+          <p class="mt-2 text-[0.9375rem] leading-relaxed whitespace-pre-line text-(--color-lead)"
+            [class.line-clamp-4]="longDescription() && !descriptionExpanded()">{{ description }}</p>
+          @if (longDescription()) {
+          <button type="button" (click)="toggleDescription()" [attr.aria-expanded]="descriptionExpanded()"
+            class="mt-1 cursor-pointer py-1.5 text-sm font-bold text-(--ev-link)">
+            {{ descriptionExpanded() ? 'Mostra meno' : 'Leggi tutto' }}
+          </button>
           }
         </section>
+        }
 
-        @if (venue.description; as description) {
-        <section class="ed-card order-4 rounded-lg p-4 @5xl:p-6">
-          <h2 class="font-display text-lg font-bold @5xl:text-xl">Descrizione</h2>
-          <p class="text-(--ed-text-2) mt-1.5 text-[15px] leading-[1.55] whitespace-pre-line @5xl:mt-2.5 @5xl:text-base @5xl:leading-[1.6]">
-            {{ description }}</p>
+        @if (contacts().length) {
+        <section class="order-3 flex flex-col gap-3 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-4.5">
+          <h2 class="font-display text-lg font-extrabold">Contatti</h2>
+          <ul class="flex flex-col gap-2.5">
+            @for (link of contacts(); track link.key) {
+            <li>
+              <a [href]="link.href" [attr.target]="link.sameTab ? null : '_blank'" rel="noopener noreferrer"
+                class="flex min-w-0 items-center gap-2.5 text-sm text-(--color-lead) hover:underline">
+                <ng-container [ngTemplateOutlet]="contactIcon" [ngTemplateOutletContext]="{ $implicit: link }" />
+                <span class="truncate">{{ link.label }}</span>
+              </a>
+            </li>
+            }
+          </ul>
         </section>
         }
       </div>
 
       <!-- RIGHT column (desktop) -->
-      <div class="contents @5xl:flex @5xl:w-85 @5xl:shrink-0 @5xl:flex-col @5xl:gap-6">
-        <!-- Dove: read-only mini-map with the venue's badge + directions. -->
-        <section class="ed-card order-2 flex flex-col gap-3 rounded-lg p-2.5">
+      <div class="contents @5xl:block">
+        <!-- Dove: read-only mini-map, the logo as its marker (ringed in the
+          type's colour, like its badge on /mappa), and the address to copy.
+          Directions are the first quick action. -->
+        <section class="order-1 flex flex-col gap-3 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-2.5">
           @if (mapCenter(); as center) {
-          <div class="relative h-35 w-full overflow-hidden rounded-lg @5xl:h-42.5">
+          <div class="relative h-37.5 overflow-hidden rounded-[0.875rem]">
             <app-map-preview class="absolute inset-0" [center]="center" [zoom]="miniMapZoom" />
-            <app-venue-pin-icon [type]="venue.type" [size]="36"
-              class="drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            @if (venue.logoUrl; as logoUrl) {
+            <span
+              class="absolute top-1/2 left-1/2 size-12 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-3 shadow-[0_6px_16px_rgba(0,0,0,0.45)]"
+              [style.border-color]="pinColors[venue.type]" aria-hidden="true">
+              <img [src]="logoUrl" alt="" class="size-full object-cover" />
+            </span>
+            } @else {
+            <app-venue-pin-icon [type]="venue.type" [size]="40"
+              class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_4px_8px_rgba(40,30,80,0.35)]" />
+            }
           </div>
           }
           @if (place(); as place) {
-          <div class="flex flex-col gap-3 px-1.5 pb-1">
-            <div>
-              <p class="text-(--ed-muted) text-[11px] font-bold tracking-[1.5px] uppercase">Dove</p>
-              <p class="mt-1 text-[15px] font-semibold @5xl:text-base">{{ place.street }}</p>
+          <div class="flex items-end justify-between gap-3 px-1.5 pb-1">
+            <div class="min-w-0">
+              <p class="text-[0.6875rem] font-extrabold tracking-[0.1em] text-(--ev-soft) uppercase">Dove</p>
+              <p class="mt-1 font-bold">{{ place.street }}</p>
               @if (place.locality; as locality) {
-              <p class="text-(--ed-muted) text-[13px] @5xl:text-sm">{{ locality }}</p>
+              <p class="text-[0.8125rem] text-(--ev-soft)">{{ locality }}</p>
               }
             </div>
-            <a [href]="place.directionsUrl" target="_blank" rel="noopener noreferrer"
-              class="inline-flex ed-btn rounded-lg ed-btn--directions">Indicazioni</a>
+            <button type="button" (click)="copyAddress(venue)" aria-label="Copia indirizzo"
+              class="flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-3 text-[0.8125rem] font-bold text-(--ev-zone-on-text)">
+              <ng-icon [name]="copied() === 'address' ? 'lucideCheck' : 'lucideCopy'" class="size-4" />
+              {{ copied() === 'address' ? 'Copiato' : 'Copia' }}
+            </button>
           </div>
           }
         </section>
-
-        @if (contacts().length) {
-        <section class="ed-card order-3 flex flex-col gap-2.5 rounded-lg px-4 py-3.5 @5xl:p-6">
-          <h2 class="font-display text-lg font-bold @5xl:text-xl">Contatti</h2>
-          @for (link of contacts(); track link.key) {
-          <a [href]="link.href" [attr.target]="link.sameTab ? null : '_blank'" rel="noopener noreferrer"
-            class="text-(--ed-text-2) flex min-w-0 items-center gap-2 text-sm hover:underline">
-            <span class="flex size-7 shrink-0 items-center justify-center rounded-lg" [class]="link.tileClass">
-              @if (link.svgPath; as path) {
-              <svg viewBox="0 0 24 24" class="size-4 fill-current" aria-hidden="true">
-                <path [attr.d]="path" />
-              </svg>
-              } @else if (link.icon; as icon) {
-              <ng-icon [name]="icon" class="size-4" />
-              }
-            </span>
-            <span class="truncate">{{ link.label }}</span>
-          </a>
-          }
-        </section>
-        }
       </div>
     </div>
   </div>
+
+  <!-- Logo lightbox: the whole logo, as big as it comes (the backend keeps it
+    to 512px on its long side). A tap anywhere, or Esc, closes it. -->
+  @if (logoOpen() && venue.logoUrl) {
+  <div class="fixed inset-0 z-modal flex cursor-zoom-out flex-col items-center justify-center gap-4 bg-[rgba(20,16,36,0.84)] p-6 backdrop-blur-lg"
+    role="dialog" aria-modal="true" [attr.aria-label]="'Logo di ' + venue.name" (click)="closeLogo()">
+    <button type="button"
+      class="fixed top-4 right-4 inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-white/90 text-[#1e1b2e] shadow-lg @5xl:top-6 @5xl:right-6"
+      (click)="closeLogo()" aria-label="Chiudi">
+      <ng-icon name="lucideX" class="size-4.5" />
+    </button>
+    <img [src]="venue.logoUrl" [alt]="'Logo di ' + venue.name"
+      class="max-h-[75vh] w-[min(100%,32rem)] rounded-3xl object-contain drop-shadow-[0_30px_80px_rgba(0,0,0,0.5)]" />
+    <p class="text-base font-extrabold text-white">{{ venue.name }}</p>
+  </div>
+  }
   } @else {
   <div class="flex flex-col items-center gap-4 px-4 py-16 text-center">
-    <p class="text-(--ed-follow-fg) text-sm">Impossibile trovare questo luogo.</p>
-    <button type="button" class="inline-flex ed-btn rounded-lg ed-btn--secondary" (click)="goBack()">
+    <p class="text-sm text-(--ev-soft)">Impossibile trovare questo luogo.</p>
+    <button type="button" (click)="goBack()"
+      class="h-11 cursor-pointer rounded-2xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-bold">
       Torna indietro
     </button>
   </div>

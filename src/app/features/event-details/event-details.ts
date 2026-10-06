@@ -32,6 +32,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { EventAttendeeDto, EventDetailDto } from '../../core/models/event.model';
 import { OrganizerDetailDto } from '../../core/models/organizer.model';
 import { eventIcs } from '../../core/utils/calendar';
+import { injectPageShare } from '../../core/utils/page-share';
+import { lockBodyScrollWhile } from '../../core/utils/scroll-lock';
 import { nightDateLabel } from '../../core/utils/event-filters';
 import {
   addressPrimary,
@@ -61,9 +63,6 @@ const FACE_TONES = [
 ];
 
 type ContactKind = 'instagram' | 'whatsapp' | 'website';
-
-/** How long "Copiato" stays on the button that copied something. */
-const COPIED_MS = 2000;
 
 /** An event's page, from the "Scheda evento" artboard of the Claude Design
  * canvas: the flyer, who organizes it, when and how much, who's going, the
@@ -124,9 +123,10 @@ export class EventDetails {
    * it, so a liked heart is filled through an arbitrary variant on the inner
    * svg. Its colour follows the button's. */
   protected readonly heartIconClass = computed(() => (this.liked() ? '[&_svg]:fill-current' : ''));
-  /** The button that just copied something shows "Copiato" for a moment:
-   * the share fallback (the page's link) or "Copia indirizzo". */
-  protected readonly copied = signal<'link' | 'address' | null>(null);
+  /** Share (the native sheet, or copying the link) and "Copia indirizzo";
+   * copied() names the button that should say "Copiato" for a moment. */
+  private readonly pageShare = injectPageShare<'address'>();
+  protected readonly copied = this.pageShare.copied;
 
   /** Fullscreen flyer lightbox: tap the hero to open, tap the image again to
    * toggle between fit-to-screen and full-size (pannable via scroll). */
@@ -210,7 +210,6 @@ export class EventDetails {
 
   /** Only the id, so the effect below doesn't refetch on every count change. */
   private readonly eventId = computed(() => this.event()?.id ?? null);
-  private copiedTimer: ReturnType<typeof setTimeout> | undefined;
   // Toggles with a request still in flight: a second tap is ignored until
   // it settles, or add/remove could reach the server in the wrong order and
   // leave the button out of sync with the backend.
@@ -219,19 +218,9 @@ export class EventDetails {
   constructor() {
     const destroyRef = inject(DestroyRef);
 
-    // Same body-scroll lock as auth-modal.ts, DOM-only hence the platform
-    // check — released on destroy too, or leaving the page with the lightbox
-    // open would keep every other page unscrollable.
-    effect(() => {
-      if (!this.isBrowser) return;
-      document.body.style.overflow = this.flyerOpen() ? 'hidden' : '';
-    });
+    lockBodyScrollWhile(this.flyerOpen);
     const clock = this.isBrowser ? setInterval(() => this.now.set(Date.now()), 60_000) : undefined;
-    destroyRef.onDestroy(() => {
-      if (this.isBrowser) document.body.style.overflow = '';
-      clearTimeout(this.copiedTimer);
-      clearInterval(clock);
-    });
+    destroyRef.onDestroy(() => clearInterval(clock));
 
     // Parteciperò/Mi piace state follows the session, not just the first
     // load: signing in from the auth modal fetches it, signing out clears it.
@@ -317,25 +306,12 @@ export class EventDetails {
     this.following.update((active) => !active);
   }
 
-  // navigator.share on mobile browsers that support the native sheet;
-  // falls back to copying the current URL to the clipboard.
-  protected async share(event: EventDetailDto): Promise<void> {
-    if (!this.isBrowser) return;
-    const url = window.location.href;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: event.title, url });
-      } catch {
-        // User dismissed the native share sheet: nothing to do.
-      }
-      return;
-    }
-    await this.copy(url, 'link');
+  protected share(event: EventDetailDto): Promise<void> {
+    return this.pageShare.share(event.title);
   }
 
   protected copyAddress(event: EventDetailDto): Promise<void> {
-    return this.copy(withoutCountry(event.address), 'address');
+    return this.pageShare.copy(withoutCountry(event.address), 'address');
   }
 
   /** "+ Calendario": hands the browser an .ics file (see eventIcs). */
@@ -373,18 +349,6 @@ export class EventDetails {
       next: (page) => this.attendees.set(page.content),
       error: () => this.attendees.set([]),
     });
-  }
-
-  private async copy(text: string, what: 'link' | 'address'): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      // No clipboard API (insecure context) or permission denied: nothing to show.
-      return;
-    }
-    this.copied.set(what);
-    clearTimeout(this.copiedTimer);
-    this.copiedTimer = setTimeout(() => this.copied.set(null), COPIED_MS);
   }
 
   // Shared by toggleGoing/toggleLike: flips local state immediately, fires

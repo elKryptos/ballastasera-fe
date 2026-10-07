@@ -3,7 +3,7 @@ import { Location, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
-import { EVENT_TYPE_LABELS, MILAN_CENTER } from '../../core/config/map-pins';
+import { EVENT_TYPE_LABELS } from '../../core/config/map-pins';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 import { EventCardDto, EventType } from '../../core/models/event.model';
@@ -13,7 +13,7 @@ import { DanceStylesService } from '../../core/services/dance-styles.service';
 import { EventEngagementService } from '../../core/services/event-engagement.service';
 import { EventFiltersService } from '../../core/services/event-filters.service';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
-import { PRECISE_FIX_METERS, UserLocationService } from '../../core/services/user-location.service';
+import { UserLocationService } from '../../core/services/user-location.service';
 import {
   addressPrimary,
   formatClock,
@@ -31,7 +31,7 @@ import {
   nightOf,
   rangeLastNight,
 } from '../../core/utils/event-filters';
-import { GeoPoint, distanceKm, formatDistance, nearestCity } from '../../core/utils/geo';
+import { distanceKm, formatDistance, startingCity } from '../../core/utils/geo';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { DateRangeChips } from '../../shared/event-filters/date-range-chips';
@@ -233,7 +233,7 @@ export class EventList {
         .subscribe({
           next: (cities) => {
             this.cities.set(cities);
-            if (this.cityId() === null && cities.length) this.cityId.set(this.startingCity(cities).id);
+            if (this.cityId() === null && cities.length) this.cityId.set(startingCity(cities, this.mapViewState.center, this.userLocation.position()).id);
           },
           error: () => this.error.set(true),
         });
@@ -315,25 +315,9 @@ export class EventList {
 
   private async ensurePosition(): Promise<boolean> {
     this.locateMessage.set(null);
-    if (this.userLocation.position()) return true;
-    const result = await this.userLocation.locate();
-    if (!result.ok) {
-      this.locateMessage.set(result.message);
-      return false;
-    }
-    if (result.position.accuracy > PRECISE_FIX_METERS) {
-      const km = Math.round(result.position.accuracy / 1000);
-      this.locateMessage.set(`Posizione approssimativa (±${km} km): le distanze sono indicative.`);
-    }
-    return true;
-  }
-
-  private startingCity(cities: CityDto[]): CityDto {
-    const center = this.mapViewState.center;
-    const from: GeoPoint = center
-      ? { lat: center[0], lng: center[1] }
-      : (this.userLocation.position() ?? { lat: MILAN_CENTER[0], lng: MILAN_CENTER[1] });
-    return nearestCity(cities, from, Infinity) ?? cities[0];
+    const { ok, notice } = await this.userLocation.ensure();
+    this.locateMessage.set(notice);
+    return ok;
   }
 
   private comparator(now: number): (a: ListItem, b: ListItem) => number {

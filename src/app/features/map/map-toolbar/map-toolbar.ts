@@ -19,9 +19,10 @@ interface ActiveChip {
  * to it, and — only while any is on — one removable chip per active filter
  * plus "Azzera". Floating straight on the map on phones; the top card of the
  * left-hand panel from md up, where what the map shows (Serate | Locali e
- * scuole | Entrambi) gets a switch of its own, one click away instead of
- * inside Filtri. Day, styles, types and price are EventFiltersService's; the
- * layer is MapPage's, hence the output.
+ * scuole | Scuole | Entrambi) gets a switch of its own, one click away instead
+ * of inside Filtri. On the schools layer, Lista is the schools' (/scuole). Day,
+ * styles, types and price are EventFiltersService's; the layer is MapPage's,
+ * hence the output.
  */
 @Component({
   selector: 'app-map-toolbar',
@@ -35,12 +36,18 @@ export class MapToolbar {
   readonly layer = input.required<MapLayer>();
   /** The /lista route is on (feature flag) — otherwise no Mappa | Lista. */
   readonly listEnabled = input(false);
+  /** The /scuole route is on: on the schools layer, Lista goes there. */
+  readonly schoolListEnabled = input(false);
 
   readonly filtersOpened = output<void>();
   /** Picked on the switch, or 'events' when the layer's chip is removed. */
   readonly layerChanged = output<MapLayer>();
 
   protected readonly layerOptions = LAYER_OPTIONS;
+  /** Mappa | Lista: the nights' list, or the schools' while only they show. */
+  private readonly toSchools = computed(() => this.layer() === 'schools' && this.schoolListEnabled());
+  protected readonly showSwitch = computed(() => this.listEnabled() || this.toSchools());
+  protected readonly listPath = computed(() => (this.toSchools() ? '/scuole' : '/lista'));
 
   protected readonly chips = computed<ActiveChip[]>(() => {
     const chips: ActiveChip[] = [];

@@ -1,3 +1,4 @@
+import { MILAN_CENTER } from '../config/map-pins';
 import { CityDto } from '../models/city.model';
 import type { MapBounds } from '../services/events.service';
 
@@ -75,6 +76,17 @@ export function nearestCity(cities: CityDto[], point: GeoPoint, maxKm = 40): Cit
     }
   }
   return best;
+}
+
+/** The city a list opens on (/lista, /scuole): the one the map was last
+ * looking at, else the visitor's, else Milano. */
+export function startingCity(
+  cities: CityDto[],
+  mapCenter: [number, number] | null,
+  position: GeoPoint | null,
+): CityDto {
+  const from = mapCenter ? { lat: mapCenter[0], lng: mapCenter[1] } : (position ?? { lat: MILAN_CENTER[0], lng: MILAN_CENTER[1] });
+  return nearestCity(cities, from, Infinity) ?? cities[0];
 }
 
 /** How far a city's events reach: its province too. Nights out in the

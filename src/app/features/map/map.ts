@@ -58,7 +58,7 @@ import { EventFiltersDialog } from '../../shared/event-filters/event-filters-dia
 import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { MILAN_CENTER, MILAN_DEFAULT_ZOOM, VENUE_TYPES, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
 import { MAP_STYLE_URLS } from '../../core/config/map-styles';
-import { LAYER_OPTIONS, MapLayer } from './map-layer';
+import { LAYER_OPTIONS, MapLayer, layerShowsEvents } from './map-layer';
 import { MapPinIcons } from './map-pin-icons';
 import { MapSheet } from './map-sheet/map-sheet';
 import { MapToolbar } from './map-toolbar/map-toolbar';
@@ -193,6 +193,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   protected readonly engagement = inject(EventEngagementService);
 
   protected readonly listEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventListPage);
+  /** On the schools layer, Lista goes to /scuole — while that page is on. */
+  protected readonly schoolListEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.schoolListPage);
   /** Off, the venue card has no "Vedi dettagli": /luogo/:id wouldn't match
    * and the link would land on the home page instead. */
   protected readonly venuePageEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.venueDetailsPage);
@@ -232,9 +234,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private readonly viewBounds = signal<MapBounds | null>(null);
 
   /** What the map shows, picked under "Sulla mappa" in the filters: events
-   * (the default), places only, or both. */
+   * (the default), places only, schools only, or events and places both. */
   protected readonly mapLayer = signal<MapLayer>('events');
-  protected readonly showEvents = computed(() => this.mapLayer() !== 'venues');
+  protected readonly showEvents = computed(() => layerShowsEvents(this.mapLayer()));
   protected readonly showVenues = computed(() => this.mapLayer() !== 'events');
   protected readonly layerOptions = LAYER_OPTIONS;
   protected readonly venueLegend = VENUE_TYPES.map((type) => ({ type, label: VENUE_TYPE_LABELS[type] }));
@@ -256,9 +258,11 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   });
 
   /** Every city fetched so far — they're far apart, so all can stay drawn. */
-  private readonly visibleVenues = computed(() =>
-    this.showVenues() ? Array.from(this.venuesByCity().values()).flat() : [],
-  );
+  private readonly visibleVenues = computed(() => {
+    if (!this.showVenues()) return [];
+    const venues = Array.from(this.venuesByCity().values()).flat();
+    return this.mapLayer() === 'schools' ? venues.filter((venue) => venue.type === 'SCHOOL') : venues;
+  });
 
   protected readonly venuesInView = computed(() => {
     const view = this.viewBounds();
@@ -520,7 +524,16 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       this.selectedEvent.set(null);
       this.restoreSelectedEvent(this.events());
     }
+    this.takeSchoolsRequest();
     if (moved && this.areaStale()) this.searchArea();
+  }
+
+  /** Sent here by the schools list (mapViewState.showSchools): the schools
+   * layer, which fetches the city's venues. Once. */
+  private takeSchoolsRequest(): void {
+    if (!this.mapViewState.showSchools) return;
+    this.mapViewState.showSchools = false;
+    this.selectLayer('schools');
   }
 
   private initMap(L: typeof import('leaflet')): void {
@@ -576,7 +589,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     map.on('zoomend', markZoomedIn);
     markZoomedIn();
 
-    // The one search nobody asks for: the first view.
+    // The one search nobody asks for: the first view — on schools alone when
+    // the schools list sent the visitor here.
+    this.takeSchoolsRequest();
     this.searchArea();
     // The layer may have been switched on while Leaflet was still loading.
     this.drawMarkers();
@@ -1029,8 +1044,12 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       this.venuesError.set(false);
       this.loadVenuesInView();
     }
-    // Places hidden: their open card goes with them.
-    if (!this.showVenues()) this.selectedVenue.set(null);
+    // Places hidden: their open card goes with them — on the schools layer,
+    // unless it's a school's.
+    const venue = this.selectedVenue();
+    if (venue && (!this.showVenues() || (layer === 'schools' && venue.type !== 'SCHOOL'))) {
+      this.selectedVenue.set(null);
+    }
     if (!this.showEvents()) {
       // Events hidden: drop any in-flight fetch and the open event card.
       this.eventsRequest?.unsubscribe();

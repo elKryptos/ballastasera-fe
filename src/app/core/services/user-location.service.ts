@@ -18,6 +18,13 @@ export interface UserPosition extends GeoPoint {
 
 export type LocateResult = { ok: true; position: UserPosition } | { ok: false; message: string };
 
+/** ensure()'s answer: a position to measure from or not, and what to tell the
+ * visitor — why there's none, or that it's only approximate. */
+export interface EnsureResult {
+  ok: boolean;
+  notice: string | null;
+}
+
 /**
  * The visitor's position, for "Intorno a me" on the map and the distances
  * and "Entro 3 km" of the list. Only ever asked from a tap, never on page
@@ -33,6 +40,17 @@ export class UserLocationService {
   readonly position = this.current.asReadonly();
   private readonly busy = signal(false);
   readonly locating = this.busy.asReadonly();
+
+  /** The position a distance or a sort needs (the lists' "Entro 3 km", "Vicino
+   * a me"): the one already known, else asked now. */
+  async ensure(): Promise<EnsureResult> {
+    if (this.current()) return { ok: true, notice: null };
+    const result = await this.locate();
+    if (!result.ok) return { ok: false, notice: result.message };
+    if (result.position.accuracy <= PRECISE_FIX_METERS) return { ok: true, notice: null };
+    const km = Math.round(result.position.accuracy / 1000);
+    return { ok: true, notice: `Posizione approssimativa (±${km} km): le distanze sono indicative.` };
+  }
 
   locate(): Promise<LocateResult> {
     if (!this.isBrowser) return Promise.resolve({ ok: false, message: 'Posizione non disponibile.' });

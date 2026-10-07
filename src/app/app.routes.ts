@@ -143,6 +143,15 @@ export const routes: Routes = [
           import('./features/admin/create-venue/create-venue').then(
             (m) => m.CreateVenue)
       },
+
+      {
+        // The dance schools, where the lesson's "Trova una scuola" leads.
+        // Public, like the venues API it reads.
+        path: 'scuole',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.schoolListPage)],
+        loadComponent: () =>
+          import('./features/school-list/school-list').then((m) => m.SchoolList),
+      },
     ],
   },
 

@@ -36,6 +36,8 @@ export const FEATURE_FLAGS = {
   venueDetailsPage: 'venueDetailsPage',
   /** /impara-a-ballare route: the salsa and bachata lesson. Static, no backend. */
   learnToDancePage: 'learnToDancePage',
+  /** /scuole route: the list of dance schools, linked from the lesson buttons. */
+  schoolListPage: 'schoolListPage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

@@ -7,7 +7,7 @@ import { addressPrimary, formatClock, formatPrice, isLiveAt, withoutCountry } fr
 import { DATE_RANGE_PHRASES, nightShortLabel } from '../../../core/utils/event-filters';
 import { EventMapCard } from '../event-map-card/event-map-card';
 import { VenueMapCard } from '../venue-map-card/venue-map-card';
-import { MapLayer } from '../map-layer';
+import { MapLayer, layerShowsEvents } from '../map-layer';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
 
 /** A swipe on the header shorter than this is a tap. */
@@ -70,7 +70,8 @@ export class MapSheet {
   /** "Riprova" after an error, or "Cerca in questa zona" from the sheet. */
   readonly searchRequested = output<void>();
 
-  protected readonly showsEvents = computed(() => this.layer() !== 'venues');
+  protected readonly showsEvents = computed(() => layerShowsEvents(this.layer()));
+  private readonly schoolsOnly = computed(() => this.layer() === 'schools');
 
   /** An open card, event or venue. */
   private readonly hasSelection = computed(() => this.selected() !== null || this.selectedVenue() !== null);
@@ -117,9 +118,9 @@ export class MapSheet {
   /** "3 serate stasera", "Nessuna serata nel weekend", "12 locali e scuole". */
   protected readonly title = computed(() => {
     if (!this.showsEvents()) {
-      if (this.venuesLoading()) return 'Cerco locali e scuole…';
+      if (this.venuesLoading()) return this.schoolsOnly() ? 'Cerco le scuole…' : 'Cerco locali e scuole…';
       if (this.venuesError()) return 'Impossibile caricare i luoghi';
-      return venuesLabel(this.venueCount());
+      return this.schoolsOnly() ? schoolsLabel(this.venueCount()) : venuesLabel(this.venueCount());
     }
     if (this.error()) return 'Impossibile caricare le serate';
     if (this.loading() && !this.searched()) return 'Cerco le serate…';
@@ -198,6 +199,11 @@ export class MapSheet {
   protected cancelDrag(): void {
     this.dragStartY = null;
   }
+}
+
+function schoolsLabel(count: number): string {
+  if (count === 0) return 'Nessuna scuola';
+  return count === 1 ? '1 scuola' : `${count} scuole`;
 }
 
 function venuesLabel(count: number): string {

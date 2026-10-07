@@ -13,4 +13,7 @@ export class MapViewStateService {
   center: [number, number] | null = null;
   zoom: number | null = null;
   selectedEventId: string | null = null;
+  /** Set by the schools list's Mappa: the map switches to its Scuole layer
+   * when it next shows, and clears this — a one-off, unlike the view. */
+  showSchools = false;
 }

@@ -578,11 +578,12 @@ Global for the same reason as the pins: Leaflet renders it outside Angular. */
   }
 }
 
-/* Event browsing, /mappa, /lista, an event's page and a venue's: one palette
-for the chips, cards, bottom sheet and Filtri dialog they share
-(shared/event-filters, map-sheet, event-list, event-details, venue-details),
-from the Claude Design canvas ("Mappa con filtri e bottom sheet", "Lista per
-giorno", "Scheda evento", "Pagina luogo – mobile") translated
+/* Event browsing, /mappa, /lista, an event's page, a venue's and /scuole: one
+palette for the chips, cards, bottom sheet and Filtri dialog they share
+(shared/event-filters, map-sheet, event-list, event-details, venue-details,
+school-list), from the Claude Design canvas ("Mappa con filtri e bottom
+sheet", "Lista per giorno", "Scheda evento", "Pagina luogo – mobile" with its
+"Lista scuole" rows) translated
 onto the brand tokens above, like the menu page. Global rather than in each
 component: they're read by components of all three, the dialog included. By
 day the brand tokens switch to the basemap's paper palette, same values as
@@ -591,7 +592,8 @@ from them get their own. */
 app-map,
 app-event-list,
 app-event-details,
-app-venue-details {
+app-venue-details,
+app-school-list {
   --ev-surface: color-mix(in srgb, var(--color-violet) 9%, var(--color-ink));
   --ev-raised: color-mix(in srgb, var(--color-violet) 17%, var(--color-ink));
   --ev-edge: color-mix(in srgb, var(--color-violet) 32%, var(--color-ink));
@@ -633,7 +635,7 @@ app-venue-details {
   --ev-glass-text: #ffffff;
 }
 
-:root[data-theme='light'] :is(app-map, app-event-list, app-event-details, app-venue-details) {
+:root[data-theme='light'] :is(app-map, app-event-list, app-event-details, app-venue-details, app-school-list) {
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
   --color-amber: #c2410c;

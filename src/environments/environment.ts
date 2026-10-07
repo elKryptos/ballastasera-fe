@@ -27,6 +27,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   createVenuePage: false,
   venueDetailsPage: false,
   learnToDancePage: false,
+  schoolListPage: false,
 };
 
 export const environment = {

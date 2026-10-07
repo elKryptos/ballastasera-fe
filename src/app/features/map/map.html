@@ -17,7 +17,7 @@
         MapPage.observeInsets(). -->
     <div #panel
       class="pointer-events-none absolute inset-0 z-map-content flex flex-col justify-between md:inset-y-4 md:right-auto md:left-4 md:w-100 md:justify-start md:gap-3">
-      <app-map-toolbar class="shrink-0 md:pointer-events-auto" [layer]="mapLayer()" [listEnabled]="listEnabled"
+      <app-map-toolbar class="shrink-0 md:pointer-events-auto" [layer]="mapLayer()" [listEnabled]="listEnabled" [schoolListEnabled]="schoolListEnabled"
         (filtersOpened)="filtersOpen.set(true)" (layerChanged)="selectLayer($event)" />
 
       <app-map-sheet class="pointer-events-auto md:flex md:min-h-0 md:flex-col" [events]="eventsInView()"
@@ -97,7 +97,7 @@
 <!-- Filtri: the shared sections, plus what only the map has — "Sulla mappa"
     first (filtersLead), since it decides what the rest even applies to. -->
 <app-event-filters-dialog [(open)]="filtersOpen" [danceStyles]="danceStyles()" [resultCount]="dialogResultCount()"
-  [doneLabel]="showEvents() ? null : 'Mostra locali e scuole'" [extraActive]="mapLayer() !== 'events'"
+  [doneLabel]="showEvents() ? null : mapLayer() === 'schools' ? 'Mostra le scuole' : 'Mostra locali e scuole'" [extraActive]="mapLayer() !== 'events'"
   (cleared)="selectLayer('events')">
   <section filtersLead class="flex flex-col gap-2.5" aria-labelledby="map-filters-layer">
     <h3 id="map-filters-layer" class="text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">

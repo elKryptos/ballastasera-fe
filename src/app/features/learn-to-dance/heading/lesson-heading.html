@@ -1,0 +1,13 @@
+<header class="head">
+  <span class="n" aria-hidden="true">{{ n() }}</span>
+  <p class="kicker"><span class="rule"></span>{{ n() }} · {{ kicker() }}</p>
+  <h2 class="title">
+    {{ title() }}
+    @if (flair()) {
+    <em>{{ flair() }}</em>
+    }
+  </h2>
+  <div class="intro">
+    <ng-content />
+  </div>
+</header>

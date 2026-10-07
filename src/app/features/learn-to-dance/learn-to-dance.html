@@ -1,0 +1,98 @@
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <div class="lesson">
+    <div class="grain" aria-hidden="true"></div>
+
+    <app-lesson-hero (go)="scrollTo($event)" />
+
+    @if (onAir(); as deck) {
+    <button type="button" class="on-air" (click)="stopRecord()">
+      <span class="on-air-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>{{ deck.dance() === 'salsa' ? 'Lato A · Salsa' : 'Lato B · Bachata' }}</span>
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <rect x="6" y="6" width="12" height="12" rx="2" />
+      </svg>
+      <span class="sr-only">Ferma il disco</span>
+    </button>
+    }
+
+    <nav class="chapters" aria-label="Capitoli della lezione">
+      <div class="chapters-inner">
+        <ol>
+          @for (c of chapters; track c.id) {
+          <li>
+            <button type="button" [class.is-on]="active() === c.id"
+              [attr.aria-current]="active() === c.id ? 'step' : null" (click)="scrollTo(c.id)">
+              <span class="cn">{{ c.n }}</span>{{ c.label }}
+            </button>
+          </li>
+          }
+        </ol>
+        <!-- Outside the scrolling list, so the way to a school stays in view all through the lesson. -->
+        <a class="to-schools" [routerLink]="schools">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M2.5 9.5 12 5l9.5 4.5L12 14 2.5 9.5Z" />
+            <path d="M6.5 11.6v4.2c0 1.6 2.5 3.2 5.5 3.2s5.5-1.6 5.5-3.2v-4.2" />
+          </svg>
+          Scuole
+        </a>
+      </div>
+    </nav>
+
+    <section id="ritmo" class="band">
+      <div class="wrap"><app-lesson-rhythm /></div>
+    </section>
+
+    <section id="salsa" class="band band--salsa">
+      <div class="wrap"><app-lesson-dance dance="salsa" /></div>
+    </section>
+
+    <section id="bachata" class="band band--bachata">
+      <div class="wrap"><app-lesson-dance dance="bachata" /></div>
+    </section>
+
+    <section id="coppia" class="band band--coppia">
+      <div class="wrap"><app-lesson-couple /></div>
+    </section>
+
+    <section id="errori" class="band">
+      <div class="wrap"><app-lesson-mistakes /></div>
+    </section>
+
+    <section id="playlist" class="band band--playlist">
+      <div class="wrap"><app-lesson-mixtape /></div>
+    </section>
+
+    <!-- The way out, to a school: a dance floor lighting up under the last words. -->
+    <section class="finale">
+      <div class="disco" aria-hidden="true">
+        @for (t of tiles; track $index) {
+        <span [style.--c]="t.color" [style.--d]="t.delay"></span>
+        }
+      </div>
+
+      <!-- The lesson hands over to the schools: the basic step is ours to
+          show, the rest is a teacher's to teach. -->
+      <div class="finale-copy" appReveal>
+        <p class="finale-kicker">Fine della lezione n°1</p>
+        <h2>Ora serve <em>un maestro.</em></h2>
+        <p class="finale-text">
+          Il passo base ce l’hai. I giri, la guida e la sicurezza in pista si imparano in sala, con un
+          insegnante che ti corregge e un gruppo con cui provare ogni settimana. Trova una scuola di salsa e
+          bachata vicino a te e chiedi una lezione di prova.
+        </p>
+        <div class="finale-ctas">
+          <a [routerLink]="schools" class="go">
+            Trova una scuola vicino a te
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+              stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+          <button type="button" class="again" (click)="scrollTo('ritmo')">Ripassa dall’1</button>
+        </div>
+        <p class="finale-note">Scuole di salsa e bachata, in elenco o sulla mappa.</p>
+      </div>
+    </section>
+  </div>
+</main>

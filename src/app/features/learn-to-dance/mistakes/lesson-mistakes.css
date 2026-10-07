@@ -1,0 +1,128 @@
+:host {
+  display: block;
+  --accent: var(--fuego);
+}
+
+.cards {
+  display: grid;
+  gap: 1.25rem;
+  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  padding: 1.5rem 1.5rem 1.6rem;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent),
+    var(--night-2);
+  rotate: var(--tilt);
+  transition: rotate 0.35s cubic-bezier(0.3, 1.4, 0.5, 1), border-color 0.3s;
+}
+
+.card:hover {
+  rotate: 0deg;
+  border-color: color-mix(in srgb, var(--laguna) 45%, transparent);
+}
+
+.wrong {
+  margin: 0;
+  font: 800 clamp(1.35rem, 2.4vw, 1.6rem) / 1.15 var(--font-grotesk);
+  letter-spacing: -0.02em;
+  color: var(--cream-soft);
+}
+
+.struck {
+  position: relative;
+  display: inline-block;
+}
+
+/* Two marker strokes through the words, drawn left to right. */
+.strike {
+  position: absolute;
+  left: -4%;
+  top: 30%;
+  width: 108%;
+  height: 0.75em;
+  overflow: visible;
+}
+
+.strike path {
+  fill: none;
+  stroke: var(--fuego);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+}
+
+.strike path + path {
+  stroke-width: 2.5;
+  opacity: 0.8;
+}
+
+.right {
+  display: flex;
+  gap: 0.6rem;
+  margin: 1rem 0 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.right svg {
+  flex: none;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-top: 0.1rem;
+  fill: none;
+  stroke: var(--laguna);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .strike path {
+    stroke-dashoffset: 1;
+  }
+
+  .is-revealed .strike path {
+    animation: strike 0.6s cubic-bezier(0.6, 0, 0.3, 1) 0.45s forwards;
+  }
+
+  .is-revealed .strike path + path {
+    animation-delay: 0.75s;
+  }
+
+  .right {
+    opacity: 0;
+    translate: 0 0.5rem;
+    transition:
+      opacity 0.5s 1s,
+      translate 0.5s 1s;
+  }
+
+  .is-revealed .right {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes strike {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

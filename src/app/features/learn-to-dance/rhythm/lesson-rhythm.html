@@ -1,0 +1,55 @@
+<app-lesson-heading n="01" kicker="Il ritmo" title="Prima dei piedi," flair="le orecchie">
+  <p>
+    Salsa e bachata si contano in otto: due battute da quattro tempi. Quasi ogni battito è un passo — il
+    trucco sta in quelli che non lo sono.
+  </p>
+</app-lesson-heading>
+
+<div class="machine" appReveal>
+  <div class="machine-top" aria-hidden="true">
+    <span class="led"></span>
+    <span>RITMO-8 · drum machine</span>
+    <span class="grow"></span>
+    <span>salsa ≈ 168 bpm · bachata ≈ 125 bpm</span>
+  </div>
+
+  <div class="row row--salsa">
+    <div class="who">
+      <span class="name">Salsa</span>
+      <span class="pattern">1 2 3 · 5 6 7</span>
+    </div>
+    <div class="pads" aria-hidden="true">
+      @for (p of salsa; track $index) {
+      <span class="pad" [class.rest]="p.rest" [style.--i]="$index">
+        <b>{{ $index + 1 }}</b><small>{{ p.label }}</small>
+      </span>
+      }
+    </div>
+    <p class="note">Sul 4 e sull’8 nessun passo: è la <strong>pausa</strong>. I piedi aspettano, il corpo no.</p>
+  </div>
+
+  <div class="row row--bachata">
+    <div class="who">
+      <span class="name">bachata</span>
+      <span class="pattern">1 2 3 tap · 5 6 7 tap</span>
+    </div>
+    <div class="pads" aria-hidden="true">
+      @for (p of bachata; track $index) {
+      <span class="pad" [class.rest]="p.rest" [style.--i]="$index">
+        <b>{{ $index + 1 }}</b><small>{{ p.label }}</small>
+      </span>
+      }
+    </div>
+    <p class="note">Sul 4 e sull’8 il piede tocca terra senza peso: è il <strong>tap</strong>, e l’anca sale.</p>
+  </div>
+</div>
+
+<ol class="tips">
+  @for (tip of tips; track tip.title; let i = $index) {
+  <li class="tip" [appReveal]="i * 120">
+    <span class="tip-n" aria-hidden="true">{{ ['a', 'b', 'c'][i] }}</span>
+    <h3>{{ tip.title }}</h3>
+    <p>{{ tip.copy }}</p>
+  </li>
+  }
+</ol>

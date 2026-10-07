@@ -1,0 +1,63 @@
+<header class="head">
+  <div class="art" aria-hidden="true">
+    @if (dance() === 'salsa') {
+    <div class="burst"></div>
+    <div class="sunset"></div>
+    } @else {
+    <div class="sky"></div>
+    <div class="moon"></div>
+    <!-- Six strings, strummed low to high every few seconds: the requinto
+        that bachata grew up on. -->
+    <svg class="strings" viewBox="0 0 400 120" preserveAspectRatio="none">
+      @for (s of strings; track s) {
+      <path class="string" [attr.d]="'M0 ' + (12 + s * 19) + 'Q200 ' + (2 + s * 19) + ' 400 ' + (12 + s * 19)"
+        [style.--i]="s" [attr.stroke-width]="2.4 - s * 0.3" />
+      }
+    </svg>
+    }
+  </div>
+
+  <p class="kicker"><span class="rule"></span>{{ chapter().n }} · {{ chapter().origin }}</p>
+  <h2 class="name">{{ dance() === 'salsa' ? 'Salsa' : 'bachata' }}</h2>
+  <p class="intro">{{ chapter().intro }}</p>
+
+  <dl class="facts">
+    @for (f of chapter().facts; track f.k) {
+    <div class="fact">
+      <dt>{{ f.k }}</dt>
+      <dd>{{ f.v }}</dd>
+    </div>
+    }
+  </dl>
+</header>
+
+<div class="stage-wrap" appReveal>
+  <p class="stage-label"><span>Il passo base</span>segui i piedi e conta con loro</p>
+  <app-dance-stage [dance]="dance()" />
+</div>
+
+<div class="block">
+  <h3 class="sub">Tre cose da sapere</h3>
+  <ol class="tips">
+    @for (tip of chapter().tips; track tip.title; let i = $index) {
+    <li class="tip" [appReveal]="i * 120">
+      <span class="roman" aria-hidden="true">{{ roman[i] }}</span>
+      <h4>{{ tip.title }}</h4>
+      <p>{{ tip.copy }}</p>
+    </li>
+    }
+  </ol>
+</div>
+
+<div class="block">
+  <h3 class="sub">Gli stili che incontrerai</h3>
+  <ul class="styles">
+    @for (s of chapter().styles; track s.name; let i = $index) {
+    <li class="style" [appReveal]="i * 120">
+      <span class="motif motif--{{ s.motif }}" aria-hidden="true"></span>
+      <h4>{{ s.name }}</h4>
+      <p>{{ s.copy }}</p>
+    </li>
+    }
+  </ul>
+</div>

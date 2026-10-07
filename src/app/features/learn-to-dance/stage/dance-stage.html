@@ -1,0 +1,118 @@
+<div class="panel">
+  <div class="viewport">
+    <div class="numeral" aria-hidden="true">
+      @for (key of beatKey(); track key) {
+      <span class="digit">{{ beat() < 0 ? '0' : beat() + 1 }}</span>
+      }
+      <span class="kind">{{ kindLabel() }}</span>
+    </div>
+
+    <!-- The floor seen from above and tilted away: forward is up, for
+        whoever is dancing (the follower's view is their own, not the
+        leader's). Drawn only — the steps are read out in the panel beside. -->
+    <div class="floor-wrap" aria-hidden="true">
+      <div class="floor" [class.is-hold]="beat() >= 0 && current().kind === 'pause'">
+        <span class="track"></span>
+        <span class="dir dir--front">avanti</span>
+        <span class="dir dir--back">indietro</span>
+        <span class="dir dir--left">sx</span>
+        <span class="dir dir--right">dx</span>
+
+        @for (f of feet(); track f.foot) {
+        <div class="foot" [class.foot--l]="f.foot === 'L'" [class.has-weight]="f.weight"
+          [class.lift-a]="f.lift === 'a'" [class.lift-b]="f.lift === 'b'" [class.is-tap]="f.tap"
+          [style.--x]="f.x" [style.--y]="f.y">
+          <span class="shadow"></span>
+          <span class="sole">
+            <svg viewBox="0 0 34 78">
+              <path
+                d="M14 1.5C24.5.5 32 8 32 20.5c0 10-3.6 18-6.4 24.6C24 49 22.6 51.5 20 51.5h-8C9 51.5 7.3 48 6.2 43.6 3.6 34.5 2.4 25.6 3.2 17 4.1 7.6 8 2.2 14 1.5Z" />
+              <path d="M10 58.5c0-3 3.2-4.4 7.4-4.4 4.6 0 7.6 1.4 7.6 4.4v9.8c0 5.6-3.6 8.7-7.6 8.7-4.2 0-7.4-3.1-7.4-8.7Z" />
+            </svg>
+            <span class="mark">{{ f.mark }}</span>
+          </span>
+          <span class="ripple"></span>
+        </div>
+        }
+
+        <span class="core" [style.--x]="core().x" [style.--y]="core().y"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="caption" [attr.aria-live]="playing() ? 'off' : 'polite'">
+      @if (beat() < 0) {
+      <p class="say">Pronti?</p>
+      <p class="hint">Premi play: si parte dall’1. Oppure tocca un numero per guardarlo da vicino.</p>
+      } @else {
+      <p class="say"><span class="say-n">{{ beat() + 1 }}</span>{{ current().say }}</p>
+      <p class="hint">{{ current().hint }}</p>
+      }
+    </div>
+
+    <div class="controls">
+      <button type="button" class="play" (click)="toggle()" [attr.aria-pressed]="playing()"
+        [attr.aria-label]="playing() ? 'Metti in pausa' : 'Fai partire il passo base'">
+        @if (playing()) {
+        <svg viewBox="0 0 24 24" class="ic" fill="currentColor" aria-hidden="true">
+          <rect x="6" y="5" width="4" height="14" rx="1.4" />
+          <rect x="14" y="5" width="4" height="14" rx="1.4" />
+        </svg>
+        } @else {
+        <svg viewBox="0 0 24 24" class="ic" fill="currentColor" aria-hidden="true">
+          <!-- Drawn a unit right of centre: a triangle looks centred by its weight, not its box. -->
+          <path d="M8 4.8v14.4a1 1 0 0 0 1.5.86l11.6-7.2a1 1 0 0 0 0-1.72L9.5 3.94A1 1 0 0 0 8 4.8Z" />
+        </svg>
+        }
+      </button>
+
+      <button type="button" class="ghost" (click)="stepOnce()">
+        <svg viewBox="0 0 24 24" class="ic" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 5l9 7-9 7z" />
+          <path d="M19 5v14" />
+        </svg>
+        Un conto alla volta
+      </button>
+    </div>
+
+    <div class="switches">
+      <div class="seg" role="group" aria-label="Velocità">
+        <button type="button" [attr.aria-pressed]="tempo() === 'slow'" (click)="tempo.set('slow')">
+          Lento<span class="bpm">{{ bpm().slow }}</span>
+        </button>
+        <button type="button" [attr.aria-pressed]="tempo() === 'full'" (click)="tempo.set('full')">
+          A tempo<span class="bpm">{{ bpm().full }}</span>
+        </button>
+      </div>
+      <div class="seg" role="group" aria-label="Audio">
+        @for (s of sounds; track s.mode) {
+        <button type="button" [attr.aria-pressed]="sound() === s.mode" (click)="sound.set(s.mode)">{{ s.label }}</button>
+        }
+      </div>
+      <div class="seg" role="group" aria-label="Ruolo">
+        <button type="button" [attr.aria-pressed]="role() === 'lead'" (click)="role.set('lead')">Chi guida</button>
+        <button type="button" [attr.aria-pressed]="role() === 'follow'" (click)="role.set('follow')">Chi segue</button>
+      </div>
+    </div>
+
+    <ol class="counts">
+      @for (c of counts(); track $index) {
+      <li>
+        <button type="button" class="count" [class.is-on]="$index === beat()" [class.is-rest]="c.kind !== 'step'"
+          (click)="goTo($index)" [attr.aria-label]="$index + 1 + ': ' + c.say">
+          <span class="n">{{ $index + 1 }}</span>
+          <span class="s">{{ c.short }}</span>
+        </button>
+      </li>
+      }
+    </ol>
+
+    <p class="legend">
+      <span><i class="lg lg--weight"></i>col peso</span>
+      <span><i class="lg lg--free"></i>senza peso</span>
+      <span><i class="lg lg--core"></i>baricentro</span>
+    </p>
+  </div>
+</div>

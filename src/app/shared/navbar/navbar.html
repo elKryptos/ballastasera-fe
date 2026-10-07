@@ -199,13 +199,23 @@
         <span class="grow">Amici</span>
         <span class="drawer-chip">Presto</span>
       </div>
-      <div class="drawer-item" appRailTooltip="Impara a ballare">
+      <!-- Shown, not linked, until the lesson's page is on (learnToDancePage). -->
+      <ng-template #learnItem>
         <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M5 3l14 9-14 9z" />
         </svg>
         <span class="grow">Impara a ballare</span>
+      </ng-template>
+      @if (learnEnabled()) {
+      <a class="drawer-item" routerLink="/impara-a-ballare" (click)="closeDrawer()" appRailTooltip="Impara a ballare">
+        <ng-container [ngTemplateOutlet]="learnItem" />
+      </a>
+      } @else {
+      <div class="drawer-item" appRailTooltip="Impara a ballare">
+        <ng-container [ngTemplateOutlet]="learnItem" />
       </div>
+      }
     </div>
 
     <hr class="mx-1.5 border-(--drawer-rule)" />

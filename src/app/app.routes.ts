@@ -120,6 +120,15 @@ export const routes: Routes = [
       },
 
       {
+        // The salsa and bachata lesson behind the menu's "Impara a ballare".
+        // Everything it shows lives in the component: no backend call.
+        path: 'impara-a-ballare',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.learnToDancePage)],
+        loadComponent: () =>
+          import('./features/learn-to-dance/learn-to-dance').then((m) => m.LearnToDance),
+      },
+
+      {
         path: 'admin/create-event-series',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventSeries), roleGuard('ADMIN')],
         loadComponent: () =>

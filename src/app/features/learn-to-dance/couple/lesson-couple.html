@@ -1,0 +1,50 @@
+<app-lesson-heading n="04" kicker="In coppia" title="Si balla" flair="in due">
+  <p>
+    Il passo base si impara da soli, ma salsa e bachata si ballano in coppia. Chi guida propone, chi segue
+    interpreta — e nessuno dei due trascina l’altro.
+  </p>
+</app-lesson-heading>
+
+<div class="duo">
+  <!-- Two partners and the centre they share: the couple turns around a
+      point that belongs to neither of them. -->
+  <figure class="orbit" appReveal>
+    <div class="orbit-box" aria-hidden="true">
+      <div class="ring"></div>
+      <div class="pair">
+        <span class="arm"></span>
+        <span class="partner partner--lead"><span>guida</span></span>
+        <span class="partner partner--follow"><span>segue</span></span>
+      </div>
+      <span class="centre"></span>
+    </div>
+    <figcaption>Due corpi, un centro: la coppia gira attorno a un punto che non è di nessuno dei due.</figcaption>
+  </figure>
+
+  <ol class="principles">
+    @for (p of principles; track p.title; let i = $index) {
+    <li [appReveal]="i * 100">
+      <span class="pn" aria-hidden="true">{{ i + 1 }}</span>
+      <div>
+        <h3>{{ p.title }}</h3>
+        <p>{{ p.copy }}</p>
+      </div>
+    </li>
+    }
+  </ol>
+</div>
+
+<aside class="carnet" appReveal aria-labelledby="carnet-title">
+  <div class="carnet-head">
+    <p class="carnet-kicker">Carnet de bal</p>
+    <h3 id="carnet-title">Il galateo della pista</h3>
+  </div>
+  <ol class="carnet-list">
+    @for (m of manners; track $index) {
+    <li>
+      <span class="dance-no">Ballo n°{{ $index + 1 }}</span>
+      <span class="rule-text">{{ m }}</span>
+    </li>
+    }
+  </ol>
+</aside>

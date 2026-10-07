@@ -1,0 +1,354 @@
+:host {
+  display: block;
+  --accent: var(--mango);
+}
+
+button {
+  cursor: pointer;
+}
+
+.deck {
+  display: grid;
+  gap: 2.5rem;
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+@media (min-width: 900px) {
+  .deck {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 4rem;
+  }
+
+  /* A side runs longer than the cassette: it stays in view, under the chapter bar, as the list scrolls by. */
+  .tape-wrap {
+    position: sticky;
+    top: 6rem;
+  }
+}
+
+/* ---------- the cassette: two faces back to back, turned over in 3D ---------- */
+
+.tape-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+  perspective: 1400px;
+}
+
+.tape {
+  position: relative;
+  width: min(100%, 26rem);
+  aspect-ratio: 1.58;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.5, 0, 0.2, 1);
+}
+
+.tape.is-b {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  padding: 6.5% 6% 0;
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+  background: linear-gradient(160deg, #2c2332, #17111a);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 2rem 3rem -1.25rem rgb(0 0 0 / 0.8);
+  backface-visibility: hidden;
+}
+
+.face--B {
+  background: linear-gradient(160deg, #262241, #120f22);
+  transform: rotateY(180deg);
+}
+
+.label {
+  position: relative;
+  height: 64%;
+  padding: 4% 5%;
+  overflow: hidden;
+  border-radius: 0.6rem;
+  background: #fff1dc;
+  color: var(--night);
+}
+
+.label-side {
+  position: absolute;
+  top: 4%;
+  left: 4.5%;
+  font: clamp(1.8rem, 6vw, 2.6rem) / 1 var(--font-poster);
+  color: var(--fuego);
+}
+
+.face--B .label-side {
+  color: #d6337a;
+}
+
+.label-title {
+  display: block;
+  margin-left: 18%;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgb(15 10 18 / 0.3);
+  font: italic clamp(0.95rem, 3vw, 1.25rem) / 1.2 var(--font-romance);
+}
+
+.label-lines {
+  display: block;
+  height: 1.4em;
+  margin-left: 18%;
+  border-bottom: 1px solid rgb(15 10 18 / 0.18);
+}
+
+.label-stripes {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+  background: linear-gradient(180deg, var(--sol) 0 33%, var(--mango) 33% 66%, var(--fuego) 66%);
+}
+
+.face--B .label-stripes {
+  background: linear-gradient(180deg, var(--flamingo) 0 33%, #9b5cf6 33% 66%, var(--laguna) 66%);
+}
+
+.window {
+  position: absolute;
+  top: 33%;
+  left: 23%;
+  right: 23%;
+  height: 23%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  border-radius: 999px;
+  background: rgb(10 8 12 / 0.9);
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.7);
+}
+
+.reel {
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #0a080c 0 24%, transparent 25%),
+    repeating-conic-gradient(#fff1dc 0 12deg, transparent 12deg 60deg);
+  box-shadow: inset 0 0 0 3px #fff1dc;
+}
+
+/* The side that's been played: its reel wound thick with tape. */
+.reel--full {
+  box-shadow:
+    inset 0 0 0 3px #fff1dc,
+    0 0 0 0.45rem #4a2c1c;
+}
+
+.foot {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 17%;
+  padding: 0 12%;
+  background: rgb(0 0 0 / 0.35);
+  clip-path: polygon(7% 0, 93% 0, 100% 100%, 0 100%);
+}
+
+.foot i {
+  width: 0.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #0a080c;
+}
+
+.screw {
+  position: absolute;
+  width: 0.55rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #9a8c80, #3c3238);
+}
+
+.screw--tl {
+  top: 2.5%;
+  left: 2%;
+}
+
+.screw--tr {
+  top: 2.5%;
+  right: 2%;
+}
+
+.screw--bl {
+  bottom: 3%;
+  left: 2%;
+}
+
+.screw--br {
+  bottom: 3%;
+  right: 2%;
+}
+
+.sides {
+  display: inline-flex;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.3);
+}
+
+.sides button {
+  height: 2.6rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  font: 600 0.85rem var(--font-grotesk);
+  color: var(--cream-soft);
+  transition: background 0.2s, color 0.2s;
+}
+
+.sides button[aria-pressed='true'] {
+  background: var(--sol);
+  color: var(--night);
+}
+
+.sides button:last-child[aria-pressed='true'] {
+  background: var(--flamingo);
+}
+
+/* ---------- the tracklist ---------- */
+
+.tracks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  --tone: var(--sol);
+}
+
+.tracks.is-b {
+  --tone: var(--flamingo);
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.05rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.no {
+  font: 1.6rem/1 var(--font-poster);
+  color: var(--tone);
+}
+
+.tracks.is-b .no {
+  font: italic 2rem/1 var(--font-romance);
+}
+
+.what {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.title {
+  font: 700 1.1rem/1.25 var(--font-grotesk);
+}
+
+.artist {
+  font-size: 0.9rem;
+  color: var(--cream-soft);
+}
+
+.year {
+  font: 500 0.75rem var(--font-mono);
+  color: var(--cream-soft);
+}
+
+/* ---------- the previews: a play button per song, Spotify's player
+unfolding under its row once opened ---------- */
+
+.listen {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--tone);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.listen svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.listen:hover,
+.is-open .listen {
+  border-color: var(--tone);
+  background: var(--tone);
+  color: var(--night);
+}
+
+/* The player's slot: Spotify's iframe lands inside, clipped to the rounded corners. */
+.preview {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 80px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.04);
+}
+
+.source {
+  margin: 1rem 0 0;
+  font: 500 0.72rem/1.5 var(--font-mono);
+  color: var(--cream-soft);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reel {
+    animation: spin 2.6s linear infinite;
+  }
+
+  .reel--full {
+    animation-duration: 4.2s;
+  }
+
+  .preview {
+    animation: track-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .track {
+    animation: track-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 70ms) backwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tape {
+    transition: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes track-in {
+  from {
+    opacity: 0;
+    translate: 1.5rem 0;
+  }
+}

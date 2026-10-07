@@ -1,0 +1,101 @@
+<!-- While the record plays, the title dances to it: "Salsa" hops on its
+    steps, "bachata" sways and pops its hip, the other one steps back. -->
+<section class="hero" [class.is-live]="deck.live()" [style.--beat]="deck.beatMs() + 'ms'">
+  <div class="sun" aria-hidden="true"></div>
+
+  <div class="inner">
+    <div class="copy">
+      <p class="eyebrow">
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        Lezione n°1 · dal divano alla pista
+      </p>
+
+      <h1 class="title">
+        <span class="sr-only">Impara a ballare salsa e bachata</span>
+        <span class="kicker" aria-hidden="true">
+          @for (ch of letters; track $index) {
+          <span class="ch" [class.sp]="ch === ' '" [style.--i]="$index">{{ ch }}</span>
+          }
+        </span>
+        <span class="salsa" data-text="Salsa" aria-hidden="true" [class.dim]="deck.live() && deck.dance() !== 'salsa'"
+          [class.hop-a]="deck.hop() === 'a'" [class.hop-b]="deck.hop() === 'b'">Salsa</span>
+        <span class="bachata" aria-hidden="true" [class.dim]="deck.live() && deck.dance() !== 'bachata'">
+          <span class="amp">&amp;</span><span class="word" [style.translate]="deck.sway()?.translate"
+            [style.rotate]="deck.sway()?.rotate">bachata</span>
+          <svg class="swash" viewBox="0 0 400 40" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="lesson-swash" x1="0" x2="1">
+                <stop offset="0" stop-color="var(--flamingo)" />
+                <stop offset="1" stop-color="var(--laguna)" />
+              </linearGradient>
+            </defs>
+            <path d="M4 26C70 6 120 36 190 20s130-14 206 4" stroke="url(#lesson-swash)" />
+          </svg>
+        </span>
+      </h1>
+
+      <p class="lead">
+        Non serve talento: serve saper contare fino a otto. Qui impari il passo base di salsa e bachata
+        guardando i piedi muoversi a tempo — il resto lo fa la pista.
+      </p>
+
+      <div class="ctas">
+        <button type="button" class="cta" (click)="go.emit('ritmo')">
+          Inizia dal ritmo
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 5v14M6 13l6 6 6-6" />
+          </svg>
+        </button>
+        <button type="button" class="chip chip--salsa" (click)="go.emit('salsa')">Salsa</button>
+        <button type="button" class="chip chip--bachata" (click)="go.emit('bachata')">Bachata</button>
+      </div>
+
+      <!-- The page's real aim: send whoever wants to learn to a school. A
+          whole-card link, so it reads as an offer, not a footnote. -->
+      <a class="school" [routerLink]="schools">
+        <span class="school-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M2.5 9.5 12 5l9.5 4.5L12 14 2.5 9.5Z" />
+            <path d="M6.5 11.6v4.2c0 1.6 2.5 3.2 5.5 3.2s5.5-1.6 5.5-3.2v-4.2M21.5 9.5v5" />
+          </svg>
+        </span>
+        <span class="school-copy">
+          <b>Impara con un maestro</b>
+          <span>Scuole di salsa e bachata vicino a te, dai corsi per principianti in su.</span>
+        </span>
+        <span class="school-go">
+          Trova una scuola
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </span>
+      </a>
+    </div>
+
+    <app-lesson-turntable #deck />
+  </div>
+
+  <div class="ribbons" aria-hidden="true">
+    <div class="ribbon ribbon--salsa">
+      <div class="run">
+        @for (r of runs; track r) {
+        @for (word of salsaRun; track $index) {
+        <span [class.rest]="word === 'pausa'">{{ word }}</span><i class="star"></i>
+        }
+        }
+      </div>
+    </div>
+    <div class="ribbon ribbon--bachata">
+      <div class="run">
+        @for (r of runs; track r) {
+        @for (word of bachataRun; track $index) {
+        <span [class.rest]="word === 'tap'">{{ word }}</span><i class="star"></i>
+        }
+        }
+      </div>
+    </div>
+  </div>
+</section>

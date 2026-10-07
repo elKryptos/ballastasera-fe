@@ -1,0 +1,26 @@
+<app-lesson-heading n="05" kicker="Errori" title="Gli errori che" flair="facciamo tutti">
+  <p>Nessuno nasce ballerino. Sono i classici delle prime serate: riconoscerli è già metà del lavoro.</p>
+</app-lesson-heading>
+
+<ul class="cards">
+  @for (m of mistakes; track m.wrong; let i = $index) {
+  <li class="card" [appReveal]="(i % 3) * 110" [style.--tilt]="tilts[i] + 'deg'">
+    <p class="wrong">
+      <span class="sr-only">Da evitare:</span>
+      <span class="struck">
+        {{ m.wrong }}
+        <svg class="strike" viewBox="0 0 200 24" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M3 15C40 9 70 17 105 11s70-2 92-5" pathLength="1" />
+          <path d="M8 19c50-6 110 0 186-9" pathLength="1" />
+        </svg>
+      </span>
+    </p>
+    <p class="right">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12.5l4.5 4.5L19 7.5" />
+      </svg>
+      <span>{{ m.right }}</span>
+    </p>
+  </li>
+  }
+</ul>

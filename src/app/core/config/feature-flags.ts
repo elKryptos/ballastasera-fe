@@ -34,6 +34,8 @@ export const FEATURE_FLAGS = {
   createVenuePage: 'createVenuePage',
   /** /luogo/:id route: a venue's page, opened from its card on the map. */
   venueDetailsPage: 'venueDetailsPage',
+  /** /impara-a-ballare route: the salsa and bachata lesson. Static, no backend. */
+  learnToDancePage: 'learnToDancePage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

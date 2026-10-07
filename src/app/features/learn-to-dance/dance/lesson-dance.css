@@ -1,0 +1,423 @@
+:host {
+  display: block;
+  --accent: var(--sol);
+  --accent-2: var(--fuego);
+}
+
+:host(.is-bachata) {
+  --accent: var(--flamingo);
+  --accent-2: var(--laguna);
+}
+
+/* ---------- the chapter's poster ---------- */
+
+.head {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(3rem, 8vw, 6rem) 0 clamp(1.5rem, 4vw, 3rem);
+}
+
+.art {
+  position: absolute;
+  inset: 0 -30vw 0 -4rem;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.burst {
+  position: absolute;
+  top: 50%;
+  right: 22vw;
+  width: 46rem;
+  aspect-ratio: 1;
+  translate: 50% -50%;
+  background: repeating-conic-gradient(rgb(255 197 61 / 0.1) 0 6deg, transparent 6deg 12deg);
+  mask: radial-gradient(circle, #000 8%, transparent 62%);
+}
+
+/* A striped sunset disc, sinking behind the name. */
+.sunset {
+  position: absolute;
+  top: 12%;
+  right: 34vw;
+  width: clamp(9rem, 22vw, 15rem);
+  aspect-ratio: 1;
+  translate: 50% 0;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--sol), var(--mango) 55%, var(--fuego));
+  mask: linear-gradient(180deg, #000 50%, transparent 50% 54%, #000 54% 64%, transparent 64% 70%, #000 70% 78%, transparent 78% 86%, #000 86%);
+  opacity: 0.9;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 28% 42%, #fff 50%, transparent),
+    radial-gradient(1.5px 1.5px at 46% 12%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 58% 34%, #fff 50%, transparent),
+    radial-gradient(1.5px 1.5px at 74% 52%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 86% 10%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 92% 40%, #fff 50%, transparent);
+  opacity: 0.7;
+}
+
+.moon {
+  position: absolute;
+  top: 10%;
+  right: 34vw;
+  width: clamp(7rem, 17vw, 12rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 62% 30%, rgb(160 120 120 / 0.25) 0 9%, transparent 10%),
+    radial-gradient(circle at 34% 64%, rgb(160 120 120 / 0.2) 0 12%, transparent 13%),
+    radial-gradient(circle at 36% 34%, #fff8ec, #f6dccb 55%, #e9bfae);
+  box-shadow:
+    0 0 60px rgb(255 220 200 / 0.35),
+    0 0 180px rgb(255 95 162 / 0.3);
+}
+
+.strings {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6%;
+  width: 100%;
+  height: 7rem;
+  overflow: visible;
+  opacity: 0.6;
+}
+
+.string {
+  fill: none;
+  stroke: var(--cream);
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(0.02);
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font: 500 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.rule {
+  width: 2.5rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.name {
+  margin: 0.15em 0 0;
+  font: clamp(5.5rem, 19vw, 14rem) / 0.95 var(--font-poster);
+  color: var(--sol);
+}
+
+/* Salsa: stripes running through the letters over a fire-red block shadow. */
+:host(.is-salsa) .name {
+  width: fit-content;
+  padding: 0 0.15em 0.1em 0;
+  background: repeating-linear-gradient(180deg, var(--sol) 0 0.09em, var(--mango) 0.09em 0.18em);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0.05em 0.05em 0 var(--fuego));
+  rotate: -4deg;
+  transform-origin: left bottom;
+}
+
+/* Bachata: italic, glowing, mirrored in the floor where the browser can. */
+:host(.is-bachata) .name {
+  font: italic 400 clamp(5.5rem, 18vw, 13rem) / 0.95 var(--font-romance);
+  letter-spacing: -0.02em;
+  color: var(--flamingo);
+  text-shadow: 0 0 0.3em rgb(255 95 162 / 0.5);
+  -webkit-box-reflect: below -0.2em linear-gradient(transparent 55%, rgb(255 255 255 / 0.18));
+  margin-bottom: 0.3em;
+}
+
+.intro {
+  max-width: 38rem;
+  margin: 1.5rem 0 0;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: 1.65;
+  color: var(--cream-soft);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  max-width: 46rem;
+  margin: 2rem 0 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+  background: var(--line);
+}
+
+@media (min-width: 760px) {
+  .facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.fact {
+  padding: 0.9rem 1rem;
+  background: var(--night);
+}
+
+dt {
+  font: 500 0.65rem var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+dd {
+  margin: 0.35rem 0 0;
+  font: 700 0.95rem/1.3 var(--font-grotesk);
+}
+
+/* ---------- stage, tips, styles ---------- */
+
+.stage-wrap {
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.stage-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.9rem;
+  margin: 0 0 1rem;
+  font: 500 0.75rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cream-soft);
+}
+
+.stage-label span {
+  font: 800 1.5rem var(--font-grotesk);
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--cream);
+}
+
+.block {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+.sub {
+  margin: 0 0 1.25rem;
+  font: italic 400 clamp(1.8rem, 3.5vw, 2.5rem) / 1 var(--font-romance);
+  color: var(--accent);
+}
+
+.tips,
+.styles {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 860px) {
+  .tips,
+  .styles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.tip {
+  padding: 1.25rem 0 0;
+  border-top: 2px solid var(--accent);
+}
+
+.roman {
+  font: italic 2.6rem/1 var(--font-romance);
+  color: var(--accent);
+}
+
+h4 {
+  margin: 0.5rem 0 0;
+  font: 800 1.2rem/1.25 var(--font-grotesk);
+}
+
+.tip p,
+.style p {
+  margin: 0.5rem 0 0;
+  line-height: 1.6;
+  color: var(--cream-soft);
+}
+
+.style {
+  padding: 0.75rem 0.75rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  background: var(--night-2);
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.style:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  transform: translateY(-4px) rotate(-0.5deg);
+}
+
+.style h4,
+.style p {
+  padding: 0 0.6rem;
+}
+
+h4 + p {
+  font-size: 0.95rem;
+}
+
+/* Each style drawn after how it moves: rings for the circle of the cubana,
+rails for the line, zigzags for the caleña's quick feet; taps, a bit of
+everything and body waves for bachata's. */
+.motif {
+  position: relative;
+  display: block;
+  height: 7.5rem;
+  margin-bottom: 0.9rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--accent) 10%, var(--night));
+  --c: color-mix(in srgb, var(--accent) 75%, transparent);
+}
+
+.motif::before {
+  content: '';
+  position: absolute;
+  inset: -3rem;
+  background: var(--pattern);
+}
+
+.motif--circles {
+  --pattern: repeating-radial-gradient(circle, transparent 0 12px, var(--c) 12px 14px);
+}
+
+.motif--lines {
+  --pattern: repeating-linear-gradient(90deg, transparent 0 18px, var(--c) 18px 20px);
+}
+
+.motif--zigzag {
+  --pattern: linear-gradient(135deg, var(--c) 25%, transparent 25%) -12px 0 / 24px 24px,
+    linear-gradient(225deg, var(--c) 25%, transparent 25%) -12px 0 / 24px 24px,
+    linear-gradient(315deg, var(--c) 25%, transparent 25%) 0 0 / 24px 24px,
+    linear-gradient(45deg, var(--c) 25%, transparent 25%) 0 0 / 24px 24px;
+}
+
+.motif--dots {
+  --pattern: radial-gradient(var(--c) 3px, transparent 3.5px) 0 0 / 18px 18px;
+}
+
+.motif--mix {
+  --pattern: radial-gradient(circle, transparent 0 38px, var(--c) 38px 41px, transparent 41px) 50% 50% / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 22px, color-mix(in srgb, var(--accent-2) 55%, transparent) 22px 24px);
+}
+
+.motif--waves {
+  --pattern: radial-gradient(circle at 100% 50%, transparent 14px, var(--c) 15px 19px, transparent 20px) 0 0 / 40px 40px,
+    radial-gradient(circle at 0 50%, transparent 14px, var(--c) 15px 19px, transparent 20px) 20px 20px / 40px 40px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .burst {
+    animation: turn 140s linear infinite;
+  }
+
+  :host(.is-salsa) .name {
+    animation: stripes 2.4s linear infinite;
+  }
+
+  .moon {
+    animation: glow 6s ease-in-out infinite alternate;
+  }
+
+  .string {
+    animation: pluck 3.6s ease-out calc(1s + var(--i) * 70ms) infinite;
+  }
+
+  .motif::before {
+    animation: drift 9s linear infinite alternate;
+  }
+
+  .motif--circles::before {
+    animation: breathe 3s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes turn {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes stripes {
+  to {
+    background-position: 0 0.36em;
+  }
+}
+
+@keyframes glow {
+  to {
+    box-shadow:
+      0 0 80px rgb(255 220 200 / 0.5),
+      0 0 220px rgb(255 95 162 / 0.4);
+  }
+}
+
+/* A plucked string: a few swings either side of straight, each smaller. */
+@keyframes pluck {
+  0%,
+  26%,
+  100% {
+    transform: scaleY(0.02);
+  }
+  3% {
+    transform: scaleY(1);
+  }
+  6% {
+    transform: scaleY(-0.8);
+  }
+  9% {
+    transform: scaleY(0.6);
+  }
+  12% {
+    transform: scaleY(-0.45);
+  }
+  15% {
+    transform: scaleY(0.3);
+  }
+  18% {
+    transform: scaleY(-0.18);
+  }
+  22% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes drift {
+  to {
+    translate: 2.5rem 0.75rem;
+  }
+}
+
+@keyframes breathe {
+  to {
+    scale: 1.18;
+  }
+}

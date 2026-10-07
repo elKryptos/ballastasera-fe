@@ -1,0 +1,61 @@
+:host {
+  display: block;
+}
+
+.head {
+  position: relative;
+  isolation: isolate;
+  max-width: 46rem;
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+/* The chapter number, hollow and oversized, behind the title. */
+.n {
+  position: absolute;
+  top: 0;
+  left: -0.06em;
+  z-index: -1;
+  font: clamp(6rem, 16vw, 11rem) / 1 var(--font-poster);
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent, var(--sol)) 45%, transparent);
+  opacity: 0.6;
+  user-select: none;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font: 500 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent, var(--sol));
+}
+
+.rule {
+  width: 2.5rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.title {
+  margin: 1rem 0 0;
+  font: 800 clamp(2.3rem, 5.6vw, 4.2rem) / 1 var(--font-grotesk);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+em {
+  font: italic 400 1.12em / 1 var(--font-romance);
+  letter-spacing: -0.01em;
+  color: var(--accent, var(--sol));
+}
+
+.intro {
+  max-width: 38rem;
+  margin-top: 1.25rem;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: 1.65;
+  color: var(--cream-soft);
+}

@@ -47,6 +47,9 @@ export class Navbar {
   protected readonly currentUser = this.auth.currentUser;
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly mapEnabled = computed(() => this.featureFlags.isEnabled(FEATURE_FLAGS.mapPage));
+  protected readonly learnEnabled = computed(() =>
+    this.featureFlags.isEnabled(FEATURE_FLAGS.learnToDancePage),
+  );
 
   protected readonly initial = computed(() => this.currentUser()?.displayName.trim().charAt(0).toUpperCase() ?? '');
 

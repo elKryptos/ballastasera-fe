@@ -94,35 +94,56 @@
   stroke-linejoin: round;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .strike path {
-    stroke-dashoffset: 1;
-  }
+.strike path {
+  stroke-dashoffset: 1;
+}
 
-  .is-revealed .strike path {
-    animation: strike 0.6s cubic-bezier(0.6, 0, 0.3, 1) 0.45s forwards;
-  }
+.is-revealed .strike path {
+  animation: strike 0.6s cubic-bezier(0.6, 0, 0.3, 1) 0.45s forwards;
+}
 
-  .is-revealed .strike path + path {
-    animation-delay: 0.75s;
-  }
+.is-revealed .strike path + path {
+  animation-delay: 0.75s;
+}
 
-  .right {
-    opacity: 0;
-    translate: 0 0.5rem;
-    transition:
-      opacity 0.5s 1s,
-      translate 0.5s 1s;
-  }
+.right {
+  opacity: 0;
+  translate: 0 0.5rem;
+  transition:
+    opacity 0.5s 1s,
+    translate 0.5s 1s;
+}
 
-  .is-revealed .right {
-    opacity: 1;
-    translate: 0 0;
-  }
+.is-revealed .right {
+  opacity: 1;
+  translate: 0 0;
 }
 
 @keyframes strike {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+/* Asked for less motion: the animations above stay off. Declared at the top
+level and only switched off here — Angular's keyframe scoping misses
+`animation` references nested in an at-rule once the CSS is minified, so
+animations wrapped in a no-preference block never ran in a production build. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+  }
+
+  /* Without the stroke drawn and the fix fading in, show both as they end up. */
+  .strike path {
+    stroke-dashoffset: 0;
+  }
+
+  .right {
+    opacity: 1;
+    translate: none;
+    transition: none;
   }
 }

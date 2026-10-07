@@ -316,22 +316,20 @@ unfolding under its row once opened ---------- */
   color: var(--cream-soft);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .reel {
-    animation: spin 2.6s linear infinite;
-  }
+.reel {
+  animation: spin 2.6s linear infinite;
+}
 
-  .reel--full {
-    animation-duration: 4.2s;
-  }
+.reel--full {
+  animation-duration: 4.2s;
+}
 
-  .preview {
-    animation: track-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
+.preview {
+  animation: track-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
-  .track {
-    animation: track-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 70ms) backwards;
-  }
+.track {
+  animation: track-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 70ms) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -350,5 +348,17 @@ unfolding under its row once opened ---------- */
   from {
     opacity: 0;
     translate: 1.5rem 0;
+  }
+}
+
+/* Asked for less motion: the animations above stay off. Declared at the top
+level and only switched off here — Angular's keyframe scoping misses
+`animation` references nested in an at-rule once the CSS is minified, so
+animations wrapped in a no-preference block never ran in a production build. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
   }
 }

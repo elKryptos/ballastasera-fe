@@ -220,26 +220,24 @@ h3 {
   font: 600 1rem/1.45 var(--font-grotesk);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .pair {
-    animation: orbit 6.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-  }
+.pair {
+  animation: orbit 6.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
 
-  .partner span {
-    animation: counter 6.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-  }
+.partner span {
+  animation: counter 6.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
 
-  .arm {
-    animation: tension 1.6s ease-in-out infinite alternate;
-  }
+.arm {
+  animation: tension 1.6s ease-in-out infinite alternate;
+}
 
-  .carnet {
-    transition: rotate 0.4s;
-  }
+.carnet {
+  transition: rotate 0.4s;
+}
 
-  .carnet:hover {
-    rotate: 0deg;
-  }
+.carnet:hover {
+  rotate: 0deg;
 }
 
 /* Half a turn, a held beat, the other half. */
@@ -269,5 +267,17 @@ h3 {
 @keyframes tension {
   to {
     scale: 0.92 1;
+  }
+}
+
+/* Asked for less motion: the animations above stay off. Declared at the top
+level and only switched off here — Angular's keyframe scoping misses
+`animation` references nested in an at-rule once the CSS is minified, so
+animations wrapped in a no-preference block never ran in a production build. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
   }
 }

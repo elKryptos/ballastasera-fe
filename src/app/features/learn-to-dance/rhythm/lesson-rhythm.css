@@ -204,22 +204,20 @@
   color: var(--cream-soft);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .pad {
-    animation: hit calc(var(--beat) * 8) linear calc(var(--beat) * var(--i)) infinite;
-  }
+.pad {
+  animation: hit calc(var(--beat) * 8) linear calc(var(--beat) * var(--i)) infinite;
+}
 
-  .pad.rest {
-    animation-name: hit-rest;
-  }
+.pad.rest {
+  animation-name: hit-rest;
+}
 
-  .pads::after {
-    animation: sweep calc(var(--beat) * 8) linear infinite;
-  }
+.pads::after {
+  animation: sweep calc(var(--beat) * 8) linear infinite;
+}
 
-  .led {
-    animation: blink var(--beat) steps(2) infinite;
-  }
+.led {
+  animation: blink var(--beat) steps(2) infinite;
 }
 
 /* Lit on its count, fading out over that one beat, dark for the other seven. */
@@ -264,5 +262,17 @@
 @keyframes blink {
   50% {
     opacity: 0.25;
+  }
+}
+
+/* Asked for less motion: the animations above stay off. Declared at the top
+level and only switched off here — Angular's keyframe scoping misses
+`animation` references nested in an at-rule once the CSS is minified, so
+animations wrapped in a no-preference block never ran in a production build. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
   }
 }

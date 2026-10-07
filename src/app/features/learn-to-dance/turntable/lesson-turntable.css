@@ -220,48 +220,46 @@ the record plays (back on hover, as the way to stop it). */
   background: var(--flamingo);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  /* Idle, the platter turns slowly; playing, the label adds 33⅓ on top. */
-  .vinyl {
-    animation: turn 14s linear infinite;
-  }
+/* Idle, the platter turns slowly; playing, the label adds 33⅓ on top. */
+.vinyl {
+  animation: turn 14s linear infinite;
+}
 
-  .spinner {
-    animation: turn 1.8s linear infinite paused;
-  }
+.spinner {
+  animation: turn 1.8s linear infinite paused;
+}
 
-  .is-live .spinner {
-    animation-play-state: running;
-  }
+.is-live .spinner {
+  animation-play-state: running;
+}
 
-  .is-live .arm {
-    animation: wobble 3.6s ease-in-out 0.9s infinite;
-  }
+.is-live .arm {
+  animation: wobble 3.6s ease-in-out 0.9s infinite;
+}
 
-  /* The label thumps on every count. */
-  .pulse-a {
-    animation: pulse-a var(--beat) ease-out;
-  }
+/* The label thumps on every count. */
+.pulse-a {
+  animation: pulse-a var(--beat) ease-out;
+}
 
-  .pulse-b {
-    animation: pulse-b var(--beat) ease-out;
-  }
+.pulse-b {
+  animation: pulse-b var(--beat) ease-out;
+}
 
-  .note {
-    animation: float-note 5.4s ease-out infinite;
-  }
+.note {
+  animation: float-note 5.4s ease-out infinite;
+}
 
-  .note--1 {
-    animation-delay: 1.8s;
-  }
+.note--1 {
+  animation-delay: 1.8s;
+}
 
-  .note--2 {
-    animation-delay: 3.6s;
-  }
+.note--2 {
+  animation-delay: 3.6s;
+}
 
-  .is-live .note {
-    animation-duration: 2.7s;
-  }
+.is-live .note {
+  animation-duration: 2.7s;
 }
 
 @keyframes turn {
@@ -299,5 +297,17 @@ the record plays (back on hover, as the way to stop it). */
   100% {
     opacity: 0;
     transform: translateY(-4rem) rotate(14deg);
+  }
+}
+
+/* Asked for less motion: the animations above stay off. Declared at the top
+level and only switched off here — Angular's keyframe scoping misses
+`animation` references nested in an at-rule once the CSS is minified, so
+animations wrapped in a no-preference block never ran in a production build. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
   }
 }

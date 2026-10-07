@@ -334,30 +334,28 @@ everything and body waves for bachata's. */
     radial-gradient(circle at 0 50%, transparent 14px, var(--c) 15px 19px, transparent 20px) 20px 20px / 40px 40px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .burst {
-    animation: turn 140s linear infinite;
-  }
+.burst {
+  animation: turn 140s linear infinite;
+}
 
-  :host(.is-salsa) .name {
-    animation: stripes 2.4s linear infinite;
-  }
+:host(.is-salsa) .name {
+  animation: stripes 2.4s linear infinite;
+}
 
-  .moon {
-    animation: glow 6s ease-in-out infinite alternate;
-  }
+.moon {
+  animation: glow 6s ease-in-out infinite alternate;
+}
 
-  .string {
-    animation: pluck 3.6s ease-out calc(1s + var(--i) * 70ms) infinite;
-  }
+.string {
+  animation: pluck 3.6s ease-out calc(1s + var(--i) * 70ms) infinite;
+}
 
-  .motif::before {
-    animation: drift 9s linear infinite alternate;
-  }
+.motif::before {
+  animation: drift 9s linear infinite alternate;
+}
 
-  .motif--circles::before {
-    animation: breathe 3s ease-in-out infinite alternate;
-  }
+.motif--circles::before {
+  animation: breathe 3s ease-in-out infinite alternate;
 }
 
 @keyframes turn {
@@ -419,5 +417,17 @@ everything and body waves for bachata's. */
 @keyframes breathe {
   to {
     scale: 1.18;
+  }
+}
+
+/* Asked for less motion: the animations above stay off. Declared at the top
+level and only switched off here — Angular's keyframe scoping misses
+`animation` references nested in an at-rule once the CSS is minified, so
+animations wrapped in a no-preference block never ran in a production build. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
   }
 }

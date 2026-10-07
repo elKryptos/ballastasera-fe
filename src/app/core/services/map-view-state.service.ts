@@ -1,4 +1,5 @@
 import { Service } from '@angular/core';
+import { VenueType } from '../models/venue.model';
 
 /**
  * The map's pan position and open pin, shared with the pages that send the
@@ -16,4 +17,7 @@ export class MapViewStateService {
   /** Set by the schools list's Mappa: the map switches to its Scuole layer
    * when it next shows, and clears this — a one-off, unlike the view. */
   showSchools = false;
+  /** Set by a venue's page (a tap on its mini-map): the map shows that
+   * venue's layer and opens its card once its badge is drawn. A one-off too. */
+  openVenue: { id: string; type: VenueType } | null = null;
 }

@@ -383,6 +383,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private markers = new Map<string, { marker: Marker; event: EventCardDto; live: boolean }>();
   /** One marker per visible venue, by id — see drawVenueMarkers(). */
   private venueMarkers = new Map<string, Marker>();
+  /** The venue whose card to open once its badge is drawn — see takePageRequests. */
+  private pendingVenueId: string | null = null;
   /** The "you are here" dot plus its accuracy circle, replaced on each locate. */
   private userLocationLayer: Layer | null = null;
   private locateMessageTimer: ReturnType<typeof setTimeout> | null = null;
@@ -524,16 +526,28 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       this.selectedEvent.set(null);
       this.restoreSelectedEvent(this.events());
     }
-    this.takeSchoolsRequest();
+    this.takePageRequests();
     if (moved && this.areaStale()) this.searchArea();
   }
 
-  /** Sent here by the schools list (mapViewState.showSchools): the schools
-   * layer, which fetches the city's venues. Once. */
-  private takeSchoolsRequest(): void {
-    if (!this.mapViewState.showSchools) return;
-    this.mapViewState.showSchools = false;
-    this.selectLayer('schools');
+  /** What the page the visitor came from asked of the map, each read once
+   * (MapViewStateService): the schools list, the Scuole layer (which fetches
+   * the city's venues); a venue's page, places showing — the Scuole layer for
+   * a school, unless all places already are — and that venue's card open as
+   * soon as its badge is drawn (openPendingVenue). */
+  private takePageRequests(): void {
+    if (this.mapViewState.showSchools) {
+      this.mapViewState.showSchools = false;
+      this.selectLayer('schools');
+    }
+    const venue = this.mapViewState.openVenue;
+    if (!venue) return;
+    this.mapViewState.openVenue = null;
+    const layer = this.mapLayer();
+    const shown = layer === 'venues' || layer === 'both' || (layer === 'schools' && venue.type === 'SCHOOL');
+    if (!shown) this.selectLayer(venue.type === 'SCHOOL' ? 'schools' : 'venues');
+    this.pendingVenueId = venue.id;
+    this.openPendingVenue();
   }
 
   private initMap(L: typeof import('leaflet')): void {
@@ -589,9 +603,9 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     map.on('zoomend', markZoomedIn);
     markZoomedIn();
 
-    // The one search nobody asks for: the first view — on schools alone when
-    // the schools list sent the visitor here.
-    this.takeSchoolsRequest();
+    // The one search nobody asks for: the first view — on schools alone, or
+    // on a venue's layer, when the page the visitor came from asked for it.
+    this.takePageRequests();
     this.searchArea();
     // The layer may have been switched on while Leaflet was still loading.
     this.drawMarkers();
@@ -933,6 +947,19 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       this.venueMarkers.set(venue.id, marker);
     }
     previous.forEach((marker) => marker.remove());
+    this.openPendingVenue();
+  }
+
+  /** The card of the venue a venue's page sent the visitor here to see
+   * (takePageRequests), once its badge is on the map: right away, or when its
+   * city's venues come in. */
+  private openPendingVenue(): void {
+    const id = this.pendingVenueId;
+    const marker = id ? this.venueMarkers.get(id) : undefined;
+    const venue = marker && untracked(() => this.visibleVenues()).find((place) => place.id === id);
+    if (!marker || !venue) return;
+    this.pendingVenueId = null;
+    this.selectVenue(venue, marker.getLatLng());
   }
 
   /** Opens the venue's card in the sheet (in place of an open event's: one

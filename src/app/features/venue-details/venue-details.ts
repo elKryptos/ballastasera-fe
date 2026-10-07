@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft,
@@ -19,6 +19,7 @@ import {
 import { TIKTOK_PATH, WHATSAPP_PATH } from '../../core/config/brand-icons';
 import { VENUE_PIN_COLORS, VENUE_PIN_GLYPHS, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
 import { injectGoBack } from '../../core/routing/go-back';
+import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { VenuesService } from '../../core/services/venues.service';
 import { VenueDetailDto } from '../../core/models/venue.model';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -150,6 +151,8 @@ function hostname(url: string): string {
 })
 export class VenueDetails {
   private readonly venuesService = inject(VenuesService);
+  private readonly mapViewState = inject(MapViewStateService);
+  private readonly router = inject(Router);
 
   protected readonly venue = signal<VenueDetailDto | null>(null);
   protected readonly loading = signal(true);
@@ -164,6 +167,17 @@ export class VenueDetails {
 
   /** Opened from a shared link, to the map instead — see injectGoBack. */
   protected readonly goBack = injectGoBack('/mappa');
+
+  /** A tap on the mini-map: /mappa centred on this venue with its card open.
+   * The map reads both from MapViewStateService (see takePageRequests). */
+  protected openOnMap(venue: VenueDetailDto): void {
+    if (venue.latitude == null || venue.longitude == null) return;
+    this.mapViewState.center = [venue.latitude, venue.longitude];
+    this.mapViewState.zoom = MINI_MAP_ZOOM;
+    this.mapViewState.selectedEventId = null;
+    this.mapViewState.openVenue = { id: venue.id, type: venue.type };
+    void this.router.navigate(['/mappa']);
+  }
 
   protected readonly typeLabels = VENUE_TYPE_LABELS;
   /** Same colour as the venue's badge on the map: the cover without a logo,

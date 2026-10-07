@@ -15,7 +15,7 @@ const TILES = Array.from({ length: 48 }, (_, i) => ({
 /**
  * The call to the schools — what the page is for: a big title over a dance
  * floor lighting up, a button to the schools' list and a way back into the
- * lesson. The page shows it twice: right after the cover, so everyone sees
+ * lesson. The page shows it twice: before the cover, so everyone sees
  * it, and as the close, for whoever finished — each with its own words,
  * projected as the text under the title.
  */

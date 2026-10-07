@@ -2,17 +2,17 @@
   <div class="lesson">
     <div class="grain" aria-hidden="true"></div>
 
-    <app-lesson-hero (go)="scrollTo($event)" />
-
-    <!-- The schools first, right under the cover: the page is here to send
-        people to a teacher, and most won't scroll to the end. -->
+    <!-- The schools first, before the lesson even starts: the page is here to
+        send people to a teacher, and most won't scroll to the end. -->
     <app-school-call kicker="Prima di iniziare" title="Il passo più veloce?" flair="Un maestro."
-      back="Prima la lezione" direction="down" (toLesson)="scrollTo('ritmo')">
+      back="Prima la lezione" direction="down" (toLesson)="scrollTo('lezione')">
       <p>
         Qui vedi il ritmo e il passo base. I giri, la guida e la sicurezza in pista si imparano in sala, con un
         insegnante che ti corregge e un gruppo con cui provare ogni settimana.
       </p>
     </app-school-call>
+
+    <app-lesson-hero id="lezione" class="cover" (go)="scrollTo($event)" />
 
     @if (onAir(); as deck) {
     <button type="button" class="on-air" (click)="stopRecord()">

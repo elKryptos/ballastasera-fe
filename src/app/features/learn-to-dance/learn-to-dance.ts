@@ -38,7 +38,7 @@ const CHAPTERS = [
  * /impara-a-ballare: a salsa and bachata lesson, start to finish on one
  * page — rhythm, both basic steps on an animated floor, dancing as a pair,
  * the usual mistakes, music to practise on — and a call to find a dance
- * school, right under the cover and again at the end (SchoolCall). No
+ * school, before the cover and again at the end (SchoolCall). No
  * backend call: the text is written here, the band's samples are the app's
  * own static files, and Spotify loads only when a song is opened.
  *

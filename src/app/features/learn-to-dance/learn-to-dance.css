@@ -191,9 +191,18 @@ cover's record plays, to stop it from anywhere ---------- */
   scroll-margin-top: calc(var(--header-h) + 3.75rem);
 }
 
+/* "Prima la lezione" lands on the cover, clear of the phone's header. */
+.cover {
+  scroll-margin-top: var(--header-h);
+}
+
 @media (min-width: 768px) {
   .band {
     scroll-margin-top: 3.75rem;
+  }
+
+  .cover {
+    scroll-margin-top: 0;
   }
 }
 

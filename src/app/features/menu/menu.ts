@@ -128,6 +128,10 @@ export class Menu {
    * bar's Eventi lead there; otherwise they're shown, not linked. */
   protected readonly listEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventListPage);
 
+  /** /impara-a-ballare is on (feature flag): the bottom bar's Impara a ballare
+   * leads there; otherwise it's shown, not linked. */
+  protected readonly learnEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.learnToDancePage);
+
   /** Straight to the list's search for that day — see EventList, which
    * reads these params once. "Scuole e locali": the nights at schools, clubs
    * and bars, all week. */

@@ -16,8 +16,8 @@ import { LessonHero } from './hero/lesson-hero';
 import { LessonClock, SCHOOLS_PATH } from './lesson';
 import { LessonMistakes } from './mistakes/lesson-mistakes';
 import { LessonMixtape } from './mixtape/lesson-mixtape';
-import { Reveal } from './reveal.directive';
 import { LessonRhythm } from './rhythm/lesson-rhythm';
+import { SchoolCall } from './school-call/school-call';
 import { LessonTurntable } from './turntable/lesson-turntable';
 
 /** The lesson's two display faces, on this page only: the poster and the romance. */
@@ -34,13 +34,13 @@ const CHAPTERS = [
   { id: 'playlist', n: '06', label: 'Playlist' },
 ] as const;
 
-const DISCO_COLORS = ['var(--sol)', 'var(--flamingo)', 'var(--laguna)', 'var(--fuego)'];
-
 /**
  * /impara-a-ballare: a salsa and bachata lesson, start to finish on one
  * page — rhythm, both basic steps on an animated floor, dancing as a pair,
- * the usual mistakes, music to practise on. Purely informative: everything
- * it shows is written here, nothing is fetched.
+ * the usual mistakes, music to practise on — and a call to find a dance
+ * school, right under the cover and again at the end (SchoolCall). No
+ * backend call: the text is written here, the band's samples are the app's
+ * own static files, and Spotify loads only when a song is opened.
  *
  * It has its own look, apart from the rest of the site: a night-club poster
  * (warm black, marigold and fire for salsa, bougainvillea and lagoon for
@@ -52,8 +52,8 @@ const DISCO_COLORS = ['var(--sol)', 'var(--flamingo)', 'var(--laguna)', 'var(--f
   imports: [
     SidebarPushDirective,
     RouterLink,
-    Reveal,
     LessonHero,
+    SchoolCall,
     LessonRhythm,
     LessonDance,
     LessonCouple,
@@ -69,7 +69,7 @@ export class LearnToDance {
   private readonly clock = inject(LessonClock);
 
   protected readonly chapters = CHAPTERS;
-  /** Where the closing call sends the reader: a school to carry on with. */
+  /** The chapter bar's pinned way to the schools. */
   protected readonly schools = SCHOOLS_PATH;
   /** The chapter under the reading line, lit in the chapter bar. */
   protected readonly active = signal<string>('');
@@ -78,12 +78,6 @@ export class LearnToDance {
     const playing = this.clock.playing();
     return playing instanceof LessonTurntable ? playing : null;
   });
-
-  /** The closing dance floor: each tile with its own colour and moment to light up. */
-  protected readonly tiles = Array.from({ length: 48 }, (_, i) => ({
-    color: DISCO_COLORS[(i * 7) % 4],
-    delay: `${((i * 37) % 29) / 10}s`,
-  }));
 
   constructor() {
     // Added to <head> during SSR too, so the first paint already asks for them.

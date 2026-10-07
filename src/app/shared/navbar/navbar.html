@@ -164,6 +164,22 @@
     }
     }
 
+    <ng-template #learnItem>
+      <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 3l14 9-14 9z" />
+      </svg>
+      <span class="grow">Impara a ballare</span>
+    </ng-template>
+
+    <!-- The lesson needs no account: signed out, it sits right under the map,
+        a way in to the site; signed in, it's in "La tua scena" below. -->
+    @if (!isAuthenticated() && learnEnabled()) {
+    <a class="drawer-item" routerLink="/impara-a-ballare" (click)="closeDrawer()" appRailTooltip="Impara a ballare">
+      <ng-container [ngTemplateOutlet]="learnItem" />
+    </a>
+    }
+
     @if (isAuthenticated()) {
     <div class="flex min-h-0 flex-col gap-0.5">
       <h2 class="drawer-label">La tua scena</h2>
@@ -200,13 +216,6 @@
         <span class="drawer-chip">Presto</span>
       </div>
       <!-- Shown, not linked, until the lesson's page is on (learnToDancePage). -->
-      <ng-template #learnItem>
-        <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 3l14 9-14 9z" />
-        </svg>
-        <span class="grow">Impara a ballare</span>
-      </ng-template>
       @if (learnEnabled()) {
       <a class="drawer-item" routerLink="/impara-a-ballare" (click)="closeDrawer()" appRailTooltip="Impara a ballare">
         <ng-container [ngTemplateOutlet]="learnItem" />

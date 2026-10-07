@@ -1,0 +1,168 @@
+:host {
+  display: block;
+}
+
+button {
+  cursor: pointer;
+}
+
+.call {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 34rem;
+  padding: 5rem clamp(1rem, 4vw, 2.5rem) 7.5rem;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* A floor of lit tiles, tipped away into the dark under the words. */
+.disco {
+  position: absolute;
+  left: 50%;
+  bottom: -1.5rem;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+  width: max(110%, 60rem);
+  translate: -50% 0;
+  transform: perspective(700px) rotateX(62deg);
+  transform-origin: bottom;
+  mask: linear-gradient(0deg, #000 30%, transparent 95%);
+}
+
+.disco span {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--c) 14%, var(--night-2));
+}
+
+/* Each tile's light is a layer of its own that only fades in and out:
+opacity is the one thing a phone animates for free, nearly a hundred tiles
+across the two floors included. */
+.disco span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--c);
+  box-shadow: 0 0 24px var(--c);
+  opacity: 0;
+  animation: light 2.9s ease-in-out var(--d) infinite;
+}
+
+.copy {
+  position: relative;
+  max-width: 40rem;
+}
+
+.kicker {
+  margin: 0;
+  font: 500 0.75rem var(--font-mono);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sol);
+}
+
+h2 {
+  margin: 1rem 0 0;
+  font: 800 clamp(3rem, 9vw, 6.5rem) / 0.95 var(--font-grotesk);
+  letter-spacing: -0.04em;
+}
+
+em {
+  font: italic 400 1.1em / 1 var(--font-romance);
+  color: var(--flamingo);
+  text-shadow: 0 0 0.35em rgb(255 95 162 / 0.5);
+}
+
+.text {
+  max-width: 32rem;
+  margin: 1.5rem auto 0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--cream-soft);
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2.25rem;
+}
+
+.go,
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 3.4rem;
+  padding: 0 1.6rem;
+  border-radius: 999px;
+  font: 800 1rem var(--font-grotesk);
+}
+
+.go {
+  background: var(--sol);
+  color: var(--night);
+  box-shadow:
+    0 0.35rem 0 var(--fuego),
+    0 1.25rem 2.5rem -0.75rem rgb(255 197 61 / 0.5);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.go:hover {
+  transform: translateY(-2px);
+}
+
+.go:active {
+  transform: translateY(0.25rem);
+  box-shadow: 0 0.1rem 0 var(--fuego);
+}
+
+.back {
+  border: 1px solid var(--line);
+  color: var(--cream);
+  transition: border-color 0.2s;
+}
+
+.back:hover {
+  border-color: var(--cream-soft);
+}
+
+.go svg,
+.back svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.back svg.up {
+  rotate: 180deg;
+}
+
+.note {
+  margin: 1.25rem 0 0;
+  font: 500 0.72rem var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cream-soft);
+}
+
+@keyframes light {
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Asked for less motion: the floor stays dark. The animation is declared at
+the top level and only switched off here, as Angular's keyframe scoping
+misses references nested in an at-rule once the CSS is minified. */
+@media (prefers-reduced-motion: reduce) {
+  .disco span::after {
+    animation: none;
+  }
+}

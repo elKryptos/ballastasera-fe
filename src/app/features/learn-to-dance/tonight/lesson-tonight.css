@@ -1,0 +1,145 @@
+:host {
+  display: block;
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+/* Reads --accent and --accent-2 from the chapter it closes. */
+.tonight {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.25rem 1.5rem;
+  align-items: center;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(80% 140% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+    var(--night-2);
+}
+
+/* A map pin, sending out rings like a beacon. */
+.pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--night);
+}
+
+.pin svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.pin::before,
+.pin::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--accent);
+  border-radius: inherit;
+  opacity: 0;
+  animation: ping 2.4s ease-out infinite;
+}
+
+.pin::after {
+  animation-delay: 1.2s;
+}
+
+.kicker {
+  margin: 0;
+  font: 500 0.72rem var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h3 {
+  margin: 0.35rem 0 0;
+  font: 800 clamp(1.5rem, 3.5vw, 2.1rem) / 1.05 var(--font-grotesk);
+  letter-spacing: -0.03em;
+}
+
+.text {
+  max-width: 34rem;
+  margin: 0.6rem 0 0;
+  line-height: 1.55;
+  color: var(--cream-soft);
+}
+
+.links {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font: 800 0.95rem var(--font-grotesk);
+  color: var(--cream);
+  transition:
+    border-color 0.2s,
+    transform 0.15s;
+}
+
+.link:hover {
+  border-color: var(--cream-soft);
+  transform: translateY(-2px);
+}
+
+.link--map {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--night);
+  box-shadow: 0 0.3rem 0 var(--accent-2);
+}
+
+.link--map:hover {
+  border-color: transparent;
+}
+
+.link svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+@media (min-width: 900px) {
+  .tonight {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .links {
+    grid-column: auto;
+    flex-direction: column;
+  }
+}
+
+@keyframes ping {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+/* Less motion: the pin stays still. Declared at the top level and only
+switched off here — see school-call.css. */
+@media (prefers-reduced-motion: reduce) {
+  .pin::before,
+  .pin::after {
+    animation: none;
+  }
+}

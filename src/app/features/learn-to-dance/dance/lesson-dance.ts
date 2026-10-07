@@ -2,6 +2,7 @@ import { Component, computed, input } from '@angular/core';
 import { Dance } from '../lesson';
 import { Reveal } from '../reveal.directive';
 import { DanceStage } from '../stage/dance-stage';
+import { LessonTonight } from '../tonight/lesson-tonight';
 
 /** The CSS motif on a style's card, drawn after the way it moves. */
 type Motif = 'circles' | 'lines' | 'zigzag' | 'dots' | 'mix' | 'waves';
@@ -112,7 +113,7 @@ const CHAPTERS: Record<Dance, Chapter> = {
  */
 @Component({
   selector: 'app-lesson-dance',
-  imports: [DanceStage, Reveal],
+  imports: [DanceStage, LessonTonight, Reveal],
   templateUrl: './lesson-dance.html',
   styleUrl: './lesson-dance.css',
   host: { '[class]': '"is-" + dance()' },

@@ -50,29 +50,6 @@
         <button type="button" class="chip chip--salsa" (click)="go.emit('salsa')">Salsa</button>
         <button type="button" class="chip chip--bachata" (click)="go.emit('bachata')">Bachata</button>
       </div>
-
-      <!-- The page's real aim: send whoever wants to learn to a school. A
-          whole-card link, so it reads as an offer, not a footnote. -->
-      <a class="school" [routerLink]="schools">
-        <span class="school-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M2.5 9.5 12 5l9.5 4.5L12 14 2.5 9.5Z" />
-            <path d="M6.5 11.6v4.2c0 1.6 2.5 3.2 5.5 3.2s5.5-1.6 5.5-3.2v-4.2M21.5 9.5v5" />
-          </svg>
-        </span>
-        <span class="school-copy">
-          <b>Impara con un maestro</b>
-          <span>Scuole di salsa e bachata vicino a te, dai corsi per principianti in su.</span>
-        </span>
-        <span class="school-go">
-          Trova una scuola
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
-            stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </span>
-      </a>
     </div>
 
     <app-lesson-turntable #deck />

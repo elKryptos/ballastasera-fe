@@ -1,6 +1,4 @@
 import { Component, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { SCHOOLS_PATH } from '../lesson';
 import { LessonTurntable } from '../turntable/lesson-turntable';
 
 const KICKER = 'Impara a ballare';
@@ -18,7 +16,7 @@ const BACHATA_RUN = ['uno', 'dos', 'tres', 'tap', 'cinco', 'seis', 'siete', 'tap
  */
 @Component({
   selector: 'app-lesson-hero',
-  imports: [LessonTurntable, RouterLink],
+  imports: [LessonTurntable],
   templateUrl: './lesson-hero.html',
   styleUrl: './lesson-hero.css',
 })
@@ -27,7 +25,6 @@ export class LessonHero {
   readonly go = output<string>();
 
   protected readonly letters = [...KICKER];
-  protected readonly schools = SCHOOLS_PATH;
   protected readonly runs = [0, 1, 2, 3];
   protected readonly salsaRun = SALSA_RUN;
   protected readonly bachataRun = BACHATA_RUN;

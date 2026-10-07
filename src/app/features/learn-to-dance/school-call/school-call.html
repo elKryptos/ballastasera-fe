@@ -1,0 +1,32 @@
+<section class="call">
+  <div class="disco" aria-hidden="true">
+    @for (t of tiles; track $index) {
+    <span [style.--c]="t.color" [style.--d]="t.delay"></span>
+    }
+  </div>
+
+  <div class="copy" appReveal>
+    <p class="kicker">{{ kicker() }}</p>
+    <h2>{{ title() }} <em>{{ flair() }}</em></h2>
+    <div class="text">
+      <ng-content />
+    </div>
+    <div class="ctas">
+      <a [routerLink]="schools" class="go">
+        Trova una scuola vicino a te
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </a>
+      <button type="button" class="back" (click)="toLesson.emit()">
+        {{ back() }}
+        <svg [class.up]="direction() === 'up'" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M6 13l6 6 6-6" />
+        </svg>
+      </button>
+    </div>
+    <p class="note">Scuole di salsa e bachata, in elenco o sulla mappa.</p>
+  </div>
+</section>

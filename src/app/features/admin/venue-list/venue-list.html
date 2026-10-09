@@ -1,0 +1,97 @@
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <div class="mx-auto max-w-4xl px-6 py-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="font-display text-2xl font-bold">Luoghi</h1>
+      <a routerLink="/admin/create-venue"
+        class="rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-rose">
+        + Crea luogo
+      </a>
+    </div>
+
+    <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <hlm-select class="block" [value]="cityId()" (valueChange)="selectCity($event)" [itemToString]="cityItemToString">
+        <button type="button" brnSelectTrigger
+          class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
+          <span brnSelectValue placeholder="Seleziona città"></span>
+          <span class="text-muted-foreground">▾</span>
+        </button>
+        <ng-template hlmSelectPortal>
+          <hlm-select-content>
+            @for (c of cities(); track c.id) {
+            <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
+            }
+          </hlm-select-content>
+        </ng-template>
+      </hlm-select>
+
+      <input type="search" placeholder="Cerca per nome..." [value]="search()"
+        (input)="search.set($any($event.target).value)" class="w-full rounded border px-3 py-2" />
+    </div>
+
+    @if (loading()) {
+    <p class="mt-6 text-lead">Caricamento…</p>
+    } @else if (shown().length === 0) {
+    <p class="mt-6 text-lead">{{ search() ? 'Nessun luogo con questo nome.' : 'Nessun luogo in questa città.' }}</p>
+    } @else {
+    <p class="mt-4 text-sm text-lead">{{ shown().length }} luoghi · dal più recente</p>
+    <ul class="mt-2 flex flex-col gap-3">
+      @for (venue of shown(); track venue.id) {
+      <li class="rounded-xl border border-line p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex min-w-0 items-center gap-3">
+            <div class="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted">
+              @if (venue.logoUrl) {
+              <img [src]="venue.logoUrl" alt="" class="h-full w-full object-contain" />
+              } @else {
+              <span class="font-semibold text-muted-foreground">{{ venue.name.charAt(0) }}</span>
+              }
+            </div>
+            <div class="min-w-0">
+              <p class="truncate font-semibold">{{ venue.name }}</p>
+              <p class="truncate text-sm text-lead">{{ typeLabel(venue.type) }} · {{ venue.address }}</p>
+              @if (venue.createdAt) {
+              <p class="text-xs text-muted-foreground">Creato il {{ venue.createdAt | date: 'dd/MM/yyyy' }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="flex shrink-0 items-center justify-center gap-2 sm:justify-end">
+            <a hlmBtn size="sm" [routerLink]="['/admin/update-venue', venue.id]"
+              class="px-6 bg-violet text-white hover:bg-violet/80">
+              Modifica
+            </a>
+
+            <hlm-alert-dialog>
+              <button hlmBtn hlmAlertDialogTrigger variant="destructive" size="sm" class="px-6">
+                Elimina
+              </button>
+              <hlm-alert-dialog-content *brnAlertDialogContent="let ctx" class="ring-rose/30">
+                <hlm-alert-dialog-header>
+                  <hlm-alert-dialog-media class="bg-rose/15 text-rose text-lg">⚠</hlm-alert-dialog-media>
+                  <h3 hlmAlertDialogTitle class="text-rose">Eliminare {{ venue.name }}?</h3>
+                  <p hlmAlertDialogDescription>
+                    Il luogo e il suo logo verranno rimossi definitivamente. Non si può eliminare se ha eventi
+                    attivi. Questa azione non è reversibile.
+                  </p>
+                </hlm-alert-dialog-header>
+                <hlm-alert-dialog-footer>
+                  <button hlmAlertDialogCancel [disabled]="deletingId() === venue.id">Annulla</button>
+                  <button hlmAlertDialogAction variant="default" [disabled]="deletingId() === venue.id"
+                    (click)="deleteVenue(venue)">
+                    {{ deletingId() === venue.id ? 'Eliminazione…' : 'Elimina' }}
+                  </button>
+                </hlm-alert-dialog-footer>
+              </hlm-alert-dialog-content>
+            </hlm-alert-dialog>
+          </div>
+        </div>
+
+        @if (deleteError()?.id === venue.id) {
+        <p class="mt-2 text-sm text-red-600">{{ deleteError()?.message }}</p>
+        }
+      </li>
+      }
+    </ul>
+    }
+  </div>
+</main>

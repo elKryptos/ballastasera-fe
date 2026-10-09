@@ -154,6 +154,20 @@ export const routes: Routes = [
       },
 
       {
+        path: 'admin/venues-list',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.venueListPage), roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin/venue-list/venue-list').then((m) => m.VenueList),
+      },
+
+      {
+        path: 'admin/update-venue/:id',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.updateVenuePage), roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin/update-venue/update-venue').then((m) => m.UpdateVenue),
+      },
+
+      {
         // The dance schools, where the lesson's "Trova una scuola" leads.
         // Public, like the venues API it reads.
         path: 'scuole',

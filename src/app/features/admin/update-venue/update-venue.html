@@ -1,12 +1,24 @@
 <main appSidebarPush class="pt-(--header-h) md:pt-0">
+  @if (loading()) {
+  <p class="mx-auto max-w-4xl px-6 py-4 text-sm text-lead">Caricamento…</p>
+  } @else if (venue(); as venue) {
   <form [formGroup]="form" (ngSubmit)="submit()" class="mx-auto max-w-4xl px-6 py-4" novalidate>
-    <h1 class="text-xl font-semibold">Crea luogo</h1>
+    <button type="button" (click)="backToList()" class="mb-2 text-sm text-lead hover:underline">
+      ← Lista luoghi
+    </button>
+    <h1 class="text-xl font-semibold">Modifica luogo</h1>
+    <p class="mb-4 text-sm text-lead">
+      {{ venue.cityName }}
+      @if (venue.organizerName) {
+      · {{ venue.organizerName }}
+      }
+      <span class="block text-xs text-muted-foreground">Città e organizzatore non si possono cambiare.</span>
+    </p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-      <div class="space-y-1 md:col-span-2">
+      <div class="space-y-1">
         <label for="name" class="text-sm font-medium">Nome *</label>
-        <input id="name" type="text" formControlName="name" placeholder="Es. Scuola di Ballo Latino"
-          class="w-full rounded border px-3 py-2"
+        <input id="name" type="text" formControlName="name" class="w-full rounded border px-3 py-2"
           [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched" />
         <p class="min-h-5 text-sm">
           @if (form.controls.name.invalid && form.controls.name.touched) {
@@ -38,59 +50,7 @@
         </p>
       </div>
 
-      <div class="space-y-1">
-        <label class="text-sm font-medium">Organizzatore</label>
-        <hlm-autocomplete class="block" formControlName="organizerId" [itemToString]="organizer.itemToString"
-          [search]="organizer.search()" (searchChange)="organizer.search.set($event)">
-          <input brnAutocompleteInput brnAutocompleteAnchor placeholder="Solo se ha un profilo organizzatore"
-            class="w-full rounded border px-3 py-2" (click)="openOrganizerDropdown()" />
-          <ng-template hlmAutocompletePortal>
-            <hlm-autocomplete-content>
-              <div hlmAutocompleteList>
-                @for (o of organizer.filtered(); track o.id) {
-                <hlm-autocomplete-item [value]="o.id">{{ o.name }}</hlm-autocomplete-item>
-                }
-                <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
-              </div>
-            </hlm-autocomplete-content>
-          </ng-template>
-        </hlm-autocomplete>
-        <p class="min-h-5 text-sm">
-          @if (organizer.selected(); as selected) {
-          <span class="font-mono text-xs text-green-600">{{ selected.id }}</span>
-          @if (form.enabled) {
-          <button type="button" (click)="clearOrganizer()" class="ml-2 text-xs text-red-600 hover:underline">
-            Rimuovi
-          </button>
-          }
-          }
-        </p>
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-sm font-medium">Città *</label>
-        <hlm-select class="block" formControlName="cityId" [itemToString]="cityItemToString">
-          <button type="button" brnSelectTrigger
-            class="w-full rounded border px-3 py-2 flex items-center justify-between gap-2">
-            <span brnSelectValue placeholder="Seleziona città"></span>
-            <span class="text-muted-foreground">▾</span>
-          </button>
-          <ng-template hlmSelectPortal>
-            <hlm-select-content>
-              @for (c of cities(); track c.id) {
-              <hlm-select-item [value]="c.id">{{ c.name }}</hlm-select-item>
-              }
-            </hlm-select-content>
-          </ng-template>
-        </hlm-select>
-        <p class="min-h-5 text-sm">
-          @if (form.controls.cityId.invalid && form.controls.cityId.touched) {
-          <span class="text-red-600">Seleziona una città.</span>
-          }
-        </p>
-      </div>
-
-      <div class="space-y-1">
+      <div class="space-y-1 md:col-span-2">
         <label for="address" class="text-sm font-medium">Indirizzo *</label>
         <hlm-autocomplete-search class="block" formControlName="address" [search]="address.search()"
           (searchChange)="address.search.set($event)" [itemToString]="address.itemToString">
@@ -129,7 +89,7 @@
           @if (form.controls.latitude.invalid && form.controls.latitude.touched) {
           <span class="text-red-600">Latitudine tra -90 e 90.</span>
           } @else {
-          <span class="text-muted-foreground">Se vuota, viene calcolata dall'indirizzo.</span>
+          <span class="text-muted-foreground">Se cambi l'indirizzo senza toccarla, viene ricalcolata.</span>
           }
         </p>
       </div>
@@ -143,7 +103,7 @@
           @if (form.controls.longitude.invalid && form.controls.longitude.touched) {
           <span class="text-red-600">Longitudine tra -180 e 180.</span>
           } @else {
-          <span class="text-muted-foreground">Se vuota, viene calcolata dall'indirizzo.</span>
+          <span class="text-muted-foreground">Se cambi l'indirizzo senza toccarla, viene ricalcolata.</span>
           }
         </p>
       </div>
@@ -179,48 +139,36 @@
         <ng-icon name="lucideImage" class="size-3.5" />
         LOGO
       </span>
-
-      @if (createdVenue(); as venue) {
-      <app-venue-logo-editor [venue]="venue" (venueChange)="createdVenue.set($event)" />
-      } @else {
-      <div class="flex items-center gap-4 opacity-60">
-        <div class="flex size-32 sm:size-40 shrink-0 items-center justify-center rounded-lg border border-dashed bg-muted">
-          <ng-icon name="lucideImage" class="size-8 text-muted-foreground" />
-        </div>
-        <p class="text-sm text-muted-foreground">Disponibile dopo il salvataggio del luogo</p>
-      </div>
-      }
+      <!-- Saved on its own, right away: "Salva modifiche" doesn't touch it. -->
+      <app-venue-logo-editor [venue]="venue" (venueChange)="this.venue.set($event)" />
     </div>
 
     @if (errorMessage()) {
-    <p class="text-sm text-red-600">{{ errorMessage() }}</p>
+    <p class="mb-2 text-sm text-red-600">{{ errorMessage() }}</p>
     }
 
-    @if (createdVenue(); as venue) {
-    <div class="rounded-lg bg-primary/10 text-primary text-sm px-4 py-3 flex items-center gap-2">
+    @if (saved()) {
+    <div class="mb-4 rounded-lg bg-primary/10 text-primary text-sm px-4 py-3 flex items-center gap-2">
       <span>✓</span>
-      <span><strong>{{ venue.name }}</strong> ({{ venue.cityName }}) è stato creato con successo.</span>
+      <span><strong>{{ venue.name }}</strong> è stato aggiornato.</span>
     </div>
-    <div class="flex justify-end gap-3 mt-4">
-      <button type="button" (click)="createAnother()"
+    }
+
+    <div class="flex justify-end gap-3">
+      <button type="button" (click)="backToList()"
         class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent">
-        Crea un altro
+        Torna alla lista
       </button>
-      <button type="button" (click)="backToAdmin()"
-        class="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90">
-        Torna alla home admin
-      </button>
-    </div>
-    } @else {
-    <div class="flex justify-end">
       <button type="submit" [disabled]="submitting()"
         class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium px-4 py-2 h-9 transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50">
         @if (submitting()) {
         <span class="size-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
         }
-        {{ submitting() ? 'Creazione...' : 'Crea luogo' }}
+        {{ submitting() ? 'Salvataggio...' : 'Salva modifiche' }}
       </button>
     </div>
-    }
   </form>
+  } @else {
+  <p class="mx-auto max-w-4xl px-6 py-4 text-sm text-red-600">{{ errorMessage() }}</p>
+  }
 </main>

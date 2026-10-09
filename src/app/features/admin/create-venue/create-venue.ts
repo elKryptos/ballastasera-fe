@@ -1,16 +1,15 @@
-import { Component, computed, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocomplete, HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
 import { BrnAutocomplete, BrnAutocompleteAnchor, BrnAutocompleteInput, BrnAutocompleteSearch } from '@spartan-ng/brain/autocomplete';
-import { HlmSpinnerImports } from '@spartan-ng/helm/spinner';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideFileWarning, lucideImage, lucideRefreshCw, lucideTrash2, lucideUpload } from '@ng-icons/lucide';
+import { lucideImage } from '@ng-icons/lucide';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { AdminService } from '../../../core/services/admin.service';
 import { CitiesService } from '../../../core/services/cities.service';
@@ -18,108 +17,16 @@ import { VenueCreateDto, VenueDetailDto, VenueType } from '../../../core/models/
 import { CityDto } from '../../../core/models/city.model';
 import { instagramHandle } from '../../../core/utils/event-format';
 import { injectAddressSearch, injectOrganizerPicker } from '../admin-pickers';
-
-/** Quicker than the other forms' Photon search (300 ms). */
-const ADDRESS_SEARCH_DEBOUNCE_MS = 100;
-
-// Contact patterns mirror the @URL/@Pattern on VenueCreateDto in the backend.
-const WEBSITE_PATTERN = /^https?:\/\/\S+$/;
-const WHATSAPP_PATTERN = /^\+?[0-9]{6,15}$/;
-const FACEBOOK_PATTERN = /^https:\/\/(www\.|m\.)?facebook\.com\/.+/;
-/** Instagram is stored as the bare handle, like organizers' and users'. */
-const INSTAGRAM_HANDLE_PATTERN = /^[A-Za-z0-9._]{1,30}$/;
-const YOUTUBE_PATTERN = /^https:\/\/(www\.)?youtube\.com\/.+/;
-const TIKTOK_PATTERN = /^https:\/\/(www\.)?tiktok\.com\/@.+/;
-
-/** Spaces, dots, dashes and brackets are fine to type; the backend only takes "+" and digits. */
-const stripPhone = (value: string): string => value.replace(/[\s().-]/g, '');
-
-const whatsappValidator: ValidatorFn = (control) => {
-  const phone = stripPhone(control.value ?? '');
-  return !phone || WHATSAPP_PATTERN.test(phone) ? null : { whatsapp: true };
-};
-
-/** The handle, "@handle" or a pasted profile URL: what's checked (and saved) is the handle. */
-const instagramValidator: ValidatorFn = (control) => {
-  const handle = instagramHandle(control.value ?? '');
-  return !handle || INSTAGRAM_HANDLE_PATTERN.test(handle) ? null : { instagram: true };
-};
-
-/** Optional text fields: empty (or only spaces) goes to the backend as null. */
-const optional = (value: string): string | null => value.trim() || null;
-
-type ContactControl = 'website' | 'whatsapp' | 'email' | 'instagram' | 'facebook' | 'youtube' | 'tiktok';
-
-/** The "Contatti" section, in display order — one template block for all of them. */
-const CONTACT_FIELDS: {
-  name: ContactControl;
-  label: string;
-  type: 'url' | 'tel' | 'email' | 'text';
-  placeholder: string;
-  error: string;
-  /** Spans both columns from md up. */
-  wide?: boolean;
-}[] = [
-  {
-    name: 'website',
-    label: 'Sito web',
-    type: 'url',
-    placeholder: 'https://...',
-    error: 'URL non valido: deve iniziare con http:// o https:// (max 100 caratteri).',
-    wide: true,
-  },
-  {
-    name: 'whatsapp',
-    label: 'WhatsApp',
-    type: 'tel',
-    placeholder: '+39 333 123 4567',
-    error: 'Numero con prefisso internazionale (6-15 cifre).',
-  },
-  { name: 'email', label: 'Email', type: 'email', placeholder: 'info@...', error: 'Email non valida (max 100 caratteri).' },
-  {
-    name: 'instagram',
-    label: 'Instagram',
-    type: 'text',
-    placeholder: 'nome_account',
-    error: 'Solo il nome dell\'account: lettere, numeri, punti e _ (max 30).',
-  },
-  {
-    name: 'facebook',
-    label: 'Facebook',
-    type: 'url',
-    placeholder: 'https://facebook.com/...',
-    error: 'Deve essere un URL https://facebook.com/... (max 100 caratteri).',
-  },
-  {
-    name: 'youtube',
-    label: 'YouTube',
-    type: 'url',
-    placeholder: 'https://youtube.com/...',
-    error: 'Deve essere un URL https://youtube.com/... (max 100 caratteri).',
-  },
-  {
-    name: 'tiktok',
-    label: 'TikTok',
-    type: 'url',
-    placeholder: 'https://tiktok.com/@...',
-    error: 'Deve essere un URL https://tiktok.com/@... (max 100 caratteri).',
-  },
-];
-
-const VENUE_TYPES: { value: VenueType; label: string }[] = [
-  { value: 'SCHOOL', label: 'Scuola' },
-  { value: 'CLUB', label: 'Club' },
-  { value: 'BAR', label: 'Bar' },
-  { value: 'OTHER', label: 'Altro' },
-];
+import { ADDRESS_SEARCH_DEBOUNCE_MS, CONTACT_FIELDS, optional, stripPhone, VENUE_TYPES, venueControls } from '../venue-form';
+import { VenueLogoEditor } from '../venue-logo-editor/venue-logo-editor';
 
 @Component({
   selector: 'app-create-venue',
   imports: [
     ReactiveFormsModule, SidebarPushDirective, HlmSelectImports, BrnSelectTrigger, BrnSelectValue,
-    HlmAutocompleteImports, BrnAutocompleteInput, BrnAutocompleteAnchor, HlmSpinnerImports, NgIcon,
+    HlmAutocompleteImports, BrnAutocompleteInput, BrnAutocompleteAnchor, NgIcon, VenueLogoEditor,
   ],
-  providers: [provideIcons({ lucideImage, lucideUpload, lucideRefreshCw, lucideFileWarning, lucideTrash2 })],
+  providers: [provideIcons({ lucideImage })],
   templateUrl: './create-venue.html',
   styleUrl: './create-venue.css',
 })
@@ -152,39 +59,13 @@ export class CreateVenue {
 
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  /** Once set, the form is locked and the logo can be uploaded (VenueLogoEditor). */
   protected readonly createdVenue = signal<VenueDetailDto | null>(null);
 
-  // The logo needs the venue's id, so it's uploaded once the venue exists —
-  // same flow as the event's flyer (CreateEvent), minus the processing step:
-  // the backend answers with the venue and its logoUrl right away.
-  protected readonly logoState = signal<'idle' | 'uploading' | 'removing' | 'error'>('idle');
-  protected readonly logoError = signal<string | null>(null);
-  protected readonly logoFile = signal<File | null>(null);
-  protected readonly logoPreviewUrl = signal<string | null>(null);
-  /** The staged file's preview first; otherwise the logo already saved on the venue. */
-  protected readonly logoImageUrl = computed(() => this.logoPreviewUrl() ?? this.createdVenue()?.logoUrl ?? null);
-  protected readonly logoBusy = computed(() => this.logoState() === 'uploading' || this.logoState() === 'removing');
-  private readonly logoFileInput = viewChild<ElementRef<HTMLInputElement>>('logoFileInput');
-
-  // Limits mirror the @Size/@DecimalMin/@DecimalMax on VenueCreateDto in the backend.
   protected readonly form = this.fb.nonNullable.group({
     organizerId: [''],
     cityId: ['' as number | '', [Validators.required]],
-    name: ['', [Validators.required, Validators.maxLength(100)]],
-    type: ['' as VenueType | '', [Validators.required]],
-    address: ['', [Validators.required, Validators.maxLength(150)]],
-    // Optional: left empty, the backend geocodes the address.
-    latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
-    longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
-    description: ['', [Validators.maxLength(1000)]],
-    // Contacts are all optional: empty is sent as null.
-    website: ['', [Validators.pattern(WEBSITE_PATTERN), Validators.maxLength(100)]],
-    whatsapp: ['', [whatsappValidator]],
-    email: ['', [Validators.email, Validators.maxLength(100)]],
-    facebook: ['', [Validators.pattern(FACEBOOK_PATTERN), Validators.maxLength(100)]],
-    instagram: ['', [instagramValidator, Validators.maxLength(100)]],
-    youtube: ['', [Validators.pattern(YOUTUBE_PATTERN), Validators.maxLength(100)]],
-    tiktok: ['', [Validators.pattern(TIKTOK_PATTERN), Validators.maxLength(100)]],
+    ...venueControls(),
   });
 
   // Organizer is optional: only venues with an organizer profile of their own get one.
@@ -194,10 +75,6 @@ export class CreateVenue {
 
   protected openAddressDropdown(): void {
     this.addressAutocomplete()?.open();
-  }
-
-  constructor() {
-    inject(DestroyRef).onDestroy(() => this.clearStagedLogo());
   }
 
   protected submit(): void {
@@ -255,82 +132,6 @@ export class CreateVenue {
     this.organizer.search.set('');
     this.address.search.set('');
     this.createdVenue.set(null);
-    this.logoState.set('idle');
-    this.logoError.set(null);
-    this.clearStagedLogo();
-  }
-
-  protected openLogoPicker(): void {
-    this.logoFileInput()?.nativeElement.click();
-  }
-
-  protected onLogoFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-    input.value = '';
-    if (!file) {
-      return;
-    }
-
-    this.clearStagedLogo();
-    this.logoState.set('idle');
-    this.logoError.set(null);
-    this.logoFile.set(file);
-    this.logoPreviewUrl.set(URL.createObjectURL(file));
-  }
-
-  /** Uploads the staged file, replacing the venue's logo if it had one. */
-  protected uploadLogo(): void {
-    const file = this.logoFile();
-    const venue = this.createdVenue();
-    if (!file || !venue) {
-      return;
-    }
-
-    this.logoError.set(null);
-    this.logoState.set('uploading');
-
-    this.adminService.uploadVenueLogo(venue.id, file).subscribe({
-      next: (updated) => {
-        this.createdVenue.set(updated);
-        this.logoState.set('idle');
-        this.clearStagedLogo();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.logoState.set('error');
-        this.logoError.set(err.error?.message ?? 'Caricamento del logo non riuscito. Riprova.');
-      },
-    });
-  }
-
-  protected removeLogo(): void {
-    const venue = this.createdVenue();
-    if (!venue) {
-      return;
-    }
-
-    this.logoError.set(null);
-    this.logoState.set('removing');
-
-    this.adminService.deleteVenueLogo(venue.id).subscribe({
-      next: () => {
-        this.logoState.set('idle');
-        this.createdVenue.set({ ...venue, logoUrl: null });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.logoState.set('error');
-        this.logoError.set(err.error?.message ?? 'Rimozione del logo non riuscita. Riprova.');
-      },
-    });
-  }
-
-  private clearStagedLogo(): void {
-    const previewUrl = this.logoPreviewUrl();
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    this.logoFile.set(null);
-    this.logoPreviewUrl.set(null);
   }
 
   protected backToAdmin(): void {

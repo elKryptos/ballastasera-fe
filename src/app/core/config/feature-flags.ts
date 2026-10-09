@@ -32,6 +32,10 @@ export const FEATURE_FLAGS = {
   eventDetailsPage: 'eventDetailsPage',
   createEventSeries: 'createEventSeries',
   createVenuePage: 'createVenuePage',
+  /** /admin/venues-list route: venues by city, newest first, with edit and delete (also gated on the ADMIN role). */
+  venueListPage: 'venueListPage',
+  /** /admin/update-venue/:id route (also gated on the ADMIN role). */
+  updateVenuePage: 'updateVenuePage',
   /** /luogo/:id route: a venue's page, opened from its card on the map. */
   venueDetailsPage: 'venueDetailsPage',
   /** /impara-a-ballare route: the salsa and bachata lesson. Static, no backend. */

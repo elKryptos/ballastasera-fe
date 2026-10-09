@@ -6,7 +6,7 @@ import { PageDto, SpringPage } from '../models/page.model';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
 import { EventCardDto, EventCreateDto, EventDetailDto, EventSeriesCreateDto, EventSeriesDetailDto, EventSeriesGenerateOccurrencesDto } from '../models/event.model';
-import { VenueCreateDto, VenueDetailDto } from '../models/venue.model';
+import { VenueCreateDto, VenueDetailDto, VenueUpdateDto } from '../models/venue.model';
 
 @Service()
 export class AdminService {
@@ -68,6 +68,15 @@ export class AdminService {
 
   createVenue(body: VenueCreateDto): Observable<VenueDetailDto>{
     return this.http.post<VenueDetailDto>(`${environment.apiUrl}${endpoints.admin.createVenue}` , body)
+  }
+
+  updateVenue(id: string, body: VenueUpdateDto): Observable<VenueDetailDto> {
+    return this.http.patch<VenueDetailDto>(`${environment.apiUrl}${endpoints.admin.updateVenue(id)}`, body);
+  }
+
+  /** 409 when the venue still has events that aren't cancelled. */
+  deleteVenue(id: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}${endpoints.admin.deleteVenue(id)}`);
   }
 
   /** Uploads or replaces the venue's logo; the backend reads the file from the "logo" part. */

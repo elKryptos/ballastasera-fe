@@ -19,7 +19,12 @@ export class AdminHome {
     {
       title: 'Crea venue',
       description: 'Aggiungi un locale, bar o discoteca',
-      routerLink: '/admin/create-venue', 
+      routerLink: '/admin/create-venue',
+    },
+    {
+      title: 'Venue update/delete',
+      description: 'Lista dei luoghi per città, dal più recente.',
+      routerLink: '/admin/venues-list',
     },
     {
       title: 'Crea organizzatore unclaimed',

@@ -24,6 +24,8 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   eventDetailsPage: true,
   createEventSeries: true,
   createVenuePage: true,
+  venueListPage: true,
+  updateVenuePage: true,
   venueDetailsPage: true,
   learnToDancePage: true,
   schoolListPage: true,

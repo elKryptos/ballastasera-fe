@@ -47,14 +47,36 @@ export interface VenueCreateDto {
   tiktok: string | null;
 }
 
+/** Mirrors VenueUpdateDto: a PATCH, so only what's sent changes. The city
+ * and the organizer can't be changed — the backend ignores them. For the
+ * contacts, "" clears the saved value (null leaves it as it is). */
+export interface VenueUpdateDto {
+  name: string;
+  type: VenueType;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  description: string;
+  website: string;
+  whatsapp: string;
+  email: string;
+  facebook: string;
+  instagram: string;
+  youtube: string;
+  tiktok: string;
+}
+
 export interface VenuesSummaryDto {
   id: string;
   name: string;
   type: VenueType;
+  /** Null until the admin uploads one. */
+  logoUrl: string | null;
   address: string;
   cityName: string;
   latitude: number | null;
   longitude: number | null;
+  createdAt: string;
 }
 
 /** Venue pin on the map — mirrors VenueMapPinDto. The whole city comes at

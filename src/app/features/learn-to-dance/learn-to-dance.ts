@@ -13,17 +13,13 @@ import { SidebarPushDirective } from '../../shared/directives/sidebar-push.direc
 import { LessonCouple } from './couple/lesson-couple';
 import { LessonDance } from './dance/lesson-dance';
 import { LessonHero } from './hero/lesson-hero';
+import { LessonHeading } from './heading/lesson-heading';
 import { LessonClock, SCHOOLS_PATH } from './lesson';
+import { loadLessonFonts } from './lesson-fonts';
 import { LessonMistakes } from './mistakes/lesson-mistakes';
-import { LessonMixtape } from './mixtape/lesson-mixtape';
 import { LessonRhythm } from './rhythm/lesson-rhythm';
 import { SchoolCall } from './school-call/school-call';
 import { LessonTurntable } from './turntable/lesson-turntable';
-
-/** The lesson's two display faces, on this page only: the poster and the romance. */
-const FONTS_ID = 'lesson-fonts';
-const FONTS_HREF =
-  'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Shrikhand&display=swap';
 
 const CHAPTERS = [
   { id: 'ritmo', n: '01', label: 'Ritmo' },
@@ -37,15 +33,16 @@ const CHAPTERS = [
 /**
  * /impara-a-ballare: a salsa and bachata lesson, start to finish on one
  * page — rhythm, both basic steps on an animated floor, dancing as a pair,
- * the usual mistakes, music to practise on — and a call to find a dance
- * school, before the cover and again at the end (SchoolCall). No
- * backend call: the text is written here, the band's samples are the app's
- * own static files, and Spotify loads only when a song is opened.
+ * the usual mistakes, then the way to music to practise on (the playlist,
+ * a page of its own) — and a call to find a dance school, before the cover
+ * and again at the end (SchoolCall). No backend call: the text is written
+ * here and the band's samples are the app's own static files.
  *
  * It has its own look, apart from the rest of the site: a night-club poster
  * (warm black, marigold and fire for salsa, bougainvillea and lagoon for
- * bachata), with Shrikhand and Instrument Serif loaded for it alone. The
- * palette is defined on this host and read by every chapter below it.
+ * bachata), with Shrikhand and Instrument Serif loaded for it and the
+ * playlist alone. The palette is on this host (lesson-look.css) and read by
+ * every chapter below it.
  */
 @Component({
   selector: 'app-learn-to-dance',
@@ -58,11 +55,11 @@ const CHAPTERS = [
     LessonDance,
     LessonCouple,
     LessonMistakes,
-    LessonMixtape,
+    LessonHeading,
   ],
   providers: [LessonClock],
   templateUrl: './learn-to-dance.html',
-  styleUrl: './learn-to-dance.css',
+  styleUrls: ['./lesson-look.css', './learn-to-dance.css'],
 })
 export class LearnToDance {
   private readonly document = inject(DOCUMENT);
@@ -80,14 +77,7 @@ export class LearnToDance {
   });
 
   constructor() {
-    // Added to <head> during SSR too, so the first paint already asks for them.
-    if (!this.document.getElementById(FONTS_ID)) {
-      const link = this.document.createElement('link');
-      link.id = FONTS_ID;
-      link.rel = 'stylesheet';
-      link.href = FONTS_HREF;
-      this.document.head.appendChild(link);
-    }
+    loadLessonFonts(this.document);
 
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     const destroyRef = inject(DestroyRef);

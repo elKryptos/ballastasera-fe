@@ -1,10 +1,10 @@
-:host {
-  display: block;
-  --accent: var(--mango);
-}
+/* The host's look (palette, fonts, grain, .wrap, the mango .band--playlist):
+lesson-look.css. */
 
-button {
-  cursor: pointer;
+/* Clipped sideways: the cassette turns over in 3D. */
+.page {
+  overflow-x: clip;
+  padding-bottom: clamp(4rem, 9vw, 7rem);
 }
 
 .deck {
@@ -20,10 +20,10 @@ button {
     gap: 4rem;
   }
 
-  /* A side runs longer than the cassette: it stays in view, under the chapter bar, as the list scrolls by. */
+  /* A side runs longer than the cassette: it stays in view as the list scrolls by. */
   .tape-wrap {
     position: sticky;
-    top: 6rem;
+    top: 2rem;
   }
 }
 
@@ -314,6 +314,55 @@ unfolding under its row once opened ---------- */
   margin: 1rem 0 0;
   font: 500 0.72rem/1.5 var(--font-mono);
   color: var(--cream-soft);
+}
+
+/* ---------- by day (<html data-theme="light">, see ThemeService) ----------
+The lesson stays a night scene in either theme; the playlist, a page of its
+own, follows the app's: the basemap's paper and navy, as on /lista and the
+menu, with the cassette still a dark object on it. The accents take deeper
+shades so they read as text on paper — burnt orange for the heading, amber
+and raspberry for each side's numbers and buttons. --night stays as it is:
+it's the ink on the label and on the lit buttons. */
+:host-context([data-theme='light']) {
+  color-scheme: light;
+  background: #fbf8f3;
+  color: #1d2640;
+  --cream-soft: #4a5571;
+  --line: rgb(29 38 64 / 0.14);
+}
+
+:host-context([data-theme='light']) .band--playlist {
+  --accent: #c2410c;
+}
+
+:host-context([data-theme='light']) .grain {
+  opacity: 0.03;
+}
+
+:host-context([data-theme='light']) .face {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 1.5rem 2.5rem -1.25rem rgb(40 30 80 / 0.45);
+}
+
+:host-context([data-theme='light']) .sides {
+  background: rgb(29 38 64 / 0.06);
+}
+
+:host-context([data-theme='light']) .tracks {
+  --tone: #b45309;
+}
+
+:host-context([data-theme='light']) .tracks.is-b {
+  --tone: #be185d;
+}
+
+:host-context([data-theme='light']) :is(.listen:hover, .is-open .listen) {
+  color: #fff;
+}
+
+:host-context([data-theme='light']) .preview {
+  background: rgb(29 38 64 / 0.04);
 }
 
 .reel {

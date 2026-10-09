@@ -146,11 +146,32 @@
       <span class="grow">Impara a ballare</span>
     </ng-template>
 
+    <!-- The lesson and its playlist, while the lesson's page is on
+        (learnToDancePage): signed out next to the map, signed in at the top of
+        "La tua scena". -->
+    <ng-template #lessonLinks>
+      <a class="drawer-item" routerLink="/impara-a-ballare" routerLinkActive ariaCurrentWhenActive="page"
+        (click)="closeDrawer()" appRailTooltip="Impara a ballare">
+        <ng-container [ngTemplateOutlet]="learnItem" />
+      </a>
+      <a class="drawer-item" routerLink="/playlist" routerLinkActive ariaCurrentWhenActive="page"
+        (click)="closeDrawer()" appRailTooltip="Playlist">
+        <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 18V5l12-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
+        <span class="grow">Playlist</span>
+      </a>
+    </ng-template>
+
     <!-- The map isn't in the mockup (it lives in a bottom bar there), kept
         until that bar exists so the menu still leads to it: the /menu hub when
         signed in, the map itself otherwise — each with its own icon. Signed
-        out, the lesson joins it in one group, spaced like the rows below: it
-        needs no account (signed in, it's in "La tua scena"). -->
+        out, the lesson and its playlist join it in one group, spaced like the
+        rows below: they need no account (signed in, they're in "La tua
+        scena"). -->
     @if (isAuthenticated()) {
     @if (mapEnabled()) {
     <a class="drawer-item" routerLink="/menu" routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()"
@@ -179,10 +200,7 @@
       </a>
       }
       @if (learnEnabled()) {
-      <a class="drawer-item" routerLink="/impara-a-ballare" routerLinkActive ariaCurrentWhenActive="page"
-        (click)="closeDrawer()" appRailTooltip="Impara a ballare">
-        <ng-container [ngTemplateOutlet]="learnItem" />
-      </a>
+      <ng-container [ngTemplateOutlet]="lessonLinks" />
       }
     </div>
     }
@@ -190,12 +208,10 @@
     @if (isAuthenticated()) {
     <div class="flex min-h-0 flex-col gap-0.5">
       <h2 class="drawer-label">La tua scena</h2>
-      <!-- Shown, not linked, until the lesson's page is on (learnToDancePage). -->
+      <!-- Until the lesson's page is on (learnToDancePage), the lesson is
+          shown, not linked, and its playlist (its own page) not at all. -->
       @if (learnEnabled()) {
-      <a class="drawer-item" routerLink="/impara-a-ballare" routerLinkActive ariaCurrentWhenActive="page"
-        (click)="closeDrawer()" appRailTooltip="Impara a ballare">
-        <ng-container [ngTemplateOutlet]="learnItem" />
-      </a>
+      <ng-container [ngTemplateOutlet]="lessonLinks" />
       } @else {
       <div class="drawer-item" appRailTooltip="Impara a ballare">
         <ng-container [ngTemplateOutlet]="learnItem" />

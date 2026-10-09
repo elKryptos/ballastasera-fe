@@ -3,9 +3,7 @@ import { Channel, LessonBand } from './lesson-band';
 
 /**
  * The dance schools' list, where the lesson sends whoever wants a teacher
- * next — from the cover and from the closing call. The page doesn't exist
- * yet: until its route is added to app.routes.ts, the router's catch-all
- * takes this link home.
+ * next — from the cover, the chapter bar and the closing call.
  */
 export const SCHOOLS_PATH = '/scuole';
 

@@ -129,6 +129,15 @@ export const routes: Routes = [
       },
 
       {
+        // The lesson's playlist, a page of its own: in the sidebar, and where
+        // the lesson's last chapter leads. Same flag as the lesson.
+        path: 'playlist',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.learnToDancePage)],
+        loadComponent: () =>
+          import('./features/learn-to-dance/playlist/playlist').then((m) => m.Playlist),
+      },
+
+      {
         path: 'admin/create-event-series',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.createEventSeries), roleGuard('ADMIN')],
         loadComponent: () =>

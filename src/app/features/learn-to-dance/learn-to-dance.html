@@ -69,8 +69,24 @@
       <div class="wrap"><app-lesson-mistakes /></div>
     </section>
 
+    <!-- The playlist has a page of its own (/playlist, also in the sidebar):
+        the lesson's last chapter leads there. -->
     <section id="playlist" class="band band--playlist">
-      <div class="wrap"><app-lesson-mixtape /></div>
+      <div class="wrap">
+        <app-lesson-heading n="06" kicker="Playlist" title="Musica per" flair="esercitarti">
+          <p>
+            Il passo base si impara in salotto, con la musica giusta: nella playlist trovi salsa e bachata da
+            ballare, sempre a un tocco dal menu.
+          </p>
+        </app-lesson-heading>
+        <a routerLink="/playlist" class="to-playlist">
+          Apri la playlist
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </a>
+      </div>
     </section>
 
     <!-- The way out, to a school: the lesson hands over to the teachers —

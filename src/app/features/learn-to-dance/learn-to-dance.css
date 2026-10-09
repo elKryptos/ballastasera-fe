@@ -1,48 +1,9 @@
-/* The lesson's own world, apart from the site's plum and rose: a warm
-black night, cream type, and two pairs of colours, one per dance —
-marigold, mango and fire for salsa; bougainvillea and lagoon for bachata.
-Every chapter component below reads these from here. It stays a night
-scene in the light theme too: it's a dance floor. */
-:host {
-  display: block;
-  min-height: 100dvh;
-  --night: #0f0a12;
-  --night-2: #1a1220;
-  --cream: #fff1dc;
-  --cream-soft: rgb(255 241 220 / 0.72);
-  --line: rgb(255 241 220 / 0.13);
-  --sol: #ffc53d;
-  --mango: #ff8a1f;
-  --fuego: #ff4a2e;
-  --flamingo: #ff5fa2;
-  --laguna: #22d3c5;
-  --font-poster: 'Shrikhand', 'Bricolage Grotesque', 'Arial Black', sans-serif;
-  --font-romance: 'Instrument Serif', 'Times New Roman', serif;
-  --font-grotesk: 'Bricolage Grotesque', 'Arial Black', sans-serif;
-  --font-mono: 'DM Mono', ui-monospace, monospace;
-  color-scheme: dark;
-  background: var(--night);
-  color: var(--cream);
-  font-family: 'Instrument Sans', system-ui, sans-serif;
-}
-
-button {
-  cursor: pointer;
-}
+/* The palette, fonts, grain and .wrap: lesson-look.css, shared with the
+playlist's page. */
 
 .lesson {
   position: relative;
   overflow-x: clip;
-}
-
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.06;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ---------- the chapter bar ---------- */
@@ -206,13 +167,6 @@ cover's record plays, to stop it from anywhere ---------- */
   }
 }
 
-.wrap {
-  position: relative;
-  max-width: 76rem;
-  margin: 0 auto;
-  padding: 0 clamp(1rem, 4vw, 2.5rem);
-}
-
 .band--salsa {
   background:
     radial-gradient(70% 40% at 80% 0%, rgb(255 74 46 / 0.16), transparent 70%),
@@ -230,8 +184,29 @@ cover's record plays, to stop it from anywhere ---------- */
   background: radial-gradient(55% 35% at 15% 40%, rgb(34 211 197 / 0.09), transparent 70%);
 }
 
-.band--playlist {
-  background: radial-gradient(60% 40% at 85% 50%, rgb(255 138 31 / 0.1), transparent 70%);
+/* Chapter 06 hands over to the playlist's own page: its button. */
+.to-playlist {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 3rem;
+  margin-top: 2rem;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  background: var(--mango);
+  color: var(--night);
+  font: 800 0.95rem var(--font-grotesk);
+  box-shadow: 0 0 1.5rem rgb(255 138 31 / 0.35);
+  transition: box-shadow 0.2s;
+}
+
+.to-playlist:hover {
+  box-shadow: 0 0 2rem rgb(255 138 31 / 0.6);
+}
+
+.to-playlist svg {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .on-air {

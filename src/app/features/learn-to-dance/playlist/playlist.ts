@@ -6,14 +6,14 @@ import {
   Injector,
   afterNextRender,
   computed,
-  effect,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { LessonHeading } from '../heading/lesson-heading';
-import { LessonClock } from '../lesson';
+import { loadLessonFonts } from '../lesson-fonts';
 import { Reveal } from '../reveal.directive';
 import { SpotifyController, spotifyApi } from './spotify-player';
 
@@ -60,8 +60,12 @@ const SIDES: Record<Side, { dance: string; tracks: Track[] }> = {
 };
 
 /**
- * Chapter 06: classics to practise on at home, as a mixtape — side A salsa,
- * side B bachata. Flipping the side turns the cassette over.
+ * /playlist: salsa and bachata to dance to, as a mixtape — side A salsa,
+ * side B bachata, classics and newer songs alike (whatever SIDES holds).
+ * Flipping the side turns the cassette over. A page of its own, one tap
+ * away in the sidebar; the lesson's last chapter leads here too. Same look
+ * as the lesson by night (lesson-look.css, loadLessonFonts); unlike it, it
+ * follows the light theme by day (playlist.css).
  *
  * Each song plays in Spotify's own embedded player, unfolded under its row:
  * a 30-second preview, or the whole song for whoever is signed in to
@@ -72,18 +76,16 @@ const SIDES: Record<Side, { dance: string; tracks: Track[] }> = {
  *
  * Click-to-load, like MediaEmbed: nothing from Spotify — not even the API's
  * script — is requested until a song is opened, so the page carries no
- * third-party cookies on load. One song at a time, and none while the
- * lesson's own band is playing.
+ * third-party cookies on load. One song at a time.
  */
 @Component({
-  selector: 'app-lesson-mixtape',
-  imports: [LessonHeading, Reveal],
-  templateUrl: './lesson-mixtape.html',
-  styleUrl: './lesson-mixtape.css',
+  selector: 'app-playlist',
+  imports: [SidebarPushDirective, LessonHeading, Reveal],
+  templateUrl: './playlist.html',
+  styleUrls: ['../lesson-look.css', './playlist.css'],
 })
-export class LessonMixtape {
+export class Playlist {
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly clock = inject(LessonClock);
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
 
@@ -109,10 +111,7 @@ export class LessonMixtape {
   private controller?: SpotifyController;
 
   constructor() {
-    // The band started (a stage, the record): close the song, so two never play at once.
-    effect(() => {
-      if (this.clock.playing()) this.close();
-    });
+    loadLessonFonts(this.document);
     inject(DestroyRef).onDestroy(() => this.close());
   }
 
@@ -131,7 +130,6 @@ export class LessonMixtape {
   protected listen(track: Track): void {
     const id = track.spotify;
     if (!id) return;
-    this.clock.stop();
     if (this.open() === id) {
       if (this.controller) this.controller.togglePlay();
       else this.close();

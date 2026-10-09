@@ -1,12 +1,20 @@
+<ng-template #titleText>
+  {{ title() }}
+  @if (flair()) {
+  <em>{{ flair() }}</em>
+  }
+</ng-template>
+
 <header class="head">
-  <span class="n" aria-hidden="true">{{ n() }}</span>
-  <p class="kicker"><span class="rule"></span>{{ n() }} · {{ kicker() }}</p>
-  <h2 class="title">
-    {{ title() }}
-    @if (flair()) {
-    <em>{{ flair() }}</em>
-    }
-  </h2>
+  @if (n(); as n) {
+  <span class="n" aria-hidden="true">{{ n }}</span>
+  }
+  <p class="kicker"><span class="rule"></span>{{ n() ? n() + ' · ' : '' }}{{ kicker() }}</p>
+  @if (level() === 1) {
+  <h1 class="title"><ng-container [ngTemplateOutlet]="titleText" /></h1>
+  } @else {
+  <h2 class="title"><ng-container [ngTemplateOutlet]="titleText" /></h2>
+  }
   <div class="intro">
     <ng-content />
   </div>

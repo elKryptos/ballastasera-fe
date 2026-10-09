@@ -28,9 +28,13 @@ export const appConfig: ApplicationConfig = {
     // gutter every page reserves for it). Widths kept in sync with --sidebar-width
     // and --sidebar-width-icon in styles.css. The menu's links close the mobile
     // drawer themselves (Navbar.closeDrawer) and leave the desktop rail as it is.
+    // The mobile drawer: 85% of the screen, so its longest rows ("Serate che
+    // ti piacciono" and its chip) fit from an iPhone SE up, with a strip of
+    // page left to tap it closed.
     provideHlmSidebarConfig({
       defaultOpen: false,
       sidebarWidth: '18rem',
+      sidebarWidthMobile: 'min(85vw, 20rem)',
       sidebarWidthIcon: '3.5rem',
     }),
     // Without this, HttpClient calls made during SSR (incl. the i18n JSON

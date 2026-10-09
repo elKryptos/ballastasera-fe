@@ -65,13 +65,15 @@
     doesn't exist yet are plain <div>s with the final look already in place —
     swap each for an <a routerLink> (class drawer-item, plus
     routerLinkActive ariaCurrentWhenActive="page", which marks it while you're
-    on its page, and (click)="closeDrawer()") once its page lands. Spacing tightens with the screen height (svh) so everything
-    fits without scrolling; the scroll stays only as a last resort on very
-    short screens. Styles: the "Sidebar menu" block in styles.css — global,
+    on its page, and (click)="closeDrawer()") once its page lands. Spacing
+    and rows tighten with the screen height (svh), and on short screens the
+    organizer invitation and the section titles step aside, so the menu fits
+    without scrolling down to an iPhone SE; the scroll is only for a phone
+    held sideways. Styles: the "Sidebar menu" block in styles.css — global,
     since on mobile this renders in a CDK overlay outside this component. -->
 <hlm-sidebar side="left" collapsible="icon">
   <nav aria-label="Menu" (click)="expandRail($event)"
-    class="drawer-nav flex h-full flex-col gap-[clamp(0.5rem,1.6svh,0.875rem)] overflow-y-auto px-3.5 py-[clamp(0.75rem,2svh,1.125rem)] whitespace-nowrap">
+    class="drawer-nav flex h-full flex-col gap-[clamp(0.375rem,1.2svh,0.875rem)] overflow-y-auto px-3.5 py-[clamp(0.5rem,1.6svh,1.125rem)] whitespace-nowrap">
     @if (!isMobile()) {
     <!-- Desktop only: the rail's collapse/expand trigger, plus the brand mark
         once it's wide enough (mobile has both in the top bar instead). -->
@@ -206,7 +208,7 @@
     }
 
     @if (isAuthenticated()) {
-    <div class="flex min-h-0 flex-col gap-0.5">
+    <div class="flex flex-col gap-0.5">
       <h2 class="drawer-label">La tua scena</h2>
       <!-- Until the lesson's page is on (learnToDancePage), the lesson is
           shown, not linked, and its playlist (its own page) not at all. -->
@@ -276,7 +278,8 @@
             </div>
           </div>
           <span
-            class="rail-hide flex h-11 items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-ink">
+            class="rail-hide flex h-(--drawer-row) items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-ink">
+            <span class="drawer-chip">In sviluppo</span>
             Diventa organizzatore
             <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -290,7 +293,7 @@
     </ng-container>
 
     <ng-container *appRole="managerRoles">
-      <div class="flex min-h-0 flex-col gap-0.5">
+      <div class="flex flex-col gap-0.5">
         <h2 class="drawer-label">Gestione</h2>
         <div class="drawer-item" appRailTooltip="Pubblica una serata">
           <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
@@ -335,7 +338,7 @@
       <hr class="mx-1.5 border-(--drawer-rule)" />
     </ng-container>
 
-    <div class="flex min-h-0 flex-col gap-0.5">
+    <div class="flex flex-col gap-0.5">
       <!-- The whole row is the switch: on the collapsed rail, where only its
         icon shows, a tap flips the theme on the spot (expandRail() leaves
         buttons alone) instead of opening the rail. -->
@@ -378,7 +381,7 @@
 
     <div class="mt-auto flex flex-col gap-1.5">
       <a href="https://www.paypal.me/ballastasera/3" target="_blank" rel="noopener noreferrer" appRailTooltip="Offrici un caffè"
-        class="flex h-11 items-center justify-center gap-2 rounded-2xl border border-amber/35 bg-amber/12 text-sm font-bold text-amber transition-transform active:scale-[0.98]">
+        class="flex h-(--drawer-row) items-center justify-center gap-2 rounded-2xl border border-amber/35 bg-amber/12 text-sm font-bold text-amber transition-transform active:scale-[0.98]">
         <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z" />
@@ -393,7 +396,7 @@
         </div>
         @if (isAuthenticated()) {
         <button type="button" (click)="closeDrawer(); logout()" appRailTooltip="Esci"
-          class="flex h-9 cursor-pointer items-center gap-1.5 px-2.5 text-[0.8125rem] font-bold text-(--drawer-danger)">
+          class="flex h-8 cursor-pointer items-center gap-1.5 px-2.5 text-[0.8125rem] font-bold text-(--drawer-danger)">
           <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />

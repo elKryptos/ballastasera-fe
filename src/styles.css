@@ -76,8 +76,8 @@ internal width classes; since app-navbar doesn't use hlm-sidebar-wrapper
 defined here instead so both the sidebar and every page's compensating
 left padding agree on the same values — see provideHlmSidebarConfig in
 app.config.ts, which must be kept in sync with these. */
-  /* 18rem: same as the mobile drawer, room for the full menu (profile card,
-  language picker) once the rail is open. */
+  /* 18rem: room for the full menu (profile card, language picker) once the
+  rail is open. The mobile drawer has its own (app.config.ts). */
   --sidebar-width: 18rem;
   /* 3.5rem, not the library's 3rem default: fits the menu's 44px icon rows
 (see "Collapsed desktop rail" below) without the collapsed rail clipping
@@ -821,6 +821,10 @@ app-navbar [data-slot='sidebar-inner'] {
   --drawer-yellow: #f5c04a;
   --drawer-sky: #6aa8ff;
   --drawer-danger: var(--color-rose-lit);
+  /* One row's height — the menu's rows and its two big buttons (Diventa
+  organizzatore, Offrici un caffè): 44px with room to spare, down to 28px
+  on the shortest phones, so the menu always fits without scrolling. */
+  --drawer-row: clamp(1.75rem, 5svh, 2.75rem);
 }
 
 :root[data-theme='light'] [data-mobile='true'],
@@ -852,7 +856,7 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.625rem;
+    padding: clamp(0.375rem, 1.2svh, 0.625rem);
     border: 1px solid var(--drawer-edge);
     border-radius: 1.125rem;
     background: linear-gradient(
@@ -891,22 +895,22 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: clamp(2rem, 5.5svh, 2.75rem);
+    height: clamp(2rem, 5.5svh, 2.75rem);
     border-radius: 50%;
     background: var(--drawer-edge);
     object-fit: cover;
   }
 
-  /* 44px rows while the screen has room, giving way down to 36px on short
-  ones so the whole menu fits without scrolling — the sections holding them
-  carry min-h-0 so the shrink reaches the rows (see navbar.html). */
+  /* Each row --drawer-row high, set by the screen's height: a height of
+  their own rather than a flex shrink, so a section can never squeeze them
+  past it and onto the next one. */
   .drawer-item {
     display: flex;
-    flex: 0 1 2.75rem;
+    flex: none;
     align-items: center;
     gap: 0.75rem;
-    min-height: 2.25rem;
+    height: var(--drawer-row);
     padding-inline: 0.625rem;
     border-radius: 0.875rem;
     color: var(--color-bone);
@@ -918,6 +922,14 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
     width: 1.25rem;
     height: 1.25rem;
     flex-shrink: 0;
+  }
+
+  /* A label too long for the narrowest phones ends in an ellipsis rather
+  than pushing its chip out of the row. */
+  .drawer-item > .grow {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* The theme row's icon: the moon by night, the sun by day, both drawn in
@@ -985,6 +997,7 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
   }
 
   .drawer-chip {
+    flex-shrink: 0;
     padding: 0.125rem 0.5rem;
     border-radius: 0.5rem;
     background: var(--drawer-edge);
@@ -1023,6 +1036,29 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
     height: 0.375rem;
     border-radius: 50%;
     background: var(--color-rose);
+  }
+}
+
+/* Short screens (an iPhone SE): the whole menu still fits, without
+scrolling. Under 760px of height the organizer invitation comes down to its
+button; under 700px the section titles go, the rules between the sections
+keeping them apart. The drawer and the open rail only: the collapsed rail
+shows its icons alone either way. */
+@media (max-height: 760px) {
+  :is([data-mobile='true'], [data-state='expanded']) .drawer-promo {
+    padding: 0;
+    border-color: transparent;
+    background: none;
+  }
+
+  :is([data-mobile='true'], [data-state='expanded']) .drawer-promo > :first-child {
+    display: none;
+  }
+}
+
+@media (max-height: 700px) {
+  :is([data-mobile='true'], [data-state='expanded']) .drawer-label {
+    display: none;
   }
 }
 

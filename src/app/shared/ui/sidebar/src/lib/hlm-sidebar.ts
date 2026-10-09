@@ -33,7 +33,9 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
         overlayClass="!top-(--header-h)"
         (stateChanged)="_sidebarService.setOpenMobile($event === 'open')"
       >
-        <!-- transition-none: the sheet's own colour transition made the
+        <!-- data-[side=left]:w-…: the sheet's own data-[side=left]:w-3/4 would
+          win over a plain width and pin the drawer at 75% of the screen.
+          transition-none: the sheet's own colour transition made the
           drawer fade into a new theme 200ms after everything else had
           switched. The slide in/out is an animation, so it's unaffected. -->
         <hlm-sheet-content
@@ -41,7 +43,7 @@ import { injectHlmSidebarConfig } from './hlm-sidebar.token';
           data-slot="sidebar"
           data-sidebar="sidebar"
           data-mobile="true"
-          class="text-sidebar-foreground border-sidebar-border rounded-br-[1.75rem] w-(--sidebar-width) p-0 transition-none [&>button]:hidden"
+          class="text-sidebar-foreground border-sidebar-border rounded-br-[1.75rem] data-[side=left]:w-(--sidebar-width) p-0 transition-none [&>button]:hidden"
           [style.--sidebar-width]="sidebarWidthMobile()"
           [style.top]="'var(--header-h)'"
           [style.height]="'calc(100svh - var(--header-h))'"

@@ -121,7 +121,7 @@
         (click)="retry()">Riprova</button>
     </div>
     } @else if (!hasData()) {
-    <div class="mt-4 grid gap-3 @5xl:grid-cols-2" aria-hidden="true">
+    <div class="mt-4 grid grid-cols-1 gap-3 @5xl:grid-cols-2" aria-hidden="true">
       @for (placeholder of [1, 2, 3]; track placeholder) {
       <div class="h-32 animate-pulse rounded-[1.25rem] bg-(--ev-raised)"></div>
       }
@@ -133,7 +133,10 @@
         class="text-xs font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
         {{ group.heading }}
       </h2>
-      <div class="grid gap-2.5 @5xl:grid-cols-2">
+      <!-- grid-cols-1, not the implicit auto column: that one grows to the
+          cards' min-content (the place's truncate is nowrap) and a long
+          address pushed the page wider than the phone. -->
+      <div class="grid grid-cols-1 gap-2.5 @5xl:grid-cols-2">
       @for (row of group.rows; track row.id) {
       <!-- The title's link covers the whole card (after:absolute); the like
           button sits above it (relative z-10). isolate keeps that z-10 inside

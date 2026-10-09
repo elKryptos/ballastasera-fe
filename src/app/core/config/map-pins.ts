@@ -2,8 +2,8 @@ import { EventType } from '../models/event.model';
 import { VenueType } from '../models/venue.model';
 
 /** Fallback view when there's no city yet to centre on: Milano, zoomed to city level. */
-export const MILAN_CENTER: [number, number] = [45.4642, 9.19];
-export const MILAN_DEFAULT_ZOOM = 14;
+export const MILAN_CENTER: [number, number] = [45.4642, 9.193];
+export const MILAN_DEFAULT_ZOOM = 13;
 
 /** Pin colour per EventType, reusing the brand accents from styles.css so every
  * map surface (the real map, the landing teaser) stays inside the same palette. */

@@ -1,11 +1,11 @@
 import { Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
-import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { EventsService } from '../../core/services/events.service';
-import { MILAN_CENTER } from '../../core/config/map-pins';
+import { ALL_PLACES_QUERY, MILAN_CENTER } from '../../core/config/map-pins';
 import { cityBounds } from '../../core/utils/geo';
 import { EventCardDto, EventType } from '../../core/models/event.model';
 import {
@@ -15,6 +15,7 @@ import {
   formatTimeRange,
   withoutCountry,
 } from '../../core/utils/event-format';
+import { compareByLiveThenStart, inDateRange } from '../../core/utils/event-filters';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
@@ -27,17 +28,6 @@ import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
  * backend has one.
  */
 const MILANO_BOUNDS = cityBounds({ latitude: MILAN_CENTER[0], longitude: MILAN_CENTER[1] });
-
-/** A night out runs past midnight: anything starting before this hour of
- * the next morning still counts as "stasera". */
-const NIGHT_ENDS_AT_HOUR = 6;
-
-function tonightCutoff(now: Date): number {
-  const cutoff = new Date(now);
-  if (now.getHours() >= NIGHT_ENDS_AT_HOUR) cutoff.setDate(cutoff.getDate() + 1);
-  cutoff.setHours(NIGHT_ENDS_AT_HOUR, 0, 0, 0);
-  return cutoff.getTime();
-}
 
 /** One card of the "Stasera" carousel, already formatted for the template. */
 interface TonightCard {
@@ -62,17 +52,28 @@ interface MapDot {
   type: EventType;
 }
 
+/** One row of "Non solo stasera": a list, already searched. */
+interface Shortcut {
+  label: string;
+  hint: string;
+  /** Which picture its tile shows (menu.html). */
+  icon: 'tomorrow' | 'weekend' | 'venues';
+  /** null while its page is off (feature flag): shown, not linked. */
+  path: string | null;
+  query: Record<string, string>;
+}
+
 /**
  * Hub post-login: da qui l'utente sceglie cosa fare. Ogni login atterra qui
  * (vedi Oauth2Callback.postLoginUrl e Welcome.enter()). Collegate: la mappa,
- * le card di stasera e — con /lista accesa — "Vedi tutte", le scorciatoie ed
- * Eventi nella barra in basso. Profilo aspetta ancora la sua pagina.
+ * le card di stasera e — con /lista e /scuole accese — "Vedi tutte" e le
+ * scorciatoie. Il resto (Impara a ballare, il profilo) è nella sidebar.
  */
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.html',
-  styleUrl: './menu.css',
-  imports: [RouterLink, SidebarPushDirective, MapSnapshot, NgTemplateOutlet, EventPinIcon],
+  imports: [RouterLink, SidebarPushDirective, MapSnapshot, EventPinIcon],
+  host: { class: 'block min-h-dvh bg-(--color-ink) text-(--ev-text)' },
 })
 export class Menu {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -89,18 +90,16 @@ export class Menu {
   protected readonly liveCount = computed(() => this.events()?.filter((event) => event.liveNow).length ?? null);
 
   /** Same Milano box as liveCount, until the backend has a "tonight in this
-   * city" endpoint that doesn't need one — live first, then by start time. */
+   * city" endpoint that doesn't need one. Tonight and its order as on /lista
+   * and the map (event-filters): live first, then by start time. */
   protected readonly tonight = computed<TonightCard[] | null>(() => {
     const events = this.events();
     if (!events) return null;
 
-    const cutoff = tonightCutoff(new Date());
+    const now = Date.now();
     return events
-      .filter((event) => new Date(event.startAt).getTime() < cutoff)
-      .sort(
-        (a, b) =>
-          Number(b.liveNow) - Number(a.liveNow) || new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
-      )
+      .filter((event) => inDateRange(event, 'tonight', now))
+      .sort((a, b) => compareByLiveThenStart(a, b, now))
       .map((event) => ({
         id: event.id,
         title: event.title,
@@ -124,30 +123,36 @@ export class Menu {
     return live > 0 ? `${nights} · ${live} in corso` : nights;
   });
 
-  /** /lista is on (feature flag): "Vedi tutte", the shortcuts and the bottom
-   * bar's Eventi lead there; otherwise they're shown, not linked. */
-  protected readonly listEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventListPage);
+  private readonly flags = inject(FeatureFlagService);
 
-  /** /impara-a-ballare is on (feature flag): the bottom bar's Impara a ballare
-   * leads there; otherwise it's shown, not linked. */
-  protected readonly learnEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.learnToDancePage);
+  /** /lista, while it's on (feature flag): "Vedi tutte" and the days below
+   * lead there; otherwise (null) they're shown, not linked. */
+  protected readonly listPath = this.flags.isEnabled(FEATURE_FLAGS.eventListPage) ? '/lista' : null;
 
-  /** Straight to the list's search for that day — see EventList, which
-   * reads these params once. "Scuole e locali": the nights at schools, clubs
-   * and bars, all week. */
-  protected readonly shortcuts: { label: string; query: Record<string, string> }[] = [
-    { label: 'Domani', query: { quando: 'domani' } },
-    { label: 'Weekend', query: { quando: 'weekend' } },
-    { label: 'Scuole e locali', query: { quando: 'settimana', tipo: 'scuola,discoteca,bar' } },
+  /** Domani and Weekend: straight to the list's search for that day — see
+   * EventList, which reads ?quando once. "Scuole e locali": every place on
+   * /scuole, not only its schools (ALL_PLACES_QUERY) — the same places as the
+   * map's "Locali e scuole". */
+  protected readonly shortcuts: Shortcut[] = [
+    { label: 'Domani', hint: 'Le serate di domani', icon: 'tomorrow', path: this.listPath, query: { quando: 'domani' } },
+    { label: 'Weekend', hint: 'Venerdì, sabato e domenica', icon: 'weekend', path: this.listPath, query: { quando: 'weekend' } },
+    {
+      label: 'Scuole e locali',
+      hint: 'Scuole, discoteche e bar della città',
+      icon: 'venues',
+      path: this.flags.isEnabled(FEATURE_FLAGS.schoolListPage) ? '/scuole' : null,
+      query: ALL_PLACES_QUERY,
+    },
   ];
 
   /** Decorative only positioned over the card's map picture (MapSnapshot),
-   * not tied to any real event. */
+   * not tied to any real event. y is the pin's tip: low enough that the
+   * whole pin stays on the picture, clear of the LIVE badge. */
   protected readonly mapDots: MapDot[] = [
-    { x: 16, y: 72, type: 'EVENT' },
-    { x: 58, y: 18, type: 'SCHOOL' },
-    { x: 40, y: 40, type: 'CLUB' },
-    { x: 90, y: 20, type: 'BAR' },
+    { x: 28, y: 62, type: 'EVENT' },
+    { x: 58, y: 32, type: 'SCHOOL' },
+    { x: 46, y: 82, type: 'CLUB' },
+    { x: 86, y: 52, type: 'BAR' },
   ];
 
   constructor() {

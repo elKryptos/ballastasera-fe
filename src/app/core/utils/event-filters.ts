@@ -1,14 +1,14 @@
 import { EventCardDto, EventType } from '../models/event.model';
 
-/** Filters shared by /mappa and /lista. All of them run client-side over what
+/** Filters shared by /mappa and /lista (and the menu's Stasera, which takes
+ * the same tonight and order). All of them run client-side over what
  * the backend already sent: GET /rest/events only takes a bounding box (and a
  * city), and returns every live or upcoming event of the next 3 weeks in it —
  * so switching day or style never costs a request. */
 
 /** A night out runs past midnight: until this hour of the next morning it
- * still belongs to the evening before — at 2am "stasera" is still last night.
- * Same cutoff as the menu's Stasera carousel. */
-export const NIGHT_ENDS_AT_HOUR = 6;
+ * still belongs to the evening before — at 2am "stasera" is still last night. */
+const NIGHT_ENDS_AT_HOUR = 6;
 
 const HOUR_MS = 3_600_000;
 const DAY_MS = 24 * HOUR_MS;
@@ -32,27 +32,9 @@ export const DATE_RANGE_SLUGS: Record<DateRange, string> = {
   all: 'tutte',
 };
 
-/** /lista?tipo=scuola,discoteca,bar. */
-export const EVENT_TYPE_SLUGS: Record<EventType, string> = {
-  EVENT: 'evento',
-  SCHOOL: 'scuola',
-  CLUB: 'discoteca',
-  BAR: 'bar',
-};
-
 export function dateRangeFromSlug(slug: string | null): DateRange | null {
   const match = Object.entries(DATE_RANGE_SLUGS).find(([, value]) => value === slug);
   return match ? (match[0] as DateRange) : null;
-}
-
-/** Unknown slugs are skipped; null when none is left. */
-export function eventTypesFromSlugs(slugs: string | null): ReadonlySet<EventType> | null {
-  if (!slugs) return null;
-  const wanted = slugs.split(',');
-  const types = (Object.keys(EVENT_TYPE_SLUGS) as EventType[]).filter((type) =>
-    wanted.includes(EVENT_TYPE_SLUGS[type]),
-  );
-  return types.length ? new Set(types) : null;
 }
 
 /** How a range reads after a count: "3 serate stasera", "5 serate nel weekend". */

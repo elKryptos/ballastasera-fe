@@ -25,7 +25,6 @@ import {
   compareByLiveThenStart,
   dateRangeFromSlug,
   eventNight,
-  eventTypesFromSlugs,
   matchesEventFilters,
   nightHeading,
   nightOf,
@@ -201,22 +200,20 @@ export class EventList {
 
   constructor() {
     // A link straight to a search — the menu's shortcuts: ?quando=domani,
-    // ?quando=settimana&tipo=scuola,discoteca,bar. Each is a fresh search for
-    // that day (the kinds of night it names, else all of them; styles and price
-    // stay, they're the visitor's own taste), applied once and then dropped
-    // from the URL: from there on the chips are the state. replaceState, not
-    // a router navigation: one now would cut short the route's view
-    // transition, still running.
+    // ?quando=weekend. Each is a fresh search for that day (every kind of
+    // night; styles and price stay, they're the visitor's own taste), applied
+    // once and then dropped from the URL: from there on the chips are the
+    // state. replaceState, not a router navigation: one now would cut short
+    // the route's view transition, still running.
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       const range = dateRangeFromSlug(params.get('quando'));
-      const types = eventTypesFromSlugs(params.get('tipo'));
-      if (!range && !types) return;
-      if (range) this.filters.range.set(range);
-      this.filters.types.set(types ?? new Set());
+      if (!range) return;
+      this.filters.range.set(range);
+      this.filters.types.set(new Set());
       if (this.isBrowser) {
         const clean = this.router.createUrlTree([], {
           relativeTo: this.route,
-          queryParams: { quando: null, tipo: null },
+          queryParams: { quando: null },
           queryParamsHandling: 'merge',
         });
         this.location.replaceState(this.router.serializeUrl(clean));

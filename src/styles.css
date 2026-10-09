@@ -578,17 +578,17 @@ Global for the same reason as the pins: Leaflet renders it outside Angular. */
   }
 }
 
-/* Event browsing, /mappa, /lista, an event's page, a venue's and /scuole: one
-palette for the chips, cards, bottom sheet and Filtri dialog they share
-(shared/event-filters, map-sheet, event-list, event-details, venue-details,
-school-list), from the Claude Design canvas ("Mappa con filtri e bottom
-sheet", "Lista per giorno", "Scheda evento", "Pagina luogo – mobile" with its
-"Lista scuole" rows) translated
-onto the brand tokens above, like the menu page. Global rather than in each
-component: they're read by components of all three, the dialog included. By
-day the brand tokens switch to the basemap's paper palette, same values as
-the menu's and the daytime sidebar's, and the few colours that don't follow
-from them get their own. */
+/* Event browsing, /menu, /mappa, /lista, an event's page, a venue's and
+/scuole: one palette for the chips, cards, bottom sheet and Filtri dialog they
+share (menu, shared/event-filters, map-sheet, event-list, event-details,
+venue-details, school-list), from the Claude Design canvas ("Mappa con filtri
+e bottom sheet", "Lista per giorno", "Scheda evento", "Pagina luogo – mobile"
+with its "Lista scuole" rows, "Menu rivisto") translated onto the brand tokens
+above. Global rather than in each component: they're read by components of
+all three, the dialog included. By day the brand tokens switch to the
+basemap's paper palette, same values as the daytime sidebar's, and the few
+colours that don't follow from them get their own. */
+app-menu,
 app-map,
 app-event-list,
 app-event-details,
@@ -635,7 +635,7 @@ app-school-list {
   --ev-glass-text: #ffffff;
 }
 
-:root[data-theme='light'] :is(app-map, app-event-list, app-event-details, app-venue-details, app-school-list) {
+:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list) {
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
   --color-amber: #c2410c;

@@ -32,7 +32,7 @@ const ZOOM = 13;
  * Both are shown with object-fit: cover, so they only need the right aspect
  * and enough pixels for the largest box they fill: the landing teaser is 4:5
  * on phones and square from sm: up (at most ~30rem wide), the menu card a
- * wide strip (max-w-4xl, 280px tall, taller on phones). */
+ * wide strip (176px tall on phones, at most ~800x360 from @5xl up). */
 const VARIANTS = [
   { variant: 'landing', width: 480, height: 600 },
   { variant: 'menu', width: 900, height: 340 },

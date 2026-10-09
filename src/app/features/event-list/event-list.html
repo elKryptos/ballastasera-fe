@@ -1,14 +1,14 @@
 <app-auth-modal [(open)]="authOpen" />
 
 <!-- Colours: the --ev-* tokens in styles.css (the host carries the page's
-    ground, bg-(--color-ink), which turns to paper by day). As wide as an
+    ground, bg-ground, which turns to paper by day). As wide as an
     event's page (max-w-300, 32px sides from @5xl up), with the cards in two
     columns there: a container query on <main>, like the event page's, so the
     sidebar opening never squeezes them. -->
 <main appSidebarPush class="@container pt-(--header-h) md:pt-0">
   <!-- The search stays in reach while the list scrolls under it. -->
   <header
-    class="sticky top-(--header-h) z-10 border-b border-(--ev-edge) bg-(--color-ink)/95 backdrop-blur-md select-none [-webkit-tap-highlight-color:transparent] md:top-0">
+    class="sticky top-(--header-h) z-10 border-b border-(--ev-edge) bg-ground/95 backdrop-blur-md select-none [-webkit-tap-highlight-color:transparent] md:top-0">
     <div class="mx-auto flex max-w-300 flex-col gap-2.5 py-3 @5xl:px-4">
       <app-view-switch active="list" class="self-center" />
 

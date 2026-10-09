@@ -101,7 +101,7 @@ interface ListGroup {
   selector: 'app-event-list',
   imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, ViewSwitch],
   templateUrl: './event-list.html',
-  host: { class: 'block min-h-dvh bg-(--color-ink) text-(--ev-text)' },
+  host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
 export class EventList {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));

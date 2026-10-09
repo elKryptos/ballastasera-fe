@@ -72,7 +72,7 @@ type ContactKind = 'instagram' | 'whatsapp' | 'website';
   templateUrl: './event-details.html',
   imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon],
   host: {
-    class: 'block min-h-dvh bg-(--color-ink) text-(--ev-text)',
+    class: 'block min-h-dvh bg-ground text-(--ev-text)',
     // On the document, not the lightbox <div>: that div never holds focus, so a
     // keydown listener on it would never fire.
     '(document:keydown.escape)': 'closeFlyer()',

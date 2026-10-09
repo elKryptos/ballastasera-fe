@@ -7,10 +7,15 @@
 /* Design tokens. Tailwind turns these into utilities: bg-ink, text-rose,
 font-display, border-line, and so on. */
 @theme {
-  /* Ground: dark plum, warm rather than cold-violet — the base a city
-skyline sunset sits on once the sun's down. */
+  /* Ink: dark plum, warm rather than cold-violet — the base a city skyline
+sunset sits on once the sun's down. The cards, surfaces, sidebar and bars
+are mixed from it, and it's the ink on rose. */
   --color-ink: #1a0e2e;
   --color-ink-2: #2a1640;
+  /* The pages' ground under all of that: a warm black, the same as the
+  lesson's night (--night in lesson-look.css). By day the pages that follow
+  the light theme swap it for paper, like --color-ink. */
+  --color-ground: #0f0a12;
 
   /* One accent, coral-rose rather than hot-pink — the warm end of the
 sunset. Everything loud is this colour. */
@@ -94,7 +99,7 @@ glitch instead of a clean reveal. */
   }
 
   body {
-    background: var(--color-ink);
+    background: var(--color-ground);
     color: var(--color-bone);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
@@ -636,6 +641,7 @@ app-school-list {
 }
 
 :root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list) {
+  --color-ground: #fbf8f3;
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
   --color-amber: #c2410c;

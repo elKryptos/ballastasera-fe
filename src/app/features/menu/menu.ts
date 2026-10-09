@@ -73,7 +73,7 @@ interface Shortcut {
   selector: 'app-menu',
   templateUrl: './menu.html',
   imports: [RouterLink, SidebarPushDirective, MapSnapshot, EventPinIcon],
-  host: { class: 'block min-h-dvh bg-(--color-ink) text-(--ev-text)' },
+  host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
 export class Menu {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));

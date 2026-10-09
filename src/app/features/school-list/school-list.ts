@@ -58,7 +58,7 @@ interface PlaceRow {
   selector: 'app-school-list',
   imports: [RouterLink, SidebarPushDirective, VenuePinIcon, ViewSwitch],
   templateUrl: './school-list.html',
-  host: { class: 'block min-h-dvh bg-(--color-ink) text-(--ev-text)' },
+  host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
 export class SchoolList {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));

@@ -80,7 +80,7 @@
       <!-- Parteciperò and Mi piace: a bar stuck to the bottom on phones, under
         the flyer from @5xl up. Pressed styling comes from aria-pressed. -->
       <div
-        class="sticky bottom-0 z-10 order-3 mt-auto flex gap-2.5 border-t border-(--ev-edge) bg-(--color-ink)/90 px-4 pt-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] backdrop-blur-md @5xl:static @5xl:mt-0 @5xl:border-0 @5xl:bg-transparent @5xl:p-0 @5xl:backdrop-blur-none">
+        class="sticky bottom-0 z-10 order-3 mt-auto flex gap-2.5 border-t border-(--ev-edge) bg-ground/90 px-4 pt-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] backdrop-blur-md @5xl:static @5xl:mt-0 @5xl:border-0 @5xl:bg-transparent @5xl:p-0 @5xl:backdrop-blur-none">
         <button type="button" [attr.aria-pressed]="going()" (click)="toggleGoing()"
           class="flex h-13 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-primary) bg-transparent text-base font-bold text-(--ev-text) tabular-nums transition-colors aria-pressed:bg-(--ev-primary) aria-pressed:text-white">
           <ng-icon name="lucideCircleCheck" class="size-5" />
@@ -227,10 +227,10 @@
           <div class="flex shrink-0" aria-hidden="true">
             @for (face of crowd.faces; track face.userId; let first = $first) {
             @if (face.avatarUrl) {
-            <img [src]="face.avatarUrl" alt="" class="size-10 rounded-full border-3 border-(--color-ink) object-cover"
+            <img [src]="face.avatarUrl" alt="" class="size-10 rounded-full border-3 border-ground object-cover"
               [class.-ml-3]="!first" />
             } @else {
-            <span class="flex size-10 items-center justify-center rounded-full border-3 border-(--color-ink) text-sm font-extrabold"
+            <span class="flex size-10 items-center justify-center rounded-full border-3 border-ground text-sm font-extrabold"
               [class]="face.tone" [class.-ml-3]="!first">{{ face.initial }}</span>
             }
             } @empty {
@@ -240,7 +240,7 @@
             }
             @if (crowd.faces.length && crowd.more > 0) {
             <span
-              class="-ml-3 flex size-10 items-center justify-center rounded-full border-3 border-(--color-ink) bg-(--ev-tag-bg) text-xs font-extrabold text-(--ev-tag-text) tabular-nums">
+              class="-ml-3 flex size-10 items-center justify-center rounded-full border-3 border-ground bg-(--ev-tag-bg) text-xs font-extrabold text-(--ev-tag-text) tabular-nums">
               +{{ crowd.more }}
             </span>
             }

@@ -1,5 +1,5 @@
 .callback-screen {
-  background: var(--color-ink);
+  background: var(--color-ground);
 }
 
 /* ---------- daytime (light theme) ----------
@@ -11,6 +11,7 @@ text-bone and text-lead follow, and the logo's bars — drawn in --color-ink —
 turn paper, cut out of the rose heart like on the landing. */
 :host-context([data-theme='light']) {
   color-scheme: light;
+  --color-ground: #fbf8f3;
   --color-ink: #fbf8f3;
   --color-bone: #1d2640;
   --color-lead: #36425f;

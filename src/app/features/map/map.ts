@@ -193,7 +193,8 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   protected readonly engagement = inject(EventEngagementService);
 
   protected readonly listEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventListPage);
-  /** On the schools layer, Lista goes to /scuole — while that page is on. */
+  /** While only places show (Scuole, Locali e scuole), Lista goes to
+   * /scuole — while that page is on. */
   protected readonly schoolListEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.schoolListPage);
   /** Off, the venue card has no "Vedi dettagli": /luogo/:id wouldn't match
    * and the link would land on the home page instead. */
@@ -531,14 +532,16 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   }
 
   /** What the page the visitor came from asked of the map, each read once
-   * (MapViewStateService): the schools list, the Scuole layer (which fetches
-   * the city's venues); a venue's page, places showing — the Scuole layer for
-   * a school, unless all places already are — and that venue's card open as
-   * soon as its badge is drawn (openPendingVenue). */
+   * (MapViewStateService): the schools list, the layer of what it shows —
+   * Scuole or every place (either fetches the city's venues); a venue's page,
+   * places showing — the Scuole layer for a school, unless all places already
+   * are — and that venue's card open as soon as its badge is drawn
+   * (openPendingVenue). */
   private takePageRequests(): void {
-    if (this.mapViewState.showSchools) {
-      this.mapViewState.showSchools = false;
-      this.selectLayer('schools');
+    const asked = this.mapViewState.venueLayer;
+    if (asked) {
+      this.mapViewState.venueLayer = null;
+      this.selectLayer(asked);
     }
     const venue = this.mapViewState.openVenue;
     if (!venue) return;

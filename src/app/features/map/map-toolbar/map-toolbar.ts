@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { EVENT_TYPE_LABELS } from '../../../core/config/map-pins';
+import { ALL_PLACES_QUERY, EVENT_TYPE_LABELS } from '../../../core/config/map-pins';
 import { EventFiltersService } from '../../../core/services/event-filters.service';
 import { DateRangeChips } from '../../../shared/event-filters/date-range-chips';
 import { ViewSwitch } from '../../../shared/event-filters/view-switch';
@@ -20,7 +20,8 @@ interface ActiveChip {
  * plus "Azzera". Floating straight on the map on phones; the top card of the
  * left-hand panel from md up, where what the map shows (Serate | Locali e
  * scuole | Scuole | Entrambi) gets a switch of its own, one click away instead
- * of inside Filtri. On the schools layer, Lista is the schools' (/scuole). Day,
+ * of inside Filtri. While only places show, Lista is theirs: /scuole, every
+ * place on "Locali e scuole" (ALL_PLACES_QUERY), the schools on "Scuole". Day,
  * styles, types and price are EventFiltersService's; the layer is MapPage's,
  * hence the output.
  */
@@ -36,7 +37,7 @@ export class MapToolbar {
   readonly layer = input.required<MapLayer>();
   /** The /lista route is on (feature flag) — otherwise no Mappa | Lista. */
   readonly listEnabled = input(false);
-  /** The /scuole route is on: on the schools layer, Lista goes there. */
+  /** The /scuole route is on: while only places show, Lista goes there. */
   readonly schoolListEnabled = input(false);
 
   readonly filtersOpened = output<void>();
@@ -44,10 +45,15 @@ export class MapToolbar {
   readonly layerChanged = output<MapLayer>();
 
   protected readonly layerOptions = LAYER_OPTIONS;
-  /** Mappa | Lista: the nights' list, or the schools' while only they show. */
-  private readonly toSchools = computed(() => this.layer() === 'schools' && this.schoolListEnabled());
-  protected readonly showSwitch = computed(() => this.listEnabled() || this.toSchools());
-  protected readonly listPath = computed(() => (this.toSchools() ? '/scuole' : '/lista'));
+  /** Mappa | Lista: the nights' list, or the places' while only they show. */
+  private readonly toPlaces = computed(
+    () => (this.layer() === 'schools' || this.layer() === 'venues') && this.schoolListEnabled(),
+  );
+  protected readonly showSwitch = computed(() => this.listEnabled() || this.toPlaces());
+  protected readonly listPath = computed(() => (this.toPlaces() ? '/scuole' : '/lista'));
+  protected readonly listQueryParams = computed(() =>
+    this.toPlaces() && this.layer() === 'venues' ? ALL_PLACES_QUERY : null,
+  );
 
   protected readonly chips = computed<ActiveChip[]>(() => {
     const chips: ActiveChip[] = [];

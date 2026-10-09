@@ -1,4 +1,5 @@
-<!-- "Lista scuole" from the Claude Design canvas "Pagina luogo – mobile".
+<!-- "Lista scuole" from the Claude Design canvas "Pagina luogo – mobile";
+    every place with ?tipo=tutti, in its own words (words() in the TS).
     Colours: the --ev-* tokens in styles.css, as on /lista and a venue's page
     (the host carries the page's ground, bg-(--color-ink), which turns to
     paper by day). As wide as the list of nights, with the cards in two
@@ -10,11 +11,12 @@
     class="sticky top-(--header-h) z-10 border-b border-(--ev-edge) bg-ink/95 backdrop-blur-md [-webkit-tap-highlight-color:transparent] md:top-0">
     <div class="mx-auto flex max-w-300 flex-col gap-3 px-4 pt-3 pb-3.5 @5xl:px-8">
       @if (mapOn) {
-      <app-view-switch active="list" listPath="/scuole" class="self-center" (mapClicked)="prepareMap()" />
+      <app-view-switch active="list" listPath="/scuole" [listQueryParams]="listQueryParams()" class="self-center"
+        (mapClicked)="prepareMap()" />
       }
 
       <div>
-        <h1 class="font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Scuole di ballo</h1>
+        <h1 class="font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">{{ words().title }}</h1>
         <p class="mt-1 text-sm leading-snug text-(--ev-soft)">{{ lead() }}</p>
       </div>
 
@@ -69,7 +71,7 @@
           <circle cx="11" cy="11" r="7" />
           <path d="M20 20l-3.5-3.5" />
         </svg>
-        <input type="search" placeholder="Cerca per nome o via" autocomplete="off" aria-label="Cerca una scuola"
+        <input type="search" placeholder="Cerca per nome o via" autocomplete="off" [attr.aria-label]="'Cerca tra ' + words().the"
           [value]="query()" (input)="search($event)"
           class="h-11.5 w-full rounded-[0.875rem] border border-(--ev-edge) bg-(--ev-surface) pr-12 pl-10.5 text-[0.9375rem] font-medium text-(--ev-text) placeholder:text-(--ev-soft) focus:border-(--ev-primary) focus:outline-none [&::-webkit-search-cancel-button]:appearance-none" />
         @if (query()) {
@@ -88,7 +90,7 @@
 
   <div class="mx-auto max-w-300 px-4 pt-3 pb-[calc(2.5rem+env(safe-area-inset-bottom))] @5xl:px-8">
     <div class="flex min-h-5 items-center justify-between gap-3 text-[0.8125rem] text-(--ev-soft)">
-      <span role="status">{{ hasData() ? countLabel() : (error() ? '' : 'Cerco le scuole…') }}</span>
+      <span role="status">{{ hasData() ? countLabel() : (error() ? '' : 'Cerco ' + words().the + '…') }}</span>
       @if (hasData() && rows().length) {
       <span class="shrink-0 font-bold text-(--ev-text)">{{ nearMe() ? 'Dalla più vicina' : 'Dalla A alla Z' }}</span>
       }
@@ -103,7 +105,7 @@
 
     @if (!hasData() && error()) {
     <div class="mt-8 flex flex-col items-center gap-3 text-center">
-      <p class="font-display text-[1.0625rem] font-extrabold">Non riusciamo a caricare le scuole</p>
+      <p class="font-display text-[1.0625rem] font-extrabold">Non riusciamo a caricare {{ words().the }}</p>
       <button type="button" class="h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
         (click)="retry()">Riprova</button>
     </div>
@@ -127,20 +129,20 @@
       <!-- The name's link covers the whole card (after:absolute). -->
       <li
         class="relative flex items-center gap-3.5 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-raised) p-3 transition-colors hover:border-(--ev-primary)">
-        <!-- The school's logo, else its badge from the map. -->
+        <!-- The place's logo, else its badge from the map. -->
         <div
           class="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[1.125rem] border border-(--ev-edge) bg-(--ev-surface)"
           aria-hidden="true">
           @if (row.logoUrl; as logo) {
           <img class="size-full object-cover" [src]="logo" alt="" loading="lazy" decoding="async" />
           } @else {
-          <app-venue-pin-icon type="SCHOOL" [size]="34" />
+          <app-venue-pin-icon [type]="row.type" [size]="34" />
           }
         </div>
         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
           <p
             class="flex items-center gap-1.5 text-[0.6875rem] font-bold tracking-[0.08em] text-(--ev-soft) uppercase">
-            <app-venue-pin-icon type="SCHOOL" [size]="14" />
+            <app-venue-pin-icon [type]="row.type" [size]="14" />
             {{ row.meta }}
           </p>
           <h2 class="font-display text-[1.0625rem] leading-tight font-extrabold tracking-[-0.01em]">
@@ -189,20 +191,20 @@
     } @else if (query()) {
     <div
       class="mt-3 flex flex-col items-center gap-2.5 rounded-[1.25rem] border border-dashed border-(--ev-edge) p-6 text-center">
-      <p class="font-display text-[1.0625rem] font-extrabold">Nessuna scuola per «{{ query() }}»</p>
-      <p class="text-sm leading-relaxed text-(--ev-soft)">Prova con il nome della scuola o con la via.</p>
+      <p class="font-display text-[1.0625rem] font-extrabold">Nessun risultato per «{{ query() }}»</p>
+      <p class="text-sm leading-relaxed text-(--ev-soft)">Prova con il nome o con la via.</p>
       <button type="button"
         class="mt-1.5 h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
         (click)="clearSearch()">
-        Mostra tutte le scuole
+        Mostra {{ words().the }}
       </button>
     </div>
     } @else {
     <div
       class="mt-3 flex flex-col items-center gap-2.5 rounded-[1.25rem] border border-dashed border-(--ev-edge) p-6 text-center">
-      <p class="font-display text-[1.0625rem] font-extrabold">Ancora nessuna scuola a {{ city()?.name }}</p>
+      <p class="font-display text-[1.0625rem] font-extrabold">A {{ city()?.name }} non ci sono ancora {{ words().many }}</p>
       <p class="text-sm leading-relaxed text-(--ev-soft)">
-        Stiamo aggiungendo le scuole città per città.
+        Stiamo aggiungendo {{ words().the }} città per città.
         @if (cities().length > 1) {
         Intanto, prova un’altra città.
         }

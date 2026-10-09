@@ -1,10 +1,12 @@
 import { Component, DestroyRef, PLATFORM_ID, computed, effect, inject, signal, untracked } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
+import { ALL_PLACES_QUERY, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
 import { CityDto } from '../../core/models/city.model';
-import { VenueMapPinDto } from '../../core/models/venue.model';
+import { VenueMapPinDto, VenueType } from '../../core/models/venue.model';
 import { CitiesService } from '../../core/services/cities.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
@@ -16,19 +18,26 @@ import { SidebarPushDirective } from '../../shared/directives/sidebar-push.direc
 import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { ViewSwitch } from '../../shared/event-filters/view-switch';
 
-/** Mappa opens on the whole city: two steps out from the map's own
- * street-level default, so its schools fit on screen together. */
+/** Mappa opens on the whole city: further out than the map's own default
+ * (MILAN_DEFAULT_ZOOM), so its places fit on screen together. */
 const CITY_ZOOM = 12;
 
 /** Where the closing card's "Scrivici" leads (a mailto: or WhatsApp link).
  * None decided yet: until then the card invites without it. */
 const SCHOOLS_CONTACT: string | null = null;
 
+/** What the page lists, in its own words: the schools, or every place. */
+const WORDS = {
+  schools: { title: 'Scuole di ballo', lead: 'Dove imparare salsa e bachata', one: 'scuola', many: 'scuole', the: 'le scuole' },
+  places: { title: 'Scuole e locali', lead: 'Dove si balla', one: 'luogo', many: 'luoghi', the: 'i luoghi' },
+};
+
 /** One card, already formatted for the template. */
-interface SchoolRow {
+interface PlaceRow {
   id: string;
   name: string;
   logoUrl: string | null;
+  type: VenueType;
   address: string;
   /** "Scuola", or "Scuola · 1,2 km" once the visitor's position is known. */
   meta: string;
@@ -38,10 +47,12 @@ interface SchoolRow {
  * /scuole: the dance schools of a city, where the salsa and bachata lesson
  * sends its readers — "Lista scuole" on the Claude Design canvas "Pagina
  * luogo – mobile". The venues the map draws (VenuesService.getMapVenues,
- * public, one request per city), SCHOOL ones only. In alphabetical order;
- * nearest first once the visitor shares their position, asked only when
- * they tap "Vicino a me". A card opens the school's page (/luogo/:id);
- * Mappa opens the map on the city, schools only (MapViewStateService).
+ * public, one request per city), SCHOOL ones only; every one with
+ * ?tipo=tutti, like the map's "Locali e scuole" next to its "Scuole". In
+ * alphabetical order; nearest first once the visitor shares their position,
+ * asked only when they tap "Vicino a me". A card opens the place's page
+ * (/luogo/:id); Mappa opens the map on the city, on the layer of what's
+ * listed (MapViewStateService).
  */
 @Component({
   selector: 'app-school-list',
@@ -67,14 +78,25 @@ export class SchoolList {
   protected readonly cityId = signal<number | null>(null);
   protected readonly city = computed(() => this.cities().find((city) => city.id === this.cityId()) ?? null);
 
-  /** The schools of each city fetched so far: they're fixed places, so going
-   * back to a city never asks again. */
-  private readonly schoolsByCity = signal<ReadonlyMap<number, VenueMapPinDto[]>>(new Map());
-  private readonly schools = computed(() => {
+  /** Every place, not just the schools (ALL_PLACES_QUERY). From the URL, so
+   * a reload or a shared link keeps it. */
+  protected readonly allPlaces = toSignal(
+    inject(ActivatedRoute).queryParamMap.pipe(map((params) => params.get('tipo') === ALL_PLACES_QUERY.tipo)),
+    { requireSync: true },
+  );
+  protected readonly words = computed(() => (this.allPlaces() ? WORDS.places : WORDS.schools));
+  /** For the switch's Lista: this very list, as it is. */
+  protected readonly listQueryParams = computed(() => (this.allPlaces() ? ALL_PLACES_QUERY : null));
+
+  /** The places of each city fetched so far, of every type: they're fixed, so
+   * going back to a city never asks again. */
+  private readonly venuesByCity = signal<ReadonlyMap<number, VenueMapPinDto[]>>(new Map());
+  private readonly venues = computed(() => {
     const id = this.cityId();
-    return id === null ? undefined : this.schoolsByCity().get(id);
+    const venues = id === null ? undefined : this.venuesByCity().get(id);
+    return this.allPlaces() ? venues : venues?.filter((venue) => venue.type === 'SCHOOL');
   });
-  protected readonly hasData = computed(() => this.schools() !== undefined);
+  protected readonly hasData = computed(() => this.venues() !== undefined);
   protected readonly error = signal(false);
 
   protected readonly query = signal('');
@@ -83,39 +105,45 @@ export class SchoolList {
   protected readonly locating = this.userLocation.locating;
   protected readonly locateMessage = signal<string | null>(null);
 
-  protected readonly rows = computed<SchoolRow[]>(() => {
+  protected readonly rows = computed<PlaceRow[]>(() => {
     const words = normalize(this.query()).split(/\s+/).filter(Boolean);
     const position = this.nearMe() ? this.userLocation.position() : null;
-    return (this.schools() ?? [])
-      .filter((school) => {
-        const text = normalize(`${school.name} ${school.address}`);
+    return (this.venues() ?? [])
+      .filter((venue) => {
+        const text = normalize(`${venue.name} ${venue.address}`);
         return words.every((word) => text.includes(word));
       })
-      .map((school) => ({
-        school,
-        km: position ? distanceKm(position, { lat: school.latitude, lng: school.longitude }) : null,
+      .map((venue) => ({
+        venue,
+        km: position ? distanceKm(position, { lat: venue.latitude, lng: venue.longitude }) : null,
       }))
-      .sort((a, b) => (a.km ?? 0) - (b.km ?? 0) || a.school.name.localeCompare(b.school.name, 'it'))
-      .map(({ school, km }) => ({
-        id: school.id,
-        name: school.name,
-        logoUrl: school.logoUrl,
-        address: addressPrimary(withoutCountry(school.address)),
-        meta: km !== null ? `Scuola · ${formatDistance(km)}` : 'Scuola',
-      }));
+      .sort((a, b) => (a.km ?? 0) - (b.km ?? 0) || a.venue.name.localeCompare(b.venue.name, 'it'))
+      .map(({ venue, km }) => {
+        const kind = VENUE_TYPE_LABELS[venue.type];
+        return {
+          id: venue.id,
+          name: venue.name,
+          logoUrl: venue.logoUrl,
+          type: venue.type,
+          address: addressPrimary(withoutCountry(venue.address)),
+          meta: km !== null ? `${kind} · ${formatDistance(km)}` : kind,
+        };
+      });
   });
 
   protected readonly lead = computed(() => {
     const name = this.city()?.name;
-    return name ? `Dove imparare salsa e bachata a ${name}.` : 'Dove imparare salsa e bachata.';
+    const { lead } = this.words();
+    return name ? `${lead} a ${name}.` : `${lead}.`;
   });
 
   protected readonly countLabel = computed(() => {
     const count = this.rows().length;
-    if (count === 0) return 'Nessuna scuola trovata';
-    if (this.query().trim()) return count === 1 ? '1 scuola trovata' : `${count} scuole trovate`;
+    if (count === 0) return 'Nessun risultato';
+    if (this.query().trim()) return count === 1 ? '1 risultato' : `${count} risultati`;
+    const { one, many } = this.words();
     const where = this.city()?.name ?? 'questa città';
-    return `${count} ${count === 1 ? 'scuola' : 'scuole'} a ${where}`;
+    return `${count} ${count === 1 ? one : many} a ${where}`;
   });
 
   constructor() {
@@ -134,7 +162,7 @@ export class SchoolList {
         });
     }
 
-    // A new city: its schools, unless they're already here.
+    // A new city: its places, unless they're already here.
     effect(() => {
       const city = this.city();
       if (city) untracked(() => this.load(city));
@@ -172,7 +200,7 @@ export class SchoolList {
   }
 
   /** Mappa tapped (the switch's link does the navigating): the map is to
-   * open on this city, schools only. */
+   * open on this city, showing what's listed — the schools, or every place. */
   protected prepareMap(): void {
     const city = this.city();
     if (city) {
@@ -180,20 +208,17 @@ export class SchoolList {
       this.mapViewState.zoom = CITY_ZOOM;
     }
     this.mapViewState.selectedEventId = null;
-    this.mapViewState.showSchools = true;
+    this.mapViewState.venueLayer = this.allPlaces() ? 'venues' : 'schools';
   }
 
   private load(city: CityDto): void {
-    if (this.schoolsByCity().has(city.id)) return;
+    if (this.venuesByCity().has(city.id)) return;
     this.error.set(false);
     this.venuesService
       .getMapVenues(city.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (venues) => {
-          const schools = venues.filter((venue) => venue.type === 'SCHOOL');
-          this.schoolsByCity.update((byCity) => new Map(byCity).set(city.id, schools));
-        },
+        next: (venues) => this.venuesByCity.update((byCity) => new Map(byCity).set(city.id, venues)),
         error: () => this.error.set(true),
       });
   }

@@ -24,7 +24,8 @@
   <!-- Phones: the switch alone, centred. md up: switch and Filtri share the row. -->
   <div class="flex items-center justify-center md:justify-between" [class]="showSwitch() ? '' : 'max-md:hidden'">
     @if (showSwitch()) {
-    <app-view-switch active="map" [listPath]="listPath()" class="pointer-events-auto" />
+    <app-view-switch active="map" [listPath]="listPath()" [listQueryParams]="listQueryParams()"
+      class="pointer-events-auto" />
     }
     <div class="max-md:hidden">
       <ng-container [ngTemplateOutlet]="filtersButton" />

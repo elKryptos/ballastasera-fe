@@ -102,3 +102,8 @@ export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
   BAR: 'Bar',
   OTHER: 'Altro',
 };
+
+/** /scuole?tipo=tutti: the places list with every type, not just the schools
+ * (SchoolList) — the list of the map's "Locali e scuole", and where the
+ * menu's "Scuole e locali" leads. */
+export const ALL_PLACES_QUERY = { tipo: 'tutti' } as const;

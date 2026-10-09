@@ -14,9 +14,10 @@ export class MapViewStateService {
   center: [number, number] | null = null;
   zoom: number | null = null;
   selectedEventId: string | null = null;
-  /** Set by the schools list's Mappa: the map switches to its Scuole layer
-   * when it next shows, and clears this — a one-off, unlike the view. */
-  showSchools = false;
+  /** Set by the schools list's Mappa: the map switches to the layer of what
+   * the list shows — its Scuole layer, or every place — when it next shows,
+   * and clears this. A one-off, unlike the view. */
+  venueLayer: 'schools' | 'venues' | null = null;
   /** Set by a venue's page (a tap on its mini-map): the map shows that
    * venue's layer and opens its card once its badge is drawn. A one-off too. */
   openVenue: { id: string; type: VenueType } | null = null;

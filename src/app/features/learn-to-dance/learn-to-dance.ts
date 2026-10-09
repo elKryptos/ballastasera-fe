@@ -41,8 +41,8 @@ const CHAPTERS = [
  * It has its own look, apart from the rest of the site: a night-club poster
  * (warm black, marigold and fire for salsa, bougainvillea and lagoon for
  * bachata), with Shrikhand and Instrument Serif loaded for it and the
- * playlist alone. The palette is on this host (lesson-look.css) and read by
- * every chapter below it.
+ * playlist alone; by day the same poster on paper. The palette is on this
+ * host (lesson-look.css) and read by every chapter below it.
  */
 @Component({
   selector: 'app-learn-to-dance',

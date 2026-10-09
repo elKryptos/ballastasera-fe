@@ -64,8 +64,7 @@ const SIDES: Record<Side, { dance: string; tracks: Track[] }> = {
  * side B bachata, classics and newer songs alike (whatever SIDES holds).
  * Flipping the side turns the cassette over. A page of its own, one tap
  * away in the sidebar; the lesson's last chapter leads here too. Same look
- * as the lesson by night (lesson-look.css, loadLessonFonts); unlike it, it
- * follows the light theme by day (playlist.css).
+ * as the lesson, by night and by day (lesson-look.css, loadLessonFonts).
  *
  * Each song plays in Spotify's own embedded player, unfolded under its row:
  * a 30-second preview, or the whole song for whoever is signed in to

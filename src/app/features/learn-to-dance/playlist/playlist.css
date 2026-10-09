@@ -57,7 +57,7 @@ lesson-look.css. */
   background: linear-gradient(160deg, #2c2332, #17111a);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.1),
-    0 2rem 3rem -1.25rem rgb(0 0 0 / 0.8);
+    0 2rem 3rem -1.25rem color-mix(in srgb, var(--shade) 80%, transparent);
   backface-visibility: hidden;
 }
 
@@ -81,7 +81,7 @@ lesson-look.css. */
   top: 4%;
   left: 4.5%;
   font: clamp(1.8rem, 6vw, 2.6rem) / 1 var(--font-poster);
-  color: var(--fuego);
+  color: var(--fuego-lit);
 }
 
 .face--B .label-side {
@@ -109,11 +109,11 @@ lesson-look.css. */
   right: 0;
   bottom: 0;
   height: 22%;
-  background: linear-gradient(180deg, var(--sol) 0 33%, var(--mango) 33% 66%, var(--fuego) 66%);
+  background: linear-gradient(180deg, var(--sol-lit) 0 33%, var(--mango-lit) 33% 66%, var(--fuego-lit) 66%);
 }
 
 .face--B .label-stripes {
-  background: linear-gradient(180deg, var(--flamingo) 0 33%, #9b5cf6 33% 66%, var(--laguna) 66%);
+  background: linear-gradient(180deg, var(--flamingo-lit) 0 33%, #9b5cf6 33% 66%, var(--laguna-lit) 66%);
 }
 
 .window {
@@ -202,7 +202,7 @@ lesson-look.css. */
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgb(0 0 0 / 0.3);
+  background: var(--sunken);
 }
 
 .sides button {
@@ -210,13 +210,13 @@ lesson-look.css. */
   padding: 0 1.1rem;
   border-radius: 999px;
   font: 600 0.85rem var(--font-grotesk);
-  color: var(--cream-soft);
+  color: var(--ink-soft);
   transition: background 0.2s, color 0.2s;
 }
 
 .sides button[aria-pressed='true'] {
   background: var(--sol);
-  color: var(--night);
+  color: var(--on-accent);
 }
 
 .sides button:last-child[aria-pressed='true'] {
@@ -265,12 +265,12 @@ lesson-look.css. */
 
 .artist {
   font-size: 0.9rem;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .year {
   font: 500 0.75rem var(--font-mono);
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 /* ---------- the previews: a play button per song, Spotify's player
@@ -296,7 +296,7 @@ unfolding under its row once opened ---------- */
 .is-open .listen {
   border-color: var(--tone);
   background: var(--tone);
-  color: var(--night);
+  color: var(--on-accent);
 }
 
 /* The player's slot: Spotify's iframe lands inside, clipped to the rounded corners. */
@@ -307,62 +307,13 @@ unfolding under its row once opened ---------- */
   overflow: hidden;
   border: 0;
   border-radius: 12px;
-  background: rgb(255 255 255 / 0.04);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
 }
 
 .source {
   margin: 1rem 0 0;
   font: 500 0.72rem/1.5 var(--font-mono);
-  color: var(--cream-soft);
-}
-
-/* ---------- by day (<html data-theme="light">, see ThemeService) ----------
-The lesson stays a night scene in either theme; the playlist, a page of its
-own, follows the app's: the basemap's paper and navy, as on /lista and the
-menu, with the cassette still a dark object on it. The accents take deeper
-shades so they read as text on paper — burnt orange for the heading, amber
-and raspberry for each side's numbers and buttons. --night stays as it is:
-it's the ink on the label and on the lit buttons. */
-:host-context([data-theme='light']) {
-  color-scheme: light;
-  background: #fbf8f3;
-  color: #1d2640;
-  --cream-soft: #4a5571;
-  --line: rgb(29 38 64 / 0.14);
-}
-
-:host-context([data-theme='light']) .band--playlist {
-  --accent: #c2410c;
-}
-
-:host-context([data-theme='light']) .grain {
-  opacity: 0.03;
-}
-
-:host-context([data-theme='light']) .face {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.1),
-    0 1.5rem 2.5rem -1.25rem rgb(40 30 80 / 0.45);
-}
-
-:host-context([data-theme='light']) .sides {
-  background: rgb(29 38 64 / 0.06);
-}
-
-:host-context([data-theme='light']) .tracks {
-  --tone: #b45309;
-}
-
-:host-context([data-theme='light']) .tracks.is-b {
-  --tone: #be185d;
-}
-
-:host-context([data-theme='light']) :is(.listen:hover, .is-open .listen) {
-  color: #fff;
-}
-
-:host-context([data-theme='light']) .preview {
-  background: rgb(29 38 64 / 0.04);
+  color: var(--ink-soft);
 }
 
 .reel {

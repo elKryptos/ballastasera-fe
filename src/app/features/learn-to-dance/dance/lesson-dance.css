@@ -93,7 +93,7 @@
 
 .string {
   fill: none;
-  stroke: var(--cream);
+  stroke: var(--ink);
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: 50% 100%;
@@ -151,7 +151,7 @@
   margin: 1.5rem 0 0;
   font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: 1.65;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .facts {
@@ -174,7 +174,7 @@
 
 .fact {
   padding: 0.9rem 1rem;
-  background: var(--night);
+  background: var(--ground);
 }
 
 dt {
@@ -204,14 +204,14 @@ dd {
   font: 500 0.75rem var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .stage-label span {
   font: 800 1.5rem var(--font-grotesk);
   letter-spacing: -0.02em;
   text-transform: none;
-  color: var(--cream);
+  color: var(--ink);
 }
 
 .block {
@@ -259,14 +259,14 @@ h4 {
 .style p {
   margin: 0.5rem 0 0;
   line-height: 1.6;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .style {
   padding: 0.75rem 0.75rem 1.4rem;
   border: 1px solid var(--line);
   border-radius: 1.5rem;
-  background: var(--night-2);
+  background: var(--panel);
   transition: transform 0.3s, border-color 0.3s;
 }
 
@@ -294,7 +294,7 @@ everything and body waves for bachata's. */
   margin-bottom: 0.9rem;
   overflow: hidden;
   border-radius: 1rem;
-  background: color-mix(in srgb, var(--accent) 10%, var(--night));
+  background: color-mix(in srgb, var(--accent) 10%, var(--ground));
   --c: color-mix(in srgb, var(--accent) 75%, transparent);
 }
 

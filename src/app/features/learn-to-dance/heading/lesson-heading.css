@@ -57,5 +57,5 @@ em {
   margin-top: 1.25rem;
   font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: 1.65;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }

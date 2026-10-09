@@ -35,7 +35,7 @@ button {
   position: relative;
   aspect-ratio: 1;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--c) 14%, var(--night-2));
+  background: color-mix(in srgb, var(--c) 14%, var(--panel));
 }
 
 /* Each tile's light is a layer of its own that only fades in and out:
@@ -82,7 +82,7 @@ em {
   margin: 1.5rem auto 0;
   font-size: 1.1rem;
   line-height: 1.6;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .ctas {
@@ -106,7 +106,7 @@ em {
 
 .go {
   background: var(--sol);
-  color: var(--night);
+  color: var(--on-accent);
   box-shadow:
     0 0.35rem 0 var(--fuego),
     0 1.25rem 2.5rem -0.75rem rgb(255 197 61 / 0.5);
@@ -126,12 +126,12 @@ em {
 
 .back {
   border: 1px solid var(--line);
-  color: var(--cream);
+  color: var(--ink);
   transition: border-color 0.2s;
 }
 
 .back:hover {
-  border-color: var(--cream-soft);
+  border-color: var(--ink-soft);
 }
 
 .go svg,
@@ -149,7 +149,7 @@ em {
   font: 500 0.72rem var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 @keyframes light {

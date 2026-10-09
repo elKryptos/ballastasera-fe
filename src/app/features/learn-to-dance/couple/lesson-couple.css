@@ -35,7 +35,7 @@
 .ring {
   position: absolute;
   inset: 13%;
-  border: 1.5px dashed color-mix(in srgb, var(--cream) 28%, transparent);
+  border: 1.5px dashed color-mix(in srgb, var(--ink) 28%, transparent);
   border-radius: 50%;
   background: radial-gradient(circle, rgb(34 211 197 / 0.14), transparent 70%);
 }
@@ -74,13 +74,13 @@
 
 .partner--lead {
   left: 0;
-  background: radial-gradient(circle at 35% 30%, #ffe7a6, var(--sol) 60%, var(--mango));
+  background: radial-gradient(circle at 35% 30%, #ffe7a6, var(--sol-lit) 60%, var(--mango-lit));
   box-shadow: 0 0 40px rgb(255 197 61 / 0.45);
 }
 
 .partner--follow {
   left: 100%;
-  background: radial-gradient(circle at 35% 30%, #ffc4dc, var(--flamingo) 60%, #d6337a);
+  background: radial-gradient(circle at 35% 30%, #ffc4dc, var(--flamingo-lit) 60%, #d6337a);
   box-shadow: 0 0 40px rgb(255 95 162 / 0.45);
 }
 
@@ -96,17 +96,17 @@
   aspect-ratio: 1;
   translate: -50% -50%;
   border-radius: 50%;
-  background: var(--cream);
+  background: var(--ink);
   box-shadow:
-    0 0 0 0.45rem rgb(255 241 220 / 0.12),
-    0 0 1.4rem var(--cream);
+    0 0 0 0.45rem color-mix(in srgb, var(--ink) 12%, transparent),
+    0 0 1.4rem var(--ink);
 }
 
 figcaption {
   max-width: 22rem;
   font: italic 1.2rem/1.35 var(--font-romance);
   text-align: center;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 /* ---------- what each role asks ---------- */
@@ -139,7 +139,7 @@ h3 {
 .principles p {
   margin: 0.35rem 0 0;
   line-height: 1.6;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 /* ---------- the dance card ---------- */
@@ -154,7 +154,7 @@ h3 {
     #fff1dc;
   color: var(--night);
   rotate: -1.2deg;
-  box-shadow: 0 2.5rem 4rem -1.5rem rgb(0 0 0 / 0.7);
+  box-shadow: 0 2.5rem 4rem -1.5rem color-mix(in srgb, var(--shade) 70%, transparent);
 }
 
 @media (min-width: 760px) {

@@ -32,7 +32,7 @@ button {
   border-radius: 2rem;
   background:
     radial-gradient(110% 70% at 18% 0%, var(--a-faint), transparent 62%),
-    var(--night-2);
+    var(--panel);
 }
 
 @media (min-width: 1000px) {
@@ -81,7 +81,7 @@ button {
   font: 500 0.7rem/1 var(--font-mono);
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .floor-wrap {
@@ -99,7 +99,7 @@ button {
   background:
     radial-gradient(closest-side, var(--a-faint), transparent),
     repeating-radial-gradient(circle, transparent 0 calc(36 * var(--u)), var(--line) 0 calc(37 * var(--u))),
-    rgb(0 0 0 / 0.35);
+    var(--sunken);
   box-shadow:
     0 0 0 1px var(--line),
     0 0 calc(80 * var(--u)) var(--a-faint);
@@ -117,7 +117,7 @@ button {
   position: absolute;
   inset: 0;
   margin: auto;
-  border: 1.5px dashed color-mix(in srgb, var(--cream) 24%, transparent);
+  border: 1.5px dashed color-mix(in srgb, var(--ink) 24%, transparent);
   border-radius: 999px;
 }
 
@@ -136,7 +136,7 @@ button {
   font: 500 calc(10 * var(--u)) / 1 var(--font-mono);
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
   opacity: 0.75;
 }
 
@@ -188,7 +188,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
   height: 100%;
   overflow: visible;
   fill: transparent;
-  stroke: color-mix(in srgb, var(--cream) 55%, transparent);
+  stroke: color-mix(in srgb, var(--ink) 55%, transparent);
   stroke-width: 1.5;
   transition: 0.2s;
 }
@@ -213,18 +213,18 @@ with colour while they hold the weight, and ring out on a tap ---------- */
   inset: 22% 0 auto;
   text-align: center;
   font: 600 calc(12 * var(--u)) / 1 var(--font-mono);
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .has-weight .mark {
-  color: var(--night);
+  color: var(--on-accent);
 }
 
 .shadow {
   position: absolute;
   inset: 8% 6%;
   border-radius: 50%;
-  background: rgb(0 0 0 / 0.6);
+  background: color-mix(in srgb, var(--shade) 60%, transparent);
   filter: blur(5px);
   opacity: 0;
 }
@@ -308,7 +308,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
   aspect-ratio: 1;
   margin: calc(-9 * var(--u)) 0 0 calc(-9 * var(--u));
   border-radius: 50%;
-  background: var(--cream);
+  background: var(--ink);
   box-shadow:
     0 0 0 calc(6 * var(--u)) var(--a2-half),
     0 0 calc(30 * var(--u)) var(--accent-2);
@@ -344,7 +344,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
 .hint {
   min-height: 3em;
   margin: 0.5rem 0 0;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .controls,
@@ -369,7 +369,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
   height: 4rem;
   border-radius: 50%;
   background: var(--accent);
-  color: var(--night);
+  color: var(--on-accent);
   box-shadow:
     0 12px 30px -10px var(--accent),
     inset 0 -3px 0 rgb(0 0 0 / 0.2);
@@ -439,7 +439,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgb(0 0 0 / 0.3);
+  background: var(--sunken);
 }
 
 .seg button {
@@ -447,13 +447,13 @@ with colour while they hold the weight, and ring out on a tap ---------- */
   padding: 0 0.95rem;
   border-radius: 999px;
   font: 600 0.8125rem var(--font-grotesk);
-  color: var(--cream-soft);
+  color: var(--ink-soft);
   transition: 0.2s;
 }
 
 .seg button[aria-pressed='true'] {
-  background: var(--cream);
-  color: var(--night);
+  background: var(--ink);
+  color: var(--ground);
 }
 
 .bpm {
@@ -497,7 +497,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
 
 .s {
   font: 500 0.7rem/1.2 var(--font-mono);
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 /* Pauses and taps: the numeral only outlined, as the foot that doesn't step. */
@@ -515,7 +515,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
 
 .is-on .n,
 .is-on .s {
-  color: var(--night);
+  color: var(--on-accent);
   -webkit-text-stroke: 0;
 }
 
@@ -525,7 +525,7 @@ with colour while they hold the weight, and ring out on a tap ---------- */
   gap: 0.4rem 1.1rem;
   margin: 1.1rem 0 0;
   font: 500 0.7rem var(--font-mono);
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .lg {
@@ -542,14 +542,14 @@ with colour while they hold the weight, and ring out on a tap ---------- */
 }
 
 .lg--free {
-  border: 1.5px solid var(--cream-soft);
+  border: 1.5px solid var(--ink-soft);
 }
 
 .lg--core {
   height: 0.65rem;
   vertical-align: -1px;
   border-radius: 50%;
-  background: var(--cream);
+  background: var(--ink);
   box-shadow: 0 0 0 3px var(--a2-half);
 }
 

@@ -14,7 +14,7 @@ playlist's page. */
   z-index: 20;
   margin-top: 1rem;
   border-block: 1px solid var(--line);
-  background: rgb(15 10 18 / 0.82);
+  background: color-mix(in srgb, var(--ground) 82%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -56,7 +56,7 @@ playlist's page. */
   padding: 0 1rem;
   border-radius: 999px;
   background: var(--laguna);
-  color: var(--night);
+  color: var(--on-accent);
   font: 800 0.875rem var(--font-grotesk);
   box-shadow: 0 0 1.25rem rgb(34 211 197 / 0.35);
   transition: box-shadow 0.2s;
@@ -80,12 +80,12 @@ playlist's page. */
   border-radius: 999px;
   font: 600 0.875rem var(--font-grotesk);
   white-space: nowrap;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
   transition: background 0.25s, color 0.25s;
 }
 
 .chapters button:hover {
-  color: var(--cream);
+  color: var(--ink);
 }
 
 .cn {
@@ -94,8 +94,8 @@ playlist's page. */
 }
 
 .chapters button.is-on {
-  background: var(--cream);
-  color: var(--night);
+  background: var(--ink);
+  color: var(--ground);
 }
 
 /* ---------- the record on air: a pill that follows the page while the
@@ -113,11 +113,11 @@ cover's record plays, to stop it from anywhere ---------- */
   padding: 0 0.6rem 0 1rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgb(15 10 18 / 0.88);
-  box-shadow: 0 0.75rem 2rem -0.5rem rgb(0 0 0 / 0.7);
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in srgb, var(--shade) 70%, transparent);
   backdrop-filter: blur(12px);
   font: 600 0.85rem var(--font-grotesk);
-  color: var(--cream);
+  color: var(--ink);
 }
 
 .on-air svg {
@@ -126,7 +126,7 @@ cover's record plays, to stop it from anywhere ---------- */
   padding: 0.5rem;
   border-radius: 50%;
   background: var(--sol);
-  color: var(--night);
+  color: var(--on-accent);
 }
 
 .on-air-bars {
@@ -173,11 +173,18 @@ cover's record plays, to stop it from anywhere ---------- */
     radial-gradient(50% 30% at 0% 60%, rgb(255 197 61 / 0.07), transparent 70%);
 }
 
+/* Bachata's band runs deeper than the ground around it: a midnight blue,
+a lilac haze by day. */
 .band--bachata {
+  --deep: #130d27;
   background:
     radial-gradient(60% 35% at 75% 8%, rgb(255 95 162 / 0.16), transparent 70%),
     radial-gradient(50% 30% at 10% 70%, rgb(34 211 197 / 0.08), transparent 70%),
-    linear-gradient(180deg, var(--night), #130d27 10%, #130d27 90%, var(--night));
+    linear-gradient(180deg, var(--ground), var(--deep) 10%, var(--deep) 90%, var(--ground));
+}
+
+:host-context([data-theme='light']) .band--bachata {
+  --deep: #f6eef8;
 }
 
 .band--coppia {
@@ -194,7 +201,7 @@ cover's record plays, to stop it from anywhere ---------- */
   padding: 0 1.4rem;
   border-radius: 999px;
   background: var(--mango);
-  color: var(--night);
+  color: var(--on-accent);
   font: 800 0.95rem var(--font-grotesk);
   box-shadow: 0 0 1.5rem rgb(255 138 31 / 0.35);
   transition: box-shadow 0.2s;

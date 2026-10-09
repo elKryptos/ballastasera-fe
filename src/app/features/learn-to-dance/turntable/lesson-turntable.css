@@ -40,7 +40,7 @@ button {
   box-shadow:
     0 0 0 0.4rem #070508,
     0 0 0 calc(0.4rem + 1px) var(--line),
-    0 2.5rem 4rem -1.5rem rgb(0 0 0 / 0.85);
+    0 2.5rem 4rem -1.5rem color-mix(in srgb, var(--shade) 85%, transparent);
 }
 
 .label {
@@ -194,7 +194,7 @@ the record plays (back on hover, as the way to stop it). */
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgb(0 0 0 / 0.35);
+  background: var(--sunken);
 }
 
 .sides button {
@@ -202,7 +202,7 @@ the record plays (back on hover, as the way to stop it). */
   padding: 0 1rem;
   border-radius: 999px;
   font: 600 0.85rem var(--font-grotesk);
-  color: var(--cream-soft);
+  color: var(--ink-soft);
   transition: background 0.2s, color 0.2s;
 }
 
@@ -213,7 +213,7 @@ the record plays (back on hover, as the way to stop it). */
 
 .sides button[aria-pressed='true'] {
   background: var(--sol);
-  color: var(--night);
+  color: var(--on-accent);
 }
 
 .sides button:last-child[aria-pressed='true'] {

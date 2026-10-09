@@ -14,7 +14,7 @@
   border-radius: 1.75rem;
   background:
     radial-gradient(80% 140% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
-    var(--night-2);
+    var(--panel);
 }
 
 /* A map pin, sending out rings like a beacon. */
@@ -26,7 +26,7 @@
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--accent);
-  color: var(--night);
+  color: var(--on-accent);
 }
 
 .pin svg {
@@ -67,7 +67,7 @@ h3 {
   max-width: 34rem;
   margin: 0.6rem 0 0;
   line-height: 1.55;
-  color: var(--cream-soft);
+  color: var(--ink-soft);
 }
 
 .links {
@@ -86,21 +86,21 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 999px;
   font: 800 0.95rem var(--font-grotesk);
-  color: var(--cream);
+  color: var(--ink);
   transition:
     border-color 0.2s,
     transform 0.15s;
 }
 
 .link:hover {
-  border-color: var(--cream-soft);
+  border-color: var(--ink-soft);
   transform: translateY(-2px);
 }
 
 .link--map {
   border-color: transparent;
   background: var(--accent);
-  color: var(--night);
+  color: var(--on-accent);
   box-shadow: 0 0.3rem 0 var(--accent-2);
 }
 

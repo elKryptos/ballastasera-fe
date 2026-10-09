@@ -3,31 +3,73 @@ black night, cream type, and two pairs of colours, one per dance —
 marigold, mango and fire for salsa; bougainvillea and lagoon for bachata.
 Shared by the two pages that live in it, the lesson and its playlist (each
 lists this file in its styleUrls), and read from their host by every
-component below. The lesson stays a night scene in the light theme too:
-it's a dance floor. The playlist takes the day's paper over it (its "by
-day" block in playlist.css). The fonts: loadLessonFonts() in
-lesson-fonts.ts. */
+component below. The fonts: loadLessonFonts() in lesson-fonts.ts. */
 :host {
   display: block;
   min-height: 100dvh;
+
+  /* The night, the cream and the accents at full light, the same in either
+  theme: the objects drawn in them (the record, the cassette, the dancers'
+  discs, the dance card) keep their colours by day too. */
   --night: #0f0a12;
-  --night-2: #1a1220;
   --cream: #fff1dc;
-  --cream-soft: rgb(255 241 220 / 0.72);
-  --line: rgb(255 241 220 / 0.13);
-  --sol: #ffc53d;
-  --mango: #ff8a1f;
-  --fuego: #ff4a2e;
-  --flamingo: #ff5fa2;
-  --laguna: #22d3c5;
+  --sol-lit: #ffc53d;
+  --mango-lit: #ff8a1f;
+  --fuego-lit: #ff4a2e;
+  --flamingo-lit: #ff5fa2;
+  --laguna-lit: #22d3c5;
+
+  /* The accents everything else is drawn in: the same by night, deeper by
+  day (below). */
+  --sol: var(--sol-lit);
+  --mango: var(--mango-lit);
+  --fuego: var(--fuego-lit);
+  --flamingo: var(--flamingo-lit);
+  --laguna: var(--laguna-lit);
   --font-poster: 'Shrikhand', 'Bricolage Grotesque', 'Arial Black', sans-serif;
   --font-romance: 'Instrument Serif', 'Times New Roman', serif;
   --font-grotesk: 'Bricolage Grotesque', 'Arial Black', sans-serif;
   --font-mono: 'DM Mono', ui-monospace, monospace;
+
+  /* What the pages are drawn with — the ground, the raised panels, the
+  type, the hairlines, a sunken track, the ink on an accent's fill, the
+  shadows things cast (mixed down to each one's strength) — by night; "by
+  day" below swaps them. */
+  --ground: var(--night);
+  --panel: #1a1220;
+  --ink: var(--cream);
+  --ink-soft: rgb(255 241 220 / 0.72);
+  --line: rgb(255 241 220 / 0.13);
+  --sunken: rgb(0 0 0 / 0.3);
+  --on-accent: var(--night);
+  --shade: #000;
+
   color-scheme: dark;
-  background: var(--night);
-  color: var(--cream);
+  background: var(--ground);
+  color: var(--ink);
   font-family: 'Instrument Sans', system-ui, sans-serif;
+}
+
+/* By day (<html data-theme="light">, see ThemeService): the basemap's paper
+and navy, as on the rest of the site, with white panels. The accents take
+deeper shades, so they read as text on paper and carry white type when
+they're the fill (--on-accent); everything drawn in them — the footprints,
+the dance floor's tiles, the record's notes — follows. */
+:host-context([data-theme='light']) {
+  color-scheme: light;
+  --ground: #fbf8f3;
+  --panel: #ffffff;
+  --ink: #1d2640;
+  --ink-soft: #4a5571;
+  --line: rgb(29 38 64 / 0.14);
+  --sunken: rgb(29 38 64 / 0.06);
+  --on-accent: #ffffff;
+  --shade: rgb(40 30 80 / 0.5);
+  --sol: #b45309;
+  --mango: #c2410c;
+  --fuego: #c2321f;
+  --flamingo: #be185d;
+  --laguna: #0f766e;
 }
 
 button {
@@ -42,6 +84,10 @@ button {
   opacity: 0.06;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+:host-context([data-theme='light']) .grain {
+  opacity: 0.03;
 }
 
 .wrap {

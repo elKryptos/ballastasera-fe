@@ -64,7 +64,8 @@
     a button itself opens the rail to show it in full. Rows whose page
     doesn't exist yet are plain <div>s with the final look already in place —
     swap each for an <a routerLink> (class drawer-item, plus
-    (click)="closeDrawer()") once its page lands. Spacing tightens with the screen height (svh) so everything
+    routerLinkActive ariaCurrentWhenActive="page", which marks it while you're
+    on its page, and (click)="closeDrawer()") once its page lands. Spacing tightens with the screen height (svh) so everything
     fits without scrolling; the scroll stays only as a last resort on very
     short screens. Styles: the "Sidebar menu" block in styles.css — global,
     since on mobile this renders in a CDK overlay outside this component. -->
@@ -152,7 +153,8 @@
         needs no account (signed in, it's in "La tua scena"). -->
     @if (isAuthenticated()) {
     @if (mapEnabled()) {
-    <a class="drawer-item" routerLink="/menu" (click)="closeDrawer()" appRailTooltip="Menu">
+    <a class="drawer-item" routerLink="/menu" routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()"
+      appRailTooltip="Menu">
       <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linejoin="round" aria-hidden="true">
         <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
@@ -166,7 +168,8 @@
     } @else if (mapEnabled() || learnEnabled()) {
     <div class="flex flex-col gap-0.5">
       @if (mapEnabled()) {
-      <a class="drawer-item" routerLink="/mappa" (click)="closeDrawer()" appRailTooltip="Mappa">
+      <a class="drawer-item" routerLink="/mappa" routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()"
+        appRailTooltip="Mappa">
         <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linejoin="round" aria-hidden="true">
           <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" />
@@ -176,7 +179,8 @@
       </a>
       }
       @if (learnEnabled()) {
-      <a class="drawer-item" routerLink="/impara-a-ballare" (click)="closeDrawer()" appRailTooltip="Impara a ballare">
+      <a class="drawer-item" routerLink="/impara-a-ballare" routerLinkActive ariaCurrentWhenActive="page"
+        (click)="closeDrawer()" appRailTooltip="Impara a ballare">
         <ng-container [ngTemplateOutlet]="learnItem" />
       </a>
       }
@@ -186,6 +190,18 @@
     @if (isAuthenticated()) {
     <div class="flex min-h-0 flex-col gap-0.5">
       <h2 class="drawer-label">La tua scena</h2>
+      <!-- Shown, not linked, until the lesson's page is on (learnToDancePage). -->
+      @if (learnEnabled()) {
+      <a class="drawer-item" routerLink="/impara-a-ballare" routerLinkActive ariaCurrentWhenActive="page"
+        (click)="closeDrawer()" appRailTooltip="Impara a ballare">
+        <ng-container [ngTemplateOutlet]="learnItem" />
+      </a>
+      } @else {
+      <div class="drawer-item" appRailTooltip="Impara a ballare">
+        <ng-container [ngTemplateOutlet]="learnItem" />
+      </div>
+      }
+      <!-- Parteciperò, the liked nights and Amici: no page yet, "Presto" says so. -->
       <div class="drawer-item" appRailTooltip="Parteciperò">
         <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -193,12 +209,7 @@
           <path d="M8 12.5l2.5 2.5L16 9.5" />
         </svg>
         <span class="grow">Parteciperò</span>
-        @if (goingCount() !== null) {
-        <span
-          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--drawer-edge) px-1.5 text-xs font-extrabold">
-          {{ goingCount() }}
-        </span>
-        }
+        <span class="drawer-chip">Presto</span>
       </div>
       <div class="drawer-item" appRailTooltip="Serate che ti piacciono">
         <svg viewBox="0 0 24 24" class="text-rose" fill="none" stroke="currentColor" stroke-width="2"
@@ -206,6 +217,7 @@
           <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
         </svg>
         <span class="grow">Serate che ti piacciono</span>
+        <span class="drawer-chip">Presto</span>
       </div>
       <div class="drawer-item" appRailTooltip="Amici">
         <svg viewBox="0 0 24 24" class="text-(--drawer-sky)" fill="none" stroke="currentColor" stroke-width="2"
@@ -218,16 +230,6 @@
         <span class="grow">Amici</span>
         <span class="drawer-chip">Presto</span>
       </div>
-      <!-- Shown, not linked, until the lesson's page is on (learnToDancePage). -->
-      @if (learnEnabled()) {
-      <a class="drawer-item" routerLink="/impara-a-ballare" (click)="closeDrawer()" appRailTooltip="Impara a ballare">
-        <ng-container [ngTemplateOutlet]="learnItem" />
-      </a>
-      } @else {
-      <div class="drawer-item" appRailTooltip="Impara a ballare">
-        <ng-container [ngTemplateOutlet]="learnItem" />
-      </div>
-      }
     </div>
 
     <hr class="mx-1.5 border-(--drawer-rule)" />
@@ -303,7 +305,8 @@
             <span class="grow">Profilo organizzatore</span>
           </div>
         </ng-container>
-        <a *appRole="'ADMIN'" class="drawer-item" routerLink="/admin" (click)="closeDrawer()" appRailTooltip="Pannello admin">
+        <a *appRole="'ADMIN'" class="drawer-item" routerLink="/admin" routerLinkActive ariaCurrentWhenActive="page"
+          (click)="closeDrawer()" appRailTooltip="Pannello admin">
           <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" />

@@ -1002,11 +1002,28 @@ bg-rose on the "Nuovo" chip) still wins over these defaults. */
       background: var(--drawer-raised);
     }
   }
+
+  /* The page you're on: RouterLinkActive marks its link with aria-current
+  (navbar.html). Filled like a pressed row, bolder, a rose dot at its end. */
+  .drawer-item[aria-current='page'] {
+    background: var(--drawer-raised);
+    font-weight: 700;
+  }
+
+  .drawer-item[aria-current='page']::after {
+    content: '';
+    flex-shrink: 0;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: var(--color-rose);
+  }
 }
 
 /* Collapsed desktop rail (data-collapsible="icon" on hlm-sidebar, desktop
 only): the same menu folded down to its icons — every label, chip and
-control hidden, the profile card down to its avatar, each 44px icon centred
+control hidden (the current page's dot too: its row's fill shows it), the
+profile card down to its avatar, each 44px icon centred
 in the 3.5rem rail. Unlayered, so it beats the Tailwind display and spacing
 utilities on those elements. */
 [data-collapsible='icon'] .drawer-nav {
@@ -1017,6 +1034,7 @@ utilities on those elements. */
 [data-collapsible='icon'] .drawer-label,
 [data-collapsible='icon'] .rail-hide,
 [data-collapsible='icon'] .drawer-item > :not(svg),
+[data-collapsible='icon'] .drawer-item::after,
 [data-collapsible='icon'] .drawer-card > :not(.drawer-avatar) {
   display: none;
 }

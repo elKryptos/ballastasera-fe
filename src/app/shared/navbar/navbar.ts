@@ -1,7 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { AuthModal } from '../auth-modal/auth-modal';
@@ -24,7 +24,7 @@ import { RoleDirective } from '../directives/role.directive';
  */
 @Component({
   selector: 'app-navbar',
-  imports: [HlmSidebarImports, NgTemplateOutlet, AuthModal, RouterLink, RoleDirective, RailTooltip],
+  imports: [HlmSidebarImports, NgTemplateOutlet, AuthModal, RouterLink, RouterLinkActive, RoleDirective, RailTooltip],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })

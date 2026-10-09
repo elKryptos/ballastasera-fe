@@ -296,10 +296,10 @@ export class EventList {
     this.sort.set(sort);
   }
 
-  /** "Tutta Milano, questa settimana": the widest search there is. */
+  /** "Tutta Milano, tutte le date": the widest search there is. */
   protected showEverything(): void {
     this.area.set('city');
-    this.filters.range.set('week');
+    this.filters.range.set('all');
     this.filters.clear();
   }
 

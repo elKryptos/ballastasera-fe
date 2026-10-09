@@ -15,12 +15,13 @@ const DAY_MS = 24 * HOUR_MS;
 
 export type DateRange = 'tonight' | 'tomorrow' | 'weekend' | 'week' | 'all';
 
+/** Tutte le date first: it's the default (EventFiltersService.range). */
 export const DATE_RANGES: { value: DateRange; label: string }[] = [
+  { value: 'all', label: 'Tutte le date' },
   { value: 'tonight', label: 'Stasera' },
   { value: 'tomorrow', label: 'Domani' },
   { value: 'weekend', label: 'Weekend' },
   { value: 'week', label: 'Settimana' },
-  { value: 'all', label: 'Tutte le date' },
 ];
 
 /** In the URL, for links straight to a search: /lista?quando=domani. */

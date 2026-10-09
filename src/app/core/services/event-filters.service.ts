@@ -12,7 +12,7 @@ import { toggled } from '../utils/sets';
  */
 @Service()
 export class EventFiltersService {
-  readonly range = signal<DateRange>('tonight');
+  readonly range = signal<DateRange>('all');
   readonly styles = signal<ReadonlySet<string>>(new Set());
   readonly types = signal<ReadonlySet<EventType>>(new Set());
   readonly freeOnly = signal(false);

@@ -216,12 +216,12 @@
       class="mt-8 flex flex-col items-center gap-2.5 rounded-[1.25rem] border border-dashed border-(--ev-edge) p-6 text-center">
       <p class="font-display text-[1.0625rem] font-extrabold">Nessuna serata con questi filtri</p>
       <p class="text-sm leading-relaxed text-(--ev-soft)">
-        Prova ad allargare la zona, togliere uno stile o guardare tutta la settimana.
+        Prova ad allargare la zona o togliere qualche filtro.
       </p>
       <button type="button"
         class="mt-1.5 h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
         (click)="showEverything()">
-        Tutta {{ city()?.name ?? 'la città' }}, questa settimana
+        Tutta {{ city()?.name ?? 'la città' }}, tutte le date
       </button>
     </div>
     }

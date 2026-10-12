@@ -1,5 +1,5 @@
 /** Mirrors VenueType in the backend: the place's own type, independent of any organizer. */
-export type VenueType = 'SCHOOL' | 'CLUB' | 'BAR' | 'OTHER';
+export type VenueType = 'SCHOOL' | 'CLUB' | 'BAR' | 'RESTAURANT' | 'OTHER';
 
 /** Mirrors VenueDetailDto in the backend. */
 export interface VenueDetailDto {

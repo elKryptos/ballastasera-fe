@@ -2,7 +2,7 @@ import { OrganizerDetailDto } from "./organizer.model";
 import { VenueDetailDto } from "./venue.model";
 
 /** Mirrors EventType in the backend. */
-export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
+export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR' | 'RESTAURANT';
 export type FlyerStatus = 'NONE' | 'PROCESSING' | 'READY' | 'FAILED';
 /** Mirrors java.time.DayOfWeek, used by EventSeries recurrence. */
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';

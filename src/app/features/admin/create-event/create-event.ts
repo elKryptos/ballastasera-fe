@@ -47,6 +47,7 @@ const EVENT_TYPES: { value: EventType; label: string }[] = [
   { value: 'SCHOOL', label: 'Scuola' },
   { value: 'CLUB', label: 'Club' },
   { value: 'BAR', label: 'Bar' },
+  { value: 'RESTAURANT', label: 'Ristorante' },
 ];
 
 @Component({

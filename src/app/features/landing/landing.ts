@@ -18,7 +18,7 @@ import { FEATURE_FLAGS, FeatureFlag } from '../../core/config/feature-flags';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
-import { PIN_TYPES } from '../../core/config/map-pins';
+import { PIN_COLORS, PIN_TYPES } from '../../core/config/map-pins';
 import { EventType } from '../../core/models/event.model';
 import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 
@@ -332,21 +332,24 @@ export class Landing implements AfterViewInit, OnDestroy {
   protected readonly year = new Date().getFullYear();
 
   /** Maps each EventType to the transloco key its legend chip shows. */
-  private static readonly LEGEND_LABEL_KEYS: Record<string, string> = {
+  private static readonly LEGEND_LABEL_KEYS: Record<EventType, string> = {
     EVENT: 'legend.event',
     SCHOOL: 'legend.school',
     CLUB: 'legend.club',
     BAR: 'legend.bar',
+    RESTAURANT: 'legend.restaurant',
   };
 
   /** Same theme tokens the rest of the UI uses for these accents — kept as
    * CSS vars here (unlike PIN_COLORS' raw hex) so this flat legend list
-   * follows the current theme. */
-  private static readonly LEGEND_COLOR_VARS: Record<string, string> = {
+   * follows the current theme. The restaurant's brick red has no token: it's
+   * the pin's own, which reads on both grounds. */
+  private static readonly LEGEND_COLOR_VARS: Record<EventType, string> = {
     EVENT: 'var(--color-rose)',
     SCHOOL: 'var(--color-violet)',
     CLUB: 'var(--color-mint)',
     BAR: 'var(--color-amber)',
+    RESTAURANT: PIN_COLORS.RESTAURANT,
   };
 
   /** Drawn by the same EventPinIcon as the real map's legend, so the

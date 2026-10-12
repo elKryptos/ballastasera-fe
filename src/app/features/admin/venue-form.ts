@@ -119,5 +119,6 @@ export const VENUE_TYPES: { value: VenueType; label: string }[] = [
   { value: 'SCHOOL', label: 'Scuola' },
   { value: 'CLUB', label: 'Club' },
   { value: 'BAR', label: 'Bar' },
+  { value: 'RESTAURANT', label: 'Ristorante' },
   { value: 'OTHER', label: 'Altro' },
 ];

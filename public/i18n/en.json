@@ -65,7 +65,8 @@
     "event": "Event",
     "school": "School",
     "club": "Club",
-    "bar": "Bar"
+    "bar": "Bar",
+    "restaurant": "Restaurant"
   },
   "count": {
     "title": "How to dance bachata",

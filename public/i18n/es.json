@@ -65,7 +65,8 @@
     "event": "Evento",
     "school": "Escuela",
     "club": "Discoteca",
-    "bar": "Bar"
+    "bar": "Bar",
+    "restaurant": "Restaurante"
   },
   "count": {
     "title": "Cómo se baila la bachata",

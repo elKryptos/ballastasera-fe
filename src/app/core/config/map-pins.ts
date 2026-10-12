@@ -12,11 +12,18 @@ export const PIN_COLORS: Record<EventType, string> = {
   SCHOOL: '#8b5cf6', // violet
   CLUB: '#2dd4bf', // mint
   BAR: '#ffa24c', // amber
+  RESTAURANT: '#d0533a', // brick red, the design's "Cena con baile"
 };
+
+/** Rounded square on a point: the bar's outline, and the restaurant's. */
+const PIN_SHAPE_SQUARE =
+  'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z';
 
 /** Outer pin outline per EventType — colour alone isn't enough to distinguish
  * them (colourblindness, greyscale printouts), so the shape itself changes too.
- * Each path fills a 24x32 viewBox, tip at (12, 32). */
+ * Four outlines for five types, so the map doesn't turn into a catalogue of
+ * shapes: a restaurant shares the bar's, a place to sit like it, and is told
+ * apart by its glyph. Each path fills a 24x32 viewBox, tip at (12, 32). */
 export const PIN_SHAPES: Record<EventType, string> = {
   // Classic teardrop.
   EVENT: 'M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20c0-6.6-5.4-12-12-12z',
@@ -24,8 +31,8 @@ export const PIN_SHAPES: Record<EventType, string> = {
   SCHOOL: 'M12 0 1 4v9c0 9.4 6.3 15.8 11 19 4.7-3.2 11-9.6 11-19V4z',
   // Hexagon on a point.
   CLUB: 'M12 0 23 7v14L12 32 1 21V7z',
-  // Rounded square on a point.
-  BAR: 'M4 0h16a4 4 0 0 1 4 4v14a4 4 0 0 1-1.2 2.9L12 32 1.2 20.9A4 4 0 0 1 0 18V4a4 4 0 0 1 4-4z',
+  BAR: PIN_SHAPE_SQUARE,
+  RESTAURANT: PIN_SHAPE_SQUARE,
 };
 
 /** Inner glyph per EventType, drawn in white centred around (12, 12). One
@@ -57,6 +64,10 @@ export const PIN_GLYPHS: Record<EventType, string> = {
     'M18.2 5.2l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z',
   // Cocktail glass with an olive (wound the other way: a hole).
   BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7zM13.5 7.6a1 1 0 1 0 2 0a1 1 0 1 0-2 0z',
+  // Fork and knife.
+  RESTAURANT:
+    'M7.6 5.8v4a1.6 1.6 0 0 0 1.2 1.6V17h1.4v-5.6A1.6 1.6 0 0 0 11.4 9.8v-4h-.9v3.4h-.6V5.8h-.9v3.4h-.6V5.8z' +
+    'M15.4 5.8c1.9 1 2.1 4.4 1.1 6.4V17h-1.4z',
 };
 
 /** A crown for the pin of an event singled out on the map (see
@@ -78,6 +89,7 @@ export const PIN_CROWN_SEATS: Record<EventType, string> = {
   SCHOOL: 'translate(7 2.4) rotate(-20)',
   CLUB: 'translate(7 3.8) rotate(-28)',
   BAR: 'translate(7.2 1) rotate(-12)',
+  RESTAURANT: 'translate(7.2 1) rotate(-12)',
 };
 
 /** The organizers whose events wear the crown, by Instagram handle in lower
@@ -90,7 +102,7 @@ export const CROWNED_ORGANIZER_INSTAGRAMS: ReadonlySet<string> = new Set<string>
 ]);
 
 /** Every EventType, in the order the legend (and any pin listing) shows them. */
-export const PIN_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
+export const PIN_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR', 'RESTAURANT'];
 
 /** Italian label per EventType — the map's legend and the event page's
  * eyebrow ("Scuola · Milano") share it so the wording can't drift apart. */
@@ -99,6 +111,7 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
   SCHOOL: 'Scuola',
   CLUB: 'Discoteca',
   BAR: 'Bar',
+  RESTAURANT: 'Ristorante',
 };
 
 /** Venue pins (the map's "Locali e scuole" layer) are round badges instead of
@@ -111,6 +124,7 @@ export const VENUE_PIN_COLORS: Record<VenueType, string> = {
   SCHOOL: PIN_COLORS.SCHOOL,
   CLUB: PIN_COLORS.CLUB,
   BAR: PIN_COLORS.BAR,
+  RESTAURANT: PIN_COLORS.RESTAURANT,
   OTHER: '#64748b', // slate: white glyph stays >= 4.5:1
 };
 
@@ -118,18 +132,20 @@ export const VENUE_PIN_GLYPHS: Record<VenueType, string> = {
   SCHOOL: PIN_GLYPHS.SCHOOL,
   CLUB: PIN_GLYPHS.CLUB,
   BAR: PIN_GLYPHS.BAR,
+  RESTAURANT: PIN_GLYPHS.RESTAURANT,
   // House with a door.
   OTHER: 'M12 6.5 6 11.5V17h4v-3.5h4V17h4v-5.5z',
 };
 
 /** Every VenueType, in the order the legend shows them. */
-export const VENUE_TYPES: VenueType[] = ['SCHOOL', 'CLUB', 'BAR', 'OTHER'];
+export const VENUE_TYPES: VenueType[] = ['SCHOOL', 'CLUB', 'BAR', 'RESTAURANT', 'OTHER'];
 
 /** Italian label per VenueType, for the legend, the venue card and the venue's page. */
 export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
   SCHOOL: 'Scuola',
   CLUB: 'Discoteca',
   BAR: 'Bar',
+  RESTAURANT: 'Ristorante',
   OTHER: 'Altro',
 };
 

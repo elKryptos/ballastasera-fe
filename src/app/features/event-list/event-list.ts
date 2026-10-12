@@ -18,7 +18,7 @@ import {
   addressPrimary,
   formatClock,
   formatPrice,
-  liveLabel,
+  isLiveAt,
   withoutCountry,
 } from '../../core/utils/event-format';
 import {
@@ -38,8 +38,8 @@ import { EventFiltersDialog } from '../../shared/event-filters/event-filters-dia
 import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { ViewSwitch } from '../../shared/event-filters/view-switch';
 
-/** Keeps the LIVE badges and "finisce tra" current, and drops a night once
- * it's over, with the page left open. */
+/** Keeps the LIVE badges current, and drops a night once it's over, with
+ * the page left open. */
 const CLOCK_TICK_MS = 30 * 1000;
 
 
@@ -66,10 +66,10 @@ interface ListItem {
 interface ListRow {
   id: string;
   title: string;
+  /** When it starts: the one time shown (the end never is, see isLiveAt). */
   start: string;
-  end: string;
-  /** "Live · finisce tra 52 min" while it's on, null otherwise. */
-  live: string | null;
+  /** On right now: the card wears the LIVE badge. */
+  live: boolean;
   /** "Discoteca · 2,4 km". */
   meta: string;
   /** No flyer: the type's pin stands in, as on the map's card. */
@@ -332,14 +332,12 @@ export class EventList {
   }
 
   private toRow({ event, km }: ListItem, now: number): ListRow {
-    const live = liveLabel(event, now);
     const address = addressPrimary(withoutCountry(event.address));
     return {
       id: event.id,
       title: event.title,
       start: formatClock(event.startAt),
-      end: formatClock(event.endAt),
-      live,
+      live: isLiveAt(event, now),
       meta: [EVENT_TYPE_LABELS[event.eventType], km !== null ? formatDistance(km) : null].filter(Boolean).join(' · '),
       flyerUrl: event.flyerUrl,
       eventType: event.eventType,

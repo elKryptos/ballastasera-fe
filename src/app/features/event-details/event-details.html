@@ -196,7 +196,7 @@
           </span>
           <div class="min-w-0 flex-1">
             <p class="text-[0.9375rem] font-bold">{{ dateLabel() }}</p>
-            <p class="text-[0.8125rem] text-(--ev-soft) tabular-nums">{{ formatTimeRange(event) }}</p>
+            <p class="text-[0.8125rem] text-(--ev-soft) tabular-nums">Dalle {{ formatClock(event.startAt) }}</p>
           </div>
           <button type="button" (click)="addToCalendar(event)"
             class="-mr-1 h-11 shrink-0 cursor-pointer px-1 text-[0.8125rem] font-bold text-(--ev-link)">

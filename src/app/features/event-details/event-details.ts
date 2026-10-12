@@ -36,8 +36,8 @@ import {
   addressPrimary,
   addressSecondary,
   eventBadge,
+  formatClock,
   formatPrice,
-  formatTimeRange,
   googleMapsUrl,
   instagramUrl,
   withoutCountry,
@@ -182,12 +182,12 @@ export class EventDetails {
   });
 
   // Ticks once a minute (browser only) so the badge and the date move on by
-  // themselves ("Inizia tra 5 min" → "Live · finisce tra…") while the page
+  // themselves ("Inizia tra 5 min" → "Live · dalle 22:30") while the page
   // stays open. Purely local: startAt/endAt are already loaded.
   private readonly now = signal(Date.now());
 
-  /** On the flyer (or, without one, next to the eyebrow): "Live · finisce
-   * tra 52 min" or "Inizia tra 12 min"; nothing otherwise. */
+  /** On the flyer (or, without one, next to the eyebrow): "Live · dalle
+   * 22:30" or "Inizia tra 12 min"; nothing otherwise. */
   protected readonly status = computed(() => {
     const event = this.event();
     return event ? eventBadge(event, this.now()) : null;
@@ -268,7 +268,7 @@ export class EventDetails {
   });
 
   protected readonly formatPrice = formatPrice;
-  protected readonly formatTimeRange = formatTimeRange;
+  protected readonly formatClock = formatClock;
 
   /** Only the id, so the effect below doesn't refetch on every count change. */
   private readonly eventId = computed(() => this.event()?.id ?? null);

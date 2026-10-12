@@ -12,7 +12,7 @@ import {
   addressPrimary,
   formatClock,
   formatPrice,
-  formatTimeRange,
+  liveLabel,
   withoutCountry,
 } from '../../core/utils/event-format';
 import { compareByLiveThenStart, inDateRange } from '../../core/utils/event-filters';
@@ -34,7 +34,7 @@ interface TonightCard {
   id: string;
   title: string;
   live: boolean;
-  /** "Live · fino alle 01:20" while live, the start-end range otherwise. */
+  /** "Live · dalle 22:30" while live, the start time otherwise. */
   when: string;
   place: string;
   price: string;
@@ -100,17 +100,20 @@ export class Menu {
     return events
       .filter((event) => inDateRange(event, 'tonight', now))
       .sort((a, b) => compareByLiveThenStart(a, b, now))
-      .map((event) => ({
-        id: event.id,
-        title: event.title,
-        live: event.liveNow,
-        when: event.liveNow ? `Live · fino alle ${formatClock(event.endAt)}` : formatTimeRange(event),
-        place: event.venueName ?? addressPrimary(withoutCountry(event.address)),
-        price: formatPrice(event),
-        going: event.goingCount,
-        flyerUrl: event.flyerUrl,
-        eventType: event.eventType,
-      }));
+      .map((event) => {
+        const live = liveLabel(event, now);
+        return {
+          id: event.id,
+          title: event.title,
+          live: live !== null,
+          when: live ?? formatClock(event.startAt),
+          place: event.venueName ?? addressPrimary(withoutCountry(event.address)),
+          price: formatPrice(event),
+          going: event.goingCount,
+          flyerUrl: event.flyerUrl,
+          eventType: event.eventType,
+        };
+      });
   });
 
   /** "4 serate stasera · 1 in corso" under the Mappa card's title. */

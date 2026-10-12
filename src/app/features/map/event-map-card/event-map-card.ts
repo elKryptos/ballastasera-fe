@@ -5,8 +5,8 @@ import { EventCardDto } from '../../../core/models/event.model';
 import {
   addressPrimary,
   eventBadge,
+  formatClock,
   formatPrice,
-  formatTimeRange,
   googleMapsUrl,
   withoutCountry,
 } from '../../../core/utils/event-format';
@@ -38,13 +38,13 @@ export class EventMapCard {
   readonly goingToggled = output<void>();
   readonly likeToggled = output<void>();
 
-  /** "Live · finisce tra 52 min", "Inizia tra 12 min", or "Stasera · 22:30 – 03:00". */
+  /** "Live · dalle 22:30", "Inizia tra 12 min", or "Stasera · 22:30". */
   protected readonly status = computed(() => {
     const event = this.event();
     const now = this.now();
     const badge = eventBadge(event, now);
     if (badge) return { tone: badge.live ? ('live' as const) : ('soon' as const), text: badge.text };
-    return { tone: 'plain' as const, text: `${nightShortLabel(event, now)} · ${formatTimeRange(event)}` };
+    return { tone: 'plain' as const, text: `${nightShortLabel(event, now)} · ${formatClock(event.startAt)}` };
   });
 
   /** "Discoteca · Nome locale · 1,2 km" — or the street when there's no venue. */

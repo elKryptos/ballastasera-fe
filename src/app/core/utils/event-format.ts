@@ -7,9 +7,6 @@
  * shows instead of the plain start time. */
 const STARTING_SOON_MS = 30 * 60 * 1000;
 
-/** Past this, "finisce tra 3 h 20 min" says less than "fino alle 03:00". */
-const ENDING_SOON_MINUTES = 90;
-
 /** A civico is 1-4 digits with an optional suffix starting with a slash or a
  * letter (e.g. "12", "12/A", "12bis"); a 5-digit Italian CAP never matches, so
  * it's left for addressSecondary. */
@@ -59,7 +56,11 @@ const ITALIAN_REGIONS = new Set([
 ]);
 
 /** Reads the clock rather than event.liveNow, which is a snapshot from the
- * last fetch and goes stale the moment an event starts. */
+ * last fetch and goes stale the moment an event starts.
+ *
+ * This is all an event's endAt is for: switching "live" off, and dropping the
+ * night once it's over. It's never shown — where the real closing time isn't
+ * known it's a guess (3 am), and a guess on screen is wrong information. */
 export function isLiveAt(event: { startAt: string; endAt: string }, now: number): boolean {
   return now >= new Date(event.startAt).getTime() && now <= new Date(event.endAt).getTime();
 }
@@ -72,20 +73,11 @@ function minutesToStart(event: { startAt: string }, now: number): number | null 
   return Math.max(1, Math.round(msToStart / 60000));
 }
 
-/** Minutes left while live, for "Finisce tra 52 min"; null when not live. */
-function minutesToEnd(event: { startAt: string; endAt: string }, now: number): number | null {
-  if (!isLiveAt(event, now)) return null;
-  return Math.max(1, Math.round((new Date(event.endAt).getTime() - now) / 60000));
-}
-
-/** What a live event's badge says: "Live · finisce tra 52 min", or "Live ·
- * fino alle 03:00" while the end is further off than ENDING_SOON_MINUTES.
- * Null when it isn't live. Shared by the map's card, the list and the event's
- * page. */
+/** What a live event's badge says: "Live · dalle 22:30" — since when, never
+ * until when (see isLiveAt). Null when it isn't live. Shared by the map's
+ * cards, the menu's and the event's page. */
 export function liveLabel(event: { startAt: string; endAt: string }, now: number): string | null {
-  const left = minutesToEnd(event, now);
-  if (left === null) return null;
-  return `Live · ${left <= ENDING_SOON_MINUTES ? `finisce tra ${left} min` : `fino alle ${formatClock(event.endAt)}`}`;
+  return isLiveAt(event, now) ? `Live · dalle ${formatClock(event.startAt)}` : null;
 }
 
 /** The badge an event wears right now: live (see liveLabel) or about to
@@ -99,13 +91,6 @@ export function eventBadge(
   if (live !== null) return { live: true, text: live };
   const minutes = minutesToStart(event, now);
   return minutes === null ? null : { live: false, text: `Inizia tra ${minutes} min` };
-}
-
-/** Start-end range rather than just the start time, since these are
- * club/party nights that often run past midnight — knowing when it ends
- * matters as much as when it starts. */
-export function formatTimeRange(event: { startAt: string; endAt: string }): string {
-  return `${formatClock(event.startAt)} – ${formatClock(event.endAt)}`;
 }
 
 /** hour12: false pinned explicitly rather than relying on it-IT's default

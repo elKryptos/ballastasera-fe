@@ -4,17 +4,62 @@
     "titleLine1": "Dove si",
     "titleLine2Plain": "balla",
     "titleLine2Highlight": "stasera?",
-    "lead": "Salsa, bachata e molto altro: ogni serata d'Italia in un posto solo, aggiornata giorno per giorno. Lo stiamo costruendo adesso — si parte da Milano."
+    "lead": "Salsa, bachata e molto altro: le serate latine in un posto solo, aggiornate giorno per giorno. Siamo in beta e si parte da Milano: la mappa è già aperta.",
+    "ctaMap": "Apri la mappa",
+    "ctaList": "Vedi la lista"
   },
   "mapTeaser": {
     "titlePrefix": "La mappa",
     "titleHighlight": "in tempo reale",
-    "titleIsComing": "in arrivo",
-    "badge": "Anteprima Milano",
-    "description": "Guarda <b class=\"font-semibold text-bone\">dove si balla proprio stasera</b>, serata per serata, in tempo reale — liberamente, senza bisogno di accedere. Ti chiederemo di accedere <b class=\"font-semibold text-bone\">con il tuo account Google</b> solo se vuoi mettere like o dire che parteciperai a una serata. All'inizio copre <b class=\"font-semibold text-bone\">solo Milano</b>: la apriamo città dopo città.",
-    "googleCta": "Apri la mappa",
+    "badge": "Beta · Milano",
+    "description": "Guarda <b class=\"font-semibold text-bone\">dove si balla proprio stasera</b>, serata per serata, in tempo reale — liberamente, senza bisogno di accedere. Ogni serata ha la sua pagina, con orari, prezzo e come arrivarci. Per ora copre <b class=\"font-semibold text-bone\">solo Milano</b>: la apriamo città dopo città.",
     "hint": "Niente login per guardare — solo per mettere like o partecipare.",
-    "liveLabel": "Milano, in diretta"
+    "liveLabel": "Milano, in diretta",
+    "titleIsLive": "è aperta"
+  },
+  "status": {
+    "titlePrefix": "Siamo in",
+    "titleHighlight": "beta",
+    "titleSuffix": ": cosa c'è e cosa manca",
+    "badge": "funzioni attive",
+    "intro": "Ballastasera è online, ma non è finita: apriamo una funzione alla volta, quando è pronta davvero. Qui sotto vedi cosa puoi già usare e cosa sta arrivando.",
+    "live": "Attivo",
+    "soon": "In arrivo",
+    "feedback": "Manca una serata o qualcosa non torna? Scrivici su Instagram",
+    "features": {
+      "map": {
+        "title": "Mappa in tempo reale",
+        "copy": "Le serate di Milano sulla mappa, con la pagina di ogni evento e locale."
+      },
+      "list": {
+        "title": "Lista delle serate",
+        "copy": "Le stesse serate in elenco, giorno per giorno."
+      },
+      "learn": {
+        "title": "Impara a ballare",
+        "copy": "Una lezione di salsa e bachata, con la playlist per provare."
+      },
+      "schools": {
+        "title": "Scuole di ballo",
+        "copy": "Le scuole di Milano, per chi vuole iniziare."
+      },
+      "login": {
+        "title": "Accesso con Google",
+        "copy": "Per mettere mi piace e dire che parteciperai a una serata."
+      },
+      "translations": {
+        "title": "Sito in inglese e spagnolo",
+        "copy": "Questa pagina è già tradotta; il resto del sito per ora è solo in italiano."
+      },
+      "cities": {
+        "title": "Altre città",
+        "copy": "Dopo Milano apriamo il resto d'Italia, una città alla volta."
+      },
+      "organizers": {
+        "title": "Area organizzatori",
+        "copy": "Per pubblicare le tue serate da solo, senza passare da noi."
+      }
+    }
   },
   "legend": {
     "event": "Evento",

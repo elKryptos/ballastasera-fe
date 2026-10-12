@@ -4,17 +4,62 @@
     "titleLine1": "¿Dónde se",
     "titleLine2Plain": "baila",
     "titleLine2Highlight": "estanoche?",
-    "lead": "Salsa, bachata y mucho más: cada noche de baile en Italia en un solo lugar, actualizado día a día. Lo estamos construyendo ahora mismo — empezamos desde Milán."
+    "lead": "Salsa, bachata y mucho más: las noches latinas en un solo lugar, actualizadas día a día. Estamos en beta y empezamos desde Milán: el mapa ya está abierto.",
+    "ctaMap": "Abrir el mapa",
+    "ctaList": "Ver la lista"
   },
   "mapTeaser": {
     "titlePrefix": "El mapa",
     "titleHighlight": "en tiempo real",
-    "titleIsComing": "pronto",
-    "badge": "Vista previa de Milán",
-    "description": "Mira <b class=\"font-semibold text-bone\">dónde se baila esta misma noche</b>, noche a noche, en tiempo real — libremente, sin necesidad de iniciar sesión. Solo te pediremos iniciar sesión <b class=\"font-semibold text-bone\">con tu cuenta de Google</b> si quieres dar like o decir que vas a una noche. Al principio cubre <b class=\"font-semibold text-bone\">solo Milán</b>: lo iremos abriendo ciudad por ciudad.",
-    "googleCta": "Abrir el mapa",
+    "badge": "Beta · Milán",
+    "description": "Mira <b class=\"font-semibold text-bone\">dónde se baila esta misma noche</b>, noche a noche, en tiempo real — libremente, sin necesidad de iniciar sesión. Cada noche tiene su página, con horarios, precio y cómo llegar. Por ahora cubre <b class=\"font-semibold text-bone\">solo Milán</b>, y el mapa está <b class=\"font-semibold text-bone\">en italiano</b>: lo iremos abriendo ciudad por ciudad.",
     "hint": "Sin login para mirar — solo para dar like o participar.",
-    "liveLabel": "Milán, en directo"
+    "liveLabel": "Milán, en directo",
+    "titleIsLive": "ya está abierto"
+  },
+  "status": {
+    "titlePrefix": "Estamos en",
+    "titleHighlight": "beta",
+    "titleSuffix": ": qué hay y qué falta",
+    "badge": "funciones activas",
+    "intro": "Ballastasera ya está online, pero no está terminada: abrimos una función a la vez, cuando está lista de verdad. Aquí abajo ves qué puedes usar ya y qué está por llegar.",
+    "live": "Activo",
+    "soon": "Próximamente",
+    "feedback": "¿Falta una noche o algo no cuadra? Escríbenos por Instagram",
+    "features": {
+      "map": {
+        "title": "Mapa en tiempo real",
+        "copy": "Las noches de Milán en el mapa, con la página de cada evento y local."
+      },
+      "list": {
+        "title": "Lista de noches",
+        "copy": "Las mismas noches en lista, día por día."
+      },
+      "learn": {
+        "title": "Aprende a bailar",
+        "copy": "Una clase de salsa y bachata, con la playlist para practicar."
+      },
+      "schools": {
+        "title": "Escuelas de baile",
+        "copy": "Las escuelas de Milán, para quien quiere empezar."
+      },
+      "login": {
+        "title": "Acceso con Google",
+        "copy": "Para dar me gusta y decir que vas a una noche."
+      },
+      "translations": {
+        "title": "El resto del sitio en español",
+        "copy": "Esta página ya está traducida; el resto del sitio por ahora está solo en italiano."
+      },
+      "cities": {
+        "title": "Más ciudades",
+        "copy": "Después de Milán abrimos el resto de Italia, una ciudad a la vez."
+      },
+      "organizers": {
+        "title": "Área de organizadores",
+        "copy": "Para publicar tus noches por tu cuenta, sin pasar por nosotros."
+      }
+    }
   },
   "legend": {
     "event": "Evento",

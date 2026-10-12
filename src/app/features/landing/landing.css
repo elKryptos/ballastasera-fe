@@ -134,7 +134,7 @@ own top padding at every width. */
   }
 }
 
-/* The WIP badge with the new navbar, the language switcher with the legacy
+/* The beta badge with the new navbar, the language switcher with the legacy
 header (the new one has it in the sidebar): fixed top-right, just under the
 navbar (not inside it, so it stays put regardless of which header variant
 is shown) — same position on mobile, tied to --header-h like everything else
@@ -151,7 +151,7 @@ up here. */
 }
 
 /* Desktop-only stand-in for the sidebar's (currently absent) brand mark —
-pinned at the same height as the WIP badge, just past the
+pinned at the same height as the beta badge, just past the
 sidebar's icon rail. Only ever rendered past md (see the md:flex on the
 element itself), so no media query needed here. */
 .brand-float {
@@ -383,6 +383,7 @@ the beat rather than dropping, which is what makes the tap stand out. */
 .eyebrow,
 .line,
 .lead,
+.hero-cta,
 .map-teaser,
 .count {
   animation: rise 0.65s cubic-bezier(0.16, 1, 0.3, 1) backwards;
@@ -392,6 +393,7 @@ the beat rather than dropping, which is what makes the tap stand out. */
 .line:nth-child(1) { animation-delay: 0.45s; }
 .line:nth-child(2) { animation-delay: 0.75s; }
 .lead { animation-delay: 1.05s; }
+.hero-cta { animation-delay: 1.3s; }
 .map-teaser { animation-delay: 1.5s; }
 .count { animation-delay: 1.65s; }
 
@@ -513,6 +515,7 @@ when the listener isn't attached (no JS, or prefers-reduced-motion). */
   .eyebrow,
   .line,
   .lead,
+  .hero-cta,
   .map-teaser,
   .count,
   .plumb,

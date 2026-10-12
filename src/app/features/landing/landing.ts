@@ -8,13 +8,13 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { EmbedKind, MediaEmbed } from '../../shared/media-embed/media-embed';
 import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
 import { InstallBanner } from '../../shared/install-banner/install-banner';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
-import { FEATURE_FLAGS } from '../../core/config/feature-flags';
+import { FEATURE_FLAGS, FeatureFlag } from '../../core/config/feature-flags';
 import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -53,6 +53,16 @@ interface PinLegendItem {
   color: string;
 }
 
+/** One card of the beta status board: something the site does, or will. */
+interface StatusFeature {
+  title: string;
+  copy: string;
+  /** In this build, going by its feature flag. */
+  live: boolean;
+  /** Its page, when it's live and has one; null otherwise (no link). */
+  path: string | null;
+}
+
 interface MediaItem {
   kind: EmbedKind;
   /** YouTube video id, or the Instagram shortcode from instagram.com/p/<shortcode>/. */
@@ -67,15 +77,17 @@ interface MediaItem {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, MediaEmbed, TranslocoPipe, SidebarPushDirective, InstallBanner, MapSnapshot, EventPinIcon],
+  imports: [RouterLink, NgTemplateOutlet, MediaEmbed, TranslocoPipe, SidebarPushDirective, InstallBanner, MapSnapshot, EventPinIcon],
   templateUrl: './landing.html',
   styleUrl: './landing.css',
 })
 export class Landing implements AfterViewInit, OnDestroy {
+  private readonly flags = inject(FeatureFlagService);
+
   // Keeps the redesigned navbar + sign-in dialog off the public site
   // until it's signed off on staging — see environment.staging.ts. The
   // production header below stays byte-for-byte what already shipped.
-  protected readonly showNewNavbar = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.navbarAuth);
+  protected readonly showNewNavbar = this.flags.isEnabled(FEATURE_FLAGS.navbarAuth);
 
   private readonly transloco = inject(TranslocoService);
 
@@ -221,6 +233,39 @@ export class Landing implements AfterViewInit, OnDestroy {
       hint: 'Premi play — parte con l’audio',
     },
   ];
+
+  /**
+   * The beta status board, live ones first. `flag` is what decides whether a
+   * feature is in this build; leave it out for what has no flag because it
+   * isn't built yet. `path` only becomes a link once the feature is live.
+   *
+   * 'translations' is the rest of the site in English and Spanish: only this
+   * page is translated so far, every other one is Italian-only.
+   */
+  protected readonly features: StatusFeature[] = (
+    [
+      { key: 'map', flag: FEATURE_FLAGS.mapPage, path: '/mappa' },
+      { key: 'list', flag: FEATURE_FLAGS.eventListPage, path: '/lista' },
+      { key: 'learn', flag: FEATURE_FLAGS.learnToDancePage, path: '/impara-a-ballare' },
+      { key: 'schools', flag: FEATURE_FLAGS.schoolListPage, path: '/scuole' },
+      { key: 'login', flag: FEATURE_FLAGS.googleAuth },
+      { key: 'translations' },
+      { key: 'cities' },
+      { key: 'organizers' },
+    ] as { key: string; flag?: FeatureFlag; path?: string }[]
+  )
+    .map(({ key, flag, path }) => {
+      const live = !!flag && this.flags.isEnabled(flag);
+      return {
+        title: `status.features.${key}.title`,
+        copy: `status.features.${key}.copy`,
+        live,
+        path: live && path ? path : null,
+      };
+    })
+    .sort((a, b) => Number(b.live) - Number(a.live));
+
+  protected readonly liveCount = this.features.filter((feature) => feature.live).length;
 
   /**
    * One bar of bachata, split the way it is danced: four beats travelling right,

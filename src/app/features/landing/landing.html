@@ -1,25 +1,37 @@
 <div class="glow" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
+<!-- Where the site stands, in one word: live, not finished. A steady pulse
+    rather than a spinning gear — it's open, not under construction. What
+    "beta" covers is spelled out in the status section below. -->
+<ng-template #betaBadge>
+  <span
+    class="inline-flex shrink-0 items-center gap-[clamp(0.3rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.6rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
+    style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-mint) 18%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
+      border:1.5px solid var(--color-line);">
+    <span class="relative flex size-1.5 shrink-0" aria-hidden="true">
+      <span class="absolute inline-flex size-full animate-ping rounded-full bg-mint opacity-75"></span>
+      <span class="relative inline-flex size-1.5 rounded-full bg-mint"></span>
+    </span>
+    Beta
+  </span>
+</ng-template>
+
+<!-- The map's pin, on its two buttons: the hero's and the map section's. -->
+<ng-template #mapPin>
+  <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13z" />
+    <circle cx="12" cy="9" r="2.5" />
+  </svg>
+</ng-template>
+
 <div class="top-right-float fixed z-header inline-flex shrink-0 items-center gap-2.5"
   [class.sidebar-layout]="showNewNavbar">
   @if (showNewNavbar) {
   <!-- app-navbar no longer carries this — pinned here instead, at every
       width. -->
-  <span
-    class="inline-flex shrink-0 items-center gap-[clamp(0.25rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.55rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
-    style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
-      border:1.5px solid var(--color-line);">
-    <svg viewBox="0 0 24 24" class="size-[clamp(0.75rem,3vw,1.125rem)] shrink-0 animate-spin" fill="none"
-      stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <circle cx="12" cy="12" r="3" />
-      <path
-        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-      <path
-        d="M9.5 2.5l.5 2M14.5 2.5l-.5 2M2.5 9.5l2 .5M2.5 14.5l2-.5M21.5 9.5l-2 .5M21.5 14.5l-2-.5M9.5 21.5l.5-2M14.5 21.5l-.5-2" />
-    </svg>
-    Work in progress
-  </span>
+  <ng-container [ngTemplateOutlet]="betaBadge" />
   }
 
   <!-- The language now lives in the sidebar (navbar.html), so only the legacy
@@ -92,20 +104,7 @@
         </span>
       </a>
 
-      <span
-        class="inline-flex shrink-0 items-center gap-[clamp(0.25rem,1.2vw,0.5rem)] rounded-full px-[clamp(0.55rem,2.4vw,1rem)] py-[clamp(0.3rem,1.2vw,0.5rem)] text-[clamp(0.56rem,2.2vw,0.8rem)] font-bold tracking-wider whitespace-nowrap uppercase"
-        style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-amber) 15%, transparent), color-mix(in srgb, var(--color-violet) 22%, transparent));
-          border:1.5px solid var(--color-line);">
-        <svg viewBox="0 0 24 24" class="size-[clamp(0.75rem,3vw,1.125rem)] shrink-0 animate-spin" fill="none"
-          stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <circle cx="12" cy="12" r="3" />
-          <path
-            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          <path
-            d="M9.5 2.5l.5 2M14.5 2.5l-.5 2M2.5 9.5l2 .5M2.5 14.5l2-.5M21.5 9.5l-2 .5M21.5 14.5l-2-.5M9.5 21.5l.5-2M14.5 21.5l-.5-2" />
-        </svg>
-        Work in progress
-      </span>
+      <ng-container [ngTemplateOutlet]="betaBadge" />
     </div>
   </header>
   }
@@ -158,18 +157,36 @@
           class="lead order-4  max-w-[46ch] text-[clamp(0.85rem,3.5vw,1.15rem)] leading-[1.35] text-lead sm:leading-relaxed">
           {{ 'hero.lead' | transloco }}
         </p>
+
+        <!-- The way in: the map, or the same nights as a list. -->
+        <div class="hero-cta order-5 mt-5 flex flex-wrap items-center gap-3 sm:mt-7">
+          <a routerLink="/mappa"
+            class="group inline-flex cursor-pointer items-center gap-2.5 rounded-xl bg-rose px-5 py-3 text-[0.9rem] font-bold text-ink no-underline shadow-[0_10px_26px_-8px_rgba(255,47,109,0.65)]
+              transition-[background-color,transform] duration-200 hover:bg-rose-lit active:translate-y-px">
+            <ng-container [ngTemplateOutlet]="mapPin" />
+            {{ 'hero.ctaMap' | transloco }}
+            <svg viewBox="0 0 24 24" class="size-4 shrink-0 transition-transform group-hover:translate-x-1" fill="none"
+              stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+          <a routerLink="/lista"
+            class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-bone/5 px-5 py-3 text-[0.9rem] font-semibold text-bone no-underline
+              transition-[background-color,border-color,transform] duration-200 hover:border-bone/40 hover:bg-bone/10 active:translate-y-px">
+            {{ 'hero.ctaList' | transloco }}
+          </a>
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- Teaser for the live map: aimed at dancers (not the organiser pitch further
-    down), it announces the feature — free to browse, no login needed, login
-    is only asked for when liking/joining an event — and that Milan is the
-    only city live so far. -->
+  <!-- The live map, aimed at dancers (not the organiser pitch further down):
+    free to browse, no login needed — only to like a night or say you're
+    going — and Milan the only city so far. -->
   <section class="map-teaser hud-divider flex flex-col gap-6 border-t border-line pt-8 md:ml-4 lg:ml-4">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 class="section-title font-display text-2xl font-bold tracking-[-0.02em] text-balance">
-        {{ 'mapTeaser.titlePrefix' | transloco }} <span class="text-mint">{{ 'mapTeaser.titleHighlight' | transloco }}</span><span> {{ 'mapTeaser.titleIsComing' | transloco}}</span>
+        {{ 'mapTeaser.titlePrefix' | transloco }} <span class="text-mint">{{ 'mapTeaser.titleHighlight' | transloco }}</span><span> {{ 'mapTeaser.titleIsLive' | transloco }}</span>
       </h2>
       <p class="font-mono text-[0.7rem] tracking-[0.16em] text-amber uppercase">
         {{ 'mapTeaser.badge' | transloco }}
@@ -180,7 +197,7 @@
       <!-- A picture of the live map's basemap — rendered from /mappa's own
         styles, one per theme (see MapSnapshot) — rather than the map itself:
         here it's only a teaser, so no map library or tiles to load. -->
-      <a #teaserVisual aria-label="{{ 'mapTeaser.googleCta' | transloco }}"
+      <a #teaserVisual routerLink="/mappa" aria-label="{{ 'hero.ctaMap' | transloco }}"
         class="teaser-visual group relative isolate block aspect-4/5 w-full shrink-0 overflow-hidden rounded-3xl border border-line bg-ink-2/60 no-underline sm:aspect-square">
         <app-map-snapshot variant="landing" class="pointer-events-none absolute inset-0" />
         <span
@@ -201,16 +218,12 @@
         </p>
 
         <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
-          <!-- <a routerLink="/mappa"
-            class="google-cta flex cursor-pointer items-center gap-2.5 rounded-xl border border-line bg-bone/95 px-5 py-3 text-[0.85rem] font-semibold text-ink no-underline
+          <a routerLink="/mappa"
+            class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line bg-bone/95 px-5 py-3 text-[0.85rem] font-semibold text-ink no-underline
               transition-all duration-200 hover:bg-bone active:translate-y-px">
-            <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13z" />
-              <circle cx="12" cy="9" r="2.5" />
-            </svg>
-            {{ 'mapTeaser.googleCta' | transloco }}
-          </a> -->
+            <ng-container [ngTemplateOutlet]="mapPin" />
+            {{ 'hero.ctaMap' | transloco }}
+          </a>
           <p class="font-mono text-[0.7rem] text-muted">
             {{ 'mapTeaser.hint' | transloco }}
           </p>
@@ -226,6 +239,60 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- What "beta" means here, feature by feature: each card reads its page's
+    flag (see features in landing.ts), so the board can't promise what this
+    build doesn't have. A live one links to its page; the rest take a null
+    routerLink — no href, plain text — hence the hover on [href] only. -->
+  <section class="status reveal hud-divider flex flex-col gap-5 border-t border-line pt-8 md:ml-4 lg:ml-4">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+      <h2 class="section-title font-display text-2xl font-bold tracking-[-0.02em] text-balance">
+        {{ 'status.titlePrefix' | transloco }} <span class="text-mint">{{ 'status.titleHighlight' | transloco }}</span>{{ 'status.titleSuffix' | transloco }}
+      </h2>
+      <p class="font-mono text-[0.7rem] tracking-[0.16em] text-amber uppercase tabular-nums">
+        {{ liveCount }}/{{ features.length }} {{ 'status.badge' | transloco }}
+      </p>
+    </div>
+
+    <p class="max-w-[62ch] text-[clamp(0.9rem,3.2vw,1.05rem)] leading-relaxed text-lead">
+      {{ 'status.intro' | transloco }}
+    </p>
+
+    <ul class="grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
+      @for (feature of features; track feature.title) {
+      <li>
+        <a [routerLink]="feature.path"
+          class="group flex h-full flex-col gap-2 rounded-xl border p-4 no-underline transition-colors duration-200"
+          [class]="feature.live ? 'border-mint/40 bg-mint/5 [[href]]:hover:border-mint [[href]]:hover:bg-mint/10' : 'border-dashed border-line bg-bone/3'">
+          <span class="flex items-center justify-between gap-2">
+            <span class="inline-flex items-center gap-1.5 font-mono text-[0.62rem] tracking-[0.14em] uppercase"
+              [class]="feature.live ? 'text-mint' : 'text-muted'">
+              <span class="size-1.5 shrink-0 rounded-full" [class]="feature.live ? 'bg-mint' : 'border border-muted'"
+                aria-hidden="true"></span>
+              {{ (feature.live ? 'status.live' : 'status.soon') | transloco }}
+            </span>
+            @if (feature.path) {
+            <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-mint transition-transform group-hover:translate-x-1"
+              fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+            }
+          </span>
+          <span class="font-display text-[1.05rem] leading-tight font-bold tracking-[-0.01em] text-bone">
+            {{ feature.title | transloco }}
+          </span>
+          <span class="text-[0.85rem] leading-relaxed text-lead">{{ feature.copy | transloco }}</span>
+        </a>
+      </li>
+      }
+    </ul>
+
+    <a href="https://www.instagram.com/hans.manci/" target="_blank" rel="noopener noreferrer"
+      class="self-start font-mono text-[0.7rem] text-muted underline decoration-line underline-offset-4 transition-colors hover:text-bone">
+      {{ 'status.feedback' | transloco }}
+    </a>
   </section>
 
   <!-- The bachata count: three steps then a tap, once to the right, once to the left.

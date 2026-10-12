@@ -59,6 +59,36 @@ export const PIN_GLYPHS: Record<EventType, string> = {
   BAR: 'M7 6h10l-4 5.3V15h2v1H9v-1h2v-3.7zM13.5 7.6a1 1 0 1 0 2 0a1 1 0 1 0-2 0z',
 };
 
+/** A crown for the pin of an event singled out on the map (see
+ * CROWNED_ORGANIZER_INSTAGRAMS): gold, dark-edged so it stands off every pin
+ * colour and both basemaps. One path, drawn upwards from the middle of its
+ * base at (0, 0) — PIN_CROWN_SEATS puts that point on each shape's left
+ * shoulder, tilted along it, which leaves the right one to the LIVE tag. */
+export const PIN_CROWN =
+  'M-6 0-7.4-6.8-3.3-3.7 0-9 3.3-3.7 7.4-6.8 6 0z' +
+  'M-8.7-6.8a1.3 1.3 0 1 1 2.6 0a1.3 1.3 0 1 1-2.6 0zM-1.3-9a1.3 1.3 0 1 1 2.6 0a1.3 1.3 0 1 1-2.6 0z' +
+  'M6.1-6.8a1.3 1.3 0 1 1 2.6 0a1.3 1.3 0 1 1-2.6 0z';
+export const PIN_CROWN_COLOR = '#fbbf24';
+export const PIN_CROWN_EDGE = '#78350f';
+
+/** Where the crown sits on each PIN_SHAPES outline, as an SVG transform in
+ * the pin's 24x32 viewBox. */
+export const PIN_CROWN_SEATS: Record<EventType, string> = {
+  EVENT: 'translate(7.2 1.7) rotate(-22)',
+  SCHOOL: 'translate(7 2.4) rotate(-20)',
+  CLUB: 'translate(7 3.8) rotate(-28)',
+  BAR: 'translate(7.2 1) rotate(-12)',
+};
+
+/** The organizers whose events wear the crown, by Instagram handle in lower
+ * case. By organizer, not by event: a weekly night is a new event with a new
+ * id every time, its organizer the one thing that stays. By handle, because
+ * that's all the map's payload says about them (EventCardDto carries no
+ * organizerId). */
+export const CROWNED_ORGANIZER_INSTAGRAMS: ReadonlySet<string> = new Set<string>([
+  'bailemosbyfreddyib', // BailemosByFreddy — "Bailemos el social mas divertido"
+]);
+
 /** Every EventType, in the order the legend (and any pin listing) shows them. */
 export const PIN_TYPES: EventType[] = ['EVENT', 'SCHOOL', 'CLUB', 'BAR'];
 

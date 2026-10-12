@@ -1,7 +1,17 @@
 import type { DivIcon } from 'leaflet';
 import { EventType } from '../../core/models/event.model';
 import { VenueType } from '../../core/models/venue.model';
-import { PIN_COLORS, PIN_GLYPHS, PIN_SHAPES, VENUE_PIN_COLORS, VENUE_PIN_GLYPHS } from '../../core/config/map-pins';
+import {
+  PIN_COLORS,
+  PIN_CROWN,
+  PIN_CROWN_COLOR,
+  PIN_CROWN_EDGE,
+  PIN_CROWN_SEATS,
+  PIN_GLYPHS,
+  PIN_SHAPES,
+  VENUE_PIN_COLORS,
+  VENUE_PIN_GLYPHS,
+} from '../../core/config/map-pins';
 
 /** Big enough not to pass for the basemap's own transit and POI icons at
  * city zoom. The event pin is 3:4 like its viewBox; .map-pin-wrap and its
@@ -39,14 +49,21 @@ export class MapPinIcons {
 
   constructor(private readonly L: typeof import('leaflet')) {}
 
-  event(eventType: EventType, live: boolean, selected: boolean): DivIcon {
-    const cacheKey = `${eventType}:${live ? 'live' : 'idle'}:${selected ? 'selected' : 'idle'}`;
+  event(eventType: EventType, live: boolean, selected: boolean, crowned: boolean): DivIcon {
+    const cacheKey = `${eventType}:${live ? 'live' : 'idle'}:${selected ? 'selected' : 'idle'}:${crowned ? 'crowned' : 'plain'}`;
     const cached = this.eventIcons.get(cacheKey);
     if (cached) return cached;
 
     const color = PIN_COLORS[eventType];
     const liveClass = live ? ' map-pin-wrap--live' : '';
     const selectedClass = selected ? ' map-pin-wrap--selected' : '';
+    const crownedClass = crowned ? ' map-pin-wrap--crowned' : '';
+    // Inside the pin's own svg, so the crown hovers, drops in and glows with
+    // it. paint-order: the edge is stroked under the fill, which leaves one
+    // outline around the body and the balls on its tips.
+    const crown = crowned
+      ? `<path d="${PIN_CROWN}" transform="${PIN_CROWN_SEATS[eventType]}" fill="${PIN_CROWN_COLOR}" stroke="${PIN_CROWN_EDGE}" stroke-width="1.6" stroke-linejoin="round" paint-order="stroke"/>`
+      : '';
     // Selected pin is drawn inverted (white body, outline and glyph in the type
     // colour): the one hollow pin among filled ones stands out on both basemaps
     // and still reads as its type. Live, it also plays the full effect.
@@ -56,11 +73,12 @@ export class MapPinIcons {
     const glyphFill = selected ? color : '#fff';
     const icon = this.L.divIcon({
       className: 'map-pin',
-      html: `<span class="map-pin-wrap${liveClass}${selectedClass}" style="color:${color}">
+      html: `<span class="map-pin-wrap${liveClass}${selectedClass}${crownedClass}" style="color:${color}">
         ${live ? LIVE_FX : ''}
         <svg viewBox="0 0 24 32" width="${EVENT_PIN_WIDTH}" height="${EVENT_PIN_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
           <path d="${PIN_SHAPES[eventType]}" ${shapeAttrs}/>
           <path d="${PIN_GLYPHS[eventType]}" fill="${glyphFill}"/>
+          ${crown}
         </svg>
         ${live ? LIVE_TAG : ''}
       </span>`,

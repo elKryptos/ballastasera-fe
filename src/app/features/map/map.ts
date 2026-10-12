@@ -56,7 +56,13 @@ import { environment } from '../../../environments/environment';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { EventFiltersDialog } from '../../shared/event-filters/event-filters-dialog';
 import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
-import { MILAN_CENTER, MILAN_DEFAULT_ZOOM, VENUE_TYPES, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
+import {
+  CROWNED_ORGANIZER_INSTAGRAMS,
+  MILAN_CENTER,
+  MILAN_DEFAULT_ZOOM,
+  VENUE_TYPES,
+  VENUE_TYPE_LABELS,
+} from '../../core/config/map-pins';
 import { MAP_STYLE_URLS } from '../../core/config/map-styles';
 import { LAYER_OPTIONS, MapLayer, layerShowsEvents } from './map-layer';
 import { MapPinIcons } from './map-pin-icons';
@@ -86,8 +92,11 @@ const SELECTED_CARD_MIN_PX = 320;
  * (further south = in front), which a pin's height of offset already beats:
  * venue badges under every event pin (when a place hosts an event right now,
  * the event is what the visitor should be able to tap), events in progress
- * over the other events, and the open pin or badge over everything. */
+ * over the other events, a crowned one (CROWNED_ORGANIZER_INSTAGRAMS) over
+ * its like so no neighbour hides the crown, and the open pin or badge over
+ * everything. */
 const VENUE_PIN_Z_OFFSET = -1000;
+const CROWNED_PIN_Z_OFFSET = 250;
 const LIVE_PIN_Z_OFFSET = 500;
 const SELECTED_PIN_Z_OFFSET = 1000;
 
@@ -802,8 +811,11 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       // (even "starting soon") the pin just sits there plain.
       const live = isLiveAt(event, now);
       const selected = event.id === selectedId;
-      const icon = icons.event(event.eventType, live, selected);
-      const zIndexOffset = selected ? SELECTED_PIN_Z_OFFSET : live ? LIVE_PIN_Z_OFFSET : 0;
+      const crowned = CROWNED_ORGANIZER_INSTAGRAMS.has(event.organizerInstagram?.toLowerCase() ?? '');
+      const icon = icons.event(event.eventType, live, selected, crowned);
+      const zIndexOffset = selected
+        ? SELECTED_PIN_Z_OFFSET
+        : (live ? LIVE_PIN_Z_OFFSET : 0) + (crowned ? CROWNED_PIN_Z_OFFSET : 0);
       const existing = previous.get(event.id);
       if (existing) {
         previous.delete(event.id);

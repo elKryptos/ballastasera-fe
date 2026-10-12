@@ -320,6 +320,12 @@ when it also drops in with a shockwave. */
     filter: drop-shadow(0 0 3px currentColor) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
   }
 
+  /* Crowned pin (PIN_CROWN in map-pins.ts): the crown sits on the pin's
+  shoulder, mostly above the viewBox. */
+  .map-pin-wrap--crowned svg {
+    overflow: visible;
+  }
+
   /* The LIVE tag on the pin's shoulder, saying what the light means — in
   the LIVE badges' red (--color-live), white-edged so it stands off a rose
   pin and any tile. */

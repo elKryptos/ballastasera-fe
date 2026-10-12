@@ -6,17 +6,11 @@ import {
   lucideArrowLeft,
   lucideCheck,
   lucideCopy,
-  lucideFacebook,
-  lucideGlobe,
-  lucideInstagram,
-  lucideMail,
   lucideMaximize2,
   lucideNavigation,
   lucideShare2,
   lucideX,
-  lucideYoutube,
 } from '@ng-icons/lucide';
-import { TIKTOK_PATH, WHATSAPP_PATH } from '../../core/config/brand-icons';
 import { VENUE_PIN_COLORS, VENUE_PIN_GLYPHS, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
 import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
@@ -25,17 +19,10 @@ import { VenueDetailDto } from '../../core/models/venue.model';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MapPreview } from '../../shared/map-preview/map-preview';
 import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
-import {
-  addressPrimary,
-  addressSecondary,
-  googleMapsUrl,
-  instagramHandle,
-  instagramUrl,
-  waMeUrl,
-  withoutCountry,
-} from '../../core/utils/event-format';
+import { addressPrimary, addressSecondary, googleMapsUrl, withoutCountry } from '../../core/utils/event-format';
 import { injectPageShare } from '../../core/utils/page-share';
 import { lockBodyScrollWhile } from '../../core/utils/scroll-lock';
+import { CONTACT_ICONS, venueContacts } from '../../core/utils/contact-links';
 
 /** Same street-level zoom as the event page's "Dove" mini-map. */
 const MINI_MAP_ZOOM = 16;
@@ -43,84 +30,19 @@ const MINI_MAP_ZOOM = 16;
 /** Past this, "Chi siamo" starts folded to a few lines, with "Leggi tutto". */
 const LONG_DESCRIPTION_CHARS = 220;
 
-type ContactKey = 'whatsapp' | 'instagram' | 'website' | 'email' | 'facebook' | 'tiktok' | 'youtube';
-
-/** How each contact the venue may have shows in the "Contatti" card. The tile
- * behind the icon takes the brand's own colour where it has one, so each
- * link reads at a glance. Logos lucide lacks are drawn from svgPath. */
-interface ContactKind {
-  key: ContactKey;
-  tileClass: string;
-  icon?: string;
-  svgPath?: string;
-  /** Defaults to the value itself (the URL the admin entered); Instagram
-   * holds just the handle. */
-  href?: (value: string) => string;
-  label: (value: string) => string;
-  /** mailto: stays in this tab — a new one would just open blank. */
-  sameTab?: boolean;
-  /** Set on the most direct ones, which also get a quick action under the
-   * name: its label there. */
-  quickLabel?: string;
-}
-
-/** In display order: most direct first. */
-const CONTACT_KINDS: ContactKind[] = [
-  {
-    key: 'whatsapp',
-    tileClass: 'bg-[#25D366] text-white',
-    svgPath: WHATSAPP_PATH,
-    href: (phone) => waMeUrl(phone) ?? '',
-    label: (phone) => phone,
-    quickLabel: 'WhatsApp',
-  },
-  {
-    key: 'instagram',
-    tileClass: 'instagram-gradient text-white',
-    icon: 'lucideInstagram',
-    href: instagramUrl,
-    label: (handle) => `@${instagramHandle(handle)}`,
-    quickLabel: 'Instagram',
-  },
-  {
-    key: 'website',
-    tileClass: 'bg-(--ev-tag-bg) text-(--ev-tag-text)',
-    icon: 'lucideGlobe',
-    label: hostname,
-    quickLabel: 'Sito',
-  },
-  {
-    key: 'email',
-    tileClass: 'bg-(--ev-tag-bg) text-(--ev-tag-text)',
-    icon: 'lucideMail',
-    href: (email) => `mailto:${email}`,
-    label: (email) => email,
-    sameTab: true,
-  },
-  { key: 'facebook', tileClass: 'bg-[#1877F2] text-white', icon: 'lucideFacebook', label: () => 'Facebook' },
-  { key: 'tiktok', tileClass: 'bg-black text-white', svgPath: TIKTOK_PATH, label: () => 'TikTok' },
-  { key: 'youtube', tileClass: 'bg-[#FF0000] text-white', icon: 'lucideYoutube', label: () => 'YouTube' },
-];
-
-/** One column per quick action, so the row always fills the width. Spelled out
- * for Tailwind to find. */
-const ACTION_COLUMNS = ['', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4'];
-
-/** "https://www.scuola.it/contatti" → "scuola.it". */
-function hostname(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return 'Sito web';
-  }
-}
+/** The actions' columns, by how many there are (directions plus up to six
+ * contacts — the email isn't one of them): one each up to four, so a single
+ * row fills the width; past that two rows, 3+2, 3+3 or 4+3. Spelled out for
+ * Tailwind to find. */
+const ACTION_COLUMNS = ['', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4', 'grid-cols-3', 'grid-cols-3', 'grid-cols-4'];
 
 /**
  * A venue's page (school, club, bar...), opened from its card on /mappa —
  * "A · Profilo" from the Claude Design canvas "Pagina luogo – mobile": a
  * cover in the logo's colours, the logo overlapping it (tap to enlarge), the
- * name, a row of quick actions, then Dove, Chi siamo and Contatti. Colours:
- * the --ev-* tokens in styles.css, shared with the event page.
+ * name, the actions (directions and every contact, each once), then Dove and
+ * Chi siamo. Colours: the --ev-* tokens in styles.css, shared with the event
+ * page.
  */
 @Component({
   selector: 'app-venue-details',
@@ -134,18 +56,14 @@ function hostname(url: string): string {
   },
   providers: [
     provideIcons({
+      ...CONTACT_ICONS,
       lucideArrowLeft,
       lucideCheck,
       lucideCopy,
-      lucideFacebook,
-      lucideGlobe,
-      lucideInstagram,
-      lucideMail,
       lucideMaximize2,
       lucideNavigation,
       lucideShare2,
       lucideX,
-      lucideYoutube,
     }),
   ],
 })
@@ -205,25 +123,24 @@ export class VenueDetails {
     };
   });
 
-  /** Only the contacts the venue has. */
-  protected readonly contacts = computed(() => {
+  /** Only the contacts the venue has (see venueContacts). */
+  private readonly contacts = computed(() => {
     const venue = this.venue();
-    if (!venue) return [];
-    return CONTACT_KINDS.flatMap((kind) => {
-      const value = venue[kind.key];
-      if (!value) return [];
-      return [{ ...kind, href: kind.href?.(value) ?? value, label: kind.label(value) }];
-    });
+    return venue ? venueContacts(venue) : [];
   });
 
-  /** The quick actions under the name, after directions: the venue's most
-   * direct contacts (quickLabel), when it has them. */
-  protected readonly quickContacts = computed(() => this.contacts().filter((contact) => contact.quickLabel));
+  /** The actions under the name, after directions: every contact that goes
+   * by its kind's name. */
+  protected readonly actionContacts = computed(() => this.contacts().filter((contact) => !contact.spelledOut));
 
-  /** Directions plus the quick contacts: icon over label with three or
-   * more, side by side with fewer, where each button has the room. */
+  /** The one that's spelled out instead — the email address — on a line of
+   * its own under the actions: a tile has no room for it. */
+  protected readonly writtenContacts = computed(() => this.contacts().filter((contact) => contact.spelledOut));
+
+  /** Directions plus the contacts: icon over label with three or more, side
+   * by side with fewer, where each button has the room. */
   protected readonly actionsLayout = computed(() => {
-    const count = 1 + this.quickContacts().length;
+    const count = 1 + this.actionContacts().length;
     return { columns: ACTION_COLUMNS[count], stacked: count > 2 };
   });
 

@@ -1,15 +1,16 @@
 <!-- "A · Profilo" from the Claude Design canvas "Pagina luogo – mobile". On
     phones one column: the cover with back and share on it, the logo across its
-    bottom edge, the name, a row of quick actions, then Dove, Chi siamo and
-    Contatti. From @5xl up the cover gets rounded corners and the cards two
-    columns: Chi siamo and Contatti on the left, Dove on the right (below @5xl
-    the column wrappers are display:contents and order-* sets the sequence). -->
+    bottom edge, the name, the actions — directions and every contact, each
+    once — then Dove and Chi siamo. From @5xl up the cover gets rounded
+    corners and the cards two columns: Chi siamo on the left, Dove on the
+    right (below @5xl the column wrappers are display:contents and order-*
+    sets the sequence). -->
 <main appSidebarPush class="@container flex min-h-dvh flex-col pt-(--header-h) md:pt-0">
   @if (loading()) {
   <p class="px-4 py-16 text-center text-sm text-(--ev-soft)">Caricamento…</p>
   } @else if (venue(); as venue) {
-  <!-- A contact's icon, on its brand tile in the quick actions and in
-    Contatti alike. -->
+  <!-- A contact's icon, on its brand's tile: in the actions and next to the
+    email alike. -->
   <ng-template #contactIcon let-contact>
     <span class="flex size-7.5 shrink-0 items-center justify-center rounded-[0.5625rem]" [class]="contact.tileClass">
       @if (contact.svgPath; as path) {
@@ -90,10 +91,11 @@
       }
     </div>
 
-    <!-- Quick actions: directions, then the venue's most direct contacts. One
-      column each; icon over label with three or more, side by side with
-      fewer. -->
-    <nav aria-label="Azioni rapide" class="mt-5 grid gap-2 px-4 @5xl:max-w-xl @5xl:px-6"
+    <!-- The actions: directions, then every contact the venue has — the only
+      place they're listed, each under its kind's name (contact-links.ts).
+      Up to four in a row (see ACTION_COLUMNS); icon over label with three or
+      more, side by side with fewer. -->
+    <nav aria-label="Indicazioni e contatti" class="mt-5 grid gap-2 px-4 @5xl:max-w-xl @5xl:px-6"
       [class]="actionsLayout().columns">
       @if (place(); as place) {
       <a [href]="place.directionsUrl" target="_blank" rel="noopener noreferrer"
@@ -103,17 +105,32 @@
         Indicazioni
       </a>
       }
-      @for (contact of quickContacts(); track contact.key) {
+      @for (contact of actionContacts(); track contact.key) {
       <a [href]="contact.href" [attr.target]="contact.sameTab ? null : '_blank'" rel="noopener noreferrer"
         class="flex items-center justify-center rounded-[1.125rem] border border-(--ev-edge) bg-(--ev-surface) font-bold text-(--ev-text)"
         [class]="actionsLayout().stacked ? 'flex-col gap-1.5 px-1 py-2.5 text-xs' : 'h-13 gap-2 text-sm'">
         <ng-container [ngTemplateOutlet]="contactIcon" [ngTemplateOutletContext]="{ $implicit: contact }" />
-        {{ contact.quickLabel }}
+        {{ contact.label }}
       </a>
       }
     </nav>
 
-    <div class="mt-7 flex flex-col gap-4 px-4 @5xl:grid @5xl:grid-cols-[minmax(0,1fr)_22rem] @5xl:items-start @5xl:gap-6 @5xl:px-0">
+    <!-- The email, written out under the actions: on a computer an address
+      is handier read, or copied, than opened. -->
+    @for (contact of writtenContacts(); track contact.key) {
+    <p class="mt-3 px-4 @5xl:max-w-xl @5xl:px-6">
+      <a [href]="contact.href" [attr.target]="contact.sameTab ? null : '_blank'" rel="noopener noreferrer"
+        class="inline-flex max-w-full items-center gap-2.5 text-sm font-semibold text-(--ev-text) hover:underline">
+        <ng-container [ngTemplateOutlet]="contactIcon" [ngTemplateOutletContext]="{ $implicit: contact }" />
+        <span class="truncate">{{ contact.label }}</span>
+      </a>
+    </p>
+    }
+
+    <!-- Two columns only with a "Chi siamo" to fill the left one; Dove alone
+      keeps to a card's width. -->
+    <div class="mt-7 flex flex-col gap-4 px-4 @5xl:px-0"
+      [class]="venue.description ? '@5xl:grid @5xl:grid-cols-[minmax(0,1fr)_22rem] @5xl:items-start @5xl:gap-6' : '@5xl:max-w-xl'">
       <!-- LEFT column (desktop) -->
       <div class="contents @5xl:flex @5xl:flex-col @5xl:gap-6">
         @if (venue.description; as description) {
@@ -129,23 +146,6 @@
           }
         </section>
         }
-
-        @if (contacts().length) {
-        <section class="order-3 flex flex-col gap-3 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-4.5">
-          <h2 class="font-display text-lg font-extrabold">Contatti</h2>
-          <ul class="flex flex-col gap-2.5">
-            @for (link of contacts(); track link.key) {
-            <li>
-              <a [href]="link.href" [attr.target]="link.sameTab ? null : '_blank'" rel="noopener noreferrer"
-                class="flex min-w-0 items-center gap-2.5 text-sm text-(--color-lead) hover:underline">
-                <ng-container [ngTemplateOutlet]="contactIcon" [ngTemplateOutletContext]="{ $implicit: link }" />
-                <span class="truncate">{{ link.label }}</span>
-              </a>
-            </li>
-            }
-          </ul>
-        </section>
-        }
       </div>
 
       <!-- RIGHT column (desktop) -->
@@ -153,7 +153,7 @@
         <!-- Dove: a read-only mini-map (a tap opens /mappa on this venue,
           its card open), the logo as its marker (ringed in the type's colour,
           like its badge on /mappa), and the address to copy. Directions are
-          the first quick action. -->
+          the first of the actions. -->
         <section class="order-1 flex flex-col gap-3 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-2.5">
           @if (mapCenter(); as center) {
           <button type="button" (click)="openOnMap(venue)" aria-label="Vedi sulla mappa"

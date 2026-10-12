@@ -181,12 +181,15 @@ export class EventDetails {
   /** "Chi ci va": a few faces of the people going and a "+N" for the rest,
    * then who they are in words ("Sara e Luca e altri 10"). goingCount is the
    * total — it already counts a tap on Parteciperò — while the names, first
-   * names only, come from the attendees, when there are any. */
+   * names only, come from the attendees, when there are any. Null while
+   * nobody's going: the section isn't shown, rather than saying so on every
+   * new night. */
   protected readonly crowd = computed(() => {
     const event = this.event();
     if (!event) return null;
     const people = this.attendees();
     const total = Math.max(event.goingCount, people.length);
+    if (total === 0) return null;
     const faces = people.slice(0, CROWD_FACES).map((person, i) => ({
       ...person,
       initial: person.displayName.trim().charAt(0).toUpperCase(),

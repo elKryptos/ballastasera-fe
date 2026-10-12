@@ -191,11 +191,15 @@
           <!-- mt-auto: level with the flyer's bottom when the text is the
               shorter of the two. Beside the flyer a small phone has ~190px
               here: "ci vanno" gives way first ("Prezzo su invito" is long),
-              so the row never spills out of the card. -->
+              so the row never spills out of the card. Neither count is shown
+              at 0: a column of zeros reads as nobody being here. -->
           <div class="mt-auto flex items-center gap-1.5 pt-0.5 text-[0.8125rem] text-(--ev-soft) tabular-nums md:gap-2">
             <span class="shrink-0 text-sm font-extrabold text-(--ev-price)">{{ row.price }}</span>
+            @if (row.going > 0) {
             <span aria-hidden="true">·</span>
-            <span class="min-w-0 truncate"><strong class="font-bold text-(--ev-text)">{{ row.going }}</strong> ci vanno</span>
+            <span class="min-w-0 truncate"><strong class="font-bold text-(--ev-text)">{{ row.going }}</strong>
+              {{ row.going === 1 ? 'ci va' : 'ci vanno' }}</span>
+            }
             <button type="button"
               class="relative z-10 ml-auto flex h-8 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-like-on) aria-pressed:bg-(--ev-like-bg) aria-pressed:text-(--ev-like) md:h-9"
               [attr.aria-pressed]="row.liked" (click)="toggleLike(row.id)" aria-label="Mi piace">
@@ -203,7 +207,9 @@
                 stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
               </svg>
+              @if (row.likes > 0) {
               <span>{{ row.likes }}</span>
+              }
             </button>
           </div>
         </div>

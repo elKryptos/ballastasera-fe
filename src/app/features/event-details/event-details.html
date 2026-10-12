@@ -78,18 +78,22 @@
       }
 
       <!-- Parteciperò and Mi piace: a bar stuck to the bottom on phones, under
-        the flyer from @5xl up. Pressed styling comes from aria-pressed. -->
+        the flyer from @5xl up. Pressed styling comes from aria-pressed. Each
+        shows its count only once there is one: a 0 on every new night reads
+        as an empty room. -->
       <div
         class="sticky bottom-0 z-10 order-3 mt-auto flex gap-2.5 border-t border-(--ev-edge) bg-ground/90 px-4 pt-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] backdrop-blur-md @5xl:static @5xl:mt-0 @5xl:border-0 @5xl:bg-transparent @5xl:p-0 @5xl:backdrop-blur-none">
         <button type="button" [attr.aria-pressed]="going()" (click)="toggleGoing()"
           class="flex h-13 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-primary) bg-transparent text-base font-bold text-(--ev-text) tabular-nums transition-colors aria-pressed:bg-(--ev-primary) aria-pressed:text-white">
           <ng-icon name="lucideCircleCheck" class="size-5" />
-          Parteciperò · {{ event.goingCount }}
+          Parteciperò{{ event.goingCount > 0 ? ' · ' + event.goingCount : '' }}
         </button>
-        <button type="button" [attr.aria-pressed]="liked()" (click)="toggleLike()" [attr.aria-label]="'Mi piace, ' + event.likesCount"
+        <button type="button" [attr.aria-pressed]="liked()" (click)="toggleLike()" [attr.aria-label]="event.likesCount > 0 ? 'Mi piace, ' + event.likesCount : 'Mi piace'"
           class="flex h-13 w-23 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-2xl bg-(--ev-like-bg) text-[0.9375rem] font-bold text-(--ev-like) tabular-nums transition-colors aria-pressed:bg-(--ev-like-on) aria-pressed:text-white">
           <ng-icon name="lucideHeart" class="size-5" [class]="heartIconClass()" />
+          @if (event.likesCount > 0) {
           {{ event.likesCount }}
+          }
         </button>
       </div>
     </div>
@@ -218,8 +222,9 @@
       </div>
 
       <!-- Who's going: their faces and names once EventsService.getAttendees
-        answers, the count until then. A "Vedi tutti" next to the heading
-        will open the whole list, once that dialog exists. -->
+        answers, the count until then — and no section at all while nobody
+        is (crowd() is null). A "Vedi tutti" next to the heading will open
+        the whole list, once that dialog exists. -->
       @if (crowd(); as crowd) {
       <section class="flex flex-col gap-3">
         <h2 class="font-display text-[1.1875rem] font-extrabold">Chi ci va</h2>
@@ -246,9 +251,7 @@
             }
           </div>
           <p class="text-sm leading-snug text-(--ev-soft)">
-            @if (crowd.total === 0) {
-            Ancora nessuno: sii il primo!
-            } @else if (crowd.names) {
+            @if (crowd.names) {
             <strong class="font-bold text-(--ev-text)">{{ crowd.names }}</strong>
             @if (crowd.others > 0) {
             e {{ crowd.others === 1 ? 'un altro' : 'altri ' + crowd.others }}

@@ -120,8 +120,8 @@
                 <span class="shrink-0 text-sm font-extrabold text-(--ev-price)">{{ card.price }}</span>
                 @if (card.going > 0) {
                 <span aria-hidden="true">·</span>
-                <span class="truncate"><strong class="font-bold text-(--ev-text)">{{ card.going }}</strong> ci
-                  vanno</span>
+                <span class="truncate"><strong class="font-bold text-(--ev-text)">{{ card.going }}</strong>
+                  {{ card.going === 1 ? 'ci va' : 'ci vanno' }}</span>
                 }
               </span>
             </span>

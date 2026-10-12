@@ -81,6 +81,31 @@ export function venueContacts(venue: Pick<VenueDetailDto, ContactKey>): ContactL
   });
 }
 
+/** The same links, with WhatsApp's opening the chat on `text`: already
+ * written, for the visitor to send as it is or change first (the link's
+ * ?text=). Left as they are: a link that isn't a chat with a number
+ * (wa.me/message/…, whose opening text is set on WhatsApp's side), one that
+ * already carries a text of its own, and anything that isn't a URL. */
+export function withWhatsappText(links: ContactLink[], text: string): ContactLink[] {
+  if (!text) return links;
+  return links.map((link) => (link.key === 'whatsapp' ? { ...link, href: whatsappWithText(link.href, text) } : link));
+}
+
+function whatsappWithText(href: string, text: string): string {
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    return href;
+  }
+  const chat = /(^|\.)(wa\.me|whatsapp\.com)$/.test(url.hostname) && !url.pathname.startsWith('/message/');
+  if (!chat || url.searchParams.has('text')) return href;
+  // encodeURIComponent rather than searchParams.set, which writes a space as
+  // "+": %20 is what WhatsApp's own examples use.
+  url.search += `${url.search ? '&' : '?'}text=${encodeURIComponent(text)}`;
+  return url.toString();
+}
+
 /** Whether two links lead to the same place, whatever their case or a
  * trailing slash: an event's own links are often its venue's, copied over
  * when it was created. */

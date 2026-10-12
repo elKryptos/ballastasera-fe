@@ -164,6 +164,12 @@ export function nightShortLabel(event: { startAt: string }, now: number): string
   return capitalize(nightDate(night, 'short'));
 }
 
+/** The night an event starts on, in full and lower case, for a sentence:
+ * "sabato 3 ottobre". */
+export function nightLongDate(event: { startAt: string }): string {
+  return nightDate(nightOf(Date.parse(event.startAt)), 'long');
+}
+
 /** The event page's date line: "Stasera, gio 1 ott", "Domani, ven 2 ott", or
  * "Sabato 3 ottobre" further out. By the night it starts on (not eventNight:
  * a page can be opened long after, from a shared link). */

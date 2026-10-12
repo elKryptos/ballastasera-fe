@@ -1,5 +1,5 @@
 import { Component, DestroyRef, PLATFORM_ID, WritableSignal, computed, effect, inject, signal } from '@angular/core';
-import { NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -31,7 +31,7 @@ import { OrganizerDetailDto } from '../../core/models/organizer.model';
 import { eventIcs } from '../../core/utils/calendar';
 import { injectPageShare } from '../../core/utils/page-share';
 import { lockBodyScrollWhile } from '../../core/utils/scroll-lock';
-import { nightDateLabel } from '../../core/utils/event-filters';
+import { nightDateLabel, nightLongDate } from '../../core/utils/event-filters';
 import {
   addressPrimary,
   addressSecondary,
@@ -42,7 +42,14 @@ import {
   instagramUrl,
   withoutCountry,
 } from '../../core/utils/event-format';
-import { CONTACT_ICONS, ContactLink, contactLink, sameContact, venueContacts } from '../../core/utils/contact-links';
+import {
+  CONTACT_ICONS,
+  ContactLink,
+  contactLink,
+  sameContact,
+  venueContacts,
+  withWhatsappText,
+} from '../../core/utils/contact-links';
 
 /** Zoom level of the mini-map in the "Dove" section (Leaflet levels, like
  * /mappa's): street level, enough to read the surrounding streets without
@@ -97,6 +104,7 @@ const FACE_TONES = [
 })
 export class EventDetails {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly document = inject(DOCUMENT);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly mapViewState = inject(MapViewStateService);
@@ -204,14 +212,32 @@ export class EventDetails {
     if (instagram) contacts.push(contactLink('instagram', instagramUrl(instagram)));
     if (event.whatsappUrl) contacts.push(contactLink('whatsapp', event.whatsappUrl));
     if (event.organizer?.website) contacts.push(contactLink('website', event.organizer.website));
-    const atVenue = this.venueLinks();
-    return contacts.filter((contact) => !atVenue.some((link) => sameContact(link, contact)));
+    const atVenue = this.venueOwnLinks();
+    const own = contacts.filter((contact) => !atVenue.some((link) => sameContact(link, contact)));
+    return withWhatsappText(own, this.whatsappText());
   });
 
-  /** The venue's own contacts, for its card: every one it has. */
-  protected readonly venueLinks = computed(() => {
+  /** The venue's own contacts, every one it has, as they are. */
+  private readonly venueOwnLinks = computed(() => {
     const venue = this.event()?.venue;
     return venue ? venueContacts(venue) : [];
+  });
+
+  /** The same, for the venue's card. */
+  protected readonly venueLinks = computed(() => withWhatsappText(this.venueOwnLinks(), this.whatsappText()));
+
+  /** What a tap on WhatsApp starts the chat with, on the venue's card and
+   * the organizer's alike: where the visitor comes from, which night they
+   * mean — by name, date and link, since whoever answers may run several —
+   * and what they're after. In Italian, like the people it's sent to. */
+  private readonly whatsappText = computed(() => {
+    const event = this.event();
+    if (!event) return '';
+    const page = `${this.document.location.origin}/evento/${event.id}`;
+    return (
+      `Ciao! Ti scrivo da ballastasera.it: vorrei qualche informazione su "${event.title}" ` +
+      `di ${nightLongDate(event)} e su come funziona la prenotazione.\n${page}`
+    );
   });
 
   /** "Chi ci va": a few faces of the people going and a "+N" for the rest,

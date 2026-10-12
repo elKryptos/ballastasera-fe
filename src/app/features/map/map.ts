@@ -120,15 +120,16 @@ const LOCATE_MESSAGE_MS = 5000;
 /** The classic "you are here" blue, outside the pin palette on purpose. */
 const USER_LOCATION_COLOR = '#3b82f6';
 
-/** The app only covers Italy: panning is kept to it (plus a margin, so the
- * coast and the borders never sit flush with the screen edge) and zooming out
- * stops once the whole country fits a phone. Without this, dragging or
- * zooming far away downloaded basemap tiles for places with no events at all. */
+/** The app only covers Lombardia for now: panning is kept to it (plus a
+ * margin, so its borders never sit flush with the screen edge) and zooming out
+ * stops once the whole region fits a phone. Without this, dragging or
+ * zooming far away downloaded basemap tiles for places with no events at all.
+ * The whole of Italy is [35.0, 5.5]–[47.8, 19.5] at zoom 5. */
 const MAP_BOUNDS: [[number, number], [number, number]] = [
-  [35.0, 5.5],
-  [47.8, 19.5],
+  [44.4, 8.2],
+  [46.9, 11.7],
 ];
-const MAP_MIN_ZOOM = 5;
+const MAP_MIN_ZOOM = 7;
 
 /** The shortest credit OpenStreetMap's attribution guidelines accept, linked
  * to their copyright page — required under the ODbL for every basemap here.
@@ -565,14 +566,21 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     // maxZoom on the map itself: Leaflet otherwise takes it from the tile
     // layers, and the dark (vector) basemap declares none — so without this
     // the dark theme could zoom in forever, the light one stopping at 20.
-    // minZoom/maxBounds: Italy only, see MAP_BOUNDS. Viscosity 1 makes the
+    // minZoom/maxBounds: Lombardia only, see MAP_BOUNDS. Viscosity 1 makes the
     // edge solid instead of letting the map be dragged past it and spring back.
+    // zoomSnap: half levels, so a pinch settles close to where it was let go
+    // instead of jumping to the next whole one (the vector basemap draws any
+    // zoom sharp). The wheel needs wheelPxPerZoomLevel doubled to follow: at
+    // Leaflet's 60 a single notch still rounds up to a whole level. zoomDelta
+    // stays 1 — a double tap or the +/- keys are one deliberate step.
     const map = L.map(container, {
       zoomControl: false,
       maxZoom: 20,
       minZoom: MAP_MIN_ZOOM,
       maxBounds: MAP_BOUNDS,
       maxBoundsViscosity: 1,
+      zoomSnap: 0.5,
+      wheelPxPerZoomLevel: 120,
     }).setView(
       this.mapViewState.center ?? DEFAULT_CENTER,
       this.mapViewState.zoom ?? DEFAULT_ZOOM,
@@ -1000,7 +1008,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     if (!L.latLngBounds(MAP_BOUNDS).contains(point)) {
       this.userLocationLayer?.remove();
       this.userLocationLayer = null;
-      this.showLocateMessage('Per ora la mappa copre solo l’Italia.');
+      this.showLocateMessage('Per ora la mappa copre solo la Lombardia.');
       return;
     }
 

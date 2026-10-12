@@ -3,7 +3,7 @@
  * Google, Outlook) offers to add it. Times go in UTC, so no time zone block
  * is needed. */
 export function eventIcs(
-  event: { id: string; title: string; startAt: string; endAt: string; address: string; venueName: string | null },
+  event: { id: string; title: string; startAt: string; endAt: string; address: string; venue: { name: string } | null },
   pageUrl: string,
 ): string {
   const lines = [
@@ -17,7 +17,7 @@ export function eventIcs(
     `DTSTART:${icsTime(event.startAt)}`,
     `DTEND:${icsTime(event.endAt)}`,
     `SUMMARY:${icsText(event.title)}`,
-    `LOCATION:${icsText(event.venueName ? `${event.venueName}, ${event.address}` : event.address)}`,
+    `LOCATION:${icsText(event.venue ? `${event.venue.name}, ${event.address}` : event.address)}`,
     `URL:${pageUrl}`,
     `DESCRIPTION:${icsText(pageUrl)}`,
     'END:VEVENT',

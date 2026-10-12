@@ -9,9 +9,7 @@ import {
   lucideCircleCheck,
   lucideClock,
   lucideCopy,
-  lucideGlobe,
   lucideHeart,
-  lucideInstagram,
   lucideMaximize2,
   lucideNavigation,
   lucideShare2,
@@ -19,14 +17,13 @@ import {
   lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
-import { WHATSAPP_PATH } from '../../core/config/brand-icons';
-import { EVENT_TYPE_LABELS } from '../../core/config/map-pins';
+import { EVENT_TYPE_LABELS, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
 import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MapPreview } from '../../shared/map-preview/map-preview';
-import { EventPinIcon } from '../../shared/event-filters/pin-icons';
+import { EventPinIcon, VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EventAttendeeDto, EventDetailDto } from '../../core/models/event.model';
@@ -42,15 +39,19 @@ import {
   formatPrice,
   formatTimeRange,
   googleMapsUrl,
-  instagramHandle,
   instagramUrl,
   withoutCountry,
 } from '../../core/utils/event-format';
+import { CONTACT_ICONS, ContactLink, contactLink, sameContact, venueContacts } from '../../core/utils/contact-links';
 
 /** Zoom level of the mini-map in the "Dove" section (Leaflet levels, like
  * /mappa's): street level, enough to read the surrounding streets without
  * being a full interactive map. */
 const MINI_MAP_ZOOM = 16;
+
+/** Past this — or with more lines of its own than the three it folds to —
+ * the venue's description in its card starts folded, with "Leggi tutto". */
+const LONG_VENUE_ABOUT_CHARS = 140;
 
 /** Faces shown in "Chi ci va" before the "+N". */
 const CROWD_FACES = 3;
@@ -62,15 +63,14 @@ const FACE_TONES = [
   'bg-[#f5c04a] text-[#2a1d05]',
 ];
 
-type ContactKind = 'instagram' | 'whatsapp' | 'website';
-
 /** An event's page, from the "Scheda evento" artboard of the Claude Design
- * canvas: the flyer, who organizes it, when and how much, who's going, the
- * description and where, with Parteciperò and Mi piace always in reach. */
+ * canvas: the flyer, where it's held, when and how much, who's going, the
+ * description, who organizes it and the way there, with Parteciperò and Mi
+ * piace always in reach. */
 @Component({
   selector: 'app-event-details',
   templateUrl: './event-details.html',
-  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon],
+  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon, VenuePinIcon],
   host: {
     class: 'block min-h-dvh bg-ground text-(--ev-text)',
     // On the document, not the lightbox <div>: that div never holds focus, so a
@@ -79,14 +79,13 @@ type ContactKind = 'instagram' | 'whatsapp' | 'website';
   },
   providers: [
     provideIcons({
+      ...CONTACT_ICONS,
       lucideArrowLeft,
       lucideCheck,
       lucideCircleCheck,
       lucideClock,
       lucideCopy,
-      lucideGlobe,
       lucideHeart,
-      lucideInstagram,
       lucideMaximize2,
       lucideNavigation,
       lucideShare2,
@@ -116,8 +115,6 @@ export class EventDetails {
   protected readonly authOpen = signal(false);
   protected readonly going = signal(false);
   protected readonly liked = signal(false);
-  /** No follow-organizer endpoint yet — local-only toggle. */
-  protected readonly following = signal(false);
 
   /** lucideHeart's <svg> hardcodes fill="none" and ng-icon has no input for
    * it, so a liked heart is filled through an arbitrary variant on the inner
@@ -146,6 +143,36 @@ export class EventDetails {
   );
   protected readonly miniMapZoom = MINI_MAP_ZOOM;
 
+  /** "Dove" in words — the event's own address, without the country (see
+   * withoutCountry): the street and, on a line of its own, what's left of
+   * the address after it — and the way there. */
+  protected readonly place = computed(() => {
+    const event = this.event();
+    if (!event) return null;
+    const address = withoutCountry(event.address);
+    return {
+      street: addressPrimary(address),
+      locality: addressSecondary(address),
+      directionsUrl: googleMapsUrl(event.address, event.venue?.name ?? null),
+    };
+  });
+
+  /** The venue's own address, in one line for its card. Everything on that
+   * card is the venue's: the event's address, which may differ, is "Dove"'s. */
+  protected readonly venueAddress = computed(() => {
+    const venue = this.event()?.venue;
+    if (!venue) return '';
+    const address = withoutCountry(venue.address);
+    return [addressPrimary(address), addressSecondary(address)].filter(Boolean).join(', ');
+  });
+
+  protected readonly venueTypeLabels = VENUE_TYPE_LABELS;
+  protected readonly venueAboutExpanded = signal(false);
+  protected readonly longVenueAbout = computed(() => {
+    const about = this.event()?.venue?.description ?? '';
+    return about.length > LONG_VENUE_ABOUT_CHARS || about.split('\n').length > 3;
+  });
+
   // Ticks once a minute (browser only) so the badge and the date move on by
   // themselves ("Inizia tra 5 min" → "Live · finisce tra…") while the page
   // stays open. Purely local: startAt/endAt are already loaded.
@@ -166,16 +193,25 @@ export class EventDetails {
 
   /** The event's own links (set when it was created, from its venue or its
    * organizer), the organizer's Instagram where the event has none, and
-   * the organizer's website. */
+   * the organizer's website — less whatever the venue's card already links
+   * to: an event's links are often its venue's, copied over when it was
+   * created, and each is shown once. */
   protected readonly contacts = computed(() => {
     const event = this.event();
     if (!event) return [];
-    const contacts: { kind: ContactKind; href: string; label: string }[] = [];
+    const contacts: ContactLink[] = [];
     const instagram = event.instagramUrl || event.organizer?.instagram;
-    if (instagram) contacts.push({ kind: 'instagram', href: instagramUrl(instagram), label: `@${instagramHandle(instagram)}` });
-    if (event.whatsappUrl) contacts.push({ kind: 'whatsapp', href: event.whatsappUrl, label: 'WhatsApp' });
-    if (event.organizer?.website) contacts.push({ kind: 'website', href: event.organizer.website, label: 'Sito web' });
-    return contacts;
+    if (instagram) contacts.push(contactLink('instagram', instagramUrl(instagram)));
+    if (event.whatsappUrl) contacts.push(contactLink('whatsapp', event.whatsappUrl));
+    if (event.organizer?.website) contacts.push(contactLink('website', event.organizer.website));
+    const atVenue = this.venueLinks();
+    return contacts.filter((contact) => !atVenue.some((link) => sameContact(link, contact)));
+  });
+
+  /** The venue's own contacts, for its card: every one it has. */
+  protected readonly venueLinks = computed(() => {
+    const venue = this.event()?.venue;
+    return venue ? venueContacts(venue) : [];
   });
 
   /** "Chi ci va": a few faces of the people going and a "+N" for the rest,
@@ -207,9 +243,6 @@ export class EventDetails {
 
   protected readonly formatPrice = formatPrice;
   protected readonly formatTimeRange = formatTimeRange;
-  protected readonly addressPrimary = addressPrimary;
-  protected readonly googleMapsUrl = googleMapsUrl;
-  protected readonly whatsappPath = WHATSAPP_PATH;
 
   /** Only the id, so the effect below doesn't refetch on every count change. */
   private readonly eventId = computed(() => this.event()?.id ?? null);
@@ -305,8 +338,8 @@ export class EventDetails {
     );
   }
 
-  protected toggleFollow(): void {
-    this.following.update((active) => !active);
+  protected toggleVenueAbout(): void {
+    this.venueAboutExpanded.update((expanded) => !expanded);
   }
 
   protected share(event: EventDetailDto): Promise<void> {
@@ -393,14 +426,6 @@ export class EventDetails {
 
   private adjustCount(field: 'likesCount' | 'goingCount', delta: number): void {
     this.event.update((event) => (event ? { ...event, [field]: Math.max(0, event[field] + delta) } : event));
-  }
-
-  // Second line under the place's name: with a venue name as the first
-  // line, the whole address; otherwise just what's left after the street.
-  // Either way without the country, like the map's card (see withoutCountry).
-  protected addressSubtitle(event: EventDetailDto): string | null {
-    const address = withoutCountry(event.address);
-    return event.venueName ? address : addressSecondary(address);
   }
 
   protected eventTypeLabel(event: EventDetailDto): string {

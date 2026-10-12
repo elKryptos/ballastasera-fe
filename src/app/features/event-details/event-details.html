@@ -1,8 +1,8 @@
 <app-auth-modal [(open)]="authOpen" />
 
-<!-- "Scheda evento" from the Claude Design canvas: the flyer, then who
-    organizes it, when and how much, who's going, the description and where,
-    with Parteciperò and Mi piace in a bar at the bottom. Colours: the --ev-*
+<!-- "Scheda evento" from the Claude Design canvas: the flyer, then where
+    it's held, when and how much, who's going, the description, who organizes
+    it and the way there, with Parteciperò and Mi piace in a bar at the bottom. Colours: the --ev-*
     tokens in styles.css, shared with /mappa and /lista. From @5xl up the
     flyer and the two buttons move to a sticky column on the left: a
     container query (1024px of <main>'s width, after appSidebarPush's
@@ -23,6 +23,30 @@
       {{ status.text }}
     </span>
     }
+  </ng-template>
+
+  <!-- A row of contact chips, each on its kind's tile (contact-links.ts):
+    the venue's card and the organizer's share it. -->
+  <ng-template #contactChips let-links let-label="label">
+    <ul class="flex flex-wrap gap-2" [attr.aria-label]="label">
+      @for (contact of links; track contact.key) {
+      <li class="max-w-full">
+        <a [href]="contact.href" [attr.target]="contact.sameTab ? null : '_blank'" rel="noopener noreferrer"
+          class="inline-flex h-9 max-w-full items-center gap-2 rounded-xl border border-(--ev-edge) bg-(--ev-raised) pr-3 pl-1.5 text-[0.8125rem] font-semibold text-(--ev-text)">
+          <span class="flex size-6 shrink-0 items-center justify-center rounded-lg" [class]="contact.tileClass">
+            @if (contact.svgPath; as path) {
+            <svg viewBox="0 0 24 24" class="size-3.5 fill-current" aria-hidden="true">
+              <path [attr.d]="path" />
+            </svg>
+            } @else if (contact.icon; as icon) {
+            <ng-icon [name]="icon" class="size-3.5" />
+            }
+          </span>
+          <span class="truncate">{{ contact.label }}</span>
+        </a>
+      </li>
+      }
+    </ul>
   </ng-template>
 
   <!-- On phones one column, in this order: the flyer, the content, the
@@ -119,75 +143,46 @@
         }
       </div>
 
-      <!-- The organizer's card and the when-and-how-much one: stacked, side by
+      <!-- The venue's card and the when-and-how-much one: stacked, side by
         side from @6xl up (1152px of <main>), where each still has room. -->
       <div class="contents @6xl:grid @6xl:grid-cols-2 @6xl:gap-4">
-      <!-- Organizer, and the event's contacts. The organizer is null once
-        deleted; the card then only keeps the event's own links. -->
-      @if (event.organizer || contacts().length) {
+      <!-- Where it's held comes first: the venue's logo, name, type and address,
+        what it says about itself and its own contacts — the venue's data
+        only, all here: nobody is sent to the venue's page for them. A night at a bare address has no card: its
+        address is in "Dove", further down. -->
+      @if (event.venue; as venue) {
       <section class="flex flex-col gap-3 rounded-[1.125rem] border border-(--ev-edge) bg-(--ev-surface) p-3">
-        @if (event.organizer; as organizer) {
         <div class="flex items-center gap-3">
-          @if (organizer.logoUrl) {
-          <img [src]="organizer.logoUrl" alt="" class="size-11 shrink-0 rounded-[0.875rem] object-cover" />
-          } @else {
-          <span class="flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-(--ev-primary) font-display font-extrabold text-white"
-            aria-hidden="true">{{ organizerInitials(organizer) }}</span>
-          }
+          <span class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[0.875rem] bg-(--ev-raised)"
+            aria-hidden="true">
+            @if (venue.logoUrl; as logoUrl) {
+            <img [src]="logoUrl" alt="" class="size-full object-cover" />
+            } @else {
+            <app-venue-pin-icon [type]="venue.type" [size]="26" />
+            }
+          </span>
           <div class="min-w-0 flex-1">
-            <p class="text-xs text-(--ev-soft)">Organizzato da</p>
-            <p class="flex items-center gap-1.5 text-[0.9375rem] font-bold">
-              <span class="truncate">{{ organizer.name }}</span>
-              @if (organizer.verified) {
-              <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-(--ev-badge-bg)" role="img" aria-label="Verificato">
-                <path fill="currentColor"
-                  d="M12 2l2.4 2.1 3.2-.3.7 3.1 2.7 1.7-1.3 2.9 1.3 2.9-2.7 1.7-.7 3.1-3.2-.3L12 22l-2.4-2.1-3.2.3-.7-3.1-2.7-1.7L4.3 12 3 9.1l2.7-1.7.7-3.1 3.2.3z" />
-                <path d="M8.5 12.2l2.3 2.3 4.7-4.7" fill="none" class="stroke-(--ev-badge-text)" stroke-width="2" stroke-linecap="round" />
-              </svg>
-              }
-            </p>
+            <p class="truncate text-[0.9375rem] font-bold">{{ venue.name }}</p>
+            <p class="text-[0.8125rem] text-(--ev-soft)">{{ venueTypeLabels[venue.type] }} · {{ venueAddress() }}</p>
           </div>
-          <button type="button" [attr.aria-pressed]="following()" (click)="toggleFollow()"
-            class="h-9 shrink-0 cursor-pointer rounded-xl border border-(--ev-edge) px-3.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white">
-            {{ following() ? 'Segui già' : 'Segui' }}
-          </button>
         </div>
-        @if (organizer.description; as bio) {
-        <p class="text-sm leading-relaxed text-(--ev-soft)">{{ bio }}</p>
-        }
+
+        @if (venue.description; as about) {
+        <div>
+          <p class="text-sm leading-relaxed whitespace-pre-line text-(--ev-soft)"
+            [class.line-clamp-3]="longVenueAbout() && !venueAboutExpanded()">{{ about }}</p>
+          @if (longVenueAbout()) {
+          <button type="button" (click)="toggleVenueAbout()" [attr.aria-expanded]="venueAboutExpanded()"
+            class="cursor-pointer py-1.5 text-[0.8125rem] font-bold text-(--ev-link)">
+            {{ venueAboutExpanded() ? 'Mostra meno' : 'Leggi tutto' }}
+          </button>
+          }
+        </div>
         }
 
-        @if (contacts().length) {
-        <ul class="flex flex-wrap gap-2" aria-label="Contatti">
-          @for (contact of contacts(); track contact.kind) {
-          <li>
-            <a [href]="contact.href" target="_blank" rel="noopener noreferrer"
-              class="inline-flex h-9 items-center gap-2 rounded-xl border border-(--ev-edge) bg-(--ev-raised) pr-3 pl-1.5 text-[0.8125rem] font-semibold text-(--ev-text)">
-              @switch (contact.kind) {
-              @case ('instagram') {
-              <span class="instagram-gradient flex size-6 items-center justify-center rounded-lg">
-                <ng-icon name="lucideInstagram" class="size-3.5 text-white" />
-              </span>
-              }
-              @case ('whatsapp') {
-              <span class="flex size-6 items-center justify-center rounded-lg bg-[#25D366]">
-                <!-- Official WhatsApp logo (brand-icons.ts) -->
-                <svg viewBox="0 0 24 24" class="size-3.5 fill-white" aria-hidden="true">
-                  <path [attr.d]="whatsappPath" />
-                </svg>
-              </span>
-              }
-              @default {
-              <span class="flex size-6 items-center justify-center rounded-lg bg-(--ev-tag-bg) text-(--ev-tag-text)">
-                <ng-icon name="lucideGlobe" class="size-3.5" />
-              </span>
-              }
-              }
-              {{ contact.label }}
-            </a>
-          </li>
-          }
-        </ul>
+        @if (venueLinks().length) {
+        <ng-container [ngTemplateOutlet]="contactChips"
+          [ngTemplateOutletContext]="{ $implicit: venueLinks(), label: 'Contatti di ' + venue.name }" />
         }
       </section>
       }
@@ -269,12 +264,56 @@
       @if (event.description; as description) {
       <section class="flex flex-col gap-2.5">
         <h2 class="font-display text-[1.1875rem] font-extrabold">Descrizione</h2>
-        <p class="text-[0.9375rem] leading-relaxed whitespace-pre-line text-(--color-lead)">{{ description }}</p>
+        <p class="text-[0.9375rem] leading-relaxed whitespace-pre-line text-lead">{{ description }}</p>
+      </section>
+      }
+
+      <!-- Who organizes it, and the event's contacts (those the venue's card
+        doesn't have already): right after the description, which is theirs.
+        The organizer is null once deleted; the card then only keeps the
+        event's own links, as "Contatti". -->
+      @if (event.organizer || contacts().length) {
+      <section class="flex flex-col gap-3">
+        <h2 class="font-display text-[1.1875rem] font-extrabold">{{ event.organizer ? 'Chi organizza' : 'Contatti' }}</h2>
+        <div class="flex flex-col gap-3 rounded-[1.125rem] border border-(--ev-edge) bg-(--ev-surface) p-3">
+          @if (event.organizer; as organizer) {
+          <div class="flex items-center gap-3">
+            @if (organizer.logoUrl) {
+            <img [src]="organizer.logoUrl" alt="" class="size-11 shrink-0 rounded-[0.875rem] object-cover" />
+            } @else {
+            <span class="flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-(--ev-primary) font-display font-extrabold text-white"
+              aria-hidden="true">{{ organizerInitials(organizer) }}</span>
+            }
+            <div class="min-w-0 flex-1">
+              <p class="flex items-center gap-1.5 text-[0.9375rem] font-bold">
+                <span class="truncate">{{ organizer.name }}</span>
+                @if (organizer.verified) {
+                <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-(--ev-badge-bg)" role="img" aria-label="Verificato">
+                  <path fill="currentColor"
+                    d="M12 2l2.4 2.1 3.2-.3.7 3.1 2.7 1.7-1.3 2.9 1.3 2.9-2.7 1.7-.7 3.1-3.2-.3L12 22l-2.4-2.1-3.2.3-.7-3.1-2.7-1.7L4.3 12 3 9.1l2.7-1.7.7-3.1 3.2.3z" />
+                  <path d="M8.5 12.2l2.3 2.3 4.7-4.7" fill="none" class="stroke-(--ev-badge-text)" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                }
+              </p>
+            </div>
+          </div>
+          @if (organizer.description; as bio) {
+          <p class="text-sm leading-relaxed text-(--ev-soft)">{{ bio }}</p>
+          }
+          }
+
+          @if (contacts().length) {
+          <ng-container [ngTemplateOutlet]="contactChips" [ngTemplateOutletContext]="{ $implicit: contacts(), label: 'Contatti' }" />
+          }
+        </div>
       </section>
       }
 
       <!-- Dove: a read-only mini-map (a tap opens /mappa on this event), the
-        place, and the way there. -->
+        event's own address in two lines — the street over the rest of it —
+        and the way there. The venue's card, with the venue's own data, is at
+        the top of the page. -->
+      @if (place(); as place) {
       <section class="flex flex-col gap-3">
         <h2 class="font-display text-[1.1875rem] font-extrabold">Dove</h2>
         @if (mapCenter(); as center) {
@@ -286,13 +325,13 @@
         </button>
         }
         <div>
-          <p class="font-bold">{{ event.venueName || addressPrimary(event.address) }}</p>
-          @if (addressSubtitle(event); as subtitle) {
-          <p class="text-sm text-(--ev-soft)">{{ subtitle }}</p>
+          <p class="font-bold">{{ place.street }}</p>
+          @if (place.locality; as locality) {
+          <p class="text-sm text-(--ev-soft)">{{ locality }}</p>
           }
         </div>
         <div class="flex gap-2.5">
-          <a [href]="googleMapsUrl(event.address, event.venueName)" target="_blank" rel="noopener noreferrer"
+          <a [href]="place.directionsUrl" target="_blank" rel="noopener noreferrer"
             class="flex h-11.5 flex-1 items-center justify-center gap-2 rounded-[0.875rem] border border-(--ev-edge) bg-(--ev-raised) text-sm font-bold text-(--ev-text)">
             <ng-icon name="lucideNavigation" class="size-4.5" />
             Portami lì
@@ -304,6 +343,7 @@
           </button>
         </div>
       </section>
+      }
     </div>
   </div>
 

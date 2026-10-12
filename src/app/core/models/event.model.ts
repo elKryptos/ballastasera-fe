@@ -1,4 +1,5 @@
 import { OrganizerDetailDto } from "./organizer.model";
+import { VenueDetailDto } from "./venue.model";
 
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR';
@@ -86,11 +87,13 @@ export interface EventDetailDto {
   // verified…), not just the map card's summary shape — see OrganizerDetailDto.
   // Null when the organizer has been deleted.
   organizer: OrganizerDetailDto | null;
-  venueName: string | null;
+  /** The place it's held at, in full; null for an event with just an address.
+   * Nested here its cityId and cityName come back null — the event's own
+   * cityName is the one to read. */
+  venue: VenueDetailDto | null;
   danceStyles: string[];
   likesCount: number;
   goingCount: number;
-  interestedCount: number;
 }
 
 /** One of the people going, for "Chi ci va" on the event's page (GET

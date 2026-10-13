@@ -144,6 +144,33 @@ export function withoutCountry(address: string): string {
   return address.replace(/,\s*(italy|italia)\s*$/i, '');
 }
 
+/** Towns the geocoder names in English, by their own name. */
+const ITALIAN_TOWNS: Record<string, string> = {
+  Milan: 'Milano',
+  Rome: 'Roma',
+  Turin: 'Torino',
+  Naples: 'Napoli',
+  Florence: 'Firenze',
+  Venice: 'Venezia',
+  Genoa: 'Genova',
+  Padua: 'Padova',
+  Mantua: 'Mantova',
+};
+
+/** A whole address on one line, as it's written in Italy: "Via Roma 12,
+ * 20092 Cinisello Balsamo" — the street, the CAP and the town it's really
+ * in. No region and no country (see addressSecondary, withoutCountry), no
+ * province code after the town ("Milano MI", as typed-in addresses have it),
+ * and the town by its Italian name. For where there's one line and nothing
+ * else says the town: the Instagram posts. */
+export function addressLine(address: string): string {
+  const clean = withoutCountry(address);
+  const town = addressSecondary(clean)
+    ?.replace(/\s+\(?[A-Z]{2}\)?$/, '')
+    .replace(/\b[A-Z][a-z]+$/, (name) => ITALIAN_TOWNS[name] ?? name);
+  return [addressPrimary(clean), town].filter(Boolean).join(', ');
+}
+
 /** Directions to a place — an event's or a venue's. The name, when there is
  * one, helps Google land on the right spot. */
 export function googleMapsUrl(address: string, placeName: string | null): string {

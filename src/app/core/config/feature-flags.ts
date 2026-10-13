@@ -42,6 +42,8 @@ export const FEATURE_FLAGS = {
   learnToDancePage: 'learnToDancePage',
   /** /scuole route: the list of dance schools, linked from the lesson buttons. */
   schoolListPage: 'schoolListPage',
+  /** /admin/social route: the nights and the lesson as pictures for Instagram, to download (also gated on the ADMIN role). */
+  socialPostsPage: 'socialPostsPage',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

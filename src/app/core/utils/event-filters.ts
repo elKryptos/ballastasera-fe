@@ -136,7 +136,7 @@ function capitalize(text: string): string {
 
 /** A night's date: "giovedì 1 ottobre", or "gio 1 ott" short. The day number
  * is a UTC midnight (see nightOf), so it's formatted in UTC. */
-function nightDate(night: number, style: 'long' | 'short'): string {
+export function nightDate(night: number, style: 'long' | 'short'): string {
   return new Date(night * DAY_MS).toLocaleDateString('it-IT', {
     weekday: style,
     day: 'numeric',

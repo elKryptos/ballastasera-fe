@@ -42,6 +42,11 @@ export class AdminHome {
       routerLink: '/admin/create-event-series',
     },
     {
+      title: 'Post per Instagram',
+      description: 'L’agenda del weekend, la story di stasera e i caroselli della lezione, da scaricare.',
+      routerLink: '/admin/social',
+    },
+    {
       title: 'Organizzatori verificati update/delete',
       description: 'Organizzatori che hanno completato il processo di verifica.',
       routerLink: '/admin/verified-organizers-list', 

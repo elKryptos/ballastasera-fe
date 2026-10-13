@@ -1,0 +1,133 @@
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <div class="mx-auto max-w-4xl px-6 py-4">
+    <h1 class="font-display text-2xl font-bold">Post per Instagram</h1>
+
+    <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="Cosa pubblicare">
+      @for (option of modes; track option.value) {
+      <button type="button"
+        class="cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-semibold transition-colors aria-pressed:border-rose aria-pressed:bg-rose aria-pressed:text-ink"
+        [attr.aria-pressed]="mode() === option.value" (click)="mode.set(option.value)">
+        {{ option.label }}
+      </button>
+      }
+    </div>
+    <p class="mt-2 text-sm text-lead">{{ about() }}</p>
+
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      @if (mode() === 'lesson') {
+      <label class="flex items-center gap-2 text-sm">
+        <span class="sr-only">Capitolo</span>
+        <select class="cursor-pointer rounded border border-line bg-transparent px-3 py-2" (change)="selectLesson($event)">
+          @for (option of lessons; track option.slug) {
+          <option [value]="option.slug" [selected]="option.slug === lesson()">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+      } @else {
+      @if ((cities() ?? []).length > 1) {
+      <label class="flex items-center gap-2 text-sm">
+        <span class="sr-only">Città</span>
+        <select class="cursor-pointer rounded border border-line bg-transparent px-3 py-2" (change)="selectCity($event)">
+          @for (option of cities(); track option.id) {
+          <option [value]="option.id" [selected]="option.id === city()?.id">{{ option.name }}</option>
+          }
+        </select>
+      </label>
+      } @else {
+      <span class="text-sm font-semibold">{{ city()?.name }}</span>
+      }
+      <div class="flex flex-wrap gap-2" role="group" aria-label="Periodo">
+        @if (mode() === 'agenda') {
+        @for (option of ranges; track option.value) {
+        <button type="button"
+          class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm font-semibold transition-colors aria-pressed:border-mint aria-pressed:text-mint"
+          [attr.aria-pressed]="range() === option.value" (click)="range.set(option.value)">
+          {{ option.label }}
+        </button>
+        }
+        } @else {
+        @for (option of storyDays; track option.value) {
+        <button type="button"
+          class="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm font-semibold transition-colors aria-pressed:border-mint aria-pressed:text-mint"
+          [attr.aria-pressed]="storyDay() === option.value" (click)="storyDay.set(option.value)">
+          {{ option.label }}
+        </button>
+        }
+        }
+      </div>
+      @if (city(); as city) {
+      <button type="button"
+        class="ml-auto cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-rose"
+        [disabled]="loading()" (click)="load(city, true)">
+        Aggiorna
+      </button>
+      }
+      }
+    </div>
+
+    @if (needsEvents() && loading()) {
+    <p class="mt-6 text-lead">Caricamento…</p>
+    } @else if (needsEvents() && error()) {
+    <p class="mt-6 text-lead">Non riesco a caricare le serate. Riprova con "Aggiorna".</p>
+    } @else {
+    @if (deck(); as deck) {
+    <div class="mt-6 flex flex-wrap items-center gap-2">
+      <p class="mr-auto text-sm text-lead">
+        {{ deck.cards.length }} {{ deck.cards.length === 1 ? 'immagine' : 'immagini, in ordine' }} ·
+        {{ frame().width }}×{{ frame().height }}
+      </p>
+      @if (canShareFiles) {
+      <button type="button" class="cursor-pointer rounded-full bg-rose px-4 py-2 text-sm font-bold text-ink"
+        [disabled]="busy()" (click)="shareAll()">
+        Condividi
+      </button>
+      }
+      <button type="button"
+        class="cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-rose"
+        [disabled]="busy()" (click)="downloadAll()">
+        Scarica tutte
+      </button>
+    </div>
+
+    @if (tooManyCards()) {
+    <p class="mt-2 text-sm text-amber">
+      Instagram accetta al massimo {{ maxCards }} immagini per carosello: scegli un periodo più breve o dividi il post.
+    </p>
+    }
+
+    <!-- Each canvas is the real picture, shown smaller. Tracked by the
+        format's height too: going from a post to a story makes new canvases
+        rather than resize the drawn ones, which would blank them. -->
+    <ul class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      @for (card of deck.cards; track frame().height + $index / 100) {
+      <li class="flex flex-col gap-1.5">
+        <canvas #card [width]="frame().width" [height]="frame().height" class="w-full rounded-lg border border-line"
+          [style.aspect-ratio]="frame().width + ' / ' + frame().height"></canvas>
+        <button type="button"
+          class="cursor-pointer self-start text-sm font-semibold text-lead underline-offset-4 hover:underline"
+          (click)="download($index)">
+          Scarica la {{ $index + 1 }}
+        </button>
+      </li>
+      }
+    </ul>
+
+    <div class="mt-8 flex items-center justify-between gap-3">
+      <h2 class="font-display text-lg font-bold">{{ deck.textLabel }}</h2>
+      <button type="button"
+        class="cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-rose"
+        [disabled]="!deck.text" (click)="copyText()">
+        {{ copied() === 'text' ? 'Copiato' : 'Copia' }}
+      </button>
+    </div>
+    <p class="mt-1 text-sm text-lead">{{ deck.textHint }}</p>
+    <!-- Read-only: it's rebuilt with the deck; edit it in Instagram. -->
+    <textarea readonly [rows]="deck.format === 'story' ? 3 : 14"
+      class="mt-2 w-full rounded border border-line bg-transparent p-3 text-sm leading-relaxed"
+      [value]="deck.text || 'Nessun profilo Instagram tra gli organizzatori di queste serate.'"></textarea>
+    } @else {
+    <p class="mt-6 text-lead">Nessuna serata in questo periodo: niente da pubblicare.</p>
+    }
+    }
+  </div>
+</main>

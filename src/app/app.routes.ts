@@ -172,6 +172,14 @@ export const routes: Routes = [
       },
 
       {
+        // The nights and the lesson as pictures for Instagram, to download.
+        path: 'admin/social',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.socialPostsPage), roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/admin/social-posts/social-posts').then((m) => m.SocialPosts),
+      },
+
+      {
         // The dance schools, where the lesson's "Trova una scuola" leads.
         // Public, like the venues API it reads.
         path: 'scuole',

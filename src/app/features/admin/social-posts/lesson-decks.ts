@@ -1,0 +1,175 @@
+import { Dance } from '../../learn-to-dance/lesson';
+import {
+  COUPLE_PRINCIPLES,
+  DANCE_CHAPTERS,
+  FLOOR_MANNERS,
+  MISTAKES,
+  RHYTHM_TIPS,
+} from '../../learn-to-dance/lesson-content';
+import { Card } from './cards';
+import { Deck } from './deck';
+
+/** The carousels made from the lesson (/impara-a-ballare): a chapter each,
+ * its points one per card, in the lesson's own words (lesson-content.ts).
+ * Only the covers' one-liners are written here: a cover wants a line, where
+ * the lesson's chapters open with a paragraph. */
+
+const OUTRO: Card = {
+  kind: 'outro',
+  title: 'La lezione intera,',
+  flair: 'passo dopo passo.',
+  note: 'Ritmo, passo base animato, ballo in coppia e playlist',
+};
+
+const HASHTAGS = '#salsa #bachata #imparaaballare #ballilatini #passobase #salsamilano #bachatamilano';
+
+interface Chapter {
+  slug: string;
+  /** In the page's picker. */
+  label: string;
+  kicker: string;
+  title: string;
+  flair: string;
+  sub: string;
+  /** "5 regole": how many cards follow, on the cover. */
+  count: string;
+  points: Card[];
+  /** The same points as the post's text, a line each. */
+  lines: string[];
+}
+
+function danceChapters(dance: Dance): Chapter[] {
+  const chapter = DANCE_CHAPTERS[dance];
+  const name = dance === 'salsa' ? 'Salsa' : 'Bachata';
+  return [
+    {
+      slug: `${dance}-tre-cose`,
+      label: `${name}: tre cose da sapere`,
+      kicker: chapter.origin,
+      title: `${name}:`,
+      flair: 'tre cose da sapere',
+      sub: `Si conta ${chapter.facts[0].v}. Prima di mettere i piedi in pista, queste.`,
+      count: '3 cose',
+      points: chapter.tips.map((tip, i) => ({
+        kind: 'point',
+        label: `${name} · ${i + 1} di ${chapter.tips.length}`,
+        title: tip.title,
+        copy: tip.copy,
+      })),
+      lines: chapter.tips.map((tip, i) => `${i + 1}. ${tip.title}. ${tip.copy}`),
+    },
+    {
+      slug: `${dance}-stili`,
+      label: `${name}: gli stili`,
+      kicker: chapter.origin,
+      title: `${name}:`,
+      flair: 'gli stili che incontrerai',
+      sub: 'Stessa musica, tre modi di ballarla. Riconoscili in pista.',
+      count: `${chapter.styles.length} stili`,
+      points: chapter.styles.map((style) => ({ kind: 'point', label: `${name} · stile`, title: style.name, copy: style.copy })),
+      lines: chapter.styles.map((style) => `• ${style.name}. ${style.copy}`),
+    },
+  ];
+}
+
+const CHAPTERS: Chapter[] = [
+  {
+    slug: 'galateo',
+    label: 'Il galateo della pista',
+    kicker: 'Impara a ballare',
+    title: 'Il galateo',
+    flair: 'della pista',
+    sub: 'Le regole non scritte della tua prima serata.',
+    count: `${FLOOR_MANNERS.length} regole`,
+    points: FLOOR_MANNERS.map((manner, i) => ({ kind: 'point', label: `Ballo n°${i + 1}`, title: null, copy: manner })),
+    lines: FLOOR_MANNERS.map((manner, i) => `${i + 1}. ${manner}`),
+  },
+  {
+    slug: 'errori',
+    label: 'Gli errori che facciamo tutti',
+    kicker: 'Impara a ballare',
+    title: 'Gli errori che',
+    flair: 'facciamo tutti',
+    sub: 'I classici delle prime serate: riconoscerli è già metà del lavoro.',
+    count: `${MISTAKES.length} errori`,
+    points: MISTAKES.map((mistake, i) => ({
+      kind: 'versus',
+      label: `Errore n°${i + 1}`,
+      wrong: mistake.wrong,
+      right: mistake.right,
+    })),
+    lines: MISTAKES.map((mistake) => `✗ ${mistake.wrong}\n✓ ${mistake.right}`),
+  },
+  {
+    slug: 'ritmo',
+    label: 'Il ritmo: conta in otto',
+    kicker: 'Impara a ballare',
+    title: 'Prima dei piedi,',
+    flair: 'le orecchie',
+    sub: 'Salsa e bachata si contano in otto. Tre esercizi prima del primo passo.',
+    count: `${RHYTHM_TIPS.length} esercizi`,
+    points: RHYTHM_TIPS.map((tip, i) => ({
+      kind: 'point',
+      label: `Esercizio ${i + 1} di ${RHYTHM_TIPS.length}`,
+      title: tip.title,
+      copy: tip.copy,
+    })),
+    lines: RHYTHM_TIPS.map((tip, i) => `${i + 1}. ${tip.title}. ${tip.copy}`),
+  },
+  {
+    slug: 'coppia',
+    label: 'Si balla in due',
+    kicker: 'Impara a ballare',
+    title: 'Si balla',
+    flair: 'in due',
+    sub: 'Chi guida propone, chi segue interpreta. E nessuno dei due trascina l’altro.',
+    count: `${COUPLE_PRINCIPLES.length} principi`,
+    points: COUPLE_PRINCIPLES.map((principle, i) => ({
+      kind: 'point',
+      label: `In coppia · ${i + 1} di ${COUPLE_PRINCIPLES.length}`,
+      title: principle.title,
+      copy: principle.copy,
+    })),
+    lines: COUPLE_PRINCIPLES.map((principle, i) => `${i + 1}. ${principle.title}. ${principle.copy}`),
+  },
+  ...danceChapters('salsa'),
+  ...danceChapters('bachata'),
+];
+
+/** For the page's picker, in the order above. */
+export const LESSON_DECKS: { slug: string; label: string }[] = CHAPTERS.map(({ slug, label }) => ({ slug, label }));
+
+export function lessonDeck(slug: string): Deck | null {
+  const chapter = CHAPTERS.find((option) => option.slug === slug);
+  if (!chapter) return null;
+  return {
+    slug: `lezione-${chapter.slug}`,
+    format: 'post',
+    cards: [
+      {
+        kind: 'cover',
+        kicker: chapter.kicker,
+        title: chapter.title,
+        flair: chapter.flair,
+        sub: chapter.sub,
+        accent: null,
+        note: `${chapter.count} · scorri →`,
+      },
+      ...chapter.points,
+      OUTRO,
+    ],
+    textLabel: 'Testo del post',
+    textHint: 'Chiudi con una domanda (“Qual è stato il tuo?”): i commenti sono ciò che fa girare un post.',
+    text: [
+      `${chapter.title} ${chapter.flair} 💃🕺`,
+      '',
+      chapter.sub,
+      '',
+      ...chapter.lines,
+      '',
+      'La lezione intera, con il passo base animato, è su ballastasera.it/impara-a-ballare (link in bio).',
+      '',
+      HASHTAGS,
+    ].join('\n'),
+  };
+}

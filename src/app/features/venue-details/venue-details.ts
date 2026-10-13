@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -14,6 +14,7 @@ import {
 import { VENUE_PIN_COLORS, VENUE_PIN_GLYPHS, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
 import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
+import { PageSeo, SeoService, clip } from '../../core/services/seo.service';
 import { VenuesService } from '../../core/services/venues.service';
 import { VenueDetailDto } from '../../core/models/venue.model';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -71,6 +72,7 @@ export class VenueDetails {
   private readonly venuesService = inject(VenuesService);
   private readonly mapViewState = inject(MapViewStateService);
   private readonly router = inject(Router);
+  private readonly seo = inject(SeoService);
 
   protected readonly venue = signal<VenueDetailDto | null>(null);
   protected readonly loading = signal(true);
@@ -151,6 +153,13 @@ export class VenueDetails {
   constructor() {
     lockBodyScrollWhile(this.logoOpen);
 
+    // The page's own title, description and canonical URL, once the venue is
+    // in. Until then, and for a venue that isn't there, the home's stay.
+    effect(() => {
+      const venue = this.venue();
+      if (venue) this.seo.set(venueSeo(venue), `/luogo/${venue.id}`);
+    });
+
     const id = inject(ActivatedRoute).snapshot.paramMap.get('id');
     // No id or a failed fetch both end with venue() still null, which the
     // template renders as "not found".
@@ -187,4 +196,17 @@ export class VenueDetails {
   protected copyAddress(venue: VenueDetailDto): Promise<void> {
     return this.pageShare.copy(withoutCountry(venue.address), 'address');
   }
+}
+
+/** "Piperita — Bar a Milano" and, under it in a search result, what and where
+ * it is and the start of its own words. A school says what it teaches; OTHER
+ * (halls, squares) has no name worth showing. */
+function venueSeo(venue: VenueDetailDto): PageSeo {
+  const kind = venue.type === 'SCHOOL' ? 'Scuola di ballo' : venue.type === 'OTHER' ? null : VENUE_TYPE_LABELS[venue.type];
+  const where = kind ? `${kind} a ${venue.cityName}` : venue.cityName;
+  const about = venue.description ?? 'Indirizzo, contatti e come arrivare.';
+  return {
+    title: `${venue.name} — ${where}`,
+    description: clip(`${venue.name} — ${where}, ${addressPrimary(venue.address)}. ${about}`, 160),
+  };
 }

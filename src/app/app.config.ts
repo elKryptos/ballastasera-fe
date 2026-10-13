@@ -1,5 +1,5 @@
 import { ApplicationConfig, isDevMode, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
-import { RouteReuseStrategy, provideRouter, withViewTransitions } from '@angular/router';
+import { RouteReuseStrategy, TitleStrategy, provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTransloco } from '@jsverse/transloco';
@@ -10,6 +10,7 @@ import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/p
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { KeepAliveReuseStrategy } from './core/routing/keep-alive-reuse.strategy';
 import { AuthService } from './core/services/auth.service';
+import { SeoService } from './core/services/seo.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { AVAILABLE_LANGS, DEFAULT_LANG } from './core/config/i18n';
 import { environment } from '../environments/environment';
@@ -24,6 +25,9 @@ export const appConfig: ApplicationConfig = {
     // Keeps routes flagged `data: { keepAlive: true }` (the map) alive
     // across navigations instead of rebuilding them on every visit.
     { provide: RouteReuseStrategy, useClass: KeepAliveReuseStrategy },
+    // Each page's own title, description and canonical URL, after every
+    // navigation — see SeoService.
+    { provide: TitleStrategy, useExisting: SeoService },
     // Starts as an icon-only rail on desktop (matches the md:pl-(--sidebar-width-icon)
     // gutter every page reserves for it). Widths kept in sync with --sidebar-width
     // and --sidebar-width-icon in styles.css. The menu's links close the mobile

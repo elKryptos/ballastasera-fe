@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { featureFlagGuard } from './core/guards/feature-flag.guard';
 import { FEATURE_FLAGS } from './core/config/feature-flags';
 import { roleGuard } from './core/guards/role.guard';
+import { PAGE_SEO } from './core/config/page-seo';
 
 const loadLanding = () => import('./features/landing/landing').then((m) => m.Landing);
 
@@ -43,7 +44,7 @@ export const routes: Routes = [
         // back doesn't rebuild the map — see KeepAliveReuseStrategy.
         path: 'mappa',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.mapPage)],
-        data: { keepAlive: true },
+        data: { keepAlive: true, seo: PAGE_SEO.mappa },
         loadComponent: () => import('./features/map/map').then((m) => m.MapPage),
       },
 
@@ -52,6 +53,7 @@ export const routes: Routes = [
         // the Mappa | Lista switch. Same filters (EventFiltersService).
         path: 'lista',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.eventListPage)],
+        data: { seo: PAGE_SEO.lista },
         loadComponent: () => import('./features/event-list/event-list').then((m) => m.EventList),
       },
 
@@ -124,6 +126,7 @@ export const routes: Routes = [
         // Everything it shows lives in the component: no backend call.
         path: 'impara-a-ballare',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.learnToDancePage)],
+        data: { seo: PAGE_SEO.lesson },
         loadComponent: () =>
           import('./features/learn-to-dance/learn-to-dance').then((m) => m.LearnToDance),
       },
@@ -133,6 +136,7 @@ export const routes: Routes = [
         // the lesson's last chapter leads. Same flag as the lesson.
         path: 'playlist',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.learnToDancePage)],
+        data: { seo: PAGE_SEO.playlist },
         loadComponent: () =>
           import('./features/learn-to-dance/playlist/playlist').then((m) => m.Playlist),
       },
@@ -172,6 +176,7 @@ export const routes: Routes = [
         // Public, like the venues API it reads.
         path: 'scuole',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.schoolListPage)],
+        data: { seo: PAGE_SEO.scuole },
         loadComponent: () =>
           import('./features/school-list/school-list').then((m) => m.SchoolList),
       },

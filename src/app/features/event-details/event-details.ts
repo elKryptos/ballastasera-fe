@@ -26,6 +26,7 @@ import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventPinIcon, VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PageSeo, SeoService, clip } from '../../core/services/seo.service';
 import { EventAttendeeDto, EventDetailDto } from '../../core/models/event.model';
 import { OrganizerDetailDto } from '../../core/models/organizer.model';
 import { eventIcs } from '../../core/utils/calendar';
@@ -110,6 +111,7 @@ export class EventDetails {
   private readonly mapViewState = inject(MapViewStateService);
   private readonly eventsService = inject(EventsService);
   private readonly authService = inject(AuthService);
+  private readonly seo = inject(SeoService);
 
   protected readonly event = signal<EventDetailDto | null>(null);
   protected readonly loading = signal(true);
@@ -304,6 +306,13 @@ export class EventDetails {
       });
     });
 
+    // The page's own title, description and canonical URL, once the event is
+    // in. Until then, and for an event that isn't there, the home's stay.
+    effect(() => {
+      const event = this.event();
+      if (event) this.seo.set(eventSeo(event), `/evento/${event.id}`);
+    });
+
     const id = this.route.snapshot.paramMap.get('id');
     // No id or a failed fetch both end with event() still null, which the
     // template already renders as "not found": no separate error flag needed.
@@ -467,4 +476,19 @@ export class EventDetails {
       .map((word) => word[0]?.toUpperCase())
       .join('');
   }
+}
+
+/** "Serata Caraibica — Piperita, martedì 13 ottobre" and, under it in a search
+ * result, the night, the place, what's danced and the price. No start time:
+ * the server would write it in its own timezone, not Italy's. */
+function eventSeo(event: EventDetailDto): PageSeo {
+  const date = nightLongDate(event);
+  const where = [event.venue?.name, addressPrimary(event.address), event.cityName].filter(Boolean).join(', ');
+  return {
+    title: `${event.title} — ${event.venue?.name ?? event.cityName}, ${date}`,
+    description: clip(
+      [`${event.title}, ${date}`, where, event.danceStyles.join(', '), formatPrice(event)].filter(Boolean).join(' · '),
+      160,
+    ),
+  };
 }

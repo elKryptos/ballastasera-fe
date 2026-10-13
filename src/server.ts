@@ -1,5 +1,6 @@
 import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
 import { environment } from './environments/environment';
+import { sitemapResponse } from './sitemap';
 
 const angularApp = new AngularAppEngine({
 	// It is safe to set allow `localhost`, so that SSR can run in local development,
@@ -24,6 +25,11 @@ export const reqHandler = createRequestHandler(async (req) => {
 		url.hostname = CANONICAL_HOST;
 		return Response.redirect(url.toString(), 301);
 	}
+
+	// Written on request, with the venues and the events of the moment — see
+	// sitemap.ts. There's no sitemap.xml among the static assets, or Cloudflare
+	// would serve that one without ever getting here.
+	if (url.pathname === '/sitemap.xml') return sitemapResponse(`https://${CANONICAL_HOST}`);
 
 	const res = await angularApp.handle(req);
 

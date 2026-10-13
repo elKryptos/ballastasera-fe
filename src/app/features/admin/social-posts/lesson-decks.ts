@@ -38,6 +38,23 @@ interface Chapter {
   lines: string[];
 }
 
+/** Points with a title, one a card, and the same as numbered lines of
+ * text. `label` names a card from its place among them ("2 di 3"). */
+function titled(
+  items: { title: string; copy: string }[],
+  label: (place: string) => string,
+): Pick<Chapter, 'points' | 'lines'> {
+  return {
+    points: items.map((item, i) => ({
+      kind: 'point',
+      label: label(`${i + 1} di ${items.length}`),
+      title: item.title,
+      copy: item.copy,
+    })),
+    lines: items.map((item, i) => `${i + 1}. ${item.title}. ${item.copy}`),
+  };
+}
+
 function danceChapters(dance: Dance): Chapter[] {
   const chapter = DANCE_CHAPTERS[dance];
   const name = dance === 'salsa' ? 'Salsa' : 'Bachata';
@@ -50,13 +67,7 @@ function danceChapters(dance: Dance): Chapter[] {
       flair: 'tre cose da sapere',
       sub: `Si conta ${chapter.facts[0].v}. Prima di mettere i piedi in pista, queste.`,
       count: '3 cose',
-      points: chapter.tips.map((tip, i) => ({
-        kind: 'point',
-        label: `${name} · ${i + 1} di ${chapter.tips.length}`,
-        title: tip.title,
-        copy: tip.copy,
-      })),
-      lines: chapter.tips.map((tip, i) => `${i + 1}. ${tip.title}. ${tip.copy}`),
+      ...titled(chapter.tips, (place) => `${name} · ${place}`),
     },
     {
       slug: `${dance}-stili`,
@@ -108,13 +119,7 @@ const CHAPTERS: Chapter[] = [
     flair: 'le orecchie',
     sub: 'Salsa e bachata si contano in otto. Tre esercizi prima del primo passo.',
     count: `${RHYTHM_TIPS.length} esercizi`,
-    points: RHYTHM_TIPS.map((tip, i) => ({
-      kind: 'point',
-      label: `Esercizio ${i + 1} di ${RHYTHM_TIPS.length}`,
-      title: tip.title,
-      copy: tip.copy,
-    })),
-    lines: RHYTHM_TIPS.map((tip, i) => `${i + 1}. ${tip.title}. ${tip.copy}`),
+    ...titled(RHYTHM_TIPS, (place) => `Esercizio ${place}`),
   },
   {
     slug: 'coppia',
@@ -124,13 +129,7 @@ const CHAPTERS: Chapter[] = [
     flair: 'in due',
     sub: 'Chi guida propone, chi segue interpreta. E nessuno dei due trascina l’altro.',
     count: `${COUPLE_PRINCIPLES.length} principi`,
-    points: COUPLE_PRINCIPLES.map((principle, i) => ({
-      kind: 'point',
-      label: `In coppia · ${i + 1} di ${COUPLE_PRINCIPLES.length}`,
-      title: principle.title,
-      copy: principle.copy,
-    })),
-    lines: COUPLE_PRINCIPLES.map((principle, i) => `${i + 1}. ${principle.title}. ${principle.copy}`),
+    ...titled(COUPLE_PRINCIPLES, (place) => `In coppia · ${place}`),
   },
   ...danceChapters('salsa'),
   ...danceChapters('bachata'),

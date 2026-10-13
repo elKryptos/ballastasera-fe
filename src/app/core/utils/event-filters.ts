@@ -130,7 +130,7 @@ export function compareByLiveThenStart(a: EventCardDto, b: EventCardDto, now: nu
   return Number(liveB) - Number(liveA) || Date.parse(a.startAt) - Date.parse(b.startAt);
 }
 
-function capitalize(text: string): string {
+export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 

@@ -46,7 +46,22 @@ export type Card =
   /** A mistake, struck out, and what to do instead. */
   | { kind: 'versus'; label: string; wrong: string; right: string }
   /** A carousel's last card: where to find the rest. */
-  | { kind: 'outro'; title: string; flair: string; note: string };
+  | { kind: 'outro'; title: string; flair: string; note: string }
+  /** One night on its own, for its venue to share: the flyer large, the date
+   * beside it, then what, where, what's danced and the price. */
+  | {
+      kind: 'event';
+      weekday: string;
+      day: string;
+      month: string;
+      time: string;
+      price: string;
+      title: string;
+      place: string;
+      address: string;
+      styles: string;
+      flyerUrl: string | null;
+    };
 
 /** The most rows a night's card takes. */
 export const MAX_ROWS = 5;
@@ -113,6 +128,9 @@ export function drawCard(ctx: Ctx, format: Format, card: Card, index: number, to
         body('MEGLIO COSÌ', 600, 36, MINT, 90),
         display(card.right, 76, BONE, 26),
       ]);
+      return;
+    case 'event':
+      drawEvent(ctx, frame, card, flyers.get(card.flyerUrl ?? '') ?? null);
       return;
     case 'outro':
       drawStack(ctx, frame, [
@@ -271,19 +289,15 @@ function drawStack(ctx: Ctx, frame: Frame, blocks: Block[]): void {
 function layOut(ctx: Ctx, blocks: Block[], width: number, scale: number) {
   let height = 0;
   const laid = blocks.map((block) => {
-    let size = Math.round(block.size * scale);
-    ctx.font = `${block.weight} ${size}px ${block.family}`;
-    let lines = [block.text];
-    if (block.fit) {
-      const textWidth = ctx.measureText(block.text).width;
-      if (textWidth > width) size = Math.floor((size * width) / textWidth);
-    } else {
-      lines = wrapped(ctx, block.text, width);
-    }
+    const scaled = Math.round(block.size * scale);
+    const size = block.fit ? fitSize(ctx, block.text, block.weight, scaled, width, block.family) : scaled;
+    const font = `${block.weight} ${size}px ${block.family}`;
+    ctx.font = font;
+    const lines = block.fit ? [block.text] : wrapped(ctx, block.text, width);
     const lineHeight = size * (block.family === DISPLAY ? 1.06 : 1.34);
     const gap = block.gap * scale;
     height += gap + lines.length * lineHeight;
-    return { block, font: `${block.weight} ${size}px ${block.family}`, size, lines, lineHeight, gap };
+    return { block, font, size, lines, lineHeight, gap };
   });
   return { blocks: laid, height };
 }
@@ -341,7 +355,7 @@ function drawRow(ctx: Ctx, frame: Frame, row: NightRow, y: number, scale: number
   const thumbWidth = 96 * scale;
   const thumbHeight = 128 * scale;
   const thumbY = y + (ROW_HEIGHT * scale - thumbHeight) / 2;
-  drawThumb(ctx, PAD, thumbY, thumbWidth, thumbHeight, flyer, row.title);
+  drawThumb(ctx, PAD, thumbY, thumbWidth, thumbHeight, thumbWidth * 0.16, flyer, row.title);
 
   const x = PAD + thumbWidth + 30 * scale;
   const right = frame.width - PAD;
@@ -382,12 +396,13 @@ function drawThumb(
   y: number,
   width: number,
   height: number,
+  radius: number,
   flyer: CanvasImageSource | null,
   title: string,
 ): void {
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x, y, width, height, width * 0.16);
+  ctx.roundRect(x, y, width, height, radius);
   ctx.clip();
   ctx.fillStyle = INK_2;
   ctx.fillRect(x, y, width, height);
@@ -410,8 +425,92 @@ function drawThumb(
   ctx.strokeStyle = LINE;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(x, y, width, height, width * 0.16);
+  ctx.roundRect(x, y, width, height, radius);
   ctx.stroke();
+}
+
+// --- One night on its own.
+
+/** The date's column is never narrower than this: the flyer gives way. */
+const DATE_COLUMN = 300;
+
+/** The flyer as tall as the words under it leave room for, the date,
+ * the time and the price in a column beside it, then the title (two lines
+ * at most, smaller if it takes that), the place, its street and the styles. */
+function drawEvent(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'event' }>, flyer: CanvasImageSource | null): void {
+  const inner = frame.width - 2 * PAD;
+  const top = frame.top + 70;
+  const bottom = frame.bottom - 90;
+
+  let titleSize = 84;
+  let titleLines: string[];
+  do {
+    ctx.font = `800 ${titleSize}px ${DISPLAY}`;
+    titleLines = wrapped(ctx, card.title, inner);
+    titleSize -= 6;
+  } while (titleLines.length > 2 && titleSize >= 48);
+  titleSize += 6;
+  // Still more than two at the smallest size: the rest stays on the second,
+  // which is cut short where it's drawn (clipped), with its ellipsis.
+  if (titleLines.length > 2) titleLines = [titleLines[0], titleLines.slice(1).join(' ')];
+  const titleHeight = titleLines.length * titleSize * 1.06;
+  const words = titleHeight + 22 + (card.place ? 56 : 0) + (card.address ? 50 : 0) + (card.styles ? 48 : 0);
+
+  // The flyer whole, in its own proportions (3:4 for the tile that stands in
+  // for a missing one): it's the venue's own picture, not ours to crop.
+  const gap = 44;
+  const size = flyer ? sourceSize(flyer) : null;
+  const ratio = size ? size.width / size.height : 3 / 4;
+  const flyerHeight = Math.min(bottom - top - words - gap, (inner - DATE_COLUMN - gap) / ratio);
+  const flyerWidth = flyerHeight * ratio;
+  drawThumb(ctx, PAD, top, flyerWidth, flyerHeight, 28, flyer, card.title);
+
+  const x = PAD + flyerWidth + gap;
+  const column = frame.width - PAD - x;
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = ROSE_LIT;
+  ctx.font = `600 46px ${BODY}`;
+  ctx.fillText(card.weekday.toUpperCase(), x, top + 6);
+  ctx.fillStyle = BONE;
+  ctx.font = `800 180px ${DISPLAY}`;
+  ctx.fillText(card.day, x - 6, top + 50);
+  ctx.fillStyle = LEAD;
+  ctx.font = `600 46px ${BODY}`;
+  ctx.fillText(card.month.toUpperCase(), x, top + 236);
+  ctx.fillStyle = MINT;
+  ctx.font = `800 76px ${DISPLAY}`;
+  ctx.fillText(card.time, x, top + 330);
+  ctx.fillStyle = PRICE;
+  ctx.font = fitted(ctx, card.price, 600, 44, column, BODY);
+  ctx.fillText(card.price, x, top + 430);
+
+  let y = top + flyerHeight + gap;
+  ctx.fillStyle = BONE;
+  ctx.font = `800 ${titleSize}px ${DISPLAY}`;
+  for (const line of titleLines) {
+    ctx.fillText(clipped(ctx, line, inner), PAD, y);
+    y += titleSize * 1.06;
+  }
+  y += 22;
+  if (card.place) {
+    ctx.fillStyle = MINT;
+    ctx.font = `600 44px ${BODY}`;
+    ctx.fillText(clipped(ctx, card.place, inner), PAD, y);
+    y += 56;
+  }
+  if (card.address) {
+    // Smaller rather than cut short: the town closes the line.
+    ctx.fillStyle = LEAD;
+    ctx.font = fitted(ctx, card.address, 400, 36, inner, BODY);
+    ctx.fillText(card.address, PAD, y);
+    y += 50;
+  }
+  if (card.styles) {
+    ctx.fillStyle = MUTED;
+    ctx.font = `400 34px ${BODY}`;
+    ctx.fillText(clipped(ctx, card.styles, inner), PAD, y);
+  }
+  ctx.textBaseline = 'alphabetic';
 }
 
 function sourceSize(source: CanvasImageSource): { width: number; height: number } | null {
@@ -419,11 +518,16 @@ function sourceSize(source: CanvasImageSource): { width: number; height: number 
   return typeof width === 'number' && typeof height === 'number' && width > 0 && height > 0 ? { width, height } : null;
 }
 
-/** The font at `size`, or as much smaller as it takes for `text` to fit. */
-function fitted(ctx: Ctx, text: string, weight: number, size: number, maxWidth: number, family: string): string {
+/** `size`, or as much smaller as it takes for `text` to fit on one line. */
+function fitSize(ctx: Ctx, text: string, weight: number, size: number, maxWidth: number, family: string): number {
   ctx.font = `${weight} ${size}px ${family}`;
   const width = ctx.measureText(text).width;
-  return width <= maxWidth ? ctx.font : `${weight} ${Math.floor((size * maxWidth) / width)}px ${family}`;
+  return width <= maxWidth ? size : Math.floor((size * maxWidth) / width);
+}
+
+/** The font that does it. */
+function fitted(ctx: Ctx, text: string, weight: number, size: number, maxWidth: number, family: string): string {
+  return `${weight} ${fitSize(ctx, text, weight, size, maxWidth, family)}px ${family}`;
 }
 
 /** `text` cut short with an ellipsis where it's wider than `maxWidth`, in

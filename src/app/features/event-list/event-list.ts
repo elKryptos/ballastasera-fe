@@ -19,7 +19,6 @@ import {
   formatClock,
   formatPrice,
   isLiveAt,
-  withoutCountry,
 } from '../../core/utils/event-format';
 import {
   compareByLiveThenStart,
@@ -343,7 +342,7 @@ export class EventList {
       flyerUrl: event.flyerUrl,
       eventType: event.eventType,
       venue: event.venueName,
-      address: addressPrimary(withoutCountry(event.address)),
+      address: addressPrimary(event.address),
       styles: event.danceStyles,
       price: formatPrice(event),
       going: event.goingCount,

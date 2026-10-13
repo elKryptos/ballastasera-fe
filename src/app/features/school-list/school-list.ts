@@ -12,7 +12,7 @@ import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { UserLocationService } from '../../core/services/user-location.service';
 import { VenuesService } from '../../core/services/venues.service';
-import { addressPrimary, withoutCountry } from '../../core/utils/event-format';
+import { addressPrimary } from '../../core/utils/event-format';
 import { distanceKm, formatDistance, startingCity } from '../../core/utils/geo';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
@@ -125,7 +125,7 @@ export class SchoolList {
           name: venue.name,
           logoUrl: venue.logoUrl,
           type: venue.type,
-          address: addressPrimary(withoutCountry(venue.address)),
+          address: addressPrimary(venue.address),
           meta: km !== null ? `${kind} · ${formatDistance(km)}` : kind,
         };
       });

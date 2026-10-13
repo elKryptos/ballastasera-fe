@@ -109,7 +109,8 @@ export function formatPrice(event: { free: boolean; price: number | null; curren
 /** Geocoded addresses already join street+civico with a space ("Via Roma
  * 12"), but older/manually-typed ones use a comma ("Via Roma, 12") — this
  * merges a leading civico into the primary line either way, while a 5-digit
- * CAP in the same position is left for addressSecondary. */
+ * CAP in the same position is left for addressSecondary. The country is
+ * never part of this line, so it needs no withoutCountry first. */
 export function addressPrimary(address: string): string {
   const parts = address.split(',').map((p) => p.trim());
   return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];

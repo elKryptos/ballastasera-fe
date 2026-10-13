@@ -13,7 +13,6 @@ import {
   formatClock,
   formatPrice,
   liveLabel,
-  withoutCountry,
 } from '../../core/utils/event-format';
 import { compareByLiveThenStart, inDateRange } from '../../core/utils/event-filters';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -107,7 +106,7 @@ export class Menu {
           title: event.title,
           live: live !== null,
           when: live ?? formatClock(event.startAt),
-          place: event.venueName ?? addressPrimary(withoutCountry(event.address)),
+          place: event.venueName ?? addressPrimary(event.address),
           price: formatPrice(event),
           going: event.goingCount,
           flyerUrl: event.flyerUrl,

@@ -8,7 +8,6 @@ import {
   formatClock,
   formatPrice,
   googleMapsUrl,
-  withoutCountry,
 } from '../../../core/utils/event-format';
 import { nightShortLabel } from '../../../core/utils/event-filters';
 import { formatDistance } from '../../../core/utils/geo';
@@ -51,7 +50,7 @@ export class EventMapCard {
   /** "Discoteca · Via Roma 12", under the venue's name. */
   protected readonly placeLine = computed(() => {
     const event = this.event();
-    return `${EVENT_TYPE_LABELS[event.eventType]} · ${addressPrimary(withoutCountry(event.address))}`;
+    return `${EVENT_TYPE_LABELS[event.eventType]} · ${addressPrimary(event.address)}`;
   });
   /** "1,2 km", at the end of that line. */
   protected readonly distance = computed(() => {

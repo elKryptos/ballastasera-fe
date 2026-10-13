@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { EventCardDto } from '../../../core/models/event.model';
 import { VenueMapPinDto } from '../../../core/models/venue.model';
 import { EventFiltersService } from '../../../core/services/event-filters.service';
-import { addressPrimary, formatClock, formatPrice, liveLabel, withoutCountry } from '../../../core/utils/event-format';
+import { addressPrimary, formatClock, formatPrice, liveLabel } from '../../../core/utils/event-format';
 import { DATE_RANGE_PHRASES, nightShortLabel } from '../../../core/utils/event-filters';
 import { EventMapCard } from '../event-map-card/event-map-card';
 import { VenueMapCard } from '../venue-map-card/venue-map-card';
@@ -108,7 +108,7 @@ export class MapSheet {
         event,
         live: live !== null,
         when: live ?? `${nightShortLabel(event, now)} · ${formatClock(event.startAt)}`,
-        address: addressPrimary(withoutCountry(event.address)),
+        address: addressPrimary(event.address),
         price: formatPrice(event),
       };
     });

@@ -114,7 +114,7 @@
               }
             </span>
             <span class="line-clamp-2 font-display text-base leading-tight font-extrabold">{{ card.event.title }}</span>
-            <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ card.place }}</span>
+            <app-event-place [venue]="card.event.venueName" [address]="card.address" [trailing]="card.price" />
           </span>
         </button>
       </li>
@@ -123,7 +123,7 @@
     } @else if (showsEvents() && loading()) {
     <div class="flex gap-2.5 overflow-hidden px-4 md:flex-col" aria-hidden="true">
       @for (placeholder of [1, 2]; track placeholder) {
-      <div class="h-24 w-72 shrink-0 animate-pulse rounded-2xl bg-(--ev-raised) md:w-auto"></div>
+      <div class="h-28 w-72 shrink-0 animate-pulse rounded-2xl bg-(--ev-raised) md:w-auto"></div>
       }
     </div>
     }

@@ -13,6 +13,7 @@ import {
 import { nightShortLabel } from '../../../core/utils/event-filters';
 import { formatDistance } from '../../../core/utils/geo';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
+import { EventPlace } from '../../../shared/event-place/event-place';
 
 /** The tapped pin's event, in the map's bottom sheet (MapSheet).
  * Presentational only: MapPage owns the selection and the Parteciperò/Mi
@@ -20,7 +21,7 @@ import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
  * event's page; "Portami lì" opens Google Maps directions. */
 @Component({
   selector: 'app-event-map-card',
-  imports: [RouterLink, EventPinIcon],
+  imports: [RouterLink, EventPinIcon, EventPlace],
   templateUrl: './event-map-card.html',
 })
 export class EventMapCard {
@@ -47,13 +48,15 @@ export class EventMapCard {
     return { tone: 'plain' as const, text: `${nightShortLabel(event, now)} · ${formatClock(event.startAt)}` };
   });
 
-  /** "Discoteca · Nome locale · 1,2 km" — or the street when there's no venue. */
+  /** "Discoteca · Via Roma 12", under the venue's name. */
   protected readonly placeLine = computed(() => {
     const event = this.event();
-    const parts = [EVENT_TYPE_LABELS[event.eventType], event.venueName ?? addressPrimary(withoutCountry(event.address))];
+    return `${EVENT_TYPE_LABELS[event.eventType]} · ${addressPrimary(withoutCountry(event.address))}`;
+  });
+  /** "1,2 km", at the end of that line. */
+  protected readonly distance = computed(() => {
     const km = this.distanceKm();
-    if (km !== null) parts.push(formatDistance(km));
-    return parts.join(' · ');
+    return km === null ? null : formatDistance(km);
   });
 
   protected readonly priceLabel = computed(() => formatPrice(this.event()));

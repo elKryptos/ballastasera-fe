@@ -37,6 +37,7 @@ import { DateRangeChips } from '../../shared/event-filters/date-range-chips';
 import { EventFiltersDialog } from '../../shared/event-filters/event-filters-dialog';
 import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { ViewSwitch } from '../../shared/event-filters/view-switch';
+import { EventPlace } from '../../shared/event-place/event-place';
 
 /** Keeps the LIVE badges current, and drops a night once it's over, with
  * the page left open. */
@@ -75,7 +76,8 @@ interface ListRow {
   /** No flyer: the type's pin stands in, as on the map's card. */
   flyerUrl: string | null;
   eventType: EventType;
-  place: string;
+  venue: string | null;
+  address: string;
   styles: string[];
   price: string;
   going: number;
@@ -99,7 +101,7 @@ interface ListGroup {
  */
 @Component({
   selector: 'app-event-list',
-  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, ViewSwitch],
+  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, EventPlace, ViewSwitch],
   templateUrl: './event-list.html',
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
@@ -332,7 +334,6 @@ export class EventList {
   }
 
   private toRow({ event, km }: ListItem, now: number): ListRow {
-    const address = addressPrimary(withoutCountry(event.address));
     return {
       id: event.id,
       title: event.title,
@@ -341,7 +342,8 @@ export class EventList {
       meta: [EVENT_TYPE_LABELS[event.eventType], km !== null ? formatDistance(km) : null].filter(Boolean).join(' · '),
       flyerUrl: event.flyerUrl,
       eventType: event.eventType,
-      place: event.venueName ? `${event.venueName} · ${address}` : address,
+      venue: event.venueName,
+      address: addressPrimary(withoutCountry(event.address)),
       styles: event.danceStyles,
       price: formatPrice(event),
       going: event.goingCount,

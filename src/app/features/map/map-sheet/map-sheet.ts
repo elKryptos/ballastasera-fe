@@ -9,6 +9,7 @@ import { EventMapCard } from '../event-map-card/event-map-card';
 import { VenueMapCard } from '../venue-map-card/venue-map-card';
 import { MapLayer, layerShowsEvents } from '../map-layer';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
+import { EventPlace } from '../../../shared/event-place/event-place';
 
 /** A swipe on the header shorter than this is a tap. */
 const SWIPE_PX = 32;
@@ -18,7 +19,8 @@ interface SheetCard {
   event: EventCardDto;
   live: boolean;
   when: string;
-  place: string;
+  address: string;
+  price: string;
 }
 
 /**
@@ -32,7 +34,7 @@ interface SheetCard {
  */
 @Component({
   selector: 'app-map-sheet',
-  imports: [EventMapCard, VenueMapCard, EventPinIcon, RouterLink],
+  imports: [EventMapCard, VenueMapCard, EventPinIcon, EventPlace, RouterLink],
   templateUrl: './map-sheet.html',
   host: { class: 'block' },
 })
@@ -106,7 +108,8 @@ export class MapSheet {
         event,
         live: live !== null,
         when: live ?? `${nightShortLabel(event, now)} · ${formatClock(event.startAt)}`,
-        place: `${event.venueName ?? addressPrimary(withoutCountry(event.address))} · ${formatPrice(event)}`,
+        address: addressPrimary(withoutCountry(event.address)),
+        price: formatPrice(event),
       };
     });
   });

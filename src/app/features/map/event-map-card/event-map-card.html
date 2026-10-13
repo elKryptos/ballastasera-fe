@@ -52,7 +52,7 @@
           {{ event().title }}
         </a>
       </div>
-      <p class="truncate text-[0.8125rem] text-(--ev-soft)">{{ placeLine() }}</p>
+      <app-event-place [venue]="event().venueName" [address]="placeLine()" [trailing]="distance()" />
 
       <!-- One line of them (h-5, a tag's height): the ones that wrap are cut
           off, leaving the room to the flyer. The event's page lists them all. -->

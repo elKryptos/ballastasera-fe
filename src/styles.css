@@ -629,6 +629,9 @@ app-school-list {
   --ev-badge-text: #0e2a26;
   --ev-zone-on-bg: color-mix(in srgb, var(--color-mint) 16%, var(--color-ink));
   --ev-zone-on-text: #7ff2dc;
+  /* The venue's name on an event's card: the "where" colour, like the
+  city's pin and the distance chips. Follows --ev-zone-on-text by day. */
+  --ev-place: var(--ev-zone-on-text);
   /* "Cerca in questa zona": inverted, so it reads as the one action on the map. */
   --ev-invert-bg: var(--color-bone);
   --ev-invert-text: #1a0e2e;

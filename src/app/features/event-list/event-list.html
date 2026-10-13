@@ -177,7 +177,7 @@
               {{ row.title }}
             </a>
           </h3>
-          <p class="truncate text-[0.8125rem] text-(--ev-soft)">{{ row.place }}</p>
+          <app-event-place [venue]="row.venue" [address]="row.address" />
           <!-- On phones one line of them (h-5, a tag's height): the ones that
               wrap are cut off, leaving the room to the flyer. The event's
               page lists them all. -->

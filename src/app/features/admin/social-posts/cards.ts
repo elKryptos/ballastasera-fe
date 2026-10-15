@@ -1,7 +1,10 @@
 /** The pictures an Instagram post is made of, drawn on a canvas: what a card
  * can be (Card), and how each kind is drawn (drawCard). No Angular and no
- * data in here: the decks are built in agenda-decks.ts and lesson-decks.ts,
- * and SocialPosts owns the canvases, the flyers and the downloads. */
+ * data in here: the decks are built in event-decks.ts and lesson-decks.ts,
+ * and SocialPosts owns the canvases, the flyers and the downloads.
+ * A card about the nights is drawn over a flyer of its own, blurred
+ * (drawBackdrop): each takes its night's colours, so the profile's grid isn't
+ * one purple square after another. */
 
 /** A post's picture (4:5, the tallest a carousel shows whole) or a story's. */
 export type Format = 'post' | 'story';
@@ -35,14 +38,28 @@ export interface NightRow {
   title: string;
   /** The venue, or the organizer where there's none. */
   place: string;
-  styles: string;
+  /** "Segrate · Bachata, Salsa": the town and what's danced. */
+  where: string;
   price: string;
+  free: boolean;
   flyerUrl: string | null;
 }
 
 export type Card =
-  /** A carousel's first card: the question or the title, `flair` in rose. */
-  | { kind: 'cover'; kicker: string | null; title: string; flair: string; sub: string; accent: string | null; note: string }
+  /** A carousel's first card: the question or the title, `flair` in rose.
+   * With `flyers` (the nights', the first one in front) they're fanned out
+   * over it, `more` ("+8 serate") on them, and the first is its backdrop. */
+  | {
+      kind: 'cover';
+      kicker: string | null;
+      title: string;
+      flair: string;
+      sub: string;
+      accent: string | null;
+      note: string;
+      flyers?: string[];
+      more?: string | null;
+    }
   /** A night's events, at most MAX_ROWS of them. */
   | { kind: 'night'; heading: string; sub: string; rows: NightRow[] }
   /** One thing to know: with a `title` the copy is the smaller text under it,
@@ -50,8 +67,9 @@ export type Card =
   | { kind: 'point'; label: string; title: string | null; copy: string }
   /** A mistake, struck out, and what to do instead. */
   | { kind: 'versus'; label: string; wrong: string; right: string }
-  /** A carousel's last card: where to find the rest. */
-  | { kind: 'outro'; title: string; flair: string; note: string }
+  /** A carousel's last card: where to find the rest. With `flyers`, the
+   * period's, they're a mosaic over its top. */
+  | { kind: 'outro'; title: string; flair: string; note: string; flyers?: string[] }
   /** One night on its own, for its venue to share: the flyer large, the date
    * beside it, then what, where, what's danced and the price. */
   | {
@@ -61,12 +79,42 @@ export type Card =
       month: string;
       time: string;
       price: string;
+      free: boolean;
       title: string;
       place: string;
       address: string;
-      styles: string;
+      /** Families ("Bachata", "Salsa"), a tag each. */
+      styles: string[];
       flyerUrl: string | null;
     };
+
+/** Every flyer `card` draws, to be loaded before it is. */
+export function flyersOf(card: Card): string[] {
+  const urls =
+    card.kind === 'night'
+      ? card.rows.map((row) => row.flyerUrl)
+      : card.kind === 'event'
+        ? [card.flyerUrl]
+        : card.kind === 'cover' || card.kind === 'outro'
+          ? (card.flyers ?? [])
+          : [];
+  return urls.filter((url): url is string => !!url);
+}
+
+/** The flyer blurred behind `card`: a cover's first, a night's first, a
+ * night's own. Lessons and the outro keep the brand's plain backdrop. */
+function backdropOf(card: Card): string | null {
+  switch (card.kind) {
+    case 'cover':
+      return card.flyers?.[0] ?? null;
+    case 'night':
+      return card.rows.find((row) => row.flyerUrl)?.flyerUrl ?? null;
+    case 'event':
+      return card.flyerUrl;
+    default:
+      return null;
+  }
+}
 
 /** The most rows a night's card takes. */
 export const MAX_ROWS = 5;
@@ -80,10 +128,16 @@ const ROSE_LIT = '#ff6e88';
 const VIOLET = '#8b5cf6';
 const MINT = '#2dd4bf';
 const PRICE = '#fbbf24';
+/** "Gratis" (--ev-free), and the text on its tag. */
+const FREE = '#4ade80';
+const ON_FREE = '#0b2a17';
 const BONE = '#fdf2ec';
 const LEAD = '#ead6dc';
 const MUTED = '#c2a0ae';
 const LINE = 'rgba(253, 242, 236, 0.14)';
+/** A night's row, and a style's tag. */
+const PANEL = 'rgba(253, 242, 236, 0.07)';
+const TAG = 'rgba(139, 92, 246, 0.35)';
 
 const DISPLAY = '"Bricolage Grotesque", "Arial Black", sans-serif';
 const BODY = '"Instrument Sans", system-ui, sans-serif';
@@ -97,15 +151,40 @@ const PAD = 84;
 type Ctx = CanvasRenderingContext2D;
 type Flyers = ReadonlyMap<string, CanvasImageSource | null>;
 
+/** The flyer at `url`, once it's loaded; null without one or until then. */
+const loaded = (flyers: Flyers, url: string | null | undefined): CanvasImageSource | null =>
+  url ? (flyers.get(url) ?? null) : null;
+
 /** Draws `card`, the `index`-th of `total`. `flyers` holds what's loaded of
  * a night's flyers, by URL; a row without one gets its title's initial. */
 export function drawCard(ctx: Ctx, format: Format, card: Card, index: number, total: number, flyers: Flyers): void {
   const frame = FRAMES[format];
-  drawBackdrop(ctx, frame);
+  const flyer = (url: string | null | undefined): CanvasImageSource | null => loaded(flyers, url);
+  drawBackdrop(ctx, frame, flyer(backdropOf(card)));
+  const mosaic =
+    card.kind === 'outro' ? (card.flyers ?? []).map(flyer).filter((image): image is CanvasImageSource => !!image) : [];
+  if (mosaic.length) drawMosaic(ctx, frame, mosaic);
   drawBrand(ctx, frame);
   drawFooter(ctx, frame, format === 'post' && total > 1 ? `${index + 1} / ${total}` : null);
   switch (card.kind) {
     case 'cover':
+      if (card.flyers?.length) {
+        // The fan over the top half, the words under it: no sub, the
+        // flyers say what it's about.
+        const fanBottom = drawFan(ctx, frame, card.flyers.map(flyer), card.more ?? null, card.title);
+        drawStack(
+          ctx,
+          frame,
+          [
+            body((card.kicker ?? card.accent ?? '').toUpperCase(), 600, 34, MINT, 0),
+            headline(card.title, 136, BONE, 18),
+            headline(card.flair, 136, ROSE, 0),
+            body(card.note, 600, 40, BONE, 30),
+          ],
+          fanBottom,
+        );
+        return;
+      }
       drawStack(ctx, frame, [
         ...(card.kicker ? [body(card.kicker.toUpperCase(), 600, 34, MINT, 0)] : []),
         headline(card.title, 150, BONE, card.kicker ? 30 : 0),
@@ -135,9 +214,25 @@ export function drawCard(ctx: Ctx, format: Format, card: Card, index: number, to
       ]);
       return;
     case 'event':
-      drawEvent(ctx, frame, card, flyers.get(card.flyerUrl ?? '') ?? null);
+      drawEvent(ctx, frame, card, flyer(card.flyerUrl));
       return;
     case 'outro':
+      if (mosaic.length) {
+        // Under the mosaic, which fades out by the middle.
+        drawStack(
+          ctx,
+          frame,
+          [
+            headline(card.title, 104, BONE, 0),
+            headline(card.flair, 104, BONE, 0),
+            headline('ballastasera.it', 128, ROSE, 30),
+            body('Link in bio', 600, 46, LEAD, 20),
+            body(card.note, 400, 38, MUTED, 14),
+          ],
+          frame.top + (frame.bottom - frame.top) * 0.46,
+        );
+        return;
+      }
       drawStack(ctx, frame, [
         headline(card.title, 124, BONE, 0),
         headline(card.flair, 124, BONE, 0),
@@ -149,7 +244,48 @@ export function drawCard(ctx: Ctx, format: Format, card: Card, index: number, to
   }
 }
 
-function drawBackdrop(ctx: Ctx, { width, height }: Frame): void {
+/** The brand's night sky, or, with a flyer, that flyer blown up past the
+ * frame, blurred and under a dark veil: the card takes its colours, and the
+ * words on it read as on the plain one. */
+function drawBackdrop(ctx: Ctx, frame: Frame, flyer: CanvasImageSource | null): void {
+  const { width, height } = frame;
+  const size = flyer ? sourceSize(flyer) : null;
+  if (!flyer || !size) {
+    drawSky(ctx, frame);
+    return;
+  }
+  ctx.fillStyle = INK;
+  ctx.fillRect(0, 0, width, height);
+  // Blurred by shrinking it to a few pixels and blowing it back up, which
+  // every browser does; a canvas's own filter, where there is one, smooths
+  // the seams the enlargement leaves. Past the frame on every side, so the
+  // blur doesn't fade its edges.
+  const tiny = ctx.canvas.ownerDocument.createElement('canvas');
+  tiny.width = BLUR_PIXELS;
+  tiny.height = Math.round((BLUR_PIXELS * height) / width);
+  const tinyCtx = tiny.getContext('2d');
+  if (tinyCtx) {
+    drawCovering(tinyCtx, flyer, size, 0, 0, tiny.width, tiny.height);
+    const bleed = 120;
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.filter = 'blur(24px) saturate(1.3)';
+    ctx.drawImage(tiny, -bleed, -bleed, width + 2 * bleed, height + 2 * bleed);
+    ctx.restore();
+  }
+  const veil = ctx.createLinearGradient(0, 0, 0, height);
+  veil.addColorStop(0, 'rgba(26, 14, 46, 0.66)');
+  veil.addColorStop(0.45, 'rgba(26, 14, 46, 0.58)');
+  veil.addColorStop(1, 'rgba(26, 14, 46, 0.92)');
+  ctx.fillStyle = veil;
+  ctx.fillRect(0, 0, width, height);
+}
+
+/** How many pixels across a flyer is shrunk to, to blur it. */
+const BLUR_PIXELS = 24;
+
+function drawSky(ctx: Ctx, { width, height }: Frame): void {
   const sky = ctx.createLinearGradient(0, 0, 0, height);
   sky.addColorStop(0, INK_2);
   sky.addColorStop(1, INK);
@@ -262,13 +398,14 @@ const body = (text: string, weight: number, size: number, colour: string, gap: n
 });
 
 /** Lays the blocks out top to bottom and draws them centred in the frame's
- * free height. Too tall to fit (a long copy), everything shrinks together. */
-function drawStack(ctx: Ctx, frame: Frame, blocks: Block[]): void {
+ * free height, or in what's left of it under `top`. Too tall to fit (a long
+ * copy), everything shrinks together. */
+function drawStack(ctx: Ctx, frame: Frame, blocks: Block[], top = frame.top + 80 * frame.scale): void {
   const inner = frame.width - 2 * PAD;
-  const room = frame.bottom - frame.top - 190 * frame.scale;
+  const room = frame.bottom - 110 * frame.scale - top;
   let laid = layOut(ctx, blocks, inner, frame.scale);
   if (laid.height > room) laid = layOut(ctx, blocks, inner, Math.max(0.6, (frame.scale * room) / laid.height));
-  let y = frame.top + 80 * frame.scale + Math.max(0, (room - laid.height) / 2);
+  let y = top + Math.max(0, (room - laid.height) / 2);
   ctx.textBaseline = 'top';
   for (const { block, font, size, lines, lineHeight, gap } of laid.blocks) {
     y += gap;
@@ -327,8 +464,11 @@ function wrapped(ctx: Ctx, text: string, maxWidth: number): string[] {
 
 // --- A night's card: its heading, then a row per event.
 
-/** A row at scale 1: MAX_ROWS of them fill a post. */
-const ROW_HEIGHT = 154;
+/** A row at scale 1 (its flyer and the panel's padding round it) and the
+ * gap between two: MAX_ROWS of them fill a post at about 0.8. */
+const ROW_PADDING = 10;
+const ROW_HEIGHT = 128 + 2 * ROW_PADDING;
+const ROW_GAP = 16;
 const MAX_SCALE = 1.5;
 
 function drawNight(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'night' }>, flyers: Flyers): void {
@@ -343,33 +483,37 @@ function drawNight(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'night' }
 
   // The rows share what's left between the heading and the footer; a card
   // with few of them draws them larger (up to MAX_SCALE: past it the titles
-  // get cut short) rather than leave it bare. On a post they stack from the
-  // top; a story's height is spread between them, each in the middle of its
-  // share.
+  // get cut short) rather than leave it bare, in the middle of that room.
   const top = frame.top + 306 * k;
-  const share = (frame.bottom - 84 * k - top) / card.rows.length;
-  const scale = Math.min(share / ROW_HEIGHT, MAX_SCALE);
-  const step = k > 1 ? share : ROW_HEIGHT * scale;
+  const room = frame.bottom - 84 * k - top;
+  const count = card.rows.length;
+  const scale = Math.min(room / (count * ROW_HEIGHT + (count - 1) * ROW_GAP), MAX_SCALE);
+  const start = top + (room - scale * (count * ROW_HEIGHT + (count - 1) * ROW_GAP)) / 2;
   card.rows.forEach((row, i) => {
-    const y = top + i * step;
-    if (i > 0) {
-      ctx.fillStyle = LINE;
-      ctx.fillRect(PAD, y, inner, 2);
-    }
-    drawRow(ctx, frame, row, y + (step - ROW_HEIGHT * scale) / 2, scale, flyers.get(row.flyerUrl ?? '') ?? null);
+    drawRow(ctx, frame, row, start + i * scale * (ROW_HEIGHT + ROW_GAP), scale, loaded(flyers, row.flyerUrl));
   });
 }
 
-/** Flyer on the left (3:4, as on the site's cards), then time and place,
- * the title, and the styles with the price at the end of their line. */
+/** A panel: the flyer on the left (3:4, as on the site's cards), then time
+ * and place, the title, and the town and styles with the price at the end
+ * of their line, gold or, free, green. */
 function drawRow(ctx: Ctx, frame: Frame, row: NightRow, y: number, scale: number, flyer: CanvasImageSource | null): void {
+  ctx.beginPath();
+  ctx.roundRect(PAD, y, frame.width - 2 * PAD, ROW_HEIGHT * scale, 24 * scale);
+  ctx.fillStyle = PANEL;
+  ctx.fill();
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
   const thumbWidth = 96 * scale;
   const thumbHeight = 128 * scale;
-  const thumbY = y + (ROW_HEIGHT * scale - thumbHeight) / 2;
-  drawThumb(ctx, PAD, thumbY, thumbWidth, thumbHeight, thumbWidth * 0.16, flyer, row.title);
+  const thumbX = PAD + ROW_PADDING * scale;
+  const thumbY = y + ROW_PADDING * scale;
+  drawThumb(ctx, thumbX, thumbY, thumbWidth, thumbHeight, thumbWidth * 0.16, flyer, row.title);
 
-  const x = PAD + thumbWidth + 30 * scale;
-  const right = frame.width - PAD;
+  const x = thumbX + thumbWidth + 28 * scale;
+  const right = frame.width - PAD - 24 * scale;
   const width = right - x;
 
   // The place in mint, the site's "where" colour (--ev-place), so it stands
@@ -391,14 +535,14 @@ function drawRow(ctx: Ctx, frame: Frame, row: NightRow, y: number, scale: number
   ctx.fillText(clipped(ctx, row.title, width), x, thumbY + 82 * scale);
 
   ctx.font = `600 ${28 * scale}px ${BODY}`;
-  ctx.fillStyle = PRICE;
+  ctx.fillStyle = row.free ? FREE : PRICE;
   ctx.textAlign = 'right';
   ctx.fillText(row.price, right, thumbY + 124 * scale);
   const priceWidth = ctx.measureText(`${row.price}   `).width;
   ctx.textAlign = 'left';
   ctx.font = `400 ${28 * scale}px ${BODY}`;
   ctx.fillStyle = MUTED;
-  ctx.fillText(clipped(ctx, row.styles, width - priceWidth), x, thumbY + 124 * scale);
+  ctx.fillText(clipped(ctx, row.where, width - priceWidth), x, thumbY + 124 * scale);
 }
 
 function drawThumb(
@@ -410,7 +554,20 @@ function drawThumb(
   radius: number,
   flyer: CanvasImageSource | null,
   title: string,
+  /** Lifted off the backdrop by a shadow: a flyer drawn large. */
+  lifted = false,
 ): void {
+  if (lifted) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+    ctx.shadowBlur = width * 0.16;
+    ctx.shadowOffsetY = width * 0.07;
+    ctx.fillStyle = INK_2;
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, radius);
+    ctx.fill();
+    ctx.restore();
+  }
   ctx.save();
   ctx.beginPath();
   ctx.roundRect(x, y, width, height, radius);
@@ -419,10 +576,7 @@ function drawThumb(
   ctx.fillRect(x, y, width, height);
   const size = flyer ? sourceSize(flyer) : null;
   if (flyer && size) {
-    // object-cover: fill the tile, crop what spills, centred.
-    const zoom = Math.max(width / size.width, height / size.height);
-    const drawn = { width: size.width * zoom, height: size.height * zoom };
-    ctx.drawImage(flyer, x + (width - drawn.width) / 2, y + (height - drawn.height) / 2, drawn.width, drawn.height);
+    drawCovering(ctx, flyer, size, x, y, width, height);
   } else {
     ctx.fillStyle = ROSE;
     ctx.font = `800 ${width * 0.56}px ${DISPLAY}`;
@@ -440,6 +594,109 @@ function drawThumb(
   ctx.stroke();
 }
 
+/** `source` as CSS's object-fit: cover: filling the box, what spills
+ * cropped, centred. */
+function drawCovering(
+  ctx: Ctx,
+  source: CanvasImageSource,
+  size: { width: number; height: number },
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  const zoom = Math.max(width / size.width, height / size.height);
+  const drawn = { width: size.width * zoom, height: size.height * zoom };
+  ctx.drawImage(source, x + (width - drawn.width) / 2, y + (height - drawn.height) / 2, drawn.width, drawn.height);
+}
+
+/** Up to three flyers fanned out under the wordmark, the first upright in
+ * front, the others tilted behind it; `more` ("+8 serate") on a tag at its
+ * corner. Returns where the fan ends, for the words under it. */
+function drawFan(ctx: Ctx, frame: Frame, flyers: (CanvasImageSource | null)[], more: string | null, title: string): number {
+  const k = frame.scale;
+  const centre = frame.width / 2;
+  const top = frame.top + 50 * k;
+  const front = { width: 300 * k, height: 400 * k };
+  const side = { width: 270 * k, height: 360 * k };
+  // Behind first: the second on the left, the third on the right.
+  const behind = flyers.slice(1, 3).map((flyer, i) => [flyer, i === 0 ? -1 : 1] as const);
+  for (const [flyer, sideOf] of behind) {
+    ctx.save();
+    ctx.translate(centre + sideOf * 230 * k, top + 40 * k + side.height / 2);
+    ctx.rotate((sideOf * 9 * Math.PI) / 180);
+    drawThumb(ctx, -side.width / 2, -side.height / 2, side.width, side.height, 20 * k, flyer, title, true);
+    ctx.restore();
+  }
+  drawThumb(ctx, centre - front.width / 2, top, front.width, front.height, 22 * k, flyers[0] ?? null, title, true);
+  if (more) {
+    ctx.save();
+    ctx.translate(centre + front.width / 2 - 20 * k, top - 6 * k);
+    ctx.rotate((6 * Math.PI) / 180);
+    drawTag(ctx, more, 0, 0, 30 * k, ROSE, INK, 'center');
+    ctx.restore();
+  }
+  return top + front.height + 40 * k;
+}
+
+/** The period's flyers in a tilted grid over the top of the frame, fading
+ * into the night sky by its middle: the outro's backdrop. */
+function drawMosaic(ctx: Ctx, frame: Frame, flyers: CanvasImageSource[]): void {
+  const columns = 4;
+  const gap = 18;
+  const tileWidth = (frame.width + 120 - (columns - 1) * gap) / columns;
+  const tileHeight = tileWidth * (4 / 3);
+  ctx.save();
+  ctx.globalAlpha = 0.85;
+  ctx.translate(frame.width / 2, frame.height * 0.22);
+  ctx.rotate((-6 * Math.PI) / 180);
+  const rows = Math.ceil((frame.height * 0.5) / (tileHeight + gap)) + 1;
+  for (let row = 0; row < rows; row++) {
+    for (let column = 0; column < columns; column++) {
+      const flyer = flyers[(row * columns + column) % flyers.length];
+      const x = -frame.width / 2 - 60 + column * (tileWidth + gap);
+      const y = -frame.height * 0.3 + row * (tileHeight + gap);
+      drawThumb(ctx, x, y, tileWidth, tileHeight, 20, flyer, '');
+    }
+  }
+  ctx.restore();
+  const fade = ctx.createLinearGradient(0, 0, 0, frame.height);
+  fade.addColorStop(0, 'rgba(26, 14, 46, 0.35)');
+  fade.addColorStop(0.3, 'rgba(26, 14, 46, 0.75)');
+  fade.addColorStop(0.58, INK);
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, frame.width, frame.height);
+}
+
+/** `text` on a rounded tag of `fill`, `size` px, its left edge (or its
+ * centre) at x and its top at y. Returns its width. */
+function drawTag(
+  ctx: Ctx,
+  text: string,
+  x: number,
+  y: number,
+  size: number,
+  fill: string,
+  colour: string,
+  align: 'left' | 'center' = 'left',
+): number {
+  ctx.font = `600 ${size}px ${BODY}`;
+  const width = ctx.measureText(text).width + size * 1.4;
+  const height = size * 1.6;
+  const left = align === 'center' ? x - width / 2 : x;
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.roundRect(left, y, width, height, height / 2.6);
+  ctx.fill();
+  ctx.fillStyle = colour;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.fillText(text, left + width / 2, y + height / 2 + size * 0.04);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  return width;
+}
+
 // --- One night on its own.
 
 /** The date's column is never narrower than this: the flyer gives way. And
@@ -449,16 +706,16 @@ const DATE_COLUMN = 300;
 const DATE_COLUMN_HEIGHT = 480;
 
 /** The flyer as tall as the words under it leave room for, the date,
- * the time and the price in a column beside it, then the title (two lines
- * at most, smaller if it takes that), the place, its street and the styles,
- * all of them. */
+ * the time and the price (a tag: gold, or green when it's free) in a column
+ * beside it, then the title (two lines at most, smaller if it takes that),
+ * the place, its street and a tag per style. */
 function drawEvent(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'event' }>, flyer: CanvasImageSource | null): void {
   const inner = frame.width - 2 * PAD;
   const k = frame.scale;
   const top = frame.top + 70 * k;
   const bottom = frame.bottom - 90 * k;
-  const stylesFont = `400 ${34 * k}px ${BODY}`;
-  const stylesLine = 46 * k;
+  const tagSize = 30 * k;
+  const tagsHeight = card.styles.length ? 16 * k + tagSize * 1.6 : 0;
 
   let titleSize = 84 * k;
   let titleLines: string[];
@@ -472,11 +729,7 @@ function drawEvent(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'event' }
   // which is cut short where it's drawn (clipped), with its ellipsis.
   if (titleLines.length > 2) titleLines = [titleLines[0], titleLines.slice(1).join(' ')];
   const titleHeight = titleLines.length * titleSize * 1.06;
-  // Every style, on as many lines as they take: the flyer gives up the room.
-  ctx.font = stylesFont;
-  const stylesLines = card.styles ? wrapped(ctx, card.styles, inner) : [];
-  const words =
-    titleHeight + (22 + (card.place ? 56 : 0) + (card.address ? 50 : 0)) * k + stylesLines.length * stylesLine;
+  const words = titleHeight + (22 + (card.place ? 56 : 0) + (card.address ? 50 : 0)) * k + tagsHeight;
 
   // The flyer whole, in its own proportions (3:4 for the tile that stands in
   // for a missing one): it's the venue's own picture, not ours to crop.
@@ -489,7 +742,7 @@ function drawEvent(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'event' }
   // square one): the whole block sits in the middle of it, not at its top.
   const block = Math.max(flyerHeight, DATE_COLUMN_HEIGHT * k) + gap + words;
   const start = top + (k > 1 ? Math.max(0, (bottom - top - block) / 2) : 0);
-  drawThumb(ctx, PAD, start, flyerWidth, flyerHeight, 28 * k, flyer, card.title);
+  drawThumb(ctx, PAD, start, flyerWidth, flyerHeight, 28 * k, flyer, card.title, true);
 
   // The date's lines fit the column whatever it's left with ("MERCOLEDÌ").
   const x = PAD + flyerWidth + gap;
@@ -509,9 +762,9 @@ function drawEvent(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'event' }
   ctx.fillStyle = MINT;
   ctx.font = fitted(ctx, card.time, 800, 76 * k, column, DISPLAY);
   ctx.fillText(card.time, x, start + 330 * k);
-  ctx.fillStyle = PRICE;
-  ctx.font = fitted(ctx, card.price, 600, 44 * k, column, BODY);
-  ctx.fillText(card.price, x, start + 430 * k);
+  ctx.textBaseline = 'alphabetic';
+  drawTag(ctx, card.price, x, start + 420 * k, 40 * k, card.free ? FREE : PRICE, card.free ? ON_FREE : INK);
+  ctx.textBaseline = 'top';
 
   let y = start + Math.max(flyerHeight, DATE_COLUMN_HEIGHT * k) + gap;
   ctx.fillStyle = BONE;
@@ -534,13 +787,11 @@ function drawEvent(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'event' }
     ctx.fillText(card.address, PAD, y);
     y += 50 * k;
   }
-  ctx.fillStyle = MUTED;
-  ctx.font = stylesFont;
-  for (const line of stylesLines) {
-    ctx.fillText(line, PAD, y);
-    y += stylesLine;
-  }
   ctx.textBaseline = 'alphabetic';
+  let tagX = PAD;
+  for (const style of card.styles) {
+    tagX += drawTag(ctx, style, tagX, y + 16 * k, tagSize, TAG, BONE) + 14 * k;
+  }
 }
 
 function sourceSize(source: CanvasImageSource): { width: number; height: number } | null {

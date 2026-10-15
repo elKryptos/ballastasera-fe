@@ -19,7 +19,7 @@ import { EventsService } from '../../../core/services/events.service';
 import { inDateRange } from '../../../core/utils/event-filters';
 import { injectPageShare } from '../../../core/utils/page-share';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
-import { CARD_FONTS, FRAMES, MAX_CAROUSEL_CARDS, drawCard } from './cards';
+import { CARD_FONTS, FRAMES, MAX_CAROUSEL_CARDS, drawCard, flyersOf } from './cards';
 import { Kind, frameOf } from './deck';
 import { PERIODS, Period, cardMentions, detailMentions, eventDeck, eventLabel, nightsDeck } from './event-decks';
 import { LESSON_DECKS, lessonDeck } from './lesson-decks';
@@ -218,11 +218,8 @@ export class SocialPosts {
 
     // The flyers of the cards on screen, each asked for once.
     effect(() => {
-      const shown = (this.deck()?.cards ?? []).flatMap((card) =>
-        card.kind === 'night' ? card.rows : card.kind === 'event' ? [card] : [],
-      );
-      for (const { flyerUrl } of shown) {
-        if (!flyerUrl || this.flyersAsked.has(flyerUrl)) continue;
+      for (const flyerUrl of (this.deck()?.cards ?? []).flatMap(flyersOf)) {
+        if (this.flyersAsked.has(flyerUrl)) continue;
         this.flyersAsked.add(flyerUrl);
         void this.loadFlyer(flyerUrl);
       }

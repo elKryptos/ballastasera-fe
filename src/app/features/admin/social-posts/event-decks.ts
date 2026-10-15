@@ -1,6 +1,6 @@
 import { EventCardDto, EventDetailDto } from '../../../core/models/event.model';
 import { DateRange, capitalize, eventNight, nightDate, nightOf } from '../../../core/utils/event-filters';
-import { addressLine, formatClock, formatPrice, instagramHandle } from '../../../core/utils/event-format';
+import { addressLine, addressTown, formatClock, formatPrice, instagramHandle } from '../../../core/utils/event-format';
 import { Card, MAX_ROWS, NightRow } from './cards';
 import { CardNote, Deck, Kind } from './deck';
 
@@ -98,23 +98,24 @@ function toRow(event: EventCardDto): NightRow {
     time: formatClock(event.startAt),
     title: event.title,
     place: placeOf(event),
-    styles: styleFamilies(event.danceStyles).join(' · '),
+    where: [addressTown(event.address), styleFamilies(event.danceStyles).join(', ')].filter(Boolean).join(' · '),
     price: formatPrice(event),
+    free: event.free,
     flyerUrl: event.flyerUrl,
   };
 }
 
-/** "Bachata Sensual", "Salsa Cubana", "Salsa Portoricana" → Bachata, Salsa: a
- * row has one line for them, and every style in full wouldn't fit it. The
- * night's own card lists them all (eventCard). */
+/** "Bachata Sensual", "Salsa Cubana", "Salsa Portoricana" → Bachata, Salsa:
+ * every style in full ran over two lines, and broke them anywhere ("Salsa /
+ * Portoricana"). The event's page lists them all. */
 function styleFamilies(styles: string[]): string[] {
   return [...new Set(styles.map((style) => style.trim().split(/\s+/)[0]))];
 }
 
 /** One night's own card: the flyer large, the date beside it, then what,
- * where, every style danced and the price. The address is the event's own,
- * with its CAP and its town: around a city most venues are in the towns next
- * to it, not in the city the search is for. */
+ * where, what's danced and the price. The address is the event's own, with
+ * its CAP and its town: around a city most venues are in the towns next to
+ * it, not in the city the search is for. */
 function eventCard(event: EventCardDto): Card {
   const [weekday, day, month] = nightDate(startNight(event), 'long').split(' ');
   return {
@@ -124,12 +125,18 @@ function eventCard(event: EventCardDto): Card {
     month,
     time: formatClock(event.startAt),
     price: formatPrice(event),
+    free: event.free,
     title: event.title,
     place: placeOf(event),
     address: addressLine(event.address),
-    styles: event.danceStyles.join(' · '),
+    styles: styleFamilies(event.danceStyles),
     flyerUrl: event.flyerUrl,
   };
+}
+
+/** The flyers of `events`, each once, in their order. */
+function flyerUrls(events: EventCardDto[]): string[] {
+  return [...new Set(events.map((event) => event.flyerUrl).filter((url): url is string => !!url))];
 }
 
 /** That card with its venue's profiles and the night's page. */
@@ -137,15 +144,29 @@ function eventPicture(event: EventCardDto, mentionsOf: Mentions): Picture {
   return { card: eventCard(event), mentions: mentionsOf(event).join(' '), link: `https://${SITE}/evento/${event.id}` };
 }
 
-/** The card that closes a carousel or a reel about the nights. */
-function outro(city: string): Card {
+/** The card that closes a carousel or a reel about the nights: their
+ * flyers, a mosaic over its top, when there are enough of them not to show
+ * the same few over and over. */
+function outro(city: string, flyers: string[]): Card {
   return {
     kind: 'outro',
     title: 'Tutte le serate,',
     flair: 'ogni giorno.',
     note: `Mappa, lista e scuole di salsa e bachata a ${city}`,
+    flyers: flyers.length >= MOSAIC_MIN ? flyers.slice(0, MOSAIC_MAX) : [],
   };
 }
+
+/** A mosaic's tiles: fewer flyers than MOSAIC_MIN and there's none; past
+ * MOSAIC_MAX it repeats them. */
+const MOSAIC_MIN = 4;
+const MOSAIC_MAX = 12;
+/** The flyers fanned out on a cover. */
+const FAN_FLYERS = 3;
+/** Up to this many nights a carousel shows each on its own card, not a
+ * night's list first: one or two rows left the list mostly bare, and the
+ * cards after it said it all again. */
+const FEW_EVENTS = 2;
 
 /** An event's Instagram profiles as mentions ("@zoo_club_disco"): what
  * makes a post reach the people it's about, who can then share it again. */
@@ -186,7 +207,8 @@ const STORY_HINT =
  * the carousel's cards at a story's size, to be played one after the other.
  * `detailed` adds, after the nights, a card of its own for every event
  * (eventCard): the overview first, then each venue's night in full — the
- * one its venue shares. Null with no events.
+ * one its venue shares. With FEW_EVENTS or less those cards are all there
+ * is, without the nights' lists. Null with no events.
  */
 export function nightsDeck(
   events: EventCardDto[],
@@ -205,6 +227,9 @@ export function nightsDeck(
   const count = `${events.length} ${events.length === 1 ? 'serata' : 'serate'}`;
   const together = (shown: EventCardDto[]): string => [...new Set(shown.flatMap(mentionsOf))].join(' ');
 
+  const few = events.length <= FEW_EVENTS;
+  const flyers = flyerUrls(events);
+  const fanned = flyers.slice(0, FAN_FLYERS);
   const pictures: Picture[] = [];
   const lines = [`Dove si balla ${when} a ${city}? 💃🕺`];
   if (kind !== 'story') {
@@ -217,6 +242,8 @@ export function nightsDeck(
         sub: `Salsa e bachata a ${city}`,
         accent: first === last ? nightDate(first, 'long') : `${nightDate(first, 'short')} – ${nightDate(last, 'short')}`,
         note: kind === 'post' ? `${count} · scorri →` : count,
+        flyers: fanned,
+        more: events.length > fanned.length ? `+${events.length - fanned.length} serate` : null,
       }),
     );
   }
@@ -225,8 +252,10 @@ export function nightsDeck(
     const [weekday, ...rest] = date.split(' ');
     const [heading, sub] =
       kind === 'story' && alone ? [alone, `${capitalize(date)} · ${city}`] : [capitalize(weekday), rest.join(' ')];
-    for (const { card, events: shown } of nightCards(sameNight, heading, sub)) {
-      pictures.push({ card, mentions: together(shown), link: LIST_LINK });
+    if (!few) {
+      for (const { card, events: shown } of nightCards(sameNight, heading, sub)) {
+        pictures.push({ card, mentions: together(shown), link: LIST_LINK });
+      }
     }
     lines.push('', date.toUpperCase());
     for (const event of sameNight) {
@@ -236,8 +265,8 @@ export function nightsDeck(
       lines.push([`• ${formatClock(event.startAt)} — ${what}`, ...mentionsOf(event)].join(' '));
     }
   }
-  if (detailed) pictures.push(...events.map((event) => eventPicture(event, mentionsOf)));
-  if (kind !== 'story') pictures.push(plain(outro(city)));
+  if (detailed || few) pictures.push(...events.map((event) => eventPicture(event, mentionsOf)));
+  if (kind !== 'story') pictures.push(plain(outro(city, flyers)));
   lines.push('', `Tutte le serate, giorno per giorno, su ${SITE} (link in bio).`, '', hashtags(city));
 
   const slug = `serate-${period}${detailed ? '-dettagli' : ''}`;
@@ -294,9 +323,10 @@ export function eventDeck(event: EventCardDto, kind: Kind, city: string, mention
             sub: address,
             accent: `Dalle ${time} · ${price}`,
             note: 'Tutti i dettagli →',
+            flyers: flyerUrls([event]),
           }),
           picture,
-          plain(outro(city)),
+          plain(outro(city, [])),
         ];
   return toDeck(kind, slug, pictures, {
     textLabel: kind === 'reel' ? 'Testo del reel' : 'Testo del post',

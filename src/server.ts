@@ -20,9 +20,17 @@ export const reqHandler = createRequestHandler(async (req) => {
 	// that ambiguity — there is now exactly one indexable origin.
 	// Production build only: the staging worker (workers.dev) must serve its own
 	// pages, or /oauth2/callback would bounce the login token to the live site.
+	// Plain http goes to https too: a link typed without it (an Instagram bio)
+	// opened the site over http, where the browser refuses the visitor's
+	// position and the API, which only answers https://ballastasera.it, refuses
+	// every request — the pages came up empty. This covers what the worker
+	// serves; the prerendered home and the static files never reach it, which
+	// is what Cloudflare's "Always Use HTTPS" is for.
 	const url = new URL(req.url);
-	if (environment.production && url.hostname !== CANONICAL_HOST && url.hostname !== 'localhost') {
+	const insecure = url.protocol === 'http:';
+	if (environment.production && url.hostname !== 'localhost' && (url.hostname !== CANONICAL_HOST || insecure)) {
 		url.hostname = CANONICAL_HOST;
+		url.protocol = 'https:';
 		return Response.redirect(url.toString(), 301);
 	}
 

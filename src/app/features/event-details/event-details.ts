@@ -22,6 +22,7 @@ import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import { LinkedText } from '../../shared/linked-text/linked-text';
 import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventPinIcon, VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { EventsService } from '../../core/services/events.service';
@@ -78,7 +79,7 @@ const FACE_TONES = [
 @Component({
   selector: 'app-event-details',
   templateUrl: './event-details.html',
-  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon, VenuePinIcon],
+  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon, VenuePinIcon, LinkedText],
   host: {
     class: 'block min-h-dvh bg-ground text-(--ev-text)',
     // On the document, not the lightbox <div>: that div never holds focus, so a

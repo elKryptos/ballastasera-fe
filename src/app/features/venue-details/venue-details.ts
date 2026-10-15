@@ -18,6 +18,7 @@ import { PageSeo, SeoService, clip } from '../../core/services/seo.service';
 import { VenuesService } from '../../core/services/venues.service';
 import { VenueDetailDto } from '../../core/models/venue.model';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
+import { LinkedText } from '../../shared/linked-text/linked-text';
 import { MapPreview } from '../../shared/map-preview/map-preview';
 import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { addressPrimary, addressSecondary, googleMapsUrl, withoutCountry } from '../../core/utils/event-format';
@@ -48,7 +49,7 @@ const ACTION_COLUMNS = ['', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-c
 @Component({
   selector: 'app-venue-details',
   templateUrl: './venue-details.html',
-  imports: [SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, VenuePinIcon],
+  imports: [SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, VenuePinIcon, LinkedText],
   host: {
     class: 'block min-h-dvh bg-ground text-(--ev-text)',
     // On the document, not the lightbox <div>: that div never holds focus, so a

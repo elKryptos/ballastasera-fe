@@ -170,7 +170,7 @@
         @if (venue.description; as about) {
         <div>
           <p class="text-sm leading-relaxed whitespace-pre-line text-(--ev-soft)"
-            [class.line-clamp-3]="longVenueAbout() && !venueAboutExpanded()">{{ about }}</p>
+            [class.line-clamp-3]="longVenueAbout() && !venueAboutExpanded()"><app-linked-text [text]="about" /></p>
           @if (longVenueAbout()) {
           <button type="button" (click)="toggleVenueAbout()" [attr.aria-expanded]="venueAboutExpanded()"
             class="cursor-pointer py-1.5 text-[0.8125rem] font-bold text-(--ev-link)">
@@ -264,7 +264,7 @@
       @if (event.description; as description) {
       <section class="flex flex-col gap-2.5">
         <h2 class="font-display text-[1.1875rem] font-extrabold">Descrizione</h2>
-        <p class="text-[0.9375rem] leading-relaxed whitespace-pre-line text-lead">{{ description }}</p>
+        <p class="text-[0.9375rem] leading-relaxed whitespace-pre-line text-lead"><app-linked-text [text]="description" /></p>
       </section>
       }
 
@@ -298,7 +298,7 @@
             </div>
           </div>
           @if (organizer.description; as bio) {
-          <p class="text-sm leading-relaxed text-(--ev-soft)">{{ bio }}</p>
+          <p class="text-sm leading-relaxed text-(--ev-soft)"><app-linked-text [text]="bio" /></p>
           }
           }
 

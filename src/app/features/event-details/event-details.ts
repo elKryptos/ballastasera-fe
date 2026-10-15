@@ -35,6 +35,7 @@ import { injectPageShare } from '../../core/utils/page-share';
 import { lockBodyScrollWhile } from '../../core/utils/scroll-lock';
 import { nightDateLabel, nightLongDate } from '../../core/utils/event-filters';
 import {
+  addressLine,
   addressPrimary,
   addressSecondary,
   eventBadge,
@@ -154,16 +155,14 @@ export class EventDetails {
   );
   protected readonly miniMapZoom = MINI_MAP_ZOOM;
 
-  /** "Dove" in words — the event's own address, without the country (see
-   * withoutCountry): the street and, on a line of its own, what's left of
-   * the address after it — and the way there. */
+  /** "Dove" in words — the event's own address: the street and, on a line of
+   * its own, "CAP town" (see addressSecondary) — and the way there. */
   protected readonly place = computed(() => {
     const event = this.event();
     if (!event) return null;
-    const address = withoutCountry(event.address);
     return {
-      street: addressPrimary(address),
-      locality: addressSecondary(address),
+      street: addressPrimary(event.address),
+      locality: addressSecondary(event.address),
       directionsUrl: googleMapsUrl(event.address, event.venue?.name ?? null),
     };
   });
@@ -172,9 +171,7 @@ export class EventDetails {
    * card is the venue's: the event's address, which may differ, is "Dove"'s. */
   protected readonly venueAddress = computed(() => {
     const venue = this.event()?.venue;
-    if (!venue) return '';
-    const address = withoutCountry(venue.address);
-    return [addressPrimary(address), addressSecondary(address)].filter(Boolean).join(', ');
+    return venue ? addressLine(venue.address) : '';
   });
 
   protected readonly venueTypeLabels = VENUE_TYPE_LABELS;

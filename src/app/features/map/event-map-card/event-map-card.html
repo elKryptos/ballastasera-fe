@@ -52,7 +52,7 @@
           {{ event().title }}
         </a>
       </div>
-      <app-event-place [venue]="event().venueName" [address]="placeLine()" [trailing]="distance()" />
+      <app-event-place [venue]="event().venueName" [address]="placeLine()" [town]="town()" [trailing]="distance()" />
 
       <!-- One line of them (h-5, a tag's height): the ones that wrap are cut
           off, leaving the room to the flyer. The event's page lists them all. -->

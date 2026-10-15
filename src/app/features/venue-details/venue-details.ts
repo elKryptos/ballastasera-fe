@@ -118,10 +118,9 @@ export class VenueDetails {
   protected readonly place = computed(() => {
     const venue = this.venue();
     if (!venue) return null;
-    const address = withoutCountry(venue.address);
     return {
-      street: addressPrimary(address),
-      locality: addressSecondary(address),
+      street: addressPrimary(venue.address),
+      locality: addressSecondary(venue.address),
       directionsUrl: googleMapsUrl(venue.address, venue.name),
     };
   });

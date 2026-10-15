@@ -4,6 +4,7 @@ import { EVENT_TYPE_LABELS } from '../../../core/config/map-pins';
 import { EventCardDto } from '../../../core/models/event.model';
 import {
   addressPrimary,
+  addressTown,
   eventBadge,
   formatClock,
   formatPrice,
@@ -52,6 +53,8 @@ export class EventMapCard {
     const event = this.event();
     return `${EVENT_TYPE_LABELS[event.eventType]} · ${addressPrimary(event.address)}`;
   });
+  /** "Pioltello", after the street. */
+  protected readonly town = computed(() => addressTown(this.event().address));
   /** "1,2 km", at the end of that line. */
   protected readonly distance = computed(() => {
     const km = this.distanceKm();

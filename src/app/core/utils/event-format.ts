@@ -116,11 +116,13 @@ export function addressPrimary(address: string): string {
   return parts.length > 1 && isCivico(parts[1]) ? `${parts[0]} ${parts[1]}` : parts[0];
 }
 
-/** Everything after the street, without the region and with the CAP in front
- * of its city ("20131, Milan, Lombardy" → "20131 Milan"), the way Italian
- * addresses are written. */
+/** Everything after the street, the way Italian addresses are written: the
+ * CAP in front of its town, by the town's Italian name ("20131, Milan,
+ * Lombardy, Italy" → "20131 Milano"). No region and no country (see
+ * withoutCountry), no province code after the town ("Milano MI", as typed-in
+ * addresses have it). */
 export function addressSecondary(address: string): string | null {
-  const parts = address.split(',').map((p) => p.trim());
+  const parts = withoutCountry(address).split(',').map((p) => p.trim());
   if (parts.length <= 1) return null;
   const rest = (isCivico(parts[1]) ? parts.slice(2) : parts.slice(1)).filter(
     (part) => !ITALIAN_REGIONS.has(part.toLowerCase()),
@@ -134,7 +136,7 @@ export function addressSecondary(address: string): string | null {
       lines.push(part);
     }
   }
-  return lines.length ? lines.join(', ') : null;
+  return lines.length ? italianLocality(lines.join(', ')) : null;
 }
 
 /** Every event is in Italy, so a trailing country part — "Italy" as the
@@ -158,17 +160,26 @@ const ITALIAN_TOWNS: Record<string, string> = {
 };
 
 /** A whole address on one line, as it's written in Italy: "Via Roma 12,
- * 20092 Cinisello Balsamo" — the street, the CAP and the town it's really
- * in. No region and no country (see addressSecondary, withoutCountry), no
- * province code after the town ("Milano MI", as typed-in addresses have it),
- * and the town by its Italian name. For where there's one line and nothing
- * else says the town: the Instagram posts. */
+ * 20092 Cinisello Balsamo" — the street, then addressSecondary. For where
+ * there's one line: the Instagram posts, the venue cards. */
 export function addressLine(address: string): string {
-  const clean = withoutCountry(address);
-  const town = addressSecondary(clean)
-    ?.replace(/\s+\(?[A-Z]{2}\)?$/, '')
+  return [addressPrimary(address), addressSecondary(address)].filter(Boolean).join(', ');
+}
+
+/** Just the town: "Via Achille Grandi 35, 20096, Pioltello, Lombardy, Italy"
+ * → "Pioltello", "Viale Europa, 72/C, 20047 Cusago MI" → "Cusago". It says
+ * where a place is better than its street does — Milano or out of it, and
+ * where — so the lists and the map's cards show it next to the street. */
+export function addressTown(address: string): string | null {
+  return addressSecondary(address)?.split(',').at(-1)!.trim().replace(/^\d{5}\s*/, '') || null;
+}
+
+/** A locality without the province code typed-in addresses end with ("Milano
+ * MI", "Bareggio (MI)") and with its town by the Italian name. */
+function italianLocality(locality: string): string {
+  return locality
+    .replace(/\s+\(?[A-Z]{2}\)?$/, '')
     .replace(/\b[A-Z][a-z]+$/, (name) => ITALIAN_TOWNS[name] ?? name);
-  return [addressPrimary(clean), town].filter(Boolean).join(', ');
 }
 
 /** Directions to a place — an event's or a venue's. The name, when there is

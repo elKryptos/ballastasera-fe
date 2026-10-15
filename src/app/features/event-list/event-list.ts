@@ -16,6 +16,7 @@ import { MapViewStateService } from '../../core/services/map-view-state.service'
 import { UserLocationService } from '../../core/services/user-location.service';
 import {
   addressPrimary,
+  addressTown,
   formatClock,
   formatPrice,
   isLiveAt,
@@ -77,6 +78,7 @@ interface ListRow {
   eventType: EventType;
   venue: string | null;
   address: string;
+  town: string | null;
   styles: string[];
   price: string;
   going: number;
@@ -343,6 +345,7 @@ export class EventList {
       eventType: event.eventType,
       venue: event.venueName,
       address: addressPrimary(event.address),
+      town: addressTown(event.address),
       styles: event.danceStyles,
       price: formatPrice(event),
       going: event.goingCount,

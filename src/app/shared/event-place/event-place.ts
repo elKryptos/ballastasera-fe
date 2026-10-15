@@ -2,9 +2,9 @@ import { Component, input } from '@angular/core';
 
 /** Where a night is, on its cards (/lista's, the map's list and its open
  * card): the venue's name on a line of its own, in the "where" colour
- * (--ev-place), and the street under it. That line can end in something that
- * never gives way — the price, the distance: the street is cut short instead.
- * Spans only, so it fits inside a button too. */
+ * (--ev-place), and the street under it, then its town. That line can end in
+ * something that never gives way — the town, the price, the distance: the
+ * street is cut short instead. Spans only, so it fits inside a button too. */
 @Component({
   selector: 'app-event-place',
   template: `
@@ -13,6 +13,9 @@ import { Component, input } from '@angular/core';
     }
     <span class="flex gap-1.5 text-(--ev-soft)">
       <span class="truncate">{{ address() }}</span>
+      @if (town(); as town) {
+      <span class="shrink-0 font-semibold">· {{ town }}</span>
+      }
       @if (trailing(); as trailing) {
       <span class="shrink-0">· {{ trailing }}</span>
       }
@@ -24,5 +27,7 @@ export class EventPlace {
   readonly venue = input<string | null>(null);
   /** The street, already formatted (addressPrimary). */
   readonly address = input.required<string>();
+  /** The town it's in (addressTown): Milano or which town out of it. */
+  readonly town = input<string | null>(null);
   readonly trailing = input<string | null>(null);
 }

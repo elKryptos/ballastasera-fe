@@ -2,7 +2,7 @@ import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { VENUE_TYPE_LABELS } from '../../../core/config/map-pins';
 import { VenueMapPinDto } from '../../../core/models/venue.model';
-import { addressPrimary, addressSecondary, googleMapsUrl, withoutCountry } from '../../../core/utils/event-format';
+import { addressLine, googleMapsUrl } from '../../../core/utils/event-format';
 import { formatDistance } from '../../../core/utils/geo';
 import { VenuePinIcon } from '../../../shared/event-filters/pin-icons';
 
@@ -32,11 +32,8 @@ export class VenueMapCard {
     return parts.join(' · ');
   });
 
-  /** "Via Roma 12, 20121 Milano". */
-  protected readonly addressLine = computed(() => {
-    const address = withoutCountry(this.venue().address);
-    return [addressPrimary(address), addressSecondary(address)].filter(Boolean).join(', ');
-  });
+  /** "Via Roma 12, 20121 Milano": the town by its Italian name (addressLine). */
+  protected readonly addressLine = computed(() => addressLine(this.venue().address));
 
   protected readonly directionsUrl = computed(() => {
     const venue = this.venue();

@@ -18,8 +18,8 @@ import {
   addressPrimary,
   addressTown,
   formatClock,
-  formatPrice,
   isLiveAt,
+  Pricing,
 } from '../../core/utils/event-format';
 import {
   compareByLiveThenStart,
@@ -38,6 +38,7 @@ import { EventFiltersDialog } from '../../shared/event-filters/event-filters-dia
 import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { ViewSwitch } from '../../shared/event-filters/view-switch';
 import { EventPlace } from '../../shared/event-place/event-place';
+import { EventPrice } from '../../shared/event-price/event-price';
 
 /** Keeps the LIVE badges current, and drops a night once it's over, with
  * the page left open. */
@@ -80,7 +81,7 @@ interface ListRow {
   address: string;
   town: string | null;
   styles: string[];
-  price: string;
+  pricing: Pricing;
   going: number;
   likes: number;
   liked: boolean;
@@ -102,7 +103,7 @@ interface ListGroup {
  */
 @Component({
   selector: 'app-event-list',
-  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, EventPlace, ViewSwitch],
+  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, EventPlace, EventPrice, ViewSwitch],
   templateUrl: './event-list.html',
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
@@ -347,7 +348,7 @@ export class EventList {
       address: addressPrimary(event.address),
       town: addressTown(event.address),
       styles: event.danceStyles,
-      price: formatPrice(event),
+      pricing: event,
       going: event.goingCount,
       likes: event.likesCount,
       liked: this.engagement.isLiked(event.id),

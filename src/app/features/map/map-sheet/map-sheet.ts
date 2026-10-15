@@ -3,13 +3,14 @@ import { RouterLink } from '@angular/router';
 import { EventCardDto } from '../../../core/models/event.model';
 import { VenueMapPinDto } from '../../../core/models/venue.model';
 import { EventFiltersService } from '../../../core/services/event-filters.service';
-import { addressPrimary, addressTown, formatClock, formatPrice, liveLabel } from '../../../core/utils/event-format';
+import { addressPrimary, addressTown, formatClock, liveLabel } from '../../../core/utils/event-format';
 import { DATE_RANGE_PHRASES, nightShortLabel } from '../../../core/utils/event-filters';
 import { EventMapCard } from '../event-map-card/event-map-card';
 import { VenueMapCard } from '../venue-map-card/venue-map-card';
 import { MapLayer, layerShowsEvents } from '../map-layer';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
 import { EventPlace } from '../../../shared/event-place/event-place';
+import { EventPrice } from '../../../shared/event-price/event-price';
 
 /** A swipe on the header shorter than this is a tap. */
 const SWIPE_PX = 32;
@@ -21,7 +22,6 @@ interface SheetCard {
   when: string;
   address: string;
   town: string | null;
-  price: string;
 }
 
 /**
@@ -35,7 +35,7 @@ interface SheetCard {
  */
 @Component({
   selector: 'app-map-sheet',
-  imports: [EventMapCard, VenueMapCard, EventPinIcon, EventPlace, RouterLink],
+  imports: [EventMapCard, VenueMapCard, EventPinIcon, EventPlace, EventPrice, RouterLink],
   templateUrl: './map-sheet.html',
   host: { class: 'block' },
 })
@@ -111,7 +111,6 @@ export class MapSheet {
         when: live ?? `${nightShortLabel(event, now)} · ${formatClock(event.startAt)}`,
         address: addressPrimary(event.address),
         town: addressTown(event.address),
-        price: formatPrice(event),
       };
     });
   });

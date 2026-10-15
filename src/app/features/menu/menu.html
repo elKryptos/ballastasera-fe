@@ -117,7 +117,7 @@
                 }}</span>
               <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ card.place }}</span>
               <span class="mt-auto flex items-center gap-1.5 pt-0.5 text-[0.8125rem] text-(--ev-soft) tabular-nums">
-                <span class="shrink-0 text-sm font-extrabold text-(--ev-price)">{{ card.price }}</span>
+                <app-event-price class="text-sm font-extrabold" [event]="card.pricing" />
                 @if (card.going > 0) {
                 <span aria-hidden="true">·</span>
                 <span class="truncate"><strong class="font-bold text-(--ev-text)">{{ card.going }}</strong>

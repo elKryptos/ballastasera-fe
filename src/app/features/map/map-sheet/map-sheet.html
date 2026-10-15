@@ -114,7 +114,8 @@
               }
             </span>
             <span class="line-clamp-2 font-display text-base leading-tight font-extrabold">{{ card.event.title }}</span>
-            <app-event-place [venue]="card.event.venueName" [address]="card.address" [town]="card.town" [trailing]="card.price" />
+            <app-event-place [venue]="card.event.venueName" [address]="card.address" [town]="card.town" />
+            <app-event-price class="text-sm font-extrabold" [event]="card.event" />
           </span>
         </button>
       </li>

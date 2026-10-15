@@ -622,6 +622,8 @@ app-school-list {
   --ev-like-bg: rgba(255, 47, 109, 0.16);
   --ev-like-on: #e0245c;
   --ev-price: #fbbf24;
+  /* "Gratis", where a price would be: green, apart from the mint of --ev-place. */
+  --ev-free: #4ade80;
   /* Text on a solid --ev-price fill (the "Inizia tra" badge). */
   --ev-on-price: #1a0e2e;
   /* Count on the Filtri button, and the distance chips once picked. */
@@ -669,6 +671,7 @@ app-school-list {
   --ev-like: #be123c;
   --ev-like-bg: rgba(224, 36, 92, 0.12);
   --ev-price: #b45309;
+  --ev-free: #15803d;
   --ev-on-price: #ffffff;
   --ev-badge-bg: #0d7a70;
   --ev-badge-text: #ffffff;

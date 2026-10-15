@@ -194,7 +194,7 @@
               so the row never spills out of the card. Neither count is shown
               at 0: a column of zeros reads as nobody being here. -->
           <div class="mt-auto flex items-center gap-1.5 pt-0.5 text-[0.8125rem] text-(--ev-soft) tabular-nums md:gap-2">
-            <span class="shrink-0 text-sm font-extrabold text-(--ev-price)">{{ row.price }}</span>
+            <app-event-price class="text-sm font-extrabold" [event]="row.pricing" />
             @if (row.going > 0) {
             <span aria-hidden="true">·</span>
             <span class="min-w-0 truncate"><strong class="font-bold text-(--ev-text)">{{ row.going }}</strong>

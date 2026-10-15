@@ -11,12 +11,13 @@ import { EventCardDto, EventType } from '../../core/models/event.model';
 import {
   addressPrimary,
   formatClock,
-  formatPrice,
   liveLabel,
+  Pricing,
 } from '../../core/utils/event-format';
 import { compareByLiveThenStart, inDateRange } from '../../core/utils/event-filters';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { EventPinIcon } from '../../shared/event-filters/pin-icons';
+import { EventPrice } from '../../shared/event-price/event-price';
 import { MapSnapshot } from '../../shared/map-snapshot/map-snapshot';
 
 /**
@@ -36,7 +37,7 @@ interface TonightCard {
   /** "Live · dalle 22:30" while live, the start time otherwise. */
   when: string;
   place: string;
-  price: string;
+  pricing: Pricing;
   going: number;
   /** No flyer: the type's pin stands in, as on the map's and the list's cards. */
   flyerUrl: string | null;
@@ -71,7 +72,7 @@ interface Shortcut {
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.html',
-  imports: [RouterLink, SidebarPushDirective, MapSnapshot, EventPinIcon],
+  imports: [RouterLink, SidebarPushDirective, MapSnapshot, EventPinIcon, EventPrice],
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
 export class Menu {
@@ -107,7 +108,7 @@ export class Menu {
           live: live !== null,
           when: live ?? formatClock(event.startAt),
           place: event.venueName ?? addressPrimary(event.address),
-          price: formatPrice(event),
+          pricing: event,
           going: event.goingCount,
           flyerUrl: event.flyerUrl,
           eventType: event.eventType,

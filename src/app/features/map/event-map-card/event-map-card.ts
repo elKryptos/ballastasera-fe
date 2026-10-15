@@ -7,13 +7,13 @@ import {
   addressTown,
   eventBadge,
   formatClock,
-  formatPrice,
   googleMapsUrl,
 } from '../../../core/utils/event-format';
 import { nightShortLabel } from '../../../core/utils/event-filters';
 import { formatDistance } from '../../../core/utils/geo';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
 import { EventPlace } from '../../../shared/event-place/event-place';
+import { EventPrice } from '../../../shared/event-price/event-price';
 
 /** The tapped pin's event, in the map's bottom sheet (MapSheet).
  * Presentational only: MapPage owns the selection and the Parteciperò/Mi
@@ -21,7 +21,7 @@ import { EventPlace } from '../../../shared/event-place/event-place';
  * event's page; "Portami lì" opens Google Maps directions. */
 @Component({
   selector: 'app-event-map-card',
-  imports: [RouterLink, EventPinIcon, EventPlace],
+  imports: [RouterLink, EventPinIcon, EventPlace, EventPrice],
   templateUrl: './event-map-card.html',
 })
 export class EventMapCard {
@@ -53,7 +53,7 @@ export class EventMapCard {
     const event = this.event();
     return `${EVENT_TYPE_LABELS[event.eventType]} · ${addressPrimary(event.address)}`;
   });
-  /** "Pioltello", after the street. */
+  /** "Pioltello", under the street. */
   protected readonly town = computed(() => addressTown(this.event().address));
   /** "1,2 km", at the end of that line. */
   protected readonly distance = computed(() => {
@@ -61,7 +61,6 @@ export class EventMapCard {
     return km === null ? null : formatDistance(km);
   });
 
-  protected readonly priceLabel = computed(() => formatPrice(this.event()));
   protected readonly directionsUrl = computed(() => {
     const event = this.event();
     return googleMapsUrl(event.address, event.venueName);

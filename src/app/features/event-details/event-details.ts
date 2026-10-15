@@ -23,6 +23,7 @@ import { MapViewStateService } from '../../core/services/map-view-state.service'
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { LinkedText } from '../../shared/linked-text/linked-text';
+import { EventPrice } from '../../shared/event-price/event-price';
 import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventPinIcon, VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { EventsService } from '../../core/services/events.service';
@@ -43,6 +44,7 @@ import {
   formatPrice,
   googleMapsUrl,
   instagramUrl,
+  priceColor,
   withoutCountry,
 } from '../../core/utils/event-format';
 import {
@@ -80,7 +82,7 @@ const FACE_TONES = [
 @Component({
   selector: 'app-event-details',
   templateUrl: './event-details.html',
-  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon, VenuePinIcon, LinkedText],
+  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon, VenuePinIcon, LinkedText, EventPrice],
   host: {
     class: 'block min-h-dvh bg-ground text-(--ev-text)',
     // On the document, not the lightbox <div>: that div never holds focus, so a
@@ -267,7 +269,7 @@ export class EventDetails {
     };
   });
 
-  protected readonly formatPrice = formatPrice;
+  protected readonly priceColor = priceColor;
   protected readonly formatClock = formatClock;
 
   /** Only the id, so the effect below doesn't refetch on every count change. */

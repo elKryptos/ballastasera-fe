@@ -100,10 +100,18 @@ export function formatClock(iso: string): string {
   return new Date(iso).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
-export function formatPrice(event: { free: boolean; price: number | null; currency: string | null }): string {
+/** What an event's entry costs: EventCardDto and EventDetailDto both have it. */
+export type Pricing = { free: boolean; price: number | null; currency: string | null };
+
+export function formatPrice(event: Pricing): string {
   if (event.free) return 'Gratis';
   if (event.price == null) return 'Prezzo su invito';
   return `${event.price} ${event.currency ?? ''}`.trim();
+}
+
+/** The colour the price is written in: gold, or green for "Gratis". */
+export function priceColor(event: Pricing): string {
+  return event.free ? 'var(--ev-free)' : 'var(--ev-price)';
 }
 
 /** Geocoded addresses already join street+civico with a space ("Via Roma

@@ -1,7 +1,7 @@
 import {
   Component,
+  DestroyRef,
   ElementRef,
-  WritableSignal,
   computed,
   effect,
   inject,
@@ -19,57 +19,42 @@ import { EventsService } from '../../../core/services/events.service';
 import { inDateRange } from '../../../core/utils/event-filters';
 import { injectPageShare } from '../../../core/utils/page-share';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
-import {
-  AGENDA_RANGES,
-  AgendaRange,
-  STORY_DAYS,
-  StoryDay,
-  agendaDeck,
-  cardMentions,
-  detailMentions,
-  eventDeck,
-  eventLabel,
-  storyDeck,
-} from './agenda-decks';
-import { CARD_FONTS, FRAMES, Format, MAX_CAROUSEL_CARDS, drawCard } from './cards';
+import { CARD_FONTS, FRAMES, MAX_CAROUSEL_CARDS, drawCard } from './cards';
+import { Kind, frameOf } from './deck';
+import { PERIODS, Period, cardMentions, detailMentions, eventDeck, eventLabel, nightsDeck } from './event-decks';
 import { LESSON_DECKS, lessonDeck } from './lesson-decks';
+import { MAX_REEL_SECONDS, cardSeconds, recordReel, reelType } from './reel';
 
-type Mode = 'agenda' | 'story' | 'event' | 'lesson';
+/** What it's about: the nights of a period, one night, or the lesson. */
+type Subject = 'nights' | 'event' | 'lesson';
 
-const MODES: { value: Mode; label: string; about: string }[] = [
-  {
-    value: 'agenda',
-    label: 'Agenda',
-    about: 'Carosello con le serate del periodo, una notte per scheda; con "Dettagli", poi una scheda per ogni serata.',
-  },
-  { value: 'story', label: 'Story', about: 'Le serate di una notte, in verticale: da pubblicare il giorno stesso.' },
-  {
-    value: 'event',
-    label: 'Serata',
-    about: 'Una serata da sola, con flyer e dettagli: quella che il locale ricondivide più volentieri.',
-  },
-  { value: 'lesson', label: 'Lezione', about: 'Carosello da un capitolo di "Impara a ballare": non scade mai.' },
+const KINDS: { value: Kind; label: string; about: string }[] = [
+  { value: 'post', label: 'Post', about: 'Resta sul profilo: una foto o un carosello.' },
+  { value: 'story', label: 'Story', about: 'Dura 24 ore. Menzioni il locale e lui la ricondivide con un tocco.' },
+  { value: 'reel', label: 'Reel', about: 'Un video: è quello che Instagram mostra di più a chi non ti segue.' },
 ];
 
-const EVENT_FORMATS: { value: Format; label: string }[] = [
-  { value: 'story', label: 'Story' },
-  { value: 'post', label: 'Post' },
+const SUBJECTS: { value: Subject; label: string; about: string }[] = [
+  { value: 'nights', label: 'Le serate', about: 'Tutte quelle di un periodo, notte per notte.' },
+  { value: 'event', label: 'Una serata', about: 'Una sola, con flyer e dettagli: quella che il suo locale ricondivide.' },
+  { value: 'lesson', label: 'La lezione', about: 'Un capitolo di "Impara a ballare": non scade mai.' },
 ];
 
-/** One of the choices under the modes, as the template draws it. */
-interface Choice {
-  label: string;
-  on: boolean;
-  pick: () => void;
+/** A reel once it's been recorded: the file, and a URL to play it from. */
+interface Reel {
+  file: File;
+  url: string;
 }
 
 /**
- * /admin/social: what to publish on Instagram, drawn here and ready to
- * download — the nights as a carousel (Agenda), as tonight's story or one on
- * its own (Serata), from the same events /lista shows, and the lesson's
- * chapters as carousels — each with the words to paste or the profiles to
- * mention. Nothing is posted from here: the admin downloads the pictures (or
- * shares them straight to the app, on a phone) and copies the text.
+ * /admin/social: what to publish on Instagram, made here and ready to
+ * download. Two choices and their options: the format — a post, a story or a
+ * reel (Kind) — and what it's about — the nights of a period, one night, or
+ * a chapter of the lesson (Subject); each of the three comes in each format.
+ * The pictures are drawn from the same events /lista shows; a reel is a
+ * video of them (reel.ts). With them come the words to paste and, under each
+ * picture, who to mention on it. Nothing is posted from here: the admin
+ * downloads the files (or shares them straight to the app, on a phone).
  */
 @Component({
   selector: 'app-social-posts',
@@ -80,37 +65,19 @@ export class SocialPosts {
   private readonly cityEvents = inject(CityEventsService);
   private readonly eventsService = inject(EventsService);
 
-  protected readonly modes = MODES;
-  protected readonly mode = signal<Mode>('agenda');
-  protected readonly about = computed(() => MODES.find((option) => option.value === this.mode())!.about);
+  protected readonly kinds = KINDS;
+  protected readonly kind = signal<Kind>('post');
+  protected readonly subjects = SUBJECTS;
+  protected readonly subject = signal<Subject>('nights');
 
-  private readonly range = signal<AgendaRange>('weekend');
-  /** Agenda: after the nights, a card of its own for each event. */
+  protected readonly periods = PERIODS;
+  protected readonly period = signal<Period>('weekend');
+  /** After the nights, a card of its own for each event. */
   protected readonly detailed = signal(true);
-  private readonly storyDay = signal<StoryDay>('tonight');
-  /** Serata: which night (the first of the week's until one is picked), and
-   * as a story or a post. */
+  /** Which night, the first of the week's until one is picked. */
   private readonly pickedEventId = signal<string | null>(null);
-  private readonly eventFormat = signal<Format>('story');
   protected readonly lessons = LESSON_DECKS;
   protected readonly lesson = signal(LESSON_DECKS[0].slug);
-
-  /** The mode's own choices: the agenda's period, the story's day, Serata's
-   * format. The lesson has its picker instead. */
-  protected readonly choices = computed<Choice[]>(() => {
-    const among = <T>(options: { value: T; label: string }[], picked: WritableSignal<T>): Choice[] =>
-      options.map(({ value, label }) => ({ label, on: picked() === value, pick: () => picked.set(value) }));
-    switch (this.mode()) {
-      case 'agenda':
-        return among(AGENDA_RANGES, this.range);
-      case 'story':
-        return among(STORY_DAYS, this.storyDay);
-      case 'event':
-        return among(EVENT_FORMATS, this.eventFormat);
-      case 'lesson':
-        return [];
-    }
-  });
 
   /** Undefined until they arrive. */
   protected readonly cities = toSignal(inject(CitiesService).getCities().pipe(catchError(() => of<CityDto[]>([]))));
@@ -121,36 +88,36 @@ export class SocialPosts {
     return cities.find((city) => city.id === this.pickedCityId()) ?? cities[0] ?? null;
   });
 
-  /** The lesson needs no events: the other modes wait for them. */
-  protected readonly needsEvents = computed(() => this.mode() !== 'lesson');
+  /** The lesson needs no events: the other two wait for them. */
+  protected readonly needsEvents = computed(() => this.subject() !== 'lesson');
   protected readonly loading = signal(true);
   protected readonly error = signal(false);
   /** When the events were asked for: what "this weekend" is counted from. */
   private readonly now = signal(Date.now());
 
-  /** The mode's events, soonest first: the agenda's period, the story's
-   * night, or the week Serata picks from. None for a lesson. */
+  /** The subject's events, soonest first: the period's nights, or the week
+   * one night is picked from. None for the lesson. */
   private readonly events = computed(() => {
     const city = this.city();
-    const mode = this.mode();
-    if (!city || mode === 'lesson') return [];
+    const subject = this.subject();
+    if (!city || subject === 'lesson') return [];
     const now = this.now();
-    const range = mode === 'agenda' ? this.range() : mode === 'story' ? this.storyDay() : 'week';
+    const range = subject === 'nights' ? this.period() : 'week';
     return (this.cityEvents.entries().get(city.id)?.events ?? [])
       .filter((event) => inDateRange(event, range, now))
       .sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
   });
 
-  /** Serata's picker: the week's nights. */
+  /** The picker of the one night: the week's. */
   protected readonly eventOptions = computed(() =>
-    this.mode() === 'event' ? this.events().map((event) => ({ id: event.id, label: eventLabel(event) })) : [],
+    this.subject() === 'event' ? this.events().map((event) => ({ id: event.id, label: eventLabel(event) })) : [],
   );
   protected readonly pickedEvent = computed(
     () => this.events().find((event) => event.id === this.pickedEventId()) ?? this.events()[0] ?? null,
   );
-  /** The events on the pictures: all of the mode's, or Serata's one. */
+  /** The events on the pictures: all of the period's, or the one night. */
   private readonly shownEvents = computed(() => {
-    if (this.mode() !== 'event') return this.events();
+    if (this.subject() !== 'event') return this.events();
     const event = this.pickedEvent();
     return event ? [event] : [];
   });
@@ -166,23 +133,38 @@ export class SocialPosts {
   );
 
   protected readonly deck = computed(() => {
-    const mode = this.mode();
-    if (mode === 'lesson') return lessonDeck(this.lesson());
+    const kind = this.kind();
+    const subject = this.subject();
+    if (subject === 'lesson') return lessonDeck(this.lesson(), kind);
     const city = this.city();
     if (!city) return null;
     const mentions = this.mentions();
     const mentionsOf = (event: EventCardDto): string[] => mentions.get(event.id) ?? cardMentions(event);
-    if (mode === 'event') {
+    if (subject === 'event') {
       const event = this.pickedEvent();
-      return event ? eventDeck(event, this.eventFormat(), city.name, mentionsOf) : null;
+      return event ? eventDeck(event, kind, city.name, mentionsOf) : null;
     }
-    return mode === 'agenda'
-      ? agendaDeck(this.events(), this.range(), city.name, this.now(), mentionsOf, this.detailed())
-      : storyDeck(this.events(), this.storyDay(), city.name, this.now(), mentionsOf);
+    return nightsDeck(this.events(), this.period(), city.name, this.now(), mentionsOf, kind, this.detailed());
   });
-  protected readonly frame = computed(() => FRAMES[this.deck()?.format ?? 'post']);
-  protected readonly tooManyCards = computed(() => (this.deck()?.cards.length ?? 0) > MAX_CAROUSEL_CARDS);
-  protected readonly maxCards = MAX_CAROUSEL_CARDS;
+  protected readonly frame = computed(() => FRAMES[frameOf(this.kind())]);
+
+  /** How long the reel of these cards runs, in seconds. */
+  protected readonly reelSeconds = computed(() =>
+    Math.round((this.deck()?.cards ?? []).reduce((total, card) => total + cardSeconds(card), 0)),
+  );
+  /** What Instagram won't take as it is: a carousel of too many pictures,
+   * or a reel that runs too long. */
+  protected readonly tooMuch = computed(() => {
+    const deck = this.deck();
+    if (!deck) return null;
+    if (deck.kind === 'post' && deck.cards.length > MAX_CAROUSEL_CARDS) {
+      return `Instagram accetta al massimo ${MAX_CAROUSEL_CARDS} immagini per carosello: scegli un periodo più breve, togli i "Dettagli" o dividi il post.`;
+    }
+    if (deck.kind === 'reel' && this.reelSeconds() > MAX_REEL_SECONDS) {
+      return `Un reel dura al massimo ${MAX_REEL_SECONDS} secondi: scegli un periodo più breve o togli i "Dettagli".`;
+    }
+    return null;
+  });
 
   private readonly canvases = viewChildren<ElementRef<HTMLCanvasElement>>('card');
   /** The nights' flyers by URL, as they load; null for one that couldn't be. */
@@ -190,10 +172,19 @@ export class SocialPosts {
   private readonly flyersAsked = new Set<string>();
   private readonly fontsReady = signal(false);
 
-  private readonly pageShare = injectPageShare<'text'>();
+  /** What this browser records a reel as; null where it can't. */
+  protected readonly reelType = reelType();
+  /** The reel of the deck on screen, once recorded; gone when the deck changes. */
+  protected readonly reel = signal<Reel | null>(null);
+  /** How far along the recording is, 0 to 1; null when none is running. */
+  protected readonly recording = signal<number | null>(null);
+  /** Counts the decks: a recording that ends after its deck has changed is dropped. */
+  private deckVersion = 0;
+
+  private readonly pageShare = injectPageShare<string>();
   protected readonly copied = this.pageShare.copied;
-  /** Phones: the pictures go to the share sheet, and from there to Instagram
-   * or the photo roll, in one go. */
+  /** Phones: the files go to the share sheet, and from there to Instagram or
+   * the photo roll, in one go. */
   protected readonly canShareFiles =
     typeof navigator.canShare === 'function' &&
     navigator.canShare({ files: [new File([], 'card.png', { type: 'image/png' })] });
@@ -247,7 +238,8 @@ export class SocialPosts {
       const flyers = this.flyers();
       const canvases = this.canvases();
       if (!deck || !this.fontsReady()) return;
-      const { width, height } = FRAMES[deck.format];
+      const format = frameOf(deck.kind);
+      const { width, height } = FRAMES[format];
       canvases.forEach(({ nativeElement: canvas }, index) => {
         const card = deck.cards[index];
         if (!card) return;
@@ -256,9 +248,18 @@ export class SocialPosts {
           canvas.height = height;
         }
         const ctx = canvas.getContext('2d');
-        if (ctx) drawCard(ctx, deck.format, card, index, deck.cards.length, flyers);
+        if (ctx) drawCard(ctx, format, card, index, deck.cards.length, flyers);
       });
     });
+
+    // A recorded reel is of the cards as they were: any change to them (a
+    // flyer coming in too) and it's no longer theirs.
+    effect(() => {
+      this.deck();
+      this.flyers();
+      untracked(() => this.dropReel());
+    });
+    inject(DestroyRef).onDestroy(() => this.dropReel());
   }
 
   /** `force` is "Aggiorna": the events again, and their mentions with them —
@@ -308,8 +309,9 @@ export class SocialPosts {
     this.flyers.update((flyers) => new Map(flyers).set(url, flyer));
   }
 
-  protected copyText(): Promise<void> {
-    return this.pageShare.copy(this.deck()?.text ?? '', 'text');
+  /** `what` names the button that says "Copiato" for a moment. */
+  protected copy(text: string, what: string): Promise<void> {
+    return this.pageShare.copy(text, what);
   }
 
   protected async download(index: number): Promise<void> {
@@ -325,13 +327,50 @@ export class SocialPosts {
 
   protected async shareAll(): Promise<void> {
     this.busy.set(true);
-    const files = await this.cardFiles();
-    try {
-      await navigator.share({ files });
-    } catch {
-      // The share sheet was dismissed: nothing to do.
-    }
+    await share(await this.cardFiles());
     this.busy.set(false);
+  }
+
+  /** Plays the cards on screen and records them (recordReel): it takes as
+   * long as the reel runs, with this tab in view. */
+  protected async recordReel(): Promise<void> {
+    const deck = this.deck();
+    const type = this.reelType;
+    const frames = this.canvases().map((canvas) => canvas.nativeElement);
+    if (!deck || !type || !frames.length || this.recording() !== null) return;
+    const version = this.deckVersion;
+    this.recording.set(0);
+    try {
+      const video = await recordReel(frames, deck.cards.map(cardSeconds), type, (done) => this.recording.set(done));
+      if (version === this.deckVersion) {
+        const file = new File([video], `ballastasera-${deck.slug}.${type.extension}`, { type: video.type });
+        this.reel.set({ file, url: URL.createObjectURL(file) });
+      }
+    } catch {
+      // Nothing recorded: the button is there to try again.
+    }
+    this.recording.set(null);
+  }
+
+  protected downloadReel(): void {
+    const reel = this.reel();
+    if (reel) save(reel.file);
+  }
+
+  protected canShare(file: File): boolean {
+    return typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+  }
+
+  protected shareReel(): Promise<void> {
+    const reel = this.reel();
+    return reel ? share([reel.file]) : Promise.resolve();
+  }
+
+  private dropReel(): void {
+    this.deckVersion++;
+    const reel = this.reel();
+    if (reel) URL.revokeObjectURL(reel.url);
+    this.reel.set(null);
   }
 
   private async cardFiles(): Promise<File[]> {
@@ -339,7 +378,7 @@ export class SocialPosts {
     return files.filter((file) => file !== null);
   }
 
-  /** "ballastasera-agenda-weekend-1.png": numbered in the carousel's order. */
+  /** "ballastasera-post-serate-weekend-1.png": numbered in the deck's order. */
   private cardFile(index: number): Promise<File | null> {
     const canvas = this.canvases()[index]?.nativeElement;
     const slug = this.deck()?.slug;
@@ -361,4 +400,12 @@ function save(file: File): void {
   link.click();
   // Not right away: the download reads the URL after the click returns.
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+async function share(files: File[]): Promise<void> {
+  try {
+    await navigator.share({ files });
+  } catch {
+    // The share sheet was dismissed: nothing to do.
+  }
 }

@@ -12,13 +12,18 @@ interface Frame {
   /** The wordmark's baseline, and the footer's: everything else sits between. */
   top: number;
   bottom: number;
+  /** How much larger than on a post everything is drawn: the type, the gaps,
+   * the rows, the flyer. A story is as wide as a post and far taller. */
+  scale: number;
 }
 
-/** A story keeps clear of its top and bottom, where Instagram draws its own
- * buttons over the picture. */
+/** A story (and a reel, on the same frame) keeps clear of its top and
+ * bottom only as far as Instagram's own buttons reach over the picture, and
+ * is drawn a quarter larger: at a post's size it sat small in the middle of
+ * all that height. */
 export const FRAMES: Record<Format, Frame> = {
-  post: { width: 1080, height: 1350, top: 124, bottom: 1284 },
-  story: { width: 1080, height: 1920, top: 330, bottom: 1570 },
+  post: { width: 1080, height: 1350, top: 124, bottom: 1284, scale: 1 },
+  story: { width: 1080, height: 1920, top: 270, bottom: 1650, scale: 1.25 },
 };
 
 /** What Instagram takes in one carousel. */
@@ -98,7 +103,7 @@ export function drawCard(ctx: Ctx, format: Format, card: Card, index: number, to
   const frame = FRAMES[format];
   drawBackdrop(ctx, frame);
   drawBrand(ctx, frame);
-  drawFooter(ctx, frame, index, total);
+  drawFooter(ctx, frame, format === 'post' && total > 1 ? `${index + 1} / ${total}` : null);
   switch (card.kind) {
     case 'cover':
       drawStack(ctx, frame, [
@@ -166,12 +171,12 @@ function drawBackdrop(ctx: Ctx, { width, height }: Frame): void {
 
 /** The navbar's lockup: the mark, then "balla" and, in rose, "stasera". */
 function drawBrand(ctx: Ctx, frame: Frame): void {
-  const markHeight = 58;
-  drawMark(ctx, PAD, frame.top - markHeight + 10, markHeight);
-  const x = PAD + (markHeight * MARK_WIDTH) / MARK_HEIGHT + 14;
+  const markHeight = 58 * frame.scale;
+  drawMark(ctx, PAD, frame.top - markHeight + 10 * frame.scale, markHeight);
+  const x = PAD + (markHeight * MARK_WIDTH) / MARK_HEIGHT + 14 * frame.scale;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.font = `800 44px ${DISPLAY}`;
+  ctx.font = `800 ${44 * frame.scale}px ${DISPLAY}`;
   ctx.fillStyle = BONE;
   ctx.fillText('balla', x, frame.top);
   ctx.fillStyle = ROSE;
@@ -206,15 +211,16 @@ function drawMark(ctx: Ctx, x: number, y: number, height: number): void {
   ctx.restore();
 }
 
-/** The site and, in a carousel, which card of how many this is. */
-function drawFooter(ctx: Ctx, frame: Frame, index: number, total: number): void {
-  ctx.font = `600 32px ${BODY}`;
+/** The site and, in a carousel, which card of how many this is. A story
+ * stands on its own, and a reel's cards go by: neither is numbered. */
+function drawFooter(ctx: Ctx, frame: Frame, place: string | null): void {
+  ctx.font = `600 ${32 * frame.scale}px ${BODY}`;
   ctx.fillStyle = LEAD;
   ctx.fillText('ballastasera.it', PAD, frame.bottom);
-  if (total > 1) {
+  if (place) {
     ctx.fillStyle = MUTED;
     ctx.textAlign = 'right';
-    ctx.fillText(`${index + 1} / ${total}`, frame.width - PAD, frame.bottom);
+    ctx.fillText(place, frame.width - PAD, frame.bottom);
     ctx.textAlign = 'left';
   }
 }
@@ -259,10 +265,10 @@ const body = (text: string, weight: number, size: number, colour: string, gap: n
  * free height. Too tall to fit (a long copy), everything shrinks together. */
 function drawStack(ctx: Ctx, frame: Frame, blocks: Block[]): void {
   const inner = frame.width - 2 * PAD;
-  const room = frame.bottom - frame.top - 190;
-  let laid = layOut(ctx, blocks, inner, 1);
-  if (laid.height > room) laid = layOut(ctx, blocks, inner, Math.max(0.6, room / laid.height));
-  let y = frame.top + 80 + Math.max(0, (room - laid.height) / 2);
+  const room = frame.bottom - frame.top - 190 * frame.scale;
+  let laid = layOut(ctx, blocks, inner, frame.scale);
+  if (laid.height > room) laid = layOut(ctx, blocks, inner, Math.max(0.6, (frame.scale * room) / laid.height));
+  let y = frame.top + 80 * frame.scale + Math.max(0, (room - laid.height) / 2);
   ctx.textBaseline = 'top';
   for (const { block, font, size, lines, lineHeight, gap } of laid.blocks) {
     y += gap;
@@ -327,25 +333,30 @@ const MAX_SCALE = 1.5;
 
 function drawNight(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'night' }>, flyers: Flyers): void {
   const inner = frame.width - 2 * PAD;
+  const k = frame.scale;
   ctx.fillStyle = BONE;
-  ctx.font = fitted(ctx, card.heading, 800, 124, inner, DISPLAY);
-  ctx.fillText(card.heading, PAD, frame.top + 176);
+  ctx.font = fitted(ctx, card.heading, 800, 124 * k, inner, DISPLAY);
+  ctx.fillText(card.heading, PAD, frame.top + 176 * k);
   ctx.fillStyle = ROSE_LIT;
-  ctx.font = `600 48px ${BODY}`;
-  ctx.fillText(card.sub, PAD, frame.top + 242, inner);
+  ctx.font = `600 ${48 * k}px ${BODY}`;
+  ctx.fillText(card.sub, PAD, frame.top + 242 * k, inner);
 
   // The rows share what's left between the heading and the footer; a card
-  // with few of them draws them larger (up to MAX_SCALE) rather than leave
-  // it bare.
-  const top = frame.top + 306;
-  const rowHeight = Math.min((frame.bottom - 84 - top) / card.rows.length, ROW_HEIGHT * MAX_SCALE);
+  // with few of them draws them larger (up to MAX_SCALE: past it the titles
+  // get cut short) rather than leave it bare. On a post they stack from the
+  // top; a story's height is spread between them, each in the middle of its
+  // share.
+  const top = frame.top + 306 * k;
+  const share = (frame.bottom - 84 * k - top) / card.rows.length;
+  const scale = Math.min(share / ROW_HEIGHT, MAX_SCALE);
+  const step = k > 1 ? share : ROW_HEIGHT * scale;
   card.rows.forEach((row, i) => {
-    const y = top + i * rowHeight;
+    const y = top + i * step;
     if (i > 0) {
       ctx.fillStyle = LINE;
       ctx.fillRect(PAD, y, inner, 2);
     }
-    drawRow(ctx, frame, row, y, rowHeight / ROW_HEIGHT, flyers.get(row.flyerUrl ?? '') ?? null);
+    drawRow(ctx, frame, row, y + (step - ROW_HEIGHT * scale) / 2, scale, flyers.get(row.flyerUrl ?? '') ?? null);
   });
 }
 
@@ -431,84 +442,103 @@ function drawThumb(
 
 // --- One night on its own.
 
-/** The date's column is never narrower than this: the flyer gives way. */
+/** The date's column is never narrower than this: the flyer gives way. And
+ * it's this tall, at a post's size: the words start below it, or below the
+ * flyer if that's taller. */
 const DATE_COLUMN = 300;
+const DATE_COLUMN_HEIGHT = 480;
 
 /** The flyer as tall as the words under it leave room for, the date,
  * the time and the price in a column beside it, then the title (two lines
- * at most, smaller if it takes that), the place, its street and the styles. */
+ * at most, smaller if it takes that), the place, its street and the styles,
+ * all of them. */
 function drawEvent(ctx: Ctx, frame: Frame, card: Extract<Card, { kind: 'event' }>, flyer: CanvasImageSource | null): void {
   const inner = frame.width - 2 * PAD;
-  const top = frame.top + 70;
-  const bottom = frame.bottom - 90;
+  const k = frame.scale;
+  const top = frame.top + 70 * k;
+  const bottom = frame.bottom - 90 * k;
+  const stylesFont = `400 ${34 * k}px ${BODY}`;
+  const stylesLine = 46 * k;
 
-  let titleSize = 84;
+  let titleSize = 84 * k;
   let titleLines: string[];
   do {
     ctx.font = `800 ${titleSize}px ${DISPLAY}`;
     titleLines = wrapped(ctx, card.title, inner);
     titleSize -= 6;
-  } while (titleLines.length > 2 && titleSize >= 48);
+  } while (titleLines.length > 2 && titleSize >= 48 * k);
   titleSize += 6;
   // Still more than two at the smallest size: the rest stays on the second,
   // which is cut short where it's drawn (clipped), with its ellipsis.
   if (titleLines.length > 2) titleLines = [titleLines[0], titleLines.slice(1).join(' ')];
   const titleHeight = titleLines.length * titleSize * 1.06;
-  const words = titleHeight + 22 + (card.place ? 56 : 0) + (card.address ? 50 : 0) + (card.styles ? 48 : 0);
+  // Every style, on as many lines as they take: the flyer gives up the room.
+  ctx.font = stylesFont;
+  const stylesLines = card.styles ? wrapped(ctx, card.styles, inner) : [];
+  const words =
+    titleHeight + (22 + (card.place ? 56 : 0) + (card.address ? 50 : 0)) * k + stylesLines.length * stylesLine;
 
   // The flyer whole, in its own proportions (3:4 for the tile that stands in
   // for a missing one): it's the venue's own picture, not ours to crop.
-  const gap = 44;
+  const gap = 44 * k;
   const size = flyer ? sourceSize(flyer) : null;
   const ratio = size ? size.width / size.height : 3 / 4;
   const flyerHeight = Math.min(bottom - top - words - gap, (inner - DATE_COLUMN - gap) / ratio);
   const flyerWidth = flyerHeight * ratio;
-  drawThumb(ctx, PAD, top, flyerWidth, flyerHeight, 28, flyer, card.title);
+  // A story has height to spare when the flyer is held back by its width (a
+  // square one): the whole block sits in the middle of it, not at its top.
+  const block = Math.max(flyerHeight, DATE_COLUMN_HEIGHT * k) + gap + words;
+  const start = top + (k > 1 ? Math.max(0, (bottom - top - block) / 2) : 0);
+  drawThumb(ctx, PAD, start, flyerWidth, flyerHeight, 28 * k, flyer, card.title);
 
+  // The date's lines fit the column whatever it's left with ("MERCOLEDÌ").
   const x = PAD + flyerWidth + gap;
   const column = frame.width - PAD - x;
+  const weekday = card.weekday.toUpperCase();
+  const month = card.month.toUpperCase();
   ctx.textBaseline = 'top';
   ctx.fillStyle = ROSE_LIT;
-  ctx.font = `600 46px ${BODY}`;
-  ctx.fillText(card.weekday.toUpperCase(), x, top + 6);
+  ctx.font = fitted(ctx, weekday, 600, 46 * k, column, BODY);
+  ctx.fillText(weekday, x, start + 6 * k);
   ctx.fillStyle = BONE;
-  ctx.font = `800 180px ${DISPLAY}`;
-  ctx.fillText(card.day, x - 6, top + 50);
+  ctx.font = `800 ${180 * k}px ${DISPLAY}`;
+  ctx.fillText(card.day, x - 6 * k, start + 50 * k);
   ctx.fillStyle = LEAD;
-  ctx.font = `600 46px ${BODY}`;
-  ctx.fillText(card.month.toUpperCase(), x, top + 236);
+  ctx.font = fitted(ctx, month, 600, 46 * k, column, BODY);
+  ctx.fillText(month, x, start + 236 * k);
   ctx.fillStyle = MINT;
-  ctx.font = `800 76px ${DISPLAY}`;
-  ctx.fillText(card.time, x, top + 330);
+  ctx.font = fitted(ctx, card.time, 800, 76 * k, column, DISPLAY);
+  ctx.fillText(card.time, x, start + 330 * k);
   ctx.fillStyle = PRICE;
-  ctx.font = fitted(ctx, card.price, 600, 44, column, BODY);
-  ctx.fillText(card.price, x, top + 430);
+  ctx.font = fitted(ctx, card.price, 600, 44 * k, column, BODY);
+  ctx.fillText(card.price, x, start + 430 * k);
 
-  let y = top + flyerHeight + gap;
+  let y = start + Math.max(flyerHeight, DATE_COLUMN_HEIGHT * k) + gap;
   ctx.fillStyle = BONE;
   ctx.font = `800 ${titleSize}px ${DISPLAY}`;
   for (const line of titleLines) {
     ctx.fillText(clipped(ctx, line, inner), PAD, y);
     y += titleSize * 1.06;
   }
-  y += 22;
+  y += 22 * k;
   if (card.place) {
     ctx.fillStyle = MINT;
-    ctx.font = `600 44px ${BODY}`;
+    ctx.font = `600 ${44 * k}px ${BODY}`;
     ctx.fillText(clipped(ctx, card.place, inner), PAD, y);
-    y += 56;
+    y += 56 * k;
   }
   if (card.address) {
     // Smaller rather than cut short: the town closes the line.
     ctx.fillStyle = LEAD;
-    ctx.font = fitted(ctx, card.address, 400, 36, inner, BODY);
+    ctx.font = fitted(ctx, card.address, 400, 36 * k, inner, BODY);
     ctx.fillText(card.address, PAD, y);
-    y += 50;
+    y += 50 * k;
   }
-  if (card.styles) {
-    ctx.fillStyle = MUTED;
-    ctx.font = `400 34px ${BODY}`;
-    ctx.fillText(clipped(ctx, card.styles, inner), PAD, y);
+  ctx.fillStyle = MUTED;
+  ctx.font = stylesFont;
+  for (const line of stylesLines) {
+    ctx.fillText(line, PAD, y);
+    y += stylesLine;
   }
   ctx.textBaseline = 'alphabetic';
 }

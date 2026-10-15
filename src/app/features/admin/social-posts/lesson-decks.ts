@@ -7,10 +7,11 @@ import {
   RHYTHM_TIPS,
 } from '../../learn-to-dance/lesson-content';
 import { Card } from './cards';
-import { Deck } from './deck';
+import { Deck, Kind } from './deck';
 
-/** The carousels made from the lesson (/impara-a-ballare): a chapter each,
- * its points one per card, in the lesson's own words (lesson-content.ts).
+/** What's published from the lesson (/impara-a-ballare): a chapter each, its
+ * points one per card, in the lesson's own words (lesson-content.ts) — as a
+ * carousel, as a run of stories, or as a reel that plays them (Kind).
  * Only the covers' one-liners are written here: a cover wants a line, where
  * the lesson's chapters open with a paragraph. */
 
@@ -138,27 +139,46 @@ const CHAPTERS: Chapter[] = [
 /** For the page's picker, in the order above. */
 export const LESSON_DECKS: { slug: string; label: string }[] = CHAPTERS.map(({ slug, label }) => ({ slug, label }));
 
-export function lessonDeck(slug: string): Deck | null {
+const LESSON_LINK = 'https://ballastasera.it/impara-a-ballare';
+
+export function lessonDeck(slug: string, kind: Kind): Deck | null {
   const chapter = CHAPTERS.find((option) => option.slug === slug);
   if (!chapter) return null;
+  const cards: Card[] = [
+    {
+      kind: 'cover',
+      kicker: chapter.kicker,
+      title: chapter.title,
+      flair: chapter.flair,
+      sub: chapter.sub,
+      accent: null,
+      note: kind === 'post' ? `${chapter.count} · scorri →` : chapter.count,
+    },
+    ...chapter.points,
+    OUTRO,
+  ];
+  const deck = {
+    slug: `${kind}-lezione-${chapter.slug}`,
+    kind,
+    cards,
+    // Nobody to mention on a lesson; a story's link sticker goes to it.
+    notes: cards.map(() => ({ mentions: '', link: kind === 'story' ? LESSON_LINK : null })),
+  };
+  if (kind === 'story') {
+    return {
+      ...deck,
+      textLabel: 'Link per l’adesivo',
+      textHint: 'Metti l’adesivo "Link" sull’ultima story (o su tutte): porta alla lezione intera.',
+      text: LESSON_LINK,
+    };
+  }
   return {
-    slug: `lezione-${chapter.slug}`,
-    format: 'post',
-    cards: [
-      {
-        kind: 'cover',
-        kicker: chapter.kicker,
-        title: chapter.title,
-        flair: chapter.flair,
-        sub: chapter.sub,
-        accent: null,
-        note: `${chapter.count} · scorri →`,
-      },
-      ...chapter.points,
-      OUTRO,
-    ],
-    textLabel: 'Testo del post',
-    textHint: 'Chiudi con una domanda (“Qual è stato il tuo?”): i commenti sono ciò che fa girare un post.',
+    ...deck,
+    textLabel: kind === 'reel' ? 'Testo del reel' : 'Testo del post',
+    textHint:
+      kind === 'reel'
+        ? 'Il video è muto: quando lo pubblichi aggiungi una canzone dalla musica di Instagram.'
+        : 'Chiudi con una domanda (“Qual è stato il tuo?”): i commenti sono ciò che fa girare un post.',
     text: [
       `${chapter.title} ${chapter.flair} 💃🕺`,
       '',

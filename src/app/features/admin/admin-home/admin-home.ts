@@ -42,8 +42,8 @@ export class AdminHome {
       routerLink: '/admin/create-event-series',
     },
     {
-      title: 'Post per Instagram',
-      description: 'L’agenda del weekend, la story di stasera e i caroselli della lezione, da scaricare.',
+      title: 'Contenuti per Instagram',
+      description: 'Post, story e reel con le serate o la lezione, pronti da scaricare.',
       routerLink: '/admin/social',
     },
     {

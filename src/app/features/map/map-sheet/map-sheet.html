@@ -93,7 +93,7 @@
           <!-- The flyer (or the type's pin) on the left, where the open card and
               the list's cards have it: the card's height, 3:4 at the least.
               Absolute, so the picture's own size never stretches the card. -->
-          <span class="relative flex min-h-18 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--ev-edge) bg-(--ev-surface)"
+          <span class="relative flex min-h-32 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--ev-edge) bg-(--ev-surface)"
             aria-hidden="true">
             @if (card.event.flyerUrl; as flyer) {
             <img class="absolute inset-0 size-full object-cover" [src]="flyer" alt="" loading="lazy" decoding="async" />

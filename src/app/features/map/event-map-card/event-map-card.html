@@ -15,7 +15,7 @@
         picture's own size never stretches the card. Same link as the title,
         kept out of the tab order so it's one stop, not two. -->
     <a [routerLink]="['/evento', event().id]" tabindex="-1" aria-hidden="true"
-      class="relative flex min-h-32 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-(--ev-edge) bg-(--ev-raised)">
+      class="relative flex min-h-37 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-(--ev-edge) bg-(--ev-raised) md:min-h-43 md:w-32">
       @if (event().flyerUrl; as flyer) {
       <img class="absolute inset-0 size-full object-cover" [src]="flyer" alt="" />
       } @else {

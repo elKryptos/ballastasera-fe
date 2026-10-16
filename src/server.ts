@@ -1,4 +1,5 @@
 import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
+import { getActiveConsumer, setActiveConsumer } from '@angular/core/primitives/signals';
 import { environment } from './environments/environment';
 import { sitemapResponse } from './sitemap';
 
@@ -14,6 +15,17 @@ const CANONICAL_HOST = 'ballastasera.it';
  * This is a request handler used by the Angular CLI (dev-server and during build).
  */
 export const reqHandler = createRequestHandler(async (req) => {
+	// A worker's isolate serves request after request, and Angular keeps the
+	// reactive context it's evaluating in (a computed, a template) in one
+	// module-wide variable. Between two requests there's never one; one left
+	// over all the same made every request after it fail on its first signal
+	// write (NG0600, in restoreSession) until the isolate was recycled: the
+	// "Error 1101" half the links from Instagram opened on.
+	if (getActiveConsumer()) {
+		console.warn('An Angular reactive context was left over from an earlier request: cleared.');
+		setActiveConsumer(null);
+	}
+
 	// ballastasera.com used to serve the same content as .it with no redirect,
 	// so Google was free to (and did) pick .com as the canonical over our tag,
 	// leaving the real .it homepage excluded from the index. A real 301 fixes

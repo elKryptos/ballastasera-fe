@@ -36,6 +36,8 @@ export class AuthService {
 
   /** Loads /rest/auth/me with whatever token is stored — call on app start to restore a session. */
   restoreSession() {
+    // The server never has a token, and nobody's signed in there already.
+    if (!this.isBrowser) return of(null);
     if (!this.tokenStorage.get()) {
       this.currentUserSignal.set(null);
       return of(null);

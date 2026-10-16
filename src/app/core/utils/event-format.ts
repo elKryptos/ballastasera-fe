@@ -109,6 +109,13 @@ export function formatPrice(event: Pricing): string {
   return `${event.price} ${event.currency ?? ''}`.trim();
 }
 
+/** "Bachata Sensual", "Salsa Cubana", "Salsa Portoricana" → Bachata, Salsa:
+ * for where every style in full is too long (a link's preview, a post). The
+ * event's page lists them all. */
+export function styleFamilies(styles: string[]): string[] {
+  return [...new Set(styles.map((style) => style.trim().split(/\s+/)[0]))];
+}
+
 /** The colour the price is written in: gold, or green for "Gratis". */
 export function priceColor(event: Pricing): string {
   return event.free ? 'var(--ev-free)' : 'var(--ev-price)';

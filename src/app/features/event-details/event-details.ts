@@ -28,23 +28,25 @@ import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventPinIcon, VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
-import { PageSeo, SeoService, clip } from '../../core/services/seo.service';
+import { ORIGIN, PageSeo, SeoService, ShareImage, clip } from '../../core/services/seo.service';
 import { EventAttendeeDto, EventDetailDto } from '../../core/models/event.model';
 import { OrganizerDetailDto } from '../../core/models/organizer.model';
 import { eventIcs } from '../../core/utils/calendar';
 import { injectPageShare } from '../../core/utils/page-share';
 import { lockBodyScrollWhile } from '../../core/utils/scroll-lock';
-import { nightDateLabel, nightLongDate } from '../../core/utils/event-filters';
+import { capitalize, nightDateLabel, nightLongDate } from '../../core/utils/event-filters';
 import {
   addressLine,
   addressPrimary,
   addressSecondary,
+  addressTown,
   eventBadge,
   formatClock,
   formatPrice,
   googleMapsUrl,
   instagramUrl,
   priceColor,
+  styleFamilies,
   withoutCountry,
 } from '../../core/utils/event-format';
 import {
@@ -479,16 +481,33 @@ export class EventDetails {
 }
 
 /** "Serata Caraibica — Piperita, martedì 13 ottobre" and, under it in a search
- * result, the night, the place, what's danced and the price. No start time:
- * the server would write it in its own timezone, not Italy's. */
+ * result or a shared link, the night, the place, what's danced and the price:
+ * "Martedì 13 ottobre · Piperita, Via Roma 12, Cinisello Balsamo · Salsa ·
+ * 10 EUR". The town is the one in the address — cityName is the city the app
+ * files it under, Milano for all the towns around it. No start time: the
+ * server would write it in its own timezone, not Italy's. */
 function eventSeo(event: EventDetailDto): PageSeo {
   const date = nightLongDate(event);
-  const where = [event.venue?.name, addressPrimary(event.address), event.cityName].filter(Boolean).join(', ');
+  const town = addressTown(event.address) ?? event.cityName;
+  const where = [event.venue?.name, addressPrimary(event.address), town].filter(Boolean).join(', ');
   return {
-    title: `${event.title} — ${event.venue?.name ?? event.cityName}, ${date}`,
+    title: `${event.title} — ${event.venue?.name ?? town}, ${date}`,
     description: clip(
-      [`${event.title}, ${date}`, where, event.danceStyles.join(', '), formatPrice(event)].filter(Boolean).join(' · '),
+      [capitalize(date), where, styleFamilies(event.danceStyles).join(', '), formatPrice(event)]
+        .filter(Boolean)
+        .join(' · '),
       160,
     ),
+    image: event.flyerUrl ? { url: event.flyerUrl, alt: `Flyer di ${event.title}` } : LOGO_IMAGE,
   };
 }
+
+/** A night without a flyer: the logo, square, which a chat shows as a small
+ * picture beside the link's words rather than a banner over them. */
+const LOGO_IMAGE: ShareImage = {
+  url: `${ORIGIN}/icon-512.png`,
+  alt: 'ballastasera',
+  type: 'image/png',
+  width: 512,
+  height: 512,
+};

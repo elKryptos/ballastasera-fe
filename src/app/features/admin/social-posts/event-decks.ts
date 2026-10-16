@@ -1,6 +1,13 @@
 import { EventCardDto, EventDetailDto } from '../../../core/models/event.model';
 import { DateRange, capitalize, eventNight, nightDate, nightOf } from '../../../core/utils/event-filters';
-import { addressLine, addressTown, formatClock, formatPrice, instagramHandle } from '../../../core/utils/event-format';
+import {
+  addressLine,
+  addressTown,
+  formatClock,
+  formatPrice,
+  instagramHandle,
+  styleFamilies,
+} from '../../../core/utils/event-format';
 import { Card, MAX_ROWS, NightRow } from './cards';
 import { CardNote, Deck, Kind } from './deck';
 
@@ -103,13 +110,6 @@ function toRow(event: EventCardDto): NightRow {
     free: event.free,
     flyerUrl: event.flyerUrl,
   };
-}
-
-/** "Bachata Sensual", "Salsa Cubana", "Salsa Portoricana" → Bachata, Salsa:
- * every style in full ran over two lines, and broke them anywhere ("Salsa /
- * Portoricana"). The event's page lists them all. */
-function styleFamilies(styles: string[]): string[] {
-  return [...new Set(styles.map((style) => style.trim().split(/\s+/)[0]))];
 }
 
 /** One night's own card: the flyer large, the date beside it, then what,

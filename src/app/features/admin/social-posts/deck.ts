@@ -20,7 +20,7 @@ export interface CardNote {
  * them. Built from the events (event-decks.ts) or from the lesson
  * (lesson-decks.ts); drawn, recorded, downloaded and copied by SocialPosts. */
 export interface Deck {
-  /** In the files' names: "ballastasera-<slug>-1.png". */
+  /** In the files' names: "ballastasera-<slug>-1.jpg". */
   slug: string;
   kind: Kind;
   cards: Card[];

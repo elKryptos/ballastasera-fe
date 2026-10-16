@@ -187,8 +187,27 @@ export class SocialPosts {
    * the photo roll, in one go. */
   protected readonly canShareFiles =
     typeof navigator.canShare === 'function' &&
-    navigator.canShare({ files: [new File([], 'card.png', { type: 'image/png' })] });
-  protected readonly busy = signal(false);
+    navigator.canShare({ files: [new File([], 'card.jpg', { type: 'image/jpeg' })] });
+  /** The cards as image files, made as soon as they're drawn; null while
+   * they're being made. Ready ahead: a phone opens its share sheet only right
+   * after the tap, and encoding them then took long enough for it to refuse. */
+  protected readonly images = signal<File[] | null>(null);
+  private imagesTimer: ReturnType<typeof setTimeout> | undefined;
+  private imagesVersion = 0;
+  /** The images in the share sheet's groups (SHARE_MAX), a button each:
+   * "Condividi", or "Condividi 1–10" and on when there are more. */
+  protected readonly shareParts = computed(() => {
+    const images = this.images() ?? [];
+    const parts = Math.ceil(images.length / SHARE_MAX);
+    return Array.from({ length: parts }, (_, part) => {
+      const first = part * SHARE_MAX;
+      const files = images.slice(first, first + SHARE_MAX);
+      const label = parts > 1 ? `Condividi ${first + 1}–${first + files.length}` : 'Condividi';
+      return { label, files };
+    });
+  });
+  /** Why the last share didn't go, for the admin; null when it did. */
+  protected readonly shareError = signal<string | null>(null);
 
   constructor() {
     // A canvas draws with a fallback font if the web font isn't in yet, and
@@ -247,6 +266,7 @@ export class SocialPosts {
         const ctx = canvas.getContext('2d');
         if (ctx) drawCard(ctx, format, card, index, deck.cards.length, flyers);
       });
+      untracked(() => this.prepareImages());
     });
 
     // A recorded reel is of the cards as they were: any change to them (a
@@ -256,7 +276,23 @@ export class SocialPosts {
       this.flyers();
       untracked(() => this.dropReel());
     });
-    inject(DestroyRef).onDestroy(() => this.dropReel());
+    inject(DestroyRef).onDestroy(() => {
+      this.dropReel();
+      clearTimeout(this.imagesTimer);
+    });
+  }
+
+  /** The files of the cards as they're drawn now. A moment after the last
+   * redraw: the flyers come in one by one, each redrawing the deck. */
+  private prepareImages(): void {
+    const version = ++this.imagesVersion;
+    this.shareError.set(null);
+    this.images.set(null);
+    clearTimeout(this.imagesTimer);
+    this.imagesTimer = setTimeout(async () => {
+      const files = await this.cardFiles();
+      if (version === this.imagesVersion) this.images.set(files);
+    }, 400);
   }
 
   /** `force` is "Aggiorna": the events again, and their mentions with them —
@@ -316,16 +352,13 @@ export class SocialPosts {
     if (file) save(file);
   }
 
-  protected async downloadAll(): Promise<void> {
-    this.busy.set(true);
-    for (const file of await this.cardFiles()) save(file);
-    this.busy.set(false);
+  protected downloadAll(): void {
+    for (const file of this.images() ?? []) save(file);
   }
 
-  protected async shareAll(): Promise<void> {
-    this.busy.set(true);
-    await share(await this.cardFiles());
-    this.busy.set(false);
+  /** Straight from the tap, with the files made already (images). */
+  protected sharePart(files: File[]): void {
+    void this.share(files);
   }
 
   /** Plays the cards on screen and records them (recordReel): it takes as
@@ -358,9 +391,29 @@ export class SocialPosts {
     return typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
   }
 
-  protected shareReel(): Promise<void> {
+  protected shareReel(): void {
     const reel = this.reel();
-    return reel ? share([reel.file]) : Promise.resolve();
+    if (reel) void this.share([reel.file]);
+  }
+
+  /** The share sheet with `files`. Closing it is no failure; anything else
+   * is said, with the browser's reason, instead of the button doing nothing. */
+  private async share(files: File[]): Promise<void> {
+    this.shareError.set(null);
+    if (!navigator.canShare({ files })) {
+      const size = Math.round(files.reduce((total, file) => total + file.size, 0) / 1e6);
+      this.shareError.set(
+        `Il telefono non accetta questi file (${files.length}, ${size} MB): scaricali e caricali da Instagram.`,
+      );
+      return;
+    }
+    try {
+      await navigator.share({ files });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      const reason = error instanceof Error ? error.name : 'Error';
+      this.shareError.set(`Non si è potuto condividere (${reason}): scarica i file e caricali da Instagram.`);
+    }
   }
 
   private dropReel(): void {
@@ -375,19 +428,27 @@ export class SocialPosts {
     return files.filter((file) => file !== null);
   }
 
-  /** "ballastasera-post-serate-weekend-1.png": numbered in the deck's order. */
+  /** "ballastasera-post-serate-weekend-1.jpg": numbered in the deck's order.
+   * A JPEG, as Instagram stores it anyway: over a blurred flyer a PNG is a
+   * few MB, and a carousel of them went past what a phone shares at once. */
   private cardFile(index: number): Promise<File | null> {
     const canvas = this.canvases()[index]?.nativeElement;
     const slug = this.deck()?.slug;
     if (!canvas || !slug) return Promise.resolve(null);
     return new Promise((resolve) =>
       canvas.toBlob(
-        (blob) => resolve(blob && new File([blob], `ballastasera-${slug}-${index + 1}.png`, { type: 'image/png' })),
-        'image/png',
+        (blob) => resolve(blob && new File([blob], `ballastasera-${slug}-${index + 1}.jpg`, { type: 'image/jpeg' })),
+        'image/jpeg',
+        JPEG_QUALITY,
       ),
     );
   }
 }
+
+/** Android's share sheet takes this many files at most. */
+const SHARE_MAX = 10;
+/** High enough that Instagram's own compression is the only one that shows. */
+const JPEG_QUALITY = 0.92;
 
 function save(file: File): void {
   const url = URL.createObjectURL(file);
@@ -397,12 +458,4 @@ function save(file: File): void {
   link.click();
   // Not right away: the download reads the URL after the click returns.
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
-}
-
-async function share(files: File[]): Promise<void> {
-  try {
-    await navigator.share({ files });
-  } catch {
-    // The share sheet was dismissed: nothing to do.
-  }
 }

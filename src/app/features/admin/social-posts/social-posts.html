@@ -116,14 +116,20 @@
       }
       } @else {
       @if (canShareFiles) {
+      @for (part of shareParts(); track part.label) {
       <button type="button" class="cursor-pointer rounded-full bg-rose px-4 py-2 text-sm font-bold text-ink"
-        [disabled]="busy()" (click)="shareAll()">
-        Condividi
+        (click)="sharePart(part.files)">
+        {{ part.label }}
       </button>
+      } @empty {
+      <button type="button" class="rounded-full bg-rose px-4 py-2 text-sm font-bold text-ink" disabled>
+        Preparo…
+      </button>
+      }
       }
       <button type="button"
         class="cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-rose"
-        [disabled]="busy()" (click)="downloadAll()">
+        [disabled]="!images()" (click)="downloadAll()">
         Scarica tutte
       </button>
       }
@@ -131,6 +137,15 @@
 
     @if (tooMuch(); as warning) {
     <p class="mt-2 text-sm text-amber">{{ warning }}</p>
+    }
+    @if (canShareFiles && deck.kind === 'post' && shareParts().length > 1) {
+    <p class="mt-2 text-sm text-amber">
+      Il telefono condivide al massimo 10 immagini alla volta, e Instagram ne farebbe post separati. Per un carosello
+      unico: "Scarica tutte" e in Instagram scegli le foto dalla galleria (fino a 20), o togli i "Dettagli".
+    </p>
+    }
+    @if (shareError(); as reason) {
+    <p class="mt-2 text-sm text-amber" role="alert">{{ reason }}</p>
     }
 
     @if (deck.kind === 'reel') {

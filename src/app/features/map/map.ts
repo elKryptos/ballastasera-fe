@@ -50,6 +50,7 @@ import {
   nearestCity,
   pointInBounds,
 } from '../../core/utils/geo';
+import { preconnect } from '../../core/utils/preconnect';
 import { loadStylesheet } from '../../core/utils/stylesheet';
 import { supportsWebGL } from '../../core/utils/webgl';
 import { environment } from '../../../environments/environment';
@@ -63,9 +64,10 @@ import {
   VENUE_TYPES,
   VENUE_TYPE_LABELS,
 } from '../../core/config/map-pins';
-import { MAP_STYLE_URLS } from '../../core/config/map-styles';
+import { MAP_STYLE_URLS, MAP_TILES_ORIGIN } from '../../core/config/map-styles';
 import { LAYER_OPTIONS, MapLayer, layerShowsEvents } from './map-layer';
 import { MapPinIcons } from './map-pin-icons';
+import { MapPlaceholder } from './map-placeholder';
 import { MapSheet } from './map-sheet/map-sheet';
 import { MapToolbar } from './map-toolbar/map-toolbar';
 
@@ -408,6 +410,10 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private rasterLayer: Layer | null = null;
   private basemapStyleUrl = MAP_STYLE_URLS.light;
   private basemapLoading = false;
+  /** MapLibre's Leaflet layer module, imported once — see loadGlModule(). */
+  private glModule: Promise<typeof import('@maplibre/maplibre-gl-leaflet')> | null = null;
+  /** Under the pins until the basemap has drawn — see MapPlaceholder. */
+  private placeholder: MapPlaceholder | null = null;
   /** The in-flight getMapEvents call, cancelled when a newer one starts so a
    * slow response for an old area can't overwrite the current pins. */
   private eventsRequest: Subscription | null = null;
@@ -476,6 +482,15 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     // (works either way in dev, breaks silently in the optimized prod build).
     // Its stylesheet isn't in the initial bundle either (angular.json): only
     // this page uses it. Fetched alongside, and the map waits for both.
+    // MapLibre too, the page's biggest chunk, but the map doesn't wait for it
+    // (showBaseLayer does): started now rather than once the map is built,
+    // with the tile server's connection opened meanwhile.
+    if (supportsWebGL()) {
+      preconnect(MAP_TILES_ORIGIN);
+      // A failure is handled where it's awaited, in showBaseLayer — which
+      // never runs if the page is left first.
+      this.loadGlModule().catch(() => undefined);
+    }
     const [leafletModule] = await Promise.all([import('leaflet'), loadStylesheet('leaflet.css')]);
     // Page left while Leaflet loaded: ngOnDestroy has already run, so a map
     // built now would never be removed.
@@ -602,6 +617,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     // once. Leaflet's own prefix (with its flag) stays as it is.
     map.attributionControl.addAttribution(OSM_ATTRIBUTION);
 
+    this.placeholder = new MapPlaceholder(L, map, this.themeService.theme());
     void this.showBaseLayer(this.themeService.theme());
 
     // Only bookkeeping on a pan or zoom — no request: the "Cerca in questa
@@ -666,11 +682,12 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
    * switch — same tiles, only the colours change, so the switch is instant and
    * downloads nothing new. Without WebGL (see supportsWebGL), or if MapLibre
    * fails to load, CARTO Voyager's raster stands in for both themes rather than
-   * leaving the map blank. */
+   * leaving the map blank. Either way the placeholder goes once it has drawn. */
   private async showBaseLayer(theme: Theme): Promise<void> {
     const L = this.leaflet;
     if (!L || !this.map) return;
     this.basemapStyleUrl = MAP_STYLE_URLS[theme];
+    this.placeholder?.setTheme(theme);
 
     if (this.glLayer) {
       this.glLayer.getMaplibreMap().setStyle(this.basemapStyleUrl);
@@ -687,12 +704,15 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
       const layer = await this.createGlLayer(styleUrl);
       if (!this.map) return; // page left meanwhile
       this.glLayer = layer.addTo(this.map);
+      this.glLayer.getMaplibreMap().once('load', () => this.placeholder?.remove());
       // The theme may have flipped while MapLibre loaded.
       if (this.basemapStyleUrl !== styleUrl) this.glLayer.getMaplibreMap().setStyle(this.basemapStyleUrl);
     } catch (err) {
       if (!this.map) return;
       console.warn('Vector basemap unavailable, falling back to raster tiles', err);
-      this.rasterLayer = this.createRasterLayer(L).addTo(this.map);
+      this.rasterLayer = this.createRasterLayer(L)
+        .once('load', () => this.placeholder?.remove())
+        .addTo(this.map);
     } finally {
       this.basemapLoading = false;
     }
@@ -718,8 +738,14 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
    * above it), via @maplibre/maplibre-gl-leaflet. Its attribution
    * ("© OpenMapTiles") comes from the style's own source. */
   private async createGlLayer(style: string): Promise<MaplibreGL> {
-    const { maplibreGL } = await import('@maplibre/maplibre-gl-leaflet');
+    const { maplibreGL } = await this.loadGlModule();
     return maplibreGL({ style });
+  }
+
+  /** The same import for ngAfterViewInit, which starts it early, and
+   * createGlLayer, which needs it: whichever comes first fetches it. */
+  private loadGlModule(): Promise<typeof import('@maplibre/maplibre-gl-leaflet')> {
+    return (this.glModule ??= import('@maplibre/maplibre-gl-leaflet'));
   }
 
   /** "Cerca in questa zona": the events in the current view (when they're

@@ -12,3 +12,8 @@ export const MAP_STYLE_URLS: Record<Theme, string> = {
   light: '/map-styles/light.json',
   dark: '/map-styles/dark.json',
 };
+
+/** Where both styles take their tiles, glyphs and sprite from: preconnected
+ * as soon as a map starts loading (see preconnect()), so the connection is
+ * open by the time MapLibre, then the style, have come in. */
+export const MAP_TILES_ORIGIN = 'https://tiles.openfreemap.org';

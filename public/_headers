@@ -2,9 +2,28 @@
 # Without a rule they go out as "max-age=0, must-revalidate": the browser asks
 # again on every visit before showing a file it already has.
 
-# The menu's and the landing's map pictures (scripts/build-map-snapshots.mjs).
-# Not fingerprinted, so not immutable: a day fresh, then up to a week shown
-# from cache while it's checked again in the background — a re-render
-# reaches everyone within a day or so.
+# The build's fingerprinted output (outputHashing): a changed file gets a new
+# name, so a name never changes content — kept a year, never asked again.
+# Not every .js: ngsw-worker.js, safety-worker.js and worker-basic.min.js keep
+# their names across builds and must be checked.
+/chunk-*
+  Cache-Control: public, max-age=31536000, immutable
+/main-*
+  Cache-Control: public, max-age=31536000, immutable
+/styles-*
+  Cache-Control: public, max-age=31536000, immutable
+/media/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The map pictures (scripts/build-map-snapshots.mjs: the menu's, the
+# landing's, /mappa's placeholder), the map styles (scripts/build-map-styles.mjs)
+# and Leaflet's stylesheet (angular.json, not injected, so not fingerprinted).
+# Not immutable: a day fresh, then up to a week shown from cache while it's
+# checked again in the background — a change reaches everyone within a day or
+# so.
 /map-snapshots/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/map-styles/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/leaflet.css
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800

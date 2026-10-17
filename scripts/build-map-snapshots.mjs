@@ -1,5 +1,6 @@
 // Renders the static map images in public/map-snapshots/ — the backgrounds of
-// the landing's map teaser and the menu's Mappa card (see MapSnapshot): one
+// the landing's map teaser and the menu's Mappa card (see MapSnapshot), and
+// /mappa's placeholder while its live basemap loads (see MapPlaceholder): one
 // WebP per theme, drawn from the same MapLibre styles as /mappa
 // (public/map-styles/, `pnpm map:styles`), so they look like the real map
 // without loading it — no MapLibre chunk, no tiles, just an image.
@@ -11,6 +12,8 @@
 //
 // Re-run after changing the map styles:
 //   pnpm map:snapshots
+// or only some variants (see VARIANTS):
+//   pnpm map:snapshots mappa
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -28,21 +31,52 @@ const MAPLIBRE_JS = join(ROOT, 'node_modules/maplibre-gl/dist/maplibre-gl.js');
 const CENTER = [9.19, 45.4642];
 const ZOOM = 13;
 
-/** CSS size of each image, drawn at 2x for sharp text on retina screens.
+/** CSS size of each image, drawn at 2x for sharp text on retina screens
+ * (unless a variant sets its own pixelRatio, center or zoom).
  * Both are shown with object-fit: cover, so they only need the right aspect
  * and enough pixels for the largest box they fill: the landing teaser is 4:5
  * on phones and square from sm: up (at most ~30rem wide), the menu card a
  * wide strip (176px tall on phones, at most ~800x360 from @5xl up). */
+const MAPPA_PLACEHOLDER = { center: [9.1867, 45.46611], zoom: 10, pixelRatio: 1, labels: false, quality: 0.7 };
 const VARIANTS = [
   { variant: 'landing', width: 480, height: 600 },
   { variant: 'menu', width: 900, height: 340 },
+  // /mappa's first view, under the pins until MapLibre has drawn: exactly
+  // MILAN_CENTER at MILAN_DEFAULT_ZOOM (Leaflet 11, so 10 here), placed on
+  // the map by its geographic bounds — SIZES in features/map/map-placeholder.ts
+  // repeats these sizes, and its view is the one in core/config/map-pins.ts:
+  // keep them in step. One for phones, one big enough for a full-HD desktop, both light:
+  // on screen for a second or two, and every KB competes with the MapLibre
+  // chunk on a slow line — so 1x and no labels (text is most of the weight,
+  // and MapLibre fades its own labels in anyway).
+  { variant: 'mappa-small', width: 800, height: 1000, ...MAPPA_PLACEHOLDER },
+  { variant: 'mappa-large', width: 1920, height: 1280, ...MAPPA_PLACEHOLDER },
 ];
 const THEMES = ['dark', 'light'];
 const PIXEL_RATIO = 2;
 const WEBP_QUALITY = 0.8;
 const TIMEOUT_MS = 120_000;
 
-const snapshots = VARIANTS.flatMap((v) => THEMES.map((theme) => ({ ...v, theme, name: `${v.variant}-${theme}` })));
+/** Variant names from the command line: only those are rendered. */
+const only = process.argv.slice(2);
+const unknown = only.filter((name) => !VARIANTS.some((v) => v.variant === name));
+if (unknown.length) {
+  console.error(`Unknown variant(s): ${unknown.join(', ')}. Known: ${VARIANTS.map((v) => v.variant).join(', ')}.`);
+  process.exit(1);
+}
+
+const snapshots = VARIANTS.filter((v) => only.length === 0 || only.includes(v.variant)).flatMap((v) =>
+  THEMES.map((theme) => ({
+    center: CENTER,
+    zoom: ZOOM,
+    pixelRatio: PIXEL_RATIO,
+    labels: true,
+    quality: WEBP_QUALITY,
+    ...v,
+    theme,
+    name: `${v.variant}-${theme}`,
+  })),
+);
 
 const page = `<!doctype html>
 <html><head><meta charset="utf-8"><script src="/maplibre-gl.js"></script></head>
@@ -54,12 +88,14 @@ const page = `<!doctype html>
       const container = document.createElement('div');
       container.style.cssText = 'position:relative;width:' + s.width + 'px;height:' + s.height + 'px';
       document.body.append(container);
+      const style = await (await fetch('/map-styles/' + s.theme + '.json')).json();
+      if (!s.labels) style.layers = style.layers.filter((layer) => layer.type !== 'symbol');
       const map = new maplibregl.Map({
         container,
-        style: '/map-styles/' + s.theme + '.json',
-        center: ${JSON.stringify(CENTER)},
-        zoom: ${ZOOM},
-        pixelRatio: ${PIXEL_RATIO},
+        style,
+        center: s.center,
+        zoom: s.zoom,
+        pixelRatio: s.pixelRatio,
         interactive: false,
         attributionControl: false,
         // Labels fully drawn at 'idle', not caught mid fade-in.
@@ -69,7 +105,7 @@ const page = `<!doctype html>
       });
       map.on('error', (e) => log('map error (' + s.name + '): ' + (e.error?.message ?? e)));
       await new Promise((done) => map.once('idle', done));
-      const blob = await new Promise((done) => map.getCanvas().toBlob(done, 'image/webp', ${WEBP_QUALITY}));
+      const blob = await new Promise((done) => map.getCanvas().toBlob(done, 'image/webp', s.quality));
       await fetch('/save/' + s.name, { method: 'POST', body: blob });
       map.remove();
       container.remove();

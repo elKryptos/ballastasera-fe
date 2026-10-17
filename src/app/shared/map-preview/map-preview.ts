@@ -1,8 +1,9 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, effect, inject, input, viewChild } from '@angular/core';
 import type { Map as MaplibreMap } from 'maplibre-gl';
 import { MILAN_CENTER, MILAN_DEFAULT_ZOOM } from '../../core/config/map-pins';
-import { MAP_STYLE_URLS } from '../../core/config/map-styles';
+import { MAP_STYLE_URLS, MAP_TILES_ORIGIN } from '../../core/config/map-styles';
 import { ThemeService } from '../../core/services/theme.service';
+import { preconnect } from '../../core/utils/preconnect';
 import { supportsWebGL } from '../../core/utils/webgl';
 
 /**
@@ -87,6 +88,7 @@ export class MapPreview {
 
   private async initMap(container: HTMLDivElement): Promise<void> {
     if (!supportsWebGL()) return;
+    preconnect(MAP_TILES_ORIGIN);
 
     // MapLibre is CJS/UMD, not real ESM — same `.default` dance as Leaflet
     // in map.ts, for esbuild's production bundle.

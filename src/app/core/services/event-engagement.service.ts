@@ -53,8 +53,8 @@ export class EventEngagementService {
     if (!userId || this.likesSyncedFor === userId) return;
     this.likesSyncedFor = userId;
 
-    this.eventsService.getMyFavorites().subscribe({
-      next: (events) => this.likedEventIds.update((ids) => new Set([...ids, ...events.map((event) => event.id)])),
+    this.eventsService.getMyFavoritesIds().subscribe({
+      next: (eventsIds) => this.likedEventIds.update((ids) => new Set([...ids, ...eventsIds])),
       error: (err) => {
         this.likesSyncedFor = null;
         console.error('Failed to load liked events', err);

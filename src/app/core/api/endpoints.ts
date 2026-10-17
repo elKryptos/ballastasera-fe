@@ -30,6 +30,7 @@ export const endpoints = {
   },
 
   users: {
+    myFavoritesIds: '/rest/users/me/favorites/ids',
     myFavorites: '/rest/users/me/favorites',
     myAttendance: '/rest/users/me/attendance'
   },

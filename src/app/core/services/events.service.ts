@@ -70,7 +70,7 @@ export class EventsService {
   }
 
   /** Every event the signed-in user liked, in one request. */
-  getMyFavorites(): Observable<EventCardDto[]> {
-    return this.http.get<EventCardDto[]>(`${environment.apiUrl}${endpoints.users.myFavorites}`);
+  getMyFavoritesIds(): Observable<string[]> {
+    return this.http.get<string[]>(`${environment.apiUrl}${endpoints.users.myFavoritesIds}`);
   }
 }

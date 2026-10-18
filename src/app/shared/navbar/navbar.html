@@ -238,13 +238,13 @@
       <a class="drawer-item" routerLink="/le-tue-serate" routerLinkActive [routerLinkActiveOptions]="exactTab"
         ariaCurrentWhenActive="page" (click)="closeDrawer()" appRailTooltip="Parteciperò">
         <ng-container [ngTemplateOutlet]="goingItem" />
-        <span class="drawer-chip bg-rose font-extrabold text-ink">Nuovo</span>
+        <span class="drawer-chip drawer-chip-new">Nuovo</span>
       </a>
       <a class="drawer-item" routerLink="/le-tue-serate" [queryParams]="{ tab: 'mi-piace' }" routerLinkActive
         [routerLinkActiveOptions]="exactTab" ariaCurrentWhenActive="page" (click)="closeDrawer()"
         appRailTooltip="Serate che ti piacciono">
         <ng-container [ngTemplateOutlet]="likedItem" />
-        <span class="drawer-chip bg-rose font-extrabold text-ink">Nuovo</span>
+        <span class="drawer-chip drawer-chip-new">Nuovo</span>
       </a>
       <!-- Amici: no page yet, "Presto" says so. -->
       <div class="drawer-item" appRailTooltip="Amici">
@@ -312,7 +312,7 @@
             <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" />
           </svg>
           <span class="grow">Pubblica una serata</span>
-          <span class="drawer-chip bg-rose font-extrabold text-ink">Nuovo</span>
+          <span class="drawer-chip drawer-chip-new">Nuovo</span>
         </div>
         <!-- Organizers only: their own nights and public page. Neither has a
             page yet. -->

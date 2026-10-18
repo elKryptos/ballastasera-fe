@@ -50,6 +50,8 @@ export class Navbar {
   protected readonly learnEnabled = computed(() =>
     this.featureFlags.isEnabled(FEATURE_FLAGS.learnToDancePage),
   );
+  /** Each row is marked only on its own tab (?tab=mi-piace for the likes). */
+  protected readonly exactTab = { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' } as const;
 
   protected readonly initial = computed(() => this.currentUser()?.displayName.trim().charAt(0).toUpperCase() ?? '');
 

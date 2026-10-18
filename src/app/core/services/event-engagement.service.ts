@@ -2,6 +2,7 @@ import { Service, WritableSignal, inject, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { EventsService } from './events.service';
+import { MyNightsKind, UserActivityService } from './user-activity.service';
 
 /** +1/-1 on whatever count the caller shows next to the toggle. */
 export type CountChange = (delta: 1 | -1) => void;
@@ -14,6 +15,7 @@ export type CountChange = (delta: 1 | -1) => void;
 @Service()
 export class EventEngagementService {
   private readonly eventsService = inject(EventsService);
+  private readonly userActivityService = inject(UserActivityService);
   private readonly authService = inject(AuthService);
 
   private readonly goingEventIds = signal<ReadonlySet<string>>(new Set());
@@ -53,13 +55,20 @@ export class EventEngagementService {
     if (!userId || this.likesSyncedFor === userId) return;
     this.likesSyncedFor = userId;
 
-    this.eventsService.getMyFavoritesIds().subscribe({
+    this.userActivityService.getMyFavoritesIds().subscribe({
       next: (eventsIds) => this.likedEventIds.update((ids) => new Set([...ids, ...eventsIds])),
       error: (err) => {
         this.likesSyncedFor = null;
         console.error('Failed to load liked events', err);
       },
     });
+  }
+
+  /** Events the backend just listed as going/liked ("Le tue serate"), so a
+   * tap there removes them: the toggles pick add or remove from this state. */
+  markActive(kind: MyNightsKind, eventIds: string[]): void {
+    const idsSignal = kind === 'going' ? this.goingEventIds : this.likedEventIds;
+    idsSignal.update((ids) => new Set([...ids, ...eventIds]));
   }
 
   /** Returns false, without doing anything, when signed out — the caller

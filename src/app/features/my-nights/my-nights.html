@@ -1,0 +1,244 @@
+<!-- The canvas's "La tua scena" (LeTueSerate, SeratePassate, the Vuoto and
+    Paginazione boards), on the --ev-* tokens in styles.css, so it follows the
+    day theme too (LeTueSerateGiorno). The selected tab is rose with ink on it
+    (--ev-on-rose), as on the canvas. A phone screen there: here one column
+    up to max-w-2xl, the cards don't need more. -->
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex max-w-2xl flex-col gap-5 px-4 pt-5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+    <div>
+      <p class="text-[0.9375rem] font-semibold text-(--ev-link)">La tua scena</p>
+      <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Le tue serate</h1>
+    </div>
+
+    <div role="tablist" aria-label="Le tue serate"
+      class="flex shrink-0 gap-1 rounded-2xl border border-(--ev-edge) bg-(--ev-surface) p-1">
+      <button type="button" role="tab" id="tab-going" aria-controls="panel"
+        class="group flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-extrabold text-(--ev-soft) transition-colors aria-selected:bg-rose aria-selected:text-(--ev-on-rose)"
+        [attr.aria-selected]="tab() === 'going'" (click)="selectTab('going')">
+        <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M8 12.5l2.5 2.5L16 9.5" />
+        </svg>
+        Parteciperò
+        @if (goingList.loaded()) {
+        <span
+          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--ev-text)/14 px-1.5 text-xs font-extrabold tabular-nums group-aria-selected:bg-(--ev-on-rose)/18">
+          {{ goingList.total() }}
+        </span>
+        }
+      </button>
+      <button type="button" role="tab" id="tab-liked" aria-controls="panel"
+        class="group flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-extrabold text-(--ev-soft) transition-colors aria-selected:bg-rose aria-selected:text-(--ev-on-rose)"
+        [attr.aria-selected]="tab() === 'liked'" (click)="selectTab('liked')">
+        <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+        </svg>
+        Mi piace
+        @if (likedList.loaded()) {
+        <span
+          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--ev-text)/14 px-1.5 text-xs font-extrabold tabular-nums group-aria-selected:bg-(--ev-on-rose)/18">
+          {{ likedList.total() }}
+        </span>
+        }
+      </button>
+    </div>
+
+    <div id="panel" role="tabpanel" class="flex flex-col gap-5"
+      [attr.aria-labelledby]="tab() === 'going' ? 'tab-going' : 'tab-liked'">
+      @let list = upcoming();
+
+      @if (!list.loaded() && list.error()) {
+      <div class="flex flex-col items-start gap-3 rounded-[1.25rem] border border-dashed border-(--ev-edge) px-4 py-5">
+        <p class="font-display text-[1.0625rem] font-extrabold">Non riusciamo a caricare le tue serate</p>
+        <button type="button"
+          class="h-11 cursor-pointer rounded-[0.875rem] bg-rose px-4 text-sm font-extrabold text-(--ev-on-rose)"
+          (click)="list.reload()">Riprova</button>
+      </div>
+      } @else if (!list.loaded()) {
+      <ng-container [ngTemplateOutlet]="placeholders" />
+      } @else {
+      @for (group of upcomingGroups(); track group.night) {
+      <section class="flex flex-col gap-2.5" [attr.aria-labelledby]="'night-' + group.night">
+        <h2 [id]="'night-' + group.night"
+          class="px-1 text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+          {{ group.heading }}
+        </h2>
+        @for (event of group.events; track event.id) {
+        <app-my-night-card [event]="event" [kind]="tab()" [now]="now()" (removed)="remove(list, event)" />
+        }
+      </section>
+      } @empty {
+      <div class="flex flex-col items-start gap-3 rounded-[1.25rem] border border-dashed border-(--ev-edge) px-4 py-5">
+        <span class="flex size-11 items-center justify-center rounded-[0.875rem] bg-(--ev-surface) text-(--ev-soft)"
+          aria-hidden="true">
+          @if (tab() === 'going') {
+          <svg viewBox="0 0 24 24" class="size-5.5" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M8 12.5l2.5 2.5L16 9.5" />
+          </svg>
+          } @else {
+          <svg viewBox="0 0 24 24" class="size-5.5" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linejoin="round">
+            <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+          </svg>
+          }
+        </span>
+        <div>
+          <p class="font-display text-[1.0625rem] font-extrabold">
+            {{ tab() === 'going' ? 'Nessuna serata in programma' : 'Nessuna serata che ti piace' }}
+          </p>
+          <p class="mt-1 text-sm leading-[1.4] text-(--ev-soft)">
+            {{ tab() === 'going'
+            ? 'Tocca Parteciperò su una serata e la ritrovi qui.'
+            : 'Tocca il cuore su una serata per salvarla qui.' }}
+          </p>
+        </div>
+        <a routerLink="/lista"
+          class="flex h-11 items-center gap-1.5 rounded-[0.875rem] bg-rose px-4 text-sm font-extrabold text-(--ev-on-rose)">
+          Trova una serata
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </a>
+      </div>
+      }
+
+      <ng-container [ngTemplateOutlet]="pageEnd" [ngTemplateOutletContext]="{ $implicit: list }" />
+
+      @if (!list.hasMore() && list.items().length) {
+      <ng-container [ngTemplateOutlet]="endLine" [ngTemplateOutletContext]="{ $implicit: 'Hai visto tutte le prossime serate' }" />
+      }
+
+      <!-- Serate passate: only once the upcoming have all been shown, since
+          the past ones come after them. Its number is known before opening:
+          the first page loads with the tab. -->
+      @let pastList = past();
+      @if (!list.hasMore() && pastList.loaded() && pastList.total() > 0) {
+      <button type="button"
+        class="flex min-h-13 w-full shrink-0 cursor-pointer items-center gap-2.5 rounded-2xl border border-(--ev-edge) bg-(--ev-surface) pr-3 pl-3.5 text-left text-sm font-extrabold"
+        [attr.aria-expanded]="pastOpen()" aria-controls="past-nights" (click)="togglePast()">
+        <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-(--ev-soft)" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        <span class="min-w-0 flex-1">Serate passate</span>
+        <span
+          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--ev-text)/14 px-1.5 text-xs font-extrabold tabular-nums">
+          {{ pastList.total() }}
+        </span>
+        <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 transition-transform" [class.rotate-180]="pastOpen()"
+          fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+          aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      }
+
+      @if (pastOpen()) {
+      <div id="past-nights" class="flex flex-col gap-5">
+        @for (group of pastGroups(); track group.night) {
+        <section class="flex flex-col gap-2.5" [attr.aria-labelledby]="'past-' + group.night">
+          <h2 [id]="'past-' + group.night"
+            class="px-1 text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+            {{ group.heading }}
+          </h2>
+          @for (event of group.events; track event.id) {
+          <app-my-night-card [event]="event" [kind]="tab()" [now]="now()" past
+            (removed)="remove(pastList, event)" />
+          }
+        </section>
+        }
+
+        <ng-container [ngTemplateOutlet]="pageEnd" [ngTemplateOutletContext]="{ $implicit: pastList }" />
+
+        @if (!pastList.hasMore()) {
+        <ng-container [ngTemplateOutlet]="endLine" [ngTemplateOutletContext]="{ $implicit: 'Fine delle serate passate' }" />
+        }
+      </div>
+      }
+      }
+    </div>
+  </div>
+</main>
+
+<!-- Annulla (the canvas's toast), or the removal that didn't go through.
+    Above the page's bottom padding, so it never covers the last card for good. -->
+@if (undoText() || failedTitle()) {
+<div role="status"
+  class="fixed inset-x-4 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] z-20 mx-auto flex min-h-13 max-w-2xl items-center gap-2 rounded-2xl bg-(--ev-invert-bg) py-1 pr-1 pl-4 text-(--ev-invert-text) shadow-(--ev-shadow)">
+  @if (undoText(); as text) {
+  <span class="min-w-0 flex-1 truncate text-sm font-semibold">{{ text }}</span>
+  <button type="button"
+    class="h-11 shrink-0 cursor-pointer rounded-xl px-3.5 text-sm font-extrabold text-(--ev-invert-link)"
+    (click)="undo()">Annulla</button>
+  } @else {
+  <span class="min-w-0 flex-1 py-2.5 text-sm font-semibold">
+    Non siamo riusciti a togliere «{{ failedTitle() }}». Riprova tra poco.
+  </span>
+  }
+</div>
+}
+
+<!-- "Hai visto tutte le prossime serate", "Fine delle serate passate". -->
+<ng-template #endLine let-text>
+  <p class="flex items-center gap-3 px-1 text-[0.78125rem] text-(--ev-soft)">
+    <span class="h-px flex-1 bg-(--ev-edge)" aria-hidden="true"></span>
+    {{ text }}
+    <span class="h-px flex-1 bg-(--ev-edge)" aria-hidden="true"></span>
+  </p>
+</ng-template>
+
+<!-- After each list: the next page coming (the canvas's Paginazione: two
+    skeleton cards and "Carico altre serate…"), the sentinel that asks for it
+    while it's in reach, or a retry when it failed. The sentinel only exists
+    between pages, so each new one fires again if the list still doesn't
+    fill the screen — see InfiniteScrollDirective. -->
+<ng-template #pageEnd let-list>
+  @if (list.error() && list.loaded()) {
+  <div class="flex items-center justify-center gap-3 text-[0.8125rem] text-(--ev-soft)">
+    Non riusciamo a caricare altre serate.
+    <button type="button"
+      class="h-9 cursor-pointer rounded-xl border border-(--ev-edge) px-3 font-bold text-(--ev-text)"
+      (click)="list.loadMore()">Riprova</button>
+  </div>
+  } @else if (list.loading() && list.loaded()) {
+  <ng-container [ngTemplateOutlet]="placeholders" [ngTemplateOutletContext]="{ $implicit: true }" />
+  } @else if (list.hasMore()) {
+  <div (appInfiniteScroll)="list.loadMore()" aria-hidden="true"></div>
+  }
+</ng-template>
+
+<!-- The card's own shape (56px flyer, its lines, the button), so nothing
+    jumps when the nights come in. With more = true, the "Carico altre
+    serate…" line under them. -->
+<ng-template #placeholders let-more>
+  <div class="flex flex-col gap-2.5" role="status" aria-label="Carico altre serate">
+    @for (placeholder of [1, 2]; track placeholder) {
+    <div class="flex gap-3 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-3"
+      [class.opacity-60]="placeholder === 2" aria-hidden="true">
+      <div class="h-20 w-14 shrink-0 rounded-[0.875rem] bg-(--ev-edge)"></div>
+      <div class="flex flex-1 flex-col gap-2 pt-0.5">
+        <div class="h-3 w-21 rounded-md bg-(--ev-edge)"></div>
+        <div class="h-4 w-42 max-w-full rounded-lg bg-(--ev-tag-bg)"></div>
+        <div class="h-3 w-28 rounded-md bg-(--ev-edge)"></div>
+      </div>
+      <div class="size-11 shrink-0 rounded-[0.875rem] bg-(--ev-edge)"></div>
+    </div>
+    }
+    @if (more) {
+    <p class="flex items-center justify-center gap-2 pt-1 text-[0.8125rem] font-semibold text-(--ev-soft)">
+      <svg viewBox="0 0 24 24" class="size-4.5 animate-spin" fill="none" stroke-width="2.6" stroke-linecap="round"
+        aria-hidden="true">
+        <circle cx="12" cy="12" r="9" stroke="var(--ev-edge)" />
+        <path d="M12 3a9 9 0 0 1 9 9" stroke="var(--color-rose)" />
+      </svg>
+      Carico altre serate…
+    </p>
+    }
+  </div>
+</ng-template>

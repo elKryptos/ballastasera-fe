@@ -9,6 +9,8 @@ export const FEATURE_FLAGS = {
   mapPage: 'mapPage',
   /** /lista route: the map's events as a list, grouped by night. */
   eventListPage: 'eventListPage',
+  /** /le-tue-serate route: the signed-in user's Parteciperò and Mi piace. */
+  myNightsPage: 'myNightsPage',
   welcomePage: 'welcomePage',
   menuPage: 'menuPage',
   /** /oauth2/callback route, landed on after Google confirms login. */

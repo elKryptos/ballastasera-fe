@@ -219,24 +219,34 @@
         <ng-container [ngTemplateOutlet]="learnItem" />
       </div>
       }
-      <!-- Parteciperò, the liked nights and Amici: no page yet, "Presto" says so. -->
-      <div class="drawer-item" appRailTooltip="Parteciperò">
+      <ng-template #goingItem>
         <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9" />
           <path d="M8 12.5l2.5 2.5L16 9.5" />
         </svg>
         <span class="grow">Parteciperò</span>
-        <span class="drawer-chip">Presto</span>
-      </div>
-      <div class="drawer-item" appRailTooltip="Serate che ti piacciono">
+      </ng-template>
+      <ng-template #likedItem>
         <svg viewBox="0 0 24 24" class="text-rose" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linejoin="round" aria-hidden="true">
           <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
         </svg>
         <span class="grow">Serate che ti piacciono</span>
-        <span class="drawer-chip">Presto</span>
-      </div>
+      </ng-template>
+      <!-- "Le tue serate"'s two tabs. -->
+      <a class="drawer-item" routerLink="/le-tue-serate" routerLinkActive [routerLinkActiveOptions]="exactTab"
+        ariaCurrentWhenActive="page" (click)="closeDrawer()" appRailTooltip="Parteciperò">
+        <ng-container [ngTemplateOutlet]="goingItem" />
+        <span class="drawer-chip bg-rose font-extrabold text-ink">Nuovo</span>
+      </a>
+      <a class="drawer-item" routerLink="/le-tue-serate" [queryParams]="{ tab: 'mi-piace' }" routerLinkActive
+        [routerLinkActiveOptions]="exactTab" ariaCurrentWhenActive="page" (click)="closeDrawer()"
+        appRailTooltip="Serate che ti piacciono">
+        <ng-container [ngTemplateOutlet]="likedItem" />
+        <span class="drawer-chip bg-rose font-extrabold text-ink">Nuovo</span>
+      </a>
+      <!-- Amici: no page yet, "Presto" says so. -->
       <div class="drawer-item" appRailTooltip="Amici">
         <svg viewBox="0 0 24 24" class="text-(--drawer-sky)" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" aria-hidden="true">

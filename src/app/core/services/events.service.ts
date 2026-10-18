@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { EventAttendeeDto, EventCardDto, EventDetailDto, MapEventsDto } from '../models/event.model';
+import { EventAttendeeDto, EventDetailDto, MapEventsDto } from '../models/event.model';
 import { SpringPage } from '../models/page.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '../api/endpoints';
@@ -67,10 +67,5 @@ export class EventsService {
 
   isFavorite(eventId: string): Observable<boolean> {
     return this.http.get<boolean>(`${environment.apiUrl}${endpoints.events.isFavorite(eventId)}`);
-  }
-
-  /** Every event the signed-in user liked, in one request. */
-  getMyFavoritesIds(): Observable<string[]> {
-    return this.http.get<string[]>(`${environment.apiUrl}${endpoints.users.myFavoritesIds}`);
   }
 }

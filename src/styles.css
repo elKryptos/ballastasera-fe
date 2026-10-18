@@ -604,7 +604,8 @@ app-map,
 app-event-list,
 app-event-details,
 app-venue-details,
-app-school-list {
+app-school-list,
+app-my-nights {
   --ev-surface: color-mix(in srgb, var(--color-violet) 9%, var(--color-ink));
   --ev-raised: color-mix(in srgb, var(--color-violet) 17%, var(--color-ink));
   --ev-edge: color-mix(in srgb, var(--color-violet) 32%, var(--color-ink));
@@ -649,9 +650,18 @@ app-school-list {
   --ev-glass: rgba(255, 255, 255, 0.16);
   --ev-glass-edge: rgba(255, 255, 255, 0.3);
   --ev-glass-text: #ffffff;
+  /* "Le tue serate" ("La tua scena" on the canvas): Parteciperò's check,
+  already on, as the button that takes a night out of the list — lilac,
+  apart from the rose of Mi piace; the tick drawn in --ev-going-mark on it. */
+  --ev-going: #bea0f2;
+  --ev-going-bg: rgba(190, 160, 242, 0.16);
+  --ev-going-edge: rgba(190, 160, 242, 0.35);
+  --ev-going-mark: #1a0e2e;
+  /* Annulla on the inverted toast. */
+  --ev-invert-link: #be123c;
 }
 
-:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list) {
+:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list, app-my-nights) {
   --color-ground: #fbf8f3;
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
@@ -686,6 +696,11 @@ app-school-list {
   --ev-glass: rgba(255, 255, 255, 0.82);
   --ev-glass-edge: rgba(29, 38, 64, 0.14);
   --ev-glass-text: #1d2640;
+  --ev-going: #6d28d9;
+  --ev-going-bg: rgba(109, 40, 217, 0.1);
+  --ev-going-edge: rgba(109, 40, 217, 0.25);
+  --ev-going-mark: #ffffff;
+  --ev-invert-link: #ff8fab;
 }
 
 /* Horizontal chip rows scroll by swipe, without a scrollbar under them. */
@@ -1235,6 +1250,14 @@ hidden. */
   ::view-transition-new(root) {
     animation: none;
   }
+}
+
+/* A navigation that asked for no fade (info: { skipViewTransition: true },
+see app.config.ts): with nothing left to animate the swap is instant. */
+.no-route-fade::view-transition-group(root),
+.no-route-fade::view-transition-old(root),
+.no-route-fade::view-transition-new(root) {
+  animation: none;
 }
 
 /* Spartan/helm theme tokens, mapped onto our own palette above instead of

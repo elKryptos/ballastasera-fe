@@ -18,5 +18,7 @@ export const serverRoutes: ServerRoute[] = [
   // route must render client-side, where the token actually resolves.
   { path: 'admin', renderMode: RenderMode.Client },
   { path: 'admin/**', renderMode: RenderMode.Client },
+  // Same reason: it's behind roleGuard, and its lists are the user's own.
+  { path: 'le-tue-serate', renderMode: RenderMode.Client },
   { path: '**', renderMode: RenderMode.Server },
 ];

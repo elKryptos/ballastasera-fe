@@ -12,6 +12,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   googleAuth: true,
   mapPage: true,
   eventListPage: true,
+  myNightsPage: true,
   welcomePage: true,
   menuPage: true,
   oauth2Callback: true,

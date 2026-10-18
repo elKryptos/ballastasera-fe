@@ -1,5 +1,6 @@
 import { ApplicationConfig, isDevMode, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
-import { RouteReuseStrategy, TitleStrategy, provideRouter, withViewTransitions } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
+import { RouteReuseStrategy, Router, TitleStrategy, provideRouter, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTransloco } from '@jsverse/transloco';
@@ -21,7 +22,24 @@ export const appConfig: ApplicationConfig = {
     // Cross-fades route changes via the browser's View Transitions API
     // instead of the hard cut-over you get by default; see the
     // ::view-transition-* rules in styles.css for the actual timing/easing.
-    provideRouter(routes, withViewTransitions()),
+    // A navigation opts out with info: { skipViewTransition: true } — a tab
+    // switched on the page itself (MyNights), where fading the whole page out
+    // and back in would only flicker. Not skipTransition(): that rejects the
+    // transition's promises, which the router logs as errors in dev mode.
+    // The class turns the fade off instead (styles.css), until it's over.
+    provideRouter(
+      routes,
+      withViewTransitions({
+        onViewTransitionCreated: ({ transition }) => {
+          const info = inject(Router).currentNavigation()?.extras.info as { skipViewTransition?: boolean } | undefined;
+          if (!info?.skipViewTransition) return;
+          const root = inject(DOCUMENT).documentElement;
+          root.classList.add('no-route-fade');
+          const done = () => root.classList.remove('no-route-fade');
+          transition.finished.then(done, done);
+        },
+      }),
+    ),
     // Keeps routes flagged `data: { keepAlive: true }` (the map) alive
     // across navigations instead of rebuilding them on every visit.
     { provide: RouteReuseStrategy, useClass: KeepAliveReuseStrategy },

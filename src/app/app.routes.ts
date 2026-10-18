@@ -58,6 +58,14 @@ export const routes: Routes = [
       },
 
       {
+        // The signed-in user's Parteciperò and Mi piace. roleGuard with every
+        // role is "signed in": a role only exists with a session.
+        path: 'le-tue-serate',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.myNightsPage), roleGuard('USER', 'ORGANIZER', 'ADMIN')],
+        loadComponent: () => import('./features/my-nights/my-nights').then((m) => m.MyNights),
+      },
+
+      {
         path: 'admin',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
         loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),

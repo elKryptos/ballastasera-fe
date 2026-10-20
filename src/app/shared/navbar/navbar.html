@@ -196,27 +196,47 @@
       </a>
     </ng-template>
 
+    <!-- The nights as a list (/lista, the map's twin), in both menus. Its own
+        sky blue next to the map's mint. -->
+    <ng-template #listLink>
+      <a class="drawer-item" routerLink="/lista" routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()"
+        appRailTooltip="Lista">
+        <svg viewBox="0 0 24 24" class="text-(--drawer-sky)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" aria-hidden="true">
+          <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+        </svg>
+        <span class="grow">Lista</span>
+      </a>
+    </ng-template>
+
     <!-- The map isn't in the mockup (it lives in a bottom bar there), kept
         until that bar exists so the menu still leads to it: the /menu hub when
-        signed in, the map itself otherwise — each with its own icon. Signed
-        out, the lesson and its playlist join it in one group, spaced like the
-        rows below: they need no account (signed in, they're in "La tua
-        scena"). -->
+        signed in, the map itself otherwise — each with its own icon — and the
+        list after it. Signed out, the lesson and its playlist join them in one
+        group, spaced like the rows below: they need no account (signed in,
+        they're in "La tua scena"). -->
     @if (isAuthenticated()) {
-    @if (mapEnabled()) {
-    <a class="drawer-item" routerLink="/menu" routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()"
-      appRailTooltip="Menu">
-      <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linejoin="round" aria-hidden="true">
-        <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
-        <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
-        <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
-        <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
-      </svg>
-      <span class="grow">Menu</span>
-    </a>
+    @if (mapEnabled() || listEnabled()) {
+    <div class="flex flex-col gap-0.5">
+      @if (mapEnabled()) {
+      <a class="drawer-item" routerLink="/menu" routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()"
+        appRailTooltip="Menu">
+        <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
+          <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
+          <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
+          <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
+        </svg>
+        <span class="grow">Menu</span>
+      </a>
+      }
+      @if (listEnabled()) {
+      <ng-container [ngTemplateOutlet]="listLink" />
+      }
+    </div>
     }
-    } @else if (mapEnabled() || learnEnabled()) {
+    } @else if (mapEnabled() || listEnabled() || learnEnabled()) {
     <div class="flex flex-col gap-0.5">
       @if (mapEnabled()) {
       <a class="drawer-item" routerLink="/mappa" routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()"
@@ -228,6 +248,9 @@
         </svg>
         <span class="grow">Mappa</span>
       </a>
+      }
+      @if (listEnabled()) {
+      <ng-container [ngTemplateOutlet]="listLink" />
       }
       @if (learnEnabled()) {
       <ng-container [ngTemplateOutlet]="lessonLinks" />

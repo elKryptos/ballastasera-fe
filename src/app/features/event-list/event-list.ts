@@ -25,6 +25,7 @@ import {
   compareByLiveThenStart,
   dateRangeFromSlug,
   eventNight,
+  isHalloweenEvent,
   matchesEventFilters,
   nightHeading,
   nightOf,
@@ -85,6 +86,8 @@ interface ListRow {
   going: number;
   likes: number;
   liked: boolean;
+  /** Named for Halloween, among the Halloween nights: first, in pumpkin. */
+  halloween: boolean;
 }
 
 interface ListGroup {
@@ -165,7 +168,11 @@ export class EventList {
 
   protected readonly groups = computed<ListGroup[]>(() => {
     const now = this.now();
-    const compare = this.comparator(now);
+    const halloween = this.filters.range() === 'halloween';
+    const sorted = this.comparator(now);
+    const compare = halloween
+      ? (a: ListItem, b: ListItem) => Number(isHalloweenEvent(b.event)) - Number(isHalloweenEvent(a.event)) || sorted(a, b)
+      : sorted;
     const byNight = new Map<number, ListItem[]>();
     for (const item of this.items()) {
       const night = eventNight(item.event, now);
@@ -176,7 +183,7 @@ export class EventList {
     return Array.from(byNight, ([night, items]) => ({
       night,
       heading: nightHeading(night, now),
-      rows: items.sort(compare).map((item) => this.toRow(item, now)),
+      rows: items.sort(compare).map((item) => this.toRow(item, now, halloween)),
     })).sort((a, b) => a.night - b.night);
   });
 
@@ -335,7 +342,7 @@ export class EventList {
     }
   }
 
-  private toRow({ event, km }: ListItem, now: number): ListRow {
+  private toRow({ event, km }: ListItem, now: number, halloween: boolean): ListRow {
     return {
       id: event.id,
       title: event.title,
@@ -352,6 +359,7 @@ export class EventList {
       going: event.goingCount,
       likes: event.likesCount,
       liked: this.engagement.isLiked(event.id),
+      halloween: halloween && isHalloweenEvent(event),
     };
   }
 }

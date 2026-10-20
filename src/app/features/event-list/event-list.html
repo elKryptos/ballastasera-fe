@@ -155,7 +155,8 @@
           the card: without it the button competed with the sticky header
           (z-10 too, earlier in the DOM) and scrolled over it. -->
       <article
-        class="relative isolate flex gap-3.5 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-raised) p-3.5 transition-colors hover:border-(--ev-primary)">
+        class="relative isolate flex gap-3.5 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-raised) p-3.5 transition-colors hover:border-(--ev-primary)"
+        [class.season-themed]="row.halloween">
         <!-- The flyer alone on the left, the text beside it: the card's
             height, 3:4 at the least, so there's no gap under the text nor
             text past the flyer. The text is kept tight so the two come out

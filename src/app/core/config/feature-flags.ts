@@ -46,7 +46,7 @@ export const FEATURE_FLAGS = {
   schoolListPage: 'schoolListPage',
   /** /admin/social route: the nights and the lesson as pictures for Instagram, to download (also gated on the ADMIN role). */
   socialPostsPage: 'socialPostsPage',
-  /** The navbar's seasonal look (Halloween, 20 Oct – 2 Nov), dated by SeasonService. */
+  /** The seasonal looks (Halloween), dated by SeasonService. */
   seasonalThemes: 'seasonalThemes',
 } as const;
 

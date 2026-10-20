@@ -16,8 +16,9 @@ import { CardNote, Deck, Kind } from './deck';
  * (eventDeck). `events` are already the period's (inDateRange), soonest
  * first. */
 
-/** The periods the nights are published for; DateRange's 'all' is none. */
-export type Period = Exclude<DateRange, 'all'>;
+/** The periods the nights are published for; DateRange's 'all' and
+ * 'halloween' are none. */
+export type Period = Exclude<DateRange, 'all' | 'halloween'>;
 
 /** `when` is how the period reads in a sentence; `alone`, the heading of a
  * story about that single night. */

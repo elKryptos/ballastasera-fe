@@ -77,7 +77,7 @@ export class Navbar {
   protected readonly themeLabel = computed(() => (this.theme() === 'dark' ? 'Tema scuro' : 'Tema chiaro'));
 
   /** Halloween's extras in the bar and the menu (shared/season), there only in its season. */
-  protected readonly halloween = computed(() => this.seasonService.season() === 'halloween');
+  protected readonly halloween = this.seasonService.halloween;
 
   private readonly transloco = inject(TranslocoService);
 

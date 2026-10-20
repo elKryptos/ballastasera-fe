@@ -13,11 +13,15 @@ const NIGHT_ENDS_AT_HOUR = 6;
 const HOUR_MS = 3_600_000;
 export const DAY_MS = 24 * HOUR_MS;
 
-export type DateRange = 'tonight' | 'tomorrow' | 'weekend' | 'week' | 'all';
+/** 'halloween': the nights around 31 October, offered only in its season
+ * (SeasonService, see DateRangeChips). */
+export type DateRange = 'tonight' | 'tomorrow' | 'weekend' | 'week' | 'all' | 'halloween';
 
-/** Tutte le date first: it's the default (EventFiltersService.range). */
-export const DATE_RANGES: { value: DateRange; label: string }[] = [
+/** Tutte le date first: it's the default (EventFiltersService.range).
+ * `seasonal` ones show only in their season (DateRangeChips). */
+export const DATE_RANGES: { value: DateRange; label: string; seasonal?: true }[] = [
   { value: 'all', label: 'Tutte le date' },
+  { value: 'halloween', label: 'Halloween', seasonal: true },
   { value: 'tonight', label: 'Stasera' },
   { value: 'tomorrow', label: 'Domani' },
   { value: 'weekend', label: 'Weekend' },
@@ -31,6 +35,7 @@ export const DATE_RANGE_SLUGS: Record<DateRange, string> = {
   weekend: 'weekend',
   week: 'settimana',
   all: 'tutte',
+  halloween: 'halloween',
 };
 
 export function dateRangeFromSlug(slug: string | null): DateRange | null {
@@ -45,6 +50,7 @@ export const DATE_RANGE_PHRASES: Record<DateRange, string> = {
   weekend: 'nel weekend',
   week: 'questa settimana',
   all: 'in programma',
+  halloween: 'per Halloween',
 };
 
 export interface EventFilterState {
@@ -71,6 +77,27 @@ export function eventNight(event: { startAt: string }, now: number): number {
   return nightOf(start <= now ? now : start);
 }
 
+/** A calendar night as a day number, the way nightOf counts them (month 0 = January). */
+export function nightOn(year: number, month: number, day: number): number {
+  return Math.round(Date.UTC(year, month, day) / DAY_MS);
+}
+
+/** The year a night falls in. */
+export function yearOf(night: number): number {
+  return new Date(night * DAY_MS).getUTCFullYear();
+}
+
+/** The Halloween night (31 October) of the year a night falls in. */
+export function halloweenNightOf(night: number): number {
+  return nightOn(yearOf(night), 9, 31);
+}
+
+/** A night out with Halloween in its name: first, and marked, among the
+ * Halloween nights (EventList). */
+export function isHalloweenEvent(event: { title: string }): boolean {
+  return /halloween/i.test(event.title);
+}
+
 /** 0 = Sunday … 6 = Saturday, like Date.getDay(). */
 function weekdayOf(night: number): number {
   return new Date(night * DAY_MS).getUTCDay();
@@ -93,6 +120,12 @@ function rangeNights(range: DateRange, now: number): [number, number] | null {
       if (weekday === 0) return [tonight, tonight];
       if (weekday >= 5) return [tonight, tonight + 7 - weekday];
       return [tonight + 5 - weekday, tonight + 7 - weekday];
+    }
+    case 'halloween': {
+      // The night itself and the ones either side: parties spill over to
+      // the 30th and to Ognissanti's eve, whatever day the 31st falls on.
+      const halloween = halloweenNightOf(tonight);
+      return [halloween - 1, halloween + 1];
     }
     case 'all':
       return null;

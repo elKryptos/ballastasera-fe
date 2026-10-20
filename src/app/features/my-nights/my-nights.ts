@@ -8,7 +8,7 @@ import { CityEventsService } from '../../core/services/city-events.service';
 import { EventEngagementService } from '../../core/services/event-engagement.service';
 import { MyNightsKind, UserActivityService } from '../../core/services/user-activity.service';
 import { CursorList } from '../../core/utils/cursor-list';
-import { eventNight, nightHeading, nightOf } from '../../core/utils/event-filters';
+import { DAY_MS, eventNight, nightHeading, nightOf } from '../../core/utils/event-filters';
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MyNightCard } from './my-night-card/my-night-card';
@@ -17,7 +17,6 @@ import { MyNightCard } from './my-night-card/my-night-card';
 const CLOCK_TICK_MS = 30 * 1000;
 /** How long Annulla stays on screen before the removal reaches the backend. */
 const UNDO_MS = 5000;
-const DAY_MS = 24 * 3_600_000;
 /** ?tab=mi-piace opens Mi piace, no tab Parteciperò: the sidebar's two rows
  * under "La tua scena" link to one each (navbar.html). */
 const LIKED_TAB = 'mi-piace';

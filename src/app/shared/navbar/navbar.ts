@@ -11,9 +11,11 @@ import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { AVAILABLE_LANGS } from '../../core/config/i18n';
 import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { UserRole } from '../../core/models/user.model';
+import { SeasonService } from '../../core/services/season.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { RailTooltip } from '../directives/rail-tooltip.directive';
 import { RoleDirective } from '../directives/role.directive';
+import { HalloweenBats, HalloweenCard, HalloweenSpider, HalloweenWeb } from '../season/halloween';
 
 /**
  * Site navigation: a Spartan sidebar (icon rail on desktop, expandable; an
@@ -24,7 +26,19 @@ import { RoleDirective } from '../directives/role.directive';
  */
 @Component({
   selector: 'app-navbar',
-  imports: [HlmSidebarImports, NgTemplateOutlet, AuthModal, RouterLink, RouterLinkActive, RoleDirective, RailTooltip],
+  imports: [
+    HlmSidebarImports,
+    NgTemplateOutlet,
+    AuthModal,
+    RouterLink,
+    RouterLinkActive,
+    RoleDirective,
+    RailTooltip,
+    HalloweenBats,
+    HalloweenCard,
+    HalloweenSpider,
+    HalloweenWeb,
+  ],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
@@ -33,6 +47,7 @@ export class Navbar {
   private readonly featureFlags = inject(FeatureFlagService);
   private readonly sidebarService = inject(HlmSidebarService);
   private readonly themeService = inject(ThemeService);
+  private readonly seasonService = inject(SeasonService);
 
   protected readonly authOpen = signal(false);
 
@@ -59,6 +74,9 @@ export class Navbar {
   /** The theme row names the theme you're in. The switch itself stays "Tema
    * scuro", on or off, for screen readers. */
   protected readonly themeLabel = computed(() => (this.theme() === 'dark' ? 'Tema scuro' : 'Tema chiaro'));
+
+  /** Halloween's extras in the bar and the menu (shared/season), there only in its season. */
+  protected readonly halloween = computed(() => this.seasonService.season() === 'halloween');
 
   private readonly transloco = inject(TranslocoService);
 

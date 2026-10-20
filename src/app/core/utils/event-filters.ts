@@ -11,7 +11,7 @@ import { EventCardDto, EventType } from '../models/event.model';
 const NIGHT_ENDS_AT_HOUR = 6;
 
 const HOUR_MS = 3_600_000;
-const DAY_MS = 24 * HOUR_MS;
+export const DAY_MS = 24 * HOUR_MS;
 
 export type DateRange = 'tonight' | 'tomorrow' | 'weekend' | 'week' | 'all';
 

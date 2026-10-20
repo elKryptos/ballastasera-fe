@@ -2,9 +2,17 @@
     rail's header — only the mark's width (the template's one argument)
     differs between them. -->
 <ng-template #brand let-markWidth>
-  <svg viewBox="0 0 200 210" aria-hidden="true" class="shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]"
+  <svg viewBox="0 0 200 210" aria-hidden="true" class="brand-mark shrink-0 drop-shadow-[0_6px_14px_rgba(255,77,109,0.45)]"
     [class]="markWidth">
+    <!-- Halloween only (season-halloween.css): the pumpkin's stem and leaf,
+        then its ribs over the drop. Paths rather than a <g>, which navbar.css
+        fills with ink by day. -->
+    <path class="season-halloween" d="M107 30 C109 20 112 12 120 8" stroke="#65a30d" stroke-width="12"
+      stroke-linecap="round" fill="none" />
+    <path class="season-halloween" d="M116 14 C132 2 152 6 158 18 C142 22 128 22 116 14 Z" fill="#84cc16" />
     <path d="M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z" fill="var(--color-rose)" />
+    <path class="season-halloween" d="M80 34 C64 58 64 100 84 136 M120 34 C136 58 136 100 116 136" fill="none"
+      stroke="#c2410c" stroke-width="5" stroke-linecap="round" />
     <g fill="var(--color-ink)">
       <rect x="74" y="66" width="13" height="30" rx="6.5" />
       <rect x="93" y="54" width="13" height="54" rx="6.5" />
@@ -20,8 +28,16 @@
     md: trigger on the left to open the drawer, logo centered, a login
     button or a read-only account avatar on the right. -->
 <header class="mobile-bar md:hidden">
+  @if (halloween()) {
+  <app-halloween-bats />
+  }
   <div class="relative flex h-full items-center justify-between px-3">
-    <button hlmSidebarTrigger type="button" class="shrink-0"
+    <!-- A tap here doesn't take the focus (mousedown's default), the click
+        still toggles the drawer. The drawer is modal: while it's open CDK
+        sets aria-hidden on <app-root>, this bar included, and a focused
+        button in there makes the browser block that and warn. Opening, the
+        focus goes into the drawer; closing, back where it was. -->
+    <button hlmSidebarTrigger type="button" class="shrink-0" (mousedown)="$event.preventDefault()"
       [srOnlyText]="openMobile() ? 'Chiudi il menu' : 'Apri il menu'"></button>
 
     <a routerLink="/" aria-label="ballastasera — home"
@@ -74,6 +90,14 @@
 <hlm-sidebar side="left" collapsible="icon">
   <nav aria-label="Menu" (click)="expandRail($event)"
     class="drawer-nav flex h-full flex-col gap-[clamp(0.375rem,1.2svh,0.875rem)] overflow-y-auto px-3.5 py-[clamp(0.5rem,1.6svh,1.125rem)] whitespace-nowrap">
+    @if (halloween()) {
+    <app-halloween-web />
+    <!-- Hung from the drawer itself, not the page: anywhere else it would
+        sit under the drawer's scrim and its blur. -->
+    @if (isMobile()) {
+    <app-halloween-spider />
+    }
+    }
     @if (!isMobile()) {
     <!-- Desktop only: the rail's collapse/expand trigger, plus the brand mark
         once it's wide enough (mobile has both in the top bar instead). -->
@@ -138,6 +162,10 @@
         <path d="M9 6l6 6-6 6" />
       </svg>
     </button>
+    }
+
+    @if (halloween()) {
+    <app-halloween-card (click)="closeDrawer()" />
     }
 
     <ng-template #learnItem>

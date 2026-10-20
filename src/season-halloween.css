@@ -1,0 +1,182 @@
+/* Halloween: <html data-season="halloween">, set by SeasonService from the
+night of 20 October to that of 2 November. A layer over the navbar only —
+nothing in the base styles changed for it, and none of this applies the rest
+of the year (the pieces it adds, shared/season, aren't even in the page then).
+Global, like the menu's own styles in styles.css: the mobile drawer is an
+overlay outside app-navbar. Unlayered, so it wins over those (in the
+components layer) and over the Tailwind utilities. */
+
+/* Pumpkin in place of rose, in the top bar, the drawer and the rail only —
+the rest of the site keeps its rose. Everything they build from it turns
+with it: the logo and "stasera", the avatar, the switches, the warm end of
+their gradients. By day a deeper pumpkin, so it still reads on the paper. */
+:root[data-season='halloween'] :is(.mobile-bar, [data-mobile='true'], app-navbar [data-slot='sidebar-inner']) {
+  --color-rose: #ff7a1a;
+}
+
+:root[data-season='halloween'][data-theme='light'] :is(.mobile-bar, [data-mobile='true'], app-navbar [data-slot='sidebar-inner']) {
+  --color-rose: #ea580c;
+}
+
+/* By night, a violet moonlight in the menu's top corner, over its usual
+gradient (styles.css, "Sidebar menu"). The paper of the light theme stays. */
+:root[data-season='halloween']:not([data-theme='light']) :is([data-mobile='true'], app-navbar [data-slot='sidebar-inner']) {
+  background:
+    radial-gradient(260px 200px at 100% 0%, rgba(139, 92, 246, 0.18), transparent 70%),
+    linear-gradient(
+      180deg,
+      var(--color-ink) 0%,
+      var(--color-ink-2) 55%,
+      color-mix(in srgb, var(--color-rose) 20%, var(--color-ink-2)) 100%
+    );
+}
+
+/* The logo turns into a pumpkin: its stem, leaf and ribs (navbar.html,
+.season-halloween) show up, and its glow follows the colour. */
+.season-halloween {
+  display: none;
+}
+
+:root[data-season='halloween'] .season-halloween {
+  display: inline;
+}
+
+:root[data-season='halloween'] .brand-mark {
+  filter: drop-shadow(0 6px 14px rgba(255, 122, 26, 0.5));
+}
+
+/* "Nuovo": pumpkin into candlelight, with night-ink text, which reads better
+on it than white. */
+:root[data-season='halloween'] .drawer-chip-new {
+  background: linear-gradient(135deg, #ff7a1a, #ffb020);
+  color: #1a0e2e;
+  box-shadow: 0 0 0.75rem rgba(255, 122, 26, 0.5);
+}
+
+/* "Serate di Halloween" (HalloweenCard): a profile-like card, glowing. Its
+pumpkin tile is a .drawer-avatar, so the collapsed rail keeps just that, as it
+does the profile's avatar. */
+.season-card {
+  border-color: rgba(255, 122, 26, 0.45);
+  background: linear-gradient(135deg, rgba(255, 122, 26, 0.2), rgba(139, 92, 246, 0.16));
+  box-shadow: 0 0 1.375rem rgba(255, 122, 26, 0.18);
+}
+
+.season-card-icon {
+  border-radius: 0.75rem;
+  background: #ff7a1a;
+  color: #1a0e2e;
+  animation: season-flicker 2.6s ease-in-out infinite;
+}
+
+.season-card-when {
+  font-weight: 700;
+  color: #ffb066;
+}
+
+:root[data-theme='light'] .season-card-when {
+  color: #c2410c;
+}
+
+/* Short screens: the card down to its title, like the menu's other extras
+(styles.css). */
+@media (max-height: 700px) {
+  :is([data-mobile='true'], [data-state='expanded']) .season-card-sub {
+    display: none;
+  }
+}
+
+/* The bats in the top bar (HalloweenBats): drifting, wings flapping. */
+.season-bat-path {
+  color: rgba(196, 181, 253, 0.6);
+  animation: season-drift 7s ease-in-out infinite alternate;
+}
+
+:root[data-theme='light'] .season-bat-path {
+  color: rgba(109, 40, 217, 0.35);
+}
+
+.season-bat {
+  display: block;
+  transform-origin: 50% 60%;
+  animation: season-flap 0.28s ease-in-out infinite alternate;
+}
+
+/* The spider (HalloweenSpider): in the drawer's markup but hanging past its
+right edge, centred on the strip of page the drawer leaves — 100% is the
+drawer's width, the sheet being its containing block. Being part of the
+drawer keeps it above the scrim and its blur, sliding in with it; taps go
+through it to the scrim, which closes the drawer. */
+app-halloween-spider {
+  position: absolute;
+  top: 0;
+  left: calc(100% + (100vw - 100%) / 2 - 0.75rem);
+  width: 1.5rem;
+  height: 9.375rem;
+  pointer-events: none;
+  transform-origin: 50% 0;
+  animation:
+    season-drop 0.6s ease-out,
+    season-swing 3.2s ease-in-out 0.6s infinite alternate;
+}
+
+/* Animations top-level, the motion preference only turning them off: kept
+out of @media blocks, where the built CSS has dropped them before. */
+@media (prefers-reduced-motion: reduce) {
+  .season-card-icon,
+  .season-bat-path,
+  .season-bat,
+  app-halloween-spider {
+    animation: none;
+  }
+}
+
+@keyframes season-flicker {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  45%,
+  55% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes season-drift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(1.375rem, -0.25rem);
+  }
+}
+
+@keyframes season-flap {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0.45);
+  }
+}
+
+@keyframes season-drop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes season-swing {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}

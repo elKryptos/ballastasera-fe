@@ -40,6 +40,7 @@ import { EventPinIcon } from '../../shared/event-filters/pin-icons';
 import { ViewSwitch } from '../../shared/event-filters/view-switch';
 import { EventPlace } from '../../shared/event-place/event-place';
 import { EventPrice } from '../../shared/event-price/event-price';
+import { GoingFaces } from '../../shared/going-faces/going-faces';
 
 /** Keeps the LIVE badges current, and drops a night once it's over, with
  * the page left open. */
@@ -84,6 +85,7 @@ interface ListRow {
   styles: string[];
   pricing: Pricing;
   going: number;
+  goingAvatars: readonly string[] | undefined;
   likes: number;
   liked: boolean;
   /** Named for Halloween, among the Halloween nights: first, in pumpkin. */
@@ -106,7 +108,7 @@ interface ListGroup {
  */
 @Component({
   selector: 'app-event-list',
-  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, EventPlace, EventPrice, ViewSwitch],
+  imports: [RouterLink, AuthModal, SidebarPushDirective, DateRangeChips, EventFiltersDialog, EventPinIcon, EventPlace, EventPrice, GoingFaces, ViewSwitch],
   templateUrl: './event-list.html',
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
@@ -357,6 +359,7 @@ export class EventList {
       styles: event.danceStyles,
       pricing: event,
       going: event.goingCount,
+      goingAvatars: event.goingAvatars,
       likes: event.likesCount,
       liked: this.engagement.isLiked(event.id),
       halloween: halloween && isHalloweenEvent(event),

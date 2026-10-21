@@ -20,6 +20,7 @@ import { AuthModal } from '../../shared/auth-modal/auth-modal';
 import { EventsService, MapBounds } from '../../core/services/events.service';
 import { VenuesService } from '../../core/services/venues.service';
 import { CitiesService } from '../../core/services/cities.service';
+import { AuthService } from '../../core/services/auth.service';
 import { CityEventsService } from '../../core/services/city-events.service';
 import { DanceStylesService } from '../../core/services/dance-styles.service';
 import { EventEngagementService } from '../../core/services/event-engagement.service';
@@ -35,6 +36,7 @@ import { VenueMapPinDto } from '../../core/models/venue.model';
 import { CityDto } from '../../core/models/city.model';
 import { DanceStyleDto } from '../../core/models/dance-style.model';
 import { isLiveAt } from '../../core/utils/event-format';
+import { publicAvatar, withCountChange } from '../../core/utils/going-faces';
 import {
   compareByLiveThenStart,
   matchesEventFilters,
@@ -200,6 +202,7 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   private readonly mapViewState = inject(MapViewStateService);
   private readonly themeService = inject(ThemeService);
   private readonly userLocation = inject(UserLocationService);
+  private readonly authService = inject(AuthService);
   protected readonly filters = inject(EventFiltersService);
   /** Parteciperò/Mi piace state for the open card — see EventEngagementService. */
   protected readonly engagement = inject(EventEngagementService);
@@ -1178,12 +1181,11 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
   a refetch — and to /lista's cached copy, so it agrees once there. The card
   is updated on its own, not from the list: after a search its event may no
   longer be among the fetched ones. Reversed by EventEngagementService's
-  rollback on request failure. */
+  rollback on request failure. Going, the card's faces follow too
+  (withCountChange). */
   private adjustCount(eventId: string, field: 'likesCount' | 'goingCount', delta: number): void {
-    const bump = (event: EventCardDto): EventCardDto => ({
-      ...event,
-      [field]: Math.max(0, event[field] + delta),
-    });
+    const ownAvatar = publicAvatar(this.authService.currentUser());
+    const bump = (event: EventCardDto): EventCardDto => withCountChange(event, field, delta, ownAvatar);
 
     this.events.update((events) =>
       events.map((event) => (event.id === eventId ? bump(event) : event)),

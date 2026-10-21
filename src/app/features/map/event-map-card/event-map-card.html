@@ -66,13 +66,13 @@
 
       <!-- The price never gives way; the counts do ("Prezzo su invito" on a
           small phone), so the row never spills out of the card. Neither is
-          shown at 0 (falsy, so no @if body), as on the list's cards. -->
+          shown at 0 (falsy, so no @if body), as on the list's cards. Who's
+          going is their faces, once anyone public is (GoingFaces). -->
       <p class="mt-0.5 flex items-center gap-2 text-[0.8125rem] text-(--ev-soft) tabular-nums">
         <app-event-price class="text-sm font-extrabold" [event]="event()" />
         @if (event().goingCount; as going) {
         <span aria-hidden="true">·</span>
-        <span class="min-w-0 truncate"><strong class="font-bold text-(--ev-text)">{{ going }}</strong>
-          {{ going === 1 ? 'ci va' : 'ci vanno' }}</span>
+        <app-going-faces [avatars]="event().goingAvatars" [count]="going" />
         }
         @if (event().likesCount; as likes) {
         <span aria-hidden="true">·</span>

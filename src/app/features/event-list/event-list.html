@@ -211,15 +211,15 @@
           }
           <!-- mt-auto: level with the flyer's bottom when the text is the
               shorter of the two. Beside the flyer a small phone has ~175px
-              here: "ci vanno" gives way first ("Prezzo su invito" is long),
-              so the row never spills out of the card. Neither count is shown
-              at 0: a column of zeros reads as nobody being here. -->
+              here: who's going gives way first ("Prezzo su invito" is long),
+              its faces down to as many as fit (GoingFaces), so the row never
+              spills out of the card. Neither count is shown at 0: a column
+              of zeros reads as nobody being here. -->
           <div class="mt-auto flex items-center gap-1.5 pt-0.5 text-[0.8125rem] text-(--ev-soft) tabular-nums md:gap-2">
             <app-event-price class="text-sm font-extrabold" [event]="row.pricing" />
             @if (row.going > 0) {
             <span aria-hidden="true">·</span>
-            <span class="min-w-0 truncate"><strong class="font-bold text-(--ev-text)">{{ row.going }}</strong>
-              {{ row.going === 1 ? 'ci va' : 'ci vanno' }}</span>
+            <app-going-faces [avatars]="row.goingAvatars" [count]="row.going" ring="var(--ev-raised)" />
             }
             <button type="button"
               class="relative z-10 ml-auto flex h-8 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-like-on) aria-pressed:bg-(--ev-like-bg) aria-pressed:text-(--ev-like) md:h-9"

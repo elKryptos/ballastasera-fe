@@ -3,6 +3,8 @@ import { Observable, finalize, map, of, shareReplay, tap } from 'rxjs';
 import { CityDto } from '../models/city.model';
 import { EventCardDto } from '../models/event.model';
 import { cityBounds } from '../utils/geo';
+import { publicAvatar, withCountChange } from '../utils/going-faces';
+import { AuthService } from './auth.service';
 import { EventsService } from './events.service';
 
 /** Coming back to /lista within this window reuses what's here instead of
@@ -26,6 +28,7 @@ export interface CityEvents {
 @Service()
 export class CityEventsService {
   private readonly eventsService = inject(EventsService);
+  private readonly authService = inject(AuthService);
 
   private readonly store = signal<ReadonlyMap<number, CityEvents>>(new Map());
   readonly entries = this.store.asReadonly();
@@ -49,8 +52,10 @@ export class CityEventsService {
     return request;
   }
 
-  /** Optimistic +1/-1 on a cached event's count, wherever it's cached. */
+  /** Optimistic +1/-1 on a cached event's count, wherever it's cached — and,
+   * going, on its faces (withCountChange). */
   adjustCount(eventId: string, field: 'likesCount' | 'goingCount', delta: number): void {
+    const ownAvatar = publicAvatar(this.authService.currentUser());
     this.store.update((store) => {
       const next = new Map(store);
       for (const [cityId, entry] of store) {
@@ -58,7 +63,7 @@ export class CityEventsService {
         next.set(cityId, {
           ...entry,
           events: entry.events.map((event) =>
-            event.id === eventId ? { ...event, [field]: Math.max(0, event[field] + delta) } : event,
+            event.id === eventId ? withCountChange(event, field, delta, ownAvatar) : event,
           ),
         });
       }

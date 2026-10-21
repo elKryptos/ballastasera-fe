@@ -414,8 +414,9 @@ export class EventDetails {
   }
 
   /** The first few people going (EventsService.getAttendees), asked only
-   * here — the map's and the list's cards just show the count. Browser only:
-   * it's not worth a request during server rendering. */
+   * here: the map's and the list's cards have their faces (goingAvatars), not
+   * their names. Browser only: it's not worth a request during server
+   * rendering. */
   private loadAttendees(id: string): void {
     if (!this.isBrowser) return;
     this.eventsService.getAttendees(id, CROWD_FACES).subscribe({

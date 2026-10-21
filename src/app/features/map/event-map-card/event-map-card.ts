@@ -14,6 +14,7 @@ import { formatDistance } from '../../../core/utils/geo';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
 import { EventPlace } from '../../../shared/event-place/event-place';
 import { EventPrice } from '../../../shared/event-price/event-price';
+import { GoingFaces } from '../../../shared/going-faces/going-faces';
 
 /** The tapped pin's event, in the map's bottom sheet (MapSheet).
  * Presentational only: MapPage owns the selection and the Parteciperò/Mi
@@ -21,7 +22,7 @@ import { EventPrice } from '../../../shared/event-price/event-price';
  * event's page; "Portami lì" opens Google Maps directions. */
 @Component({
   selector: 'app-event-map-card',
-  imports: [RouterLink, EventPinIcon, EventPlace, EventPrice],
+  imports: [RouterLink, EventPinIcon, EventPlace, EventPrice, GoingFaces],
   templateUrl: './event-map-card.html',
 })
 export class EventMapCard {

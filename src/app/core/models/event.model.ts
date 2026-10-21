@@ -36,6 +36,10 @@ export interface EventCardDto {
   venueName: string | null;
   danceStyles: string[];
   goingCount: number;
+  /** Photos of the first few going (GOING_FACES), of those who show their
+   * profile and have one: goingCount counts everyone. Filled by the map's
+   * endpoint only — empty, or missing, from the others. */
+  goingAvatars?: string[];
   likesCount: number;
 }
 

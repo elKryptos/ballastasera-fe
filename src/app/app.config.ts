@@ -62,7 +62,14 @@ export const appConfig: ApplicationConfig = {
     // Without this, HttpClient calls made during SSR (incl. the i18n JSON
     // the transloco loader fetches) aren't reused on the client — it just
     // re-fetches everything from scratch right after hydration.
-    provideClientHydration(withHttpTransferCacheOptions({})),
+    // includeNonCacheableRequests: Spring Security sends every API response
+    // with "Cache-Control: no-cache, no-store", which kept them all out of
+    // the transfer state — a reloaded event's page asked for it twice. That
+    // header is for HTTP caches; this one lasts one page load, and holds only
+    // what the server asked, without a token: public answers. The browser's
+    // requests for them go without one too (PUBLIC_API), or the cache would
+    // pass over them for a signed-in visitor.
+    provideClientHydration(withHttpTransferCacheOptions({ includeNonCacheableRequests: true })),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideTransloco({
       config: {

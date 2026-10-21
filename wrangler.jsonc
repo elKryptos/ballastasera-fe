@@ -8,7 +8,11 @@
   "main": "./dist/server/server.mjs",
   "assets": {
     "binding": "ASSETS",
-    "directory": "dist\\browser"
+    "directory": "dist\\browser",
+    // The prerendered pages are folders (impara-a-ballare/index.html): served
+    // at /impara-a-ballare, their canonical URL and the sitemap's. The default
+    // (auto-trailing-slash) redirected that to /impara-a-ballare/.
+    "html_handling": "drop-trailing-slash"
   },
   "compatibility_flags": [
     "nodejs_compat"

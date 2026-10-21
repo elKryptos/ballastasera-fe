@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { DanceStyleDto } from '../models/dance-style.model';
 import { Observable, shareReplay } from 'rxjs';
 import { endpoints } from '../api/endpoints';
+import { publicApi } from '../interceptors/auth.interceptor';
 
 @Service()
 export class DanceStylesService {
@@ -11,7 +12,7 @@ export class DanceStylesService {
 
   /** Asked once per visit and shared, same as CitiesService.getCities. */
   private readonly styles$ = this.http
-    .get<DanceStyleDto[]>(`${environment.apiUrl}${endpoints.danceStyles.list}`)
+    .get<DanceStyleDto[]>(`${environment.apiUrl}${endpoints.danceStyles.list}`, { context: publicApi() })
     .pipe(shareReplay(1));
 
   getDanceStyles(): Observable<DanceStyleDto[]> {

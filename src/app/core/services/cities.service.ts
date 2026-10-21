@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { CityDto } from '../models/city.model';
 import { Observable, shareReplay } from 'rxjs';
 import { endpoints } from '../api/endpoints';
+import { publicApi } from '../interceptors/auth.interceptor';
 
 @Service()
 export class CitiesService {
@@ -14,7 +15,7 @@ export class CitiesService {
    * A failed request isn't kept (shareReplay resets on error), so the next
    * caller retries. */
   private readonly cities$ = this.http
-    .get<CityDto[]>(`${environment.apiUrl}${endpoints.cities.list}`)
+    .get<CityDto[]>(`${environment.apiUrl}${endpoints.cities.list}`, { context: publicApi() })
     .pipe(shareReplay(1));
 
   getCities(): Observable<CityDto[]> {

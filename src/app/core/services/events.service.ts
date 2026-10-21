@@ -5,6 +5,7 @@ import { EventAttendeeDto, EventDetailDto, MapEventsDto } from '../models/event.
 import { SpringPage } from '../models/page.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '../api/endpoints';
+import { publicApi } from '../interceptors/auth.interceptor';
 
 export interface MapBounds {
   minLat: number;
@@ -28,11 +29,11 @@ export class EventsService {
 
     if (cityId != null) params = params.set('cityId', cityId);
 
-    return this.http.get<MapEventsDto>(this.baseUrl, { params });
+    return this.http.get<MapEventsDto>(this.baseUrl, { params, context: publicApi() });
   }
 
   getEventDetail(id: string): Observable<EventDetailDto> {
-    return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`);
+    return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`, { context: publicApi() });
   }
 
   /** The first `size` people going, for "Chi ci va" — only the event's page
@@ -41,6 +42,7 @@ export class EventsService {
     const params = new HttpParams().set('size', size);
     return this.http.get<SpringPage<EventAttendeeDto>>(`${environment.apiUrl}${endpoints.events.attendees(eventId)}`, {
       params,
+      context: publicApi(),
     });
   }
 

@@ -169,6 +169,28 @@ function toMapBounds(bounds: LatLngBounds): MapBounds {
   };
 }
 
+/** For pins on the very same spot — a venue's nights, each its own pin —
+ * how many of them come after each one (compareByLiveThenStart, as in the
+ * sheet), to add to its stacking: the soonest is on top, and what a tap
+ * opens. Left alone, the same spot ties and the last pin added wins, which is
+ * the latest night (the backend sends them soonest first). */
+function soonestOnTop(events: readonly EventCardDto[], now: number): Map<string, number> {
+  const bySpot = new Map<string, EventCardDto[]>();
+  for (const event of events) {
+    const key = `${event.latitude},${event.longitude}`;
+    const spot = bySpot.get(key);
+    if (spot) spot.push(event);
+    else bySpot.set(key, [event]);
+  }
+  const ranks = new Map<string, number>();
+  for (const spot of bySpot.values()) {
+    if (spot.length < 2) continue;
+    spot.sort((a, b) => compareByLiveThenStart(a, b, now));
+    spot.forEach((event, i) => ranks.set(event.id, spot.length - 1 - i));
+  }
+  return ranks;
+}
+
 /**
  * /mappa. Events are fetched for an area only when the visitor asks — the
  * first view, "Cerca in questa zona", "Intorno a me", jumping to a city —
@@ -834,26 +856,27 @@ export class MapPage implements AfterViewInit, OnDestroy, KeepAliveHooks {
     const now = Date.now();
     const previous = this.markers;
     const entering: Marker[] = [];
+    const events = untracked(() => this.pinnedEvents());
+    const ranks = soonestOnTop(events, now);
     this.markers = new Map();
-    for (const event of untracked(() => this.pinnedEvents())) {
+    for (const event of events) {
       // Pins go live only once the event is actually underway — before that
       // (even "starting soon") the pin just sits there plain.
       const live = isLiveAt(event, now);
       const selected = event.id === selectedId;
       const crowned = CROWNED_ORGANIZER_INSTAGRAMS.has(event.organizerInstagram?.toLowerCase() ?? '');
       const icon = icons.event(event.eventType, live, selected, crowned);
-      const zIndexOffset = selected
-        ? SELECTED_PIN_Z_OFFSET
-        : (live ? LIVE_PIN_Z_OFFSET : 0) + (crowned ? CROWNED_PIN_Z_OFFSET : 0);
+      const zIndexOffset =
+        (selected ? SELECTED_PIN_Z_OFFSET : (live ? LIVE_PIN_Z_OFFSET : 0) + (crowned ? CROWNED_PIN_Z_OFFSET : 0)) +
+        (ranks.get(event.id) ?? 0);
       const existing = previous.get(event.id);
       if (existing) {
         previous.delete(event.id);
         existing.event = event;
-        // Same icon, same live/selected state: the stacking hasn't changed either.
-        if (existing.marker.options.icon !== icon) {
-          existing.marker.setIcon(icon);
-          existing.marker.setZIndexOffset(zIndexOffset);
-        }
+        if (existing.marker.options.icon !== icon) existing.marker.setIcon(icon);
+        // Not only with the icon: a night joining or leaving its spot (a
+        // filter, a search) reorders the ones left there.
+        if (existing.marker.options.zIndexOffset !== zIndexOffset) existing.marker.setZIndexOffset(zIndexOffset);
         const { lat, lng } = existing.marker.getLatLng();
         if (lat !== event.latitude || lng !== event.longitude) existing.marker.setLatLng([event.latitude, event.longitude]);
         if (live && !existing.live) entering.push(existing.marker);

@@ -94,13 +94,6 @@ export const appConfig: ApplicationConfig = {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
-    provideAppInitializer(
-      () =>
-        new Promise<void>((resolve) => {
-          inject(AuthService)
-            .restoreSession()
-            .subscribe({ complete: resolve });
-        }),
-    ),
+    provideAppInitializer(() => inject(AuthService).startSession()),
   ]
 };

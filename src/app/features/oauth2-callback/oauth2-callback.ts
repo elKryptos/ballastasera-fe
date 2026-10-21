@@ -44,7 +44,7 @@ export class Oauth2Callback implements OnInit {
     // The backend bumps loginCount on every Google login before redirecting
     // here (see CustomOidcUserService), so the first login already reads 1.
     const user = this.auth.currentUser();
-    if (!user) return '/';  // /me failed: token cleared, nothing to personalise
+    if (!user) return '/';  // /me failed: nothing to personalise
     return user.loginCount <= 3 ? '/benvenuto' : '/menu';
   }
 }

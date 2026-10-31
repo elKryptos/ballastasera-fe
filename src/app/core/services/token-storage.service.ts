@@ -2,6 +2,7 @@ import { PLATFORM_ID, Service, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { UserDto } from '../models/user.model';
 
+// Also read by the redirect script in src/index.html
 const STORAGE_KEY = 'ballastasera.jwt';
 const USER_KEY = 'ballastasera.user';
 

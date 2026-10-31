@@ -56,6 +56,21 @@
     })();
   </script>
 
+  <!-- Signed in: open on the menu instead of the landing. Only on a fresh load
+      of / (the logo's in-app link to / still shows the landing). Same storage
+      key as TokenStorageService; an expired token stays on the landing. -->
+  <script>
+    (function () {
+      if (location.pathname !== '/') return;
+      try {
+        var token = localStorage.getItem('ballastasera.jwt');
+        if (!token) return;
+        var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.exp * 1000 > Date.now()) location.replace('/menu');
+      } catch (e) {}
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..600&family=DM+Mono:wght@400;500&display=swap">

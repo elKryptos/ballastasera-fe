@@ -62,8 +62,5 @@ export class EventMapCard {
     return km === null ? null : formatDistance(km);
   });
 
-  protected readonly directionsUrl = computed(() => {
-    const event = this.event();
-    return googleMapsUrl(event.address, event.venueName);
-  });
+  protected readonly directionsUrl = computed(() => googleMapsUrl(this.event().address));
 }

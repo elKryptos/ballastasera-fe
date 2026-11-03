@@ -121,7 +121,7 @@ export class VenueDetails {
     return {
       street: addressPrimary(venue.address),
       locality: addressSecondary(venue.address),
-      directionsUrl: googleMapsUrl(venue.address, venue.name),
+      directionsUrl: googleMapsUrl(venue.address),
     };
   });
 

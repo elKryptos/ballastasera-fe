@@ -167,7 +167,7 @@ export class EventDetails {
     return {
       street: addressPrimary(event.address),
       locality: addressSecondary(event.address),
-      directionsUrl: googleMapsUrl(event.address, event.venue?.name ?? null),
+      directionsUrl: googleMapsUrl(event.address),
     };
   });
 

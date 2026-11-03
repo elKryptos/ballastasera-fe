@@ -35,8 +35,5 @@ export class VenueMapCard {
   /** "Via Roma 12, 20121 Milano": the town by its Italian name (addressLine). */
   protected readonly addressLine = computed(() => addressLine(this.venue().address));
 
-  protected readonly directionsUrl = computed(() => {
-    const venue = this.venue();
-    return googleMapsUrl(venue.address, venue.name);
-  });
+  protected readonly directionsUrl = computed(() => googleMapsUrl(this.venue().address));
 }

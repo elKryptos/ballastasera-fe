@@ -197,11 +197,13 @@ function italianLocality(locality: string): string {
     .replace(/\b[A-Z][a-z]+$/, (name) => ITALIAN_TOWNS[name] ?? name);
 }
 
-/** Directions to a place — an event's or a venue's. The name, when there is
- * one, helps Google land on the right spot. */
-export function googleMapsUrl(address: string, placeName: string | null): string {
-  const query = placeName ? `${placeName}, ${address}` : address;
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
+/** Directions to a place — an event's or a venue's — by its address alone.
+ * Not by name: Google reads the destination as a search, and
+ * "La Taverna, <address>" can land on another La Taverna across town. Not by
+ * coordinates either: ours can sit a street away, and Google then takes the
+ * visitor to whichever address is nearest to them. */
+export function googleMapsUrl(address: string): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 }
 
 /** The bare handle ("zoo_club_disco") from the handle itself, "@handle" or a

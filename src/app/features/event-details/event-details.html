@@ -29,7 +29,7 @@
     the venue's card and the organizer's share it. -->
   <ng-template #contactChips let-links let-label="label">
     <ul class="flex flex-wrap gap-2" [attr.aria-label]="label">
-      @for (contact of links; track contact.key) {
+      @for (contact of links; track contact.href) {
       <li class="max-w-full">
         <a [href]="contact.href" [attr.target]="contact.sameTab ? null : '_blank'" rel="noopener noreferrer"
           class="inline-flex h-9 max-w-full items-center gap-2 rounded-xl border border-(--ev-edge) bg-(--ev-raised) pr-3 pl-1.5 text-[0.8125rem] font-semibold text-(--ev-text)">

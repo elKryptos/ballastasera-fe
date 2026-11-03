@@ -204,20 +204,21 @@ export class EventDetails {
   });
 
   /** The event's own links (set when it was created, from its venue or its
-   * organizer), the organizer's Instagram where the event has none, and
-   * the organizer's website — less whatever the venue's card already links
-   * to: an event's links are often its venue's, copied over when it was
-   * created, and each is shown once. */
+   * organizer), and the organizer's Instagram and website — less whatever
+   * the venue's card already links to: an event's links are often its
+   * venue's, copied over when it was created, and each is shown once. */
   protected readonly contacts = computed(() => {
     const event = this.event();
     if (!event) return [];
     const contacts: ContactLink[] = [];
-    const instagram = event.instagramUrl || event.organizer?.instagram;
-    if (instagram) contacts.push(contactLink('instagram', instagramUrl(instagram)));
+    if (event.instagramUrl) contacts.push(contactLink('instagram', instagramUrl(event.instagramUrl)));
+    if (event.organizer?.instagram) contacts.push(contactLink('instagram', instagramUrl(event.organizer.instagram)));
     if (event.whatsappUrl) contacts.push(contactLink('whatsapp', event.whatsappUrl));
     if (event.organizer?.website) contacts.push(contactLink('website', event.organizer.website));
     const atVenue = this.venueOwnLinks();
-    const own = contacts.filter((contact) => !atVenue.some((link) => sameContact(link, contact)));
+    const own = contacts.filter(
+      (contact, i) => ![...atVenue, ...contacts.slice(0, i)].some((link) => sameContact(link, contact)),
+    );
     return withWhatsappText(own, this.whatsappText());
   });
 

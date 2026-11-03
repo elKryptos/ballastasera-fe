@@ -136,7 +136,7 @@
         @if (venue.description; as description) {
         <section class="order-2 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-4.5">
           <h2 class="font-display text-lg font-extrabold">Chi siamo</h2>
-          <p class="mt-2 text-[0.9375rem] leading-relaxed whitespace-pre-line text-(--color-lead)"
+          <p class="mt-2 text-[0.9375rem] leading-relaxed whitespace-pre-line text-lead"
             [class.line-clamp-4]="longDescription() && !descriptionExpanded()"><app-linked-text [text]="description" /></p>
           @if (longDescription()) {
           <button type="button" (click)="toggleDescription()" [attr.aria-expanded]="descriptionExpanded()"
@@ -174,7 +174,7 @@
           @if (place(); as place) {
           <div class="flex items-end justify-between gap-3 px-1.5 pb-1">
             <div class="min-w-0">
-              <p class="text-[0.6875rem] font-extrabold tracking-[0.1em] text-(--ev-soft) uppercase">Dove</p>
+              <p class="text-[0.6875rem] font-extrabold tracking-widest text-(--ev-soft) uppercase">Dove</p>
               <p class="mt-1 font-bold">{{ place.street }}</p>
               @if (place.locality; as locality) {
               <p class="text-[0.8125rem] text-(--ev-soft)">{{ locality }}</p>

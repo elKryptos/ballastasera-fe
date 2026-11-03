@@ -16,7 +16,7 @@ import { HalloweenPumpkin } from '../season/halloween';
   template: `
     <div
       #row
-      class="ev-scroll-row relative flex gap-2 overflow-x-auto px-[var(--ev-row-pad,0px)] py-1 md:flex-wrap"
+      class="ev-scroll-row relative flex gap-2 overflow-x-auto px-(--ev-row-pad,0px) py-1 md:flex-wrap"
       role="group"
       aria-label="Quando">
       @for (option of options(); track option.value) {

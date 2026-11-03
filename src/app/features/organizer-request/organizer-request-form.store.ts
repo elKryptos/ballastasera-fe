@@ -1,7 +1,7 @@
 import { Service, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
-import { catchError, forkJoin, map, of, startWith, switchMap, take } from 'rxjs';
+import { catchError, map, of, startWith, switchMap, take } from 'rxjs';
 import { requiresVenue } from '../../core/config/organizer-types';
 import { CityDto } from '../../core/models/city.model';
 import { OrganizerRequestCreateDto, OrganizerRequestDto, OrganizerRequestType } from '../../core/models/organizer-request.model';
@@ -134,10 +134,7 @@ export class OrganizerRequestFormStore {
       switchMap((target) =>
         !target
           ? of(null)
-          : forkJoin({
-              detail: this.organizers.getBySlug(target.slug),
-              venues: this.organizers.getVenues(target.id),
-            }).pipe(
+          : this.organizers.getWithVenues(target).pipe(
               catchError(() => of(null)),
               startWith(null),
             ),

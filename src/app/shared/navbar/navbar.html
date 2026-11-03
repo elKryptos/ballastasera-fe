@@ -131,7 +131,9 @@
           }
         </div>
         <div class="truncate text-xs text-(--drawer-soft)">
-          @if (goingCount() !== null && likesCount() !== null) {
+          @if (organizerName(); as name) {
+          Organizzatore · {{ name }}
+          } @else if (goingCount() !== null && likesCount() !== null) {
           {{ goingCount() }} {{ goingCount() === 1 ? 'serata' : 'serate' }} in programma · {{ likesCount() }} like
           } @else {
           {{ user.email }}

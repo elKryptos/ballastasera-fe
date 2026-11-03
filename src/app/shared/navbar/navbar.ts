@@ -17,6 +17,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { RailTooltip } from '../directives/rail-tooltip.directive';
 import { RoleDirective } from '../directives/role.directive';
 import { HalloweenBats, HalloweenCard, HalloweenSpider, HalloweenWeb } from '../season/halloween';
+import { injectMyOrganizerName } from './my-organizer-name';
 import { OrganizerMenuCard } from './organizer-menu-card/organizer-menu-card';
 
 /**
@@ -94,6 +95,7 @@ export class Navbar {
   // the Parteciperò badge and shows the email in place of the stats line.
   protected readonly goingCount = signal<number | null>(null);
   protected readonly likesCount = signal<number | null>(null);
+  protected readonly organizerName = injectMyOrganizerName();
 
   constructor() {
     // Here, not in the "Organizza" card: on mobile the card only exists while the drawer is open.

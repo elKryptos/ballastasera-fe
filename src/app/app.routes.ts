@@ -75,6 +75,17 @@ export const routes: Routes = [
       },
 
       {
+        // Shown once on being approved. The guard is in the lazy chunk's file,
+        // so it loads with the page.
+        path: 'benvenuto-organizzatore',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.organizerRequestPage), roleGuard('ORGANIZER')],
+        loadChildren: () =>
+          import('./features/organizer-welcome/organizer-welcome').then((m) => [
+            { path: '', canActivate: [m.organizerWelcomeGuard], component: m.OrganizerWelcome },
+          ]),
+      },
+
+      {
         path: 'admin',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
         loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),

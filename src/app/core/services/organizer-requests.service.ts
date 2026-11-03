@@ -92,7 +92,11 @@ export class OrganizerRequestsService {
     );
   }
 
+  /** Seen as soon as it's asked, not when the backend answers: whoever is
+   * leaving the page that showed it shouldn't be sent back there meanwhile. */
   acknowledge(id: string): Observable<OrganizerRequestDto> {
+    const seen = this.loadedRequest();
+    if (seen?.id === id) this.loadedRequest.set({ ...seen, acknowledgedAt: new Date().toISOString() });
     return this.http.patch<OrganizerRequestDto>(`${environment.apiUrl}${endpoints.organizerRequests.acknowledge(id)}`, {}).pipe(
       tap((request) => this.store(request)),
     );

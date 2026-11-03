@@ -22,7 +22,7 @@ describe('OrganizerRequestFormStore', () => {
         OrganizerRequestFormStore,
         { provide: AuthService, useValue: { currentUser } },
         { provide: CitiesService, useValue: { getCities: () => of([{ id: 7, name: 'Milano' }]) } },
-        { provide: OrganizersService, useValue: { getBySlug: () => of({}), getVenues: () => of([]) } },
+        { provide: OrganizersService, useValue: { getWithVenues: () => of({ detail: {}, venues: [] }) } },
       ],
     });
     store = TestBed.inject(OrganizerRequestFormStore);

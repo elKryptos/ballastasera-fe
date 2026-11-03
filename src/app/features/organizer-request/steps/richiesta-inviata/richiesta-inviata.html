@@ -1,0 +1,87 @@
+<div class="mx-auto flex min-h-[calc(100dvh-var(--header-h))] w-full max-w-xl flex-col px-4 pt-11 pb-6 md:min-h-dvh">
+  <div class="flex flex-col items-center text-center">
+    <span class="flex size-24 items-center justify-center rounded-full bg-mint/15" aria-hidden="true">
+      <span class="flex size-16 items-center justify-center rounded-full bg-(--ev-badge-bg) text-(--ev-badge-text)">
+        <ng-icon name="lucideCheck" size="2rem" />
+      </span>
+    </span>
+    <h1 class="mt-5 font-display text-3xl leading-[1.1] font-extrabold tracking-[-0.02em]">Richiesta inviata</h1>
+    <p class="mt-2.5 max-w-80 text-[0.9375rem] leading-[1.45] text-(--ev-soft)">
+      Grazie, {{ userName() }}! Controlliamo {{ request()?.organizerName }} e ti avvisiamo per email appena è tutto pronto.
+    </p>
+  </div>
+
+  @if (logoFailed) {
+  <p class="mt-5 rounded-[0.875rem] bg-amber/15 px-3.5 py-3 text-[0.8125rem] leading-snug text-amber" role="status">
+    Il logo non è stato caricato: potrai aggiungerlo dopo l'approvazione.
+  </p>
+  }
+
+  <ol class="request-card mt-7 flex flex-col p-4.5">
+    @for (item of timeline(); track item.title; let last = $last) {
+    <li class="flex gap-3.5">
+      <div class="flex w-6 shrink-0 flex-col items-center" aria-hidden="true">
+        @switch (item.state) {
+        @case ('done') {
+        <span class="flex size-6 items-center justify-center rounded-full bg-(--ev-badge-bg) text-(--ev-badge-text)">
+          <ng-icon name="lucideCheck" size="0.875rem" />
+        </span>
+        }
+        @case ('current') {
+        <span class="flex size-6 items-center justify-center rounded-full border-2 border-amber">
+          <span class="size-2.5 rounded-full bg-amber"></span>
+        </span>
+        }
+        @default {
+        <span class="size-6 rounded-full border-2 border-(--ev-edge)"></span>
+        }
+        }
+        @if (!last) {
+        <span class="min-h-5.5 w-0.5 grow" [class]="item.state === 'done' ? 'bg-(--ev-badge-bg)' : 'bg-(--ev-edge)'"></span>
+        }
+      </div>
+      <div [class.pb-4]="!last">
+        <div class="flex items-center gap-2">
+          <span class="text-[0.9375rem] font-extrabold">{{ item.title }}</span>
+          @if (item.state === 'current') {
+          <span class="rounded-lg bg-amber/15 px-2 py-0.5 text-[0.6875rem] font-extrabold tracking-[0.04em] text-amber uppercase">Ora</span>
+          }
+        </div>
+        <div class="mt-0.5 text-[0.8125rem] text-(--ev-soft)">{{ item.text }}</div>
+      </div>
+    </li>
+    }
+  </ol>
+
+  <p class="mx-6 mt-4.5 text-center text-[0.8125rem] leading-[1.45] text-muted">
+    Nel frattempo continui a usare ballastasera come sempre: like, serate salvate, mappa.
+  </p>
+
+  @if (errorMessage(); as message) {
+  <p class="mt-4 text-center text-sm text-(--ev-error)" role="alert">{{ message }}</p>
+  }
+
+  <div class="mt-auto flex flex-col gap-2 pt-6">
+    <a routerLink="/menu" class="flex h-13 items-center justify-center rounded-2xl bg-rose text-base font-extrabold text-(--ev-on-rose)">
+      Torna alla home
+    </a>
+
+    <hlm-alert-dialog>
+      <button hlmBtn hlmAlertDialogTrigger variant="ghost" class="h-11 w-full text-sm font-bold text-(--ev-soft)">
+        Annulla richiesta
+      </button>
+      <hlm-alert-dialog-content *brnAlertDialogContent="let ctx">
+        <hlm-alert-dialog-header>
+          <h3 hlmAlertDialogTitle>Annullare la richiesta?</h3>
+          <p hlmAlertDialogDescription>Non verrà più revisionata. Potrai inviarne una nuova quando vuoi.</p>
+        </hlm-alert-dialog-header>
+        <hlm-alert-dialog-footer>
+          <button hlmAlertDialogCancel [disabled]="cancelling()">Indietro</button>
+          <button hlmAlertDialogAction variant="default" [disabled]="cancelling()" (click)="cancel()">
+            {{ cancelling() ? 'Annullamento…' : 'Annulla richiesta' }}
+          </button>
+        </hlm-alert-dialog-footer>
+      </hlm-alert-dialog-content>
+    </hlm-alert-dialog>
+  </div>
+</div>

@@ -1,0 +1,95 @@
+<!-- From the Claude Design canvas "Diventa organizzatore": "Menu, richiesta in
+    revisione" and "Menu, richiesta non approvata". Styles: .drawer-promo in
+    styles.css, global since the mobile drawer is a CDK overlay. The collapsed
+    rail keeps just the icon, with a dot in the status's colour. -->
+@if (ready()) {
+@if (status(); as status) {
+<div class="drawer-promo {{ status.tone }}" [appRailTooltip]="status.title">
+  <div class="flex items-start gap-3">
+    <span class="drawer-promo-icon relative">
+      <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        @if (status.tone === 'drawer-promo-pending') {
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+        } @else {
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7.5v5.5M12 16.5v.01" />
+        }
+      </svg>
+      <span class="drawer-promo-dot" aria-hidden="true"></span>
+    </span>
+    <div class="rail-hide min-w-0 whitespace-normal">
+      <div class="text-[0.9375rem] font-extrabold">{{ status.title }}</div>
+      <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--drawer-soft)">{{ status.text }}</p>
+    </div>
+  </div>
+
+  @if (status.progress; as progress) {
+  <div class="rail-hide flex gap-1" aria-hidden="true">
+    @for (done of progress; track $index) {
+    <span class="h-1 flex-1 rounded-sm" [class]="done ? 'bg-(--promo-tone)' : 'bg-(--drawer-edge)'"></span>
+    }
+  </div>
+  }
+
+  @if (status.reason || status.reasonMessage) {
+  <p class="rail-hide rounded-xl bg-(--drawer-raised) px-3 py-2.5 text-[0.8125rem] leading-snug whitespace-normal text-(--drawer-soft)">
+    @if (status.reason; as reason) {
+    <b class="block text-bone">Motivo: {{ reason }}</b>
+    }
+    {{ status.reasonMessage }}
+  </p>
+  }
+
+  <a [routerLink]="status.action.url" [queryParams]="status.action.queryParams" (click)="navigated.emit()"
+    class="rail-hide flex h-(--drawer-row) items-center justify-center gap-1 rounded-[0.875rem] text-sm font-extrabold no-underline"
+    [class]="status.action.primary ? 'bg-rose text-ink' : 'border border-current text-(--promo-tone)'">
+    {{ status.action.label }}
+  </a>
+</div>
+} @else {
+<div class="drawer-promo" appRailTooltip="Diventa organizzatore">
+  <div class="flex items-start gap-3">
+    <span class="drawer-promo-icon">
+      <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="3" />
+        <path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" />
+      </svg>
+    </span>
+    <div class="rail-hide min-w-0 whitespace-normal">
+      <div class="text-[0.9375rem] font-extrabold">Organizzi serate?</div>
+      <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--drawer-soft)">
+        Pubblica le tue serate e fatti trovare sulla mappa.
+      </p>
+    </div>
+  </div>
+
+  @if (notice(); as message) {
+  <p class="rail-hide rounded-xl bg-(--drawer-raised) px-3 py-2.5 text-[0.8125rem] leading-snug whitespace-normal text-(--drawer-soft)" role="status">
+    {{ message }}
+  </p>
+  }
+
+  <ng-template #label>
+    Diventa organizzatore
+    <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  </ng-template>
+  @if (enabled) {
+  <a [routerLink]="requestUrl" (click)="navigated.emit()"
+    class="rail-hide flex h-(--drawer-row) items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-ink no-underline">
+    <ng-container [ngTemplateOutlet]="label" />
+  </a>
+  } @else {
+  <span class="rail-hide flex h-(--drawer-row) items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-ink">
+    <span class="drawer-chip">In sviluppo</span>
+    <ng-container [ngTemplateOutlet]="label" />
+  </span>
+  }
+</div>
+}
+}

@@ -1,0 +1,33 @@
+<app-logo-picker [label]="logoLabel()" hint="Quadrato, PNG o JPG. Potrai cambiarlo dopo l'approvazione."
+  [previewUrl]="store.logoPreviewUrl()" (fileSelected)="store.setLogo($event)" />
+
+<ng-container [formGroup]="store.profile">
+  <app-request-field label="Nome" fieldId="request-name" [control]="controls.name" error="Inserisci il nome.">
+    <input id="request-name" type="text" formControlName="name" maxlength="120" class="request-input" />
+  </app-request-field>
+  @if (store.organizerType(); as type) {
+  <div class="-mt-3 flex items-center gap-1.5">
+    <app-organizer-type-badge [type]="type" />
+    <span class="text-[0.8125rem] text-muted">scelto al passo 1</span>
+  </div>
+  }
+
+  <app-request-field label="Descrizione" fieldId="request-description" [control]="controls.description" [optional]="true"
+    [maxLength]="500" error="Massimo 500 caratteri.">
+    <textarea id="request-description" rows="3" formControlName="description" class="request-input"></textarea>
+  </app-request-field>
+</ng-container>
+
+<app-request-contact-fields instagramHint="Lo usiamo per verificare che il profilo sia davvero tuo." />
+
+<ng-container [formGroup]="store.profile">
+  <app-request-field label="Telefono o WhatsApp" fieldId="request-phone" [control]="controls.phone" [optional]="true"
+    error="Massimo 20 caratteri.">
+    <input id="request-phone" type="tel" formControlName="phone" placeholder="+39 …" autocomplete="tel" class="request-input" />
+  </app-request-field>
+
+  <app-request-field label="Sito web" fieldId="request-website" [control]="controls.website" [optional]="true"
+    error="Inserisci un indirizzo completo: https://…">
+    <input id="request-website" type="url" formControlName="website" placeholder="https://" class="request-input" />
+  </app-request-field>
+</ng-container>

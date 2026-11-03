@@ -1,0 +1,32 @@
+@if (store.claimTarget(); as target) {
+<div class="flex items-center justify-between gap-2">
+  <span class="text-xs font-extrabold tracking-[0.06em] text-(--ev-zone-on-text) uppercase">La tua pagina</span>
+  <button type="button" class="py-1 text-sm font-bold text-(--ev-link)" (click)="store.backToSearch()">Cambia</button>
+</div>
+
+<div class="flex items-start gap-3">
+  <app-organizer-avatar class="size-13 rounded-[0.875rem] text-[1.0625rem]" [name]="target.name" [logoUrl]="logoUrl()" />
+  <div class="min-w-0">
+    <div class="text-base font-extrabold">{{ target.name }}</div>
+    <app-organizer-type-badge class="mt-1" [type]="target.type" />
+    @if (store.claimDetails()?.detail?.description; as description) {
+    <p class="mt-2 text-[0.8125rem] leading-snug text-(--ev-soft)">{{ description }}</p>
+    }
+  </div>
+</div>
+
+@for (venue of store.claimDetails()?.venues ?? []; track venue.id) {
+<div class="flex items-center gap-2.5 rounded-xl bg-(--ev-surface) px-3 py-2.5">
+  <ng-icon name="lucideMapPin" size="1.25rem" class="shrink-0 text-(--ev-zone-on-text)" aria-hidden="true" />
+  <div class="min-w-0">
+    <div class="text-xs font-bold text-muted">Il tuo locale</div>
+    <div class="mt-0.5 text-sm font-extrabold">{{ venue.name }}</div>
+    <div class="text-[0.8125rem] text-(--ev-soft)">{{ venue.address }}, {{ venue.cityName }}</div>
+  </div>
+</div>
+}
+
+<p class="text-[0.8125rem] leading-snug text-muted">
+  Pagina e locale passano a te con l'approvazione. Logo, descrizione e contatti li modifichi dopo.
+</p>
+}

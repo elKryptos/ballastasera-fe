@@ -1,0 +1,134 @@
+@let current = request();
+
+<div class="flex items-start gap-3">
+  <app-organizer-avatar class="size-12 rounded-[0.875rem] text-base" [name]="current.organizerName" [logoUrl]="logoUrl()" />
+  <div class="flex min-w-0 flex-col gap-1.5">
+    <h2 class="text-[1.0625rem] font-extrabold wrap-break-word">{{ current.organizerName }}</h2>
+    <div class="flex flex-wrap gap-1.5">
+      @if (current.organizerType; as type) {
+      <app-organizer-type-badge [type]="type" />
+      }
+      @if (current.type === 'CLAIM') {
+      <span class="rounded-lg bg-(--ev-zone-on-bg) px-2 py-0.5 text-xs font-bold text-(--ev-zone-on-text)">Rivendica una pagina esistente</span>
+      }
+      @if (attempt() > 1) {
+      <span class="rounded-lg bg-amber/15 px-2 py-0.5 text-xs font-bold text-amber">{{ attempt() }}º intento</span>
+      }
+    </div>
+  </div>
+</div>
+
+<dl class="grid grid-cols-[6rem_minmax(0,1fr)] gap-y-2 text-sm">
+  @for (row of rows(); track row.label) {
+  <dt class="text-muted">{{ row.label }}</dt>
+  <dd class="flex flex-wrap gap-x-2 wrap-anywhere">
+    {{ row.text }}
+    @if (row.href; as href) {
+    <a [href]="href" target="_blank" rel="noopener noreferrer" class="font-bold text-(--ev-link)">Apri</a>
+    }
+  </dd>
+  }
+</dl>
+
+@if (current.description; as description) {
+<p class="rounded-xl bg-(--ev-raised) p-3 text-sm leading-[1.45] text-(--ev-soft)">
+  <span class="block text-xs font-bold text-muted">Descrizione</span>
+  {{ description }}
+</p>
+}
+@if (current.message; as message) {
+<p class="rounded-xl bg-(--ev-raised) p-3 text-sm leading-[1.45] text-(--ev-soft)">
+  <span class="block text-xs font-bold text-muted">Messaggio</span>
+  {{ message }}
+</p>
+}
+
+@if (isPending()) {
+<!-- The venue: the page's own, one picked, one just created, or none yet. -->
+@for (venue of current.targetOrganizerVenues; track venue.id) {
+<app-request-venue-box heading="Locale della pagina" [name]="venue.name" [venueId]="venue.id"
+  [text]="venue.address + ', ' + venue.cityName + ' · già collegato'" />
+}
+
+@if (pickedVenue(); as venue) {
+<app-request-venue-box heading="Locale scelto" [name]="venue.name" [venueId]="venue.id"
+  [text]="venue.address + ' · viene collegato quando approvi'">
+  <button type="button" (click)="pickedVenue.set(null)">Cambia</button>
+</app-request-venue-box>
+} @else if (createdVenueId(); as venueId) {
+<app-request-venue-box heading="Locale creato" text="Viene collegato quando approvi." [venueId]="venueId" />
+} @else if (missingVenue()) {
+<div class="flex flex-col gap-2 rounded-xl border border-amber/40 bg-amber/10 p-3">
+  <div class="flex items-start gap-2.5">
+    <ng-icon name="lucideMapPin" size="1.25rem" class="shrink-0 text-amber" aria-hidden="true" />
+    <div class="min-w-0">
+      <div class="text-xs font-extrabold tracking-[0.06em] text-amber uppercase">Manca il locale</div>
+      @if (proposedAddress(); as address) {
+      <div class="mt-1 text-[0.9375rem] font-extrabold">{{ address }}</div>
+      <div class="mt-0.5 text-[0.8125rem] text-(--ev-soft)">Indirizzo proposto. Crealo prima di approvare.</div>
+      } @else {
+      <div class="mt-1 text-[0.8125rem] text-(--ev-soft)">Questa pagina non ha un locale. Crealo prima di approvare.</div>
+      }
+    </div>
+  </div>
+  <a routerLink="/admin/create-venue" [queryParams]="createVenueQuery()"
+    class="flex h-11 items-center justify-center rounded-xl border border-amber/60 text-sm font-extrabold text-amber">
+    Crea il locale
+  </a>
+  <button type="button" class="h-9 text-sm font-bold text-amber" [attr.aria-expanded]="pickingVenue()" (click)="pickingVenue.update((open) => !open)">
+    {{ pickingVenue() ? 'Chiudi' : 'Usa un locale esistente' }}
+  </button>
+  @if (pickingVenue()) {
+  <app-existing-venue-picker [requestId]="current.id" [cityName]="current.venueCityName" (picked)="pickVenue($event)" />
+  }
+</div>
+}
+
+@if (errorMessage(); as message) {
+<p class="text-sm text-(--ev-error)" role="alert">{{ message }}</p>
+}
+
+@if (rejecting()) {
+<app-reject-form [requestId]="current.id" [busy]="busy()" (submitted)="reject($event)" (cancelled)="rejecting.set(false)" />
+} @else {
+<div class="flex gap-2">
+  <button type="button" class="h-12 flex-1 rounded-[0.875rem] border border-rose/50 text-[0.9375rem] font-extrabold text-(--ev-link)"
+    [disabled]="busy()" (click)="rejecting.set(true)">
+    Rifiuta
+  </button>
+
+  <hlm-alert-dialog class="flex-[1.4]">
+    <button hlmAlertDialogTrigger type="button"
+      class="h-12 w-full rounded-[0.875rem] bg-(--ev-badge-bg) text-[0.9375rem] font-extrabold text-(--ev-badge-text) disabled:opacity-45"
+      [disabled]="busy() || missingVenue()">
+      {{ busy() ? 'Approvazione…' : 'Approva' }}
+    </button>
+    <hlm-alert-dialog-content *brnAlertDialogContent="let ctx">
+      <hlm-alert-dialog-header>
+        <h3 hlmAlertDialogTitle>Approvare {{ current.organizerName }}?</h3>
+        <p hlmAlertDialogDescription>
+          @if (current.type === 'CLAIM') {
+          La pagina, con il locale e le serate, passa a {{ current.requester.displayName }}. Le altre richieste per questa pagina vengono rifiutate.
+          } @else {
+          La pagina viene pubblicata e assegnata a {{ current.requester.displayName }}.
+          }
+          Parte un'email di conferma.
+        </p>
+      </hlm-alert-dialog-header>
+      <hlm-alert-dialog-footer>
+        <button hlmAlertDialogCancel>Annulla</button>
+        <button hlmAlertDialogAction variant="default" (click)="approve()">Approva</button>
+      </hlm-alert-dialog-footer>
+    </hlm-alert-dialog-content>
+  </hlm-alert-dialog>
+</div>
+}
+} @else if (outcome(); as result) {
+<div class="rounded-xl bg-(--ev-raised) p-3 text-sm leading-[1.45]">
+  <div class="font-extrabold">{{ result.title }}</div>
+  @if (result.detail; as detail) {
+  <div class="mt-0.5 text-(--ev-soft)">{{ detail }}</div>
+  }
+  <div class="mt-1 text-[0.8125rem] text-muted">{{ result.when }}</div>
+</div>
+}

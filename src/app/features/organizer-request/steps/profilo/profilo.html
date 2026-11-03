@@ -1,0 +1,22 @@
+<app-request-step step="profilo" heading="Il tuo profilo" [lead]="lead()" [ctaDisabled]="!store.mode()"
+  [inPlaceBackLabel]="store.mode() === 'NEW' ? 'Torna alla ricerca' : null" (inPlaceBackClicked)="store.backToSearch()"
+  (ctaClicked)="next()">
+  @if (store.mode() === 'NEW') {
+  <app-new-profile-fields />
+  } @else {
+  <!-- Stays while a page gets picked, with its results: another page is one tap away. -->
+  <app-organizer-search />
+  }
+
+  @if (store.mode() === 'CLAIM') {
+  <app-claim-page-card class="mt-4.5" />
+
+  <h2 class="mt-6 mb-3 font-display text-[1.1875rem] font-extrabold">Come verifichiamo che è tua</h2>
+  <app-request-contact-fields instagramHint="Potremmo scriverti da @ballastasera per confermare." />
+  <app-request-field class="mt-4.5" label="Messaggio per noi" fieldId="request-message"
+    [control]="store.claim.controls.message" [optional]="true" [maxLength]="500" error="Massimo 500 caratteri.">
+    <textarea id="request-message" rows="3" class="request-input" placeholder="Es. sono la titolare, mi trovate anche al 333…"
+      [formControl]="store.claim.controls.message"></textarea>
+  </app-request-field>
+  }
+</app-request-step>

@@ -1,0 +1,30 @@
+<fieldset class="flex flex-col gap-2">
+  <legend class="mb-2 text-[0.8125rem] font-bold text-(--ev-soft)">Motivo del rifiuto</legend>
+  <div class="flex flex-wrap gap-2">
+    @for (option of reasons; track option.value) {
+    @let selected = reason() === option.value;
+    <button type="button" class="min-h-9 rounded-[0.625rem] border px-3 text-[0.8125rem]"
+      [class]="selected ? 'border-rose bg-rose/15 font-bold' : 'border-(--ev-edge) font-semibold text-(--ev-soft)'"
+      [attr.aria-pressed]="selected" (click)="reason.set(option.value)">
+      {{ option.label }}
+    </button>
+    }
+  </div>
+</fieldset>
+
+<app-request-field label="Messaggio per l'utente" [fieldId]="'reject-message-' + requestId()" [control]="message"
+  [optional]="!messageRequired()" [maxLength]="maxLength" [error]="'Massimo ' + maxLength + ' caratteri.'">
+  <textarea [id]="'reject-message-' + requestId()" rows="2" class="request-input" [formControl]="message"
+    placeholder="Es. scrivici da @ballastasera così verifichiamo"></textarea>
+</app-request-field>
+
+<div class="flex gap-2">
+  <button type="button" class="h-12 px-4 text-[0.9375rem] font-bold text-(--ev-soft)" [disabled]="busy()" (click)="cancelled.emit()">
+    Annulla
+  </button>
+  <button type="button" class="h-12 flex-1 rounded-[0.875rem] bg-rose text-[0.9375rem] font-extrabold text-(--ev-on-rose) disabled:opacity-45"
+    [disabled]="!canSubmit() || busy()" (click)="submit()">
+    {{ busy() ? 'Invio…' : 'Invia rifiuto' }}
+  </button>
+</div>
+<p class="text-[0.8125rem] leading-snug text-muted">L'utente vede il motivo nel menu e può correggere e reinviare.</p>

@@ -1,0 +1,53 @@
+<!-- From the Claude Design canvas "Diventa organizzatore", "Admin". -->
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex w-full max-w-2xl flex-col px-4 pt-1 pb-8">
+    <a routerLink="/admin" class="-ml-1 flex h-11 items-center gap-1 self-start text-sm font-semibold text-(--ev-soft)">
+      <ng-icon name="lucideChevronLeft" size="1.125rem" aria-hidden="true" />
+      Pannello admin
+    </a>
+    <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Richieste organizzatore</h1>
+
+    <div role="tablist" aria-label="Stato delle richieste" class="request-card mt-4 flex rounded-[0.875rem]! p-1">
+      @for (tab of tabs; track tab.status) {
+      @let selected = status() === tab.status;
+      <button type="button" role="tab" class="h-9 flex-1 rounded-[0.625rem] text-[0.8125rem]"
+        [class]="selected ? 'bg-rose font-extrabold text-(--ev-on-rose)' : 'font-bold text-(--ev-soft)'"
+        [attr.aria-selected]="selected" (click)="selectTab(tab.status)">
+        {{ tab.label }}
+        @if (tab.status === 'PENDING' && pendingCount() !== null) {
+        · {{ pendingCount() }}
+        }
+      </button>
+      }
+    </div>
+
+    @if (notice(); as message) {
+    <p class="mt-4 rounded-[0.875rem] bg-(--ev-zone-on-bg) px-3.5 py-3 text-sm text-(--ev-zone-on-text)" role="status">{{ message }}</p>
+    }
+
+    @if (loadFailed()) {
+    <p class="mt-6 text-sm text-(--ev-error)" role="alert">Non siamo riusciti a caricare le richieste. Ricarica la pagina.</p>
+    } @else if (requests().length === 0) {
+    <p class="mt-6 text-(--ev-soft)" role="status">{{ loading() ? 'Caricamento…' : 'Nessuna richiesta.' }}</p>
+    }
+
+    <div class="mt-4 flex flex-col gap-3.5">
+      @for (request of requests(); track request.id) {
+      <app-organizer-request-card [request]="request" [createdVenueId]="createdVenueFor(request)"
+        (reviewed)="onReviewed($event)" (alreadyReviewed)="onAlreadyReviewed()" />
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+    <nav aria-label="Pagine" class="mt-5 flex items-center justify-between text-sm">
+      <button type="button" class="h-11 px-3 font-bold text-(--ev-link) disabled:opacity-40" [disabled]="page() === 0" (click)="goToPage(page() - 1)">
+        Precedente
+      </button>
+      <span class="text-(--ev-soft)">{{ page() + 1 }} / {{ totalPages() }}</span>
+      <button type="button" class="h-11 px-3 font-bold text-(--ev-link) disabled:opacity-40" [disabled]="page() + 1 >= totalPages()" (click)="goToPage(page() + 1)">
+        Successiva
+      </button>
+    </nav>
+    }
+  </div>
+</main>

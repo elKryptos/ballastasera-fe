@@ -1,11 +1,4 @@
-export interface PageDto<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-}
-
+/** Spring Data's page, as the backend serializes it (VIA_DTO). */
 export interface SpringPage<T> {
   content: T[];
   page: {

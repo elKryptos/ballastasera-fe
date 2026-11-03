@@ -1,0 +1,29 @@
+<app-request-step step="chi-sei" heading="Chi sei?"
+  lead="Scegli quello che ti descrive meglio: così le tue serate finiscono nel posto giusto sulla mappa."
+  [ctaDisabled]="!store.organizerType()" (ctaClicked)="next()">
+  <div class="flex flex-col gap-2.5">
+    @for (option of options; track option.type) {
+    @let selected = store.organizerType() === option.type;
+    <button type="button" class="flex min-h-18 w-full items-center gap-3.5 rounded-[1.125rem] border-2 px-3.5 py-3 text-left"
+      [class]="selected ? 'border-rose bg-rose/10' : 'border-(--ev-edge) bg-(--ev-surface)'" [attr.aria-pressed]="selected"
+      (click)="store.organizerType.set(option.type)">
+      <span class="flex size-11 shrink-0 items-center justify-center rounded-xl {{ option.tone }}" aria-hidden="true">
+        <ng-icon [name]="option.icon" size="1.375rem" />
+      </span>
+      <span class="min-w-0 grow">
+        <span class="block text-base font-extrabold">{{ typeLabels[option.type] }}</span>
+        <span class="mt-0.5 block text-[0.8125rem] text-(--ev-soft)">{{ option.hint }}</span>
+      </span>
+      <span class="flex size-5.5 shrink-0 items-center justify-center rounded-full border-2"
+        [class]="selected ? 'border-rose' : 'border-(--ev-edge)'" aria-hidden="true">
+        @if (selected) {
+        <span class="size-2.5 rounded-full bg-rose"></span>
+        }
+      </span>
+    </button>
+    }
+  </div>
+  <p class="mx-0.5 mt-3.5 text-[0.8125rem] leading-snug text-muted">
+    Sei già su ballastasera? Al passo dopo trovi la tua pagina, con il tuo locale.
+  </p>
+</app-request-step>

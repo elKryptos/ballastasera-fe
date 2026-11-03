@@ -38,6 +38,7 @@
         </p>
       </div>
 
+      @if (!requestId) {
       <div class="space-y-1">
         <label class="text-sm font-medium">Organizzatore</label>
         <hlm-autocomplete class="block" formControlName="organizerId" [itemToString]="organizer.itemToString"
@@ -66,6 +67,7 @@
           }
         </p>
       </div>
+      }
 
       <div class="space-y-1">
         <label class="text-sm font-medium">Città *</label>
@@ -202,6 +204,12 @@
       <span><strong>{{ venue.name }}</strong> ({{ venue.cityName }}) è stato creato con successo.</span>
     </div>
     <div class="flex justify-end gap-3 mt-4">
+      @if (requestId) {
+      <button type="button" (click)="backToRequest(venue)"
+        class="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90">
+        Torna alla richiesta
+      </button>
+      } @else {
       <button type="button" (click)="createAnother()"
         class="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-accent">
         Crea un altro
@@ -210,6 +218,7 @@
         class="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90">
         Torna alla home admin
       </button>
+      }
     </div>
     } @else {
     <div class="flex justify-end">

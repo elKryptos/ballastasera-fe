@@ -23,8 +23,8 @@ export const FEATURE_FLAGS = {
   adminHomePage: 'adminHomePage',
   /** /admin/create-unclaimed-organizer route (also gated on the ADMIN role). */
   createUnclaimedOrganizerPage: 'createUnclaimedOrganizerPage',
-  /** /admin/pending-organizers route (also gated on the ADMIN role). */
-  pendingOrganizersPage: 'pendingOrganizersPage',
+  /** /diventa-organizzatore routes: a user asks to become an organizer (also gated on the USER role). */
+  organizerRequestPage: 'organizerRequestPage',
   /** /admin/verified-organizers route (also gated on the ADMIN role). */
   verifiedOrganizersPage: 'verifiedOrganizersPage',
   /** /admin/update-organizer route (also gated on the ADMIN role). */

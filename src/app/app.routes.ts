@@ -66,16 +66,25 @@ export const routes: Routes = [
       },
 
       {
+        // A user asks to become an organizer, step by step. The steps and
+        // their draft are in organizer-request.routes.ts.
+        path: 'diventa-organizzatore',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.organizerRequestPage), roleGuard('USER')],
+        loadChildren: () =>
+          import('./features/organizer-request/organizer-request.routes').then((m) => m.ORGANIZER_REQUEST_ROUTES),
+      },
+
+      {
         path: 'admin',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
         loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),
       },
 
       {
-        path: 'admin/pending-organizers',
-        canMatch: [featureFlagGuard(FEATURE_FLAGS.pendingOrganizersPage), roleGuard('ADMIN')],
+        path: 'admin/organizer-requests',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.organizerRequestPage), roleGuard('ADMIN')],
         loadComponent: () =>
-          import('./features/admin/pending-organizers/pending-organizers').then((m) => m.PendingOrganizers),
+          import('./features/admin/organizer-requests/organizer-requests').then((m) => m.OrganizerRequestsPage),
       },
 
       {

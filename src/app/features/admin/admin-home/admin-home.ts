@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FEATURE_FLAGS } from '../../../core/config/feature-flags';
+import { FeatureFlagService } from '../../../core/services/feature-flag.service';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 
 interface AdminOption {
@@ -16,6 +18,13 @@ interface AdminOption {
 })
 export class AdminHome {
   protected readonly options: AdminOption[] = [
+    ...(inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.organizerRequestPage)
+      ? [{
+          title: 'Richieste organizzatore',
+          description: 'Approva o rifiuta chi chiede di diventare organizzatore.',
+          routerLink: '/admin/organizer-requests',
+        }]
+      : []),
     {
       title: 'Crea venue',
       description: 'Aggiungi un locale, bar o discoteca',
@@ -50,11 +59,6 @@ export class AdminHome {
       title: 'Organizzatori verificati update/delete',
       description: 'Organizzatori che hanno completato il processo di verifica.',
       routerLink: '/admin/verified-organizers-list', 
-    },
-    {
-      title: 'Organizzatori in attesa di verifica',
-      description: 'Verifica gli organizzatori che si sono registrati.',
-      routerLink: '/admin/pending-organizers',
     },
     {
       title: 'Lista organizzatori non rivendicati (DA IMPLEMENTARE)',

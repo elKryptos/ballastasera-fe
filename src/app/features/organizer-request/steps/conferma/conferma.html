@@ -1,0 +1,60 @@
+<app-request-step step="conferma" heading="Controlla e invia" [ctaLabel]="submitting() ? 'Invio…' : 'Invia richiesta'"
+  ctaIcon="lucideSend" [ctaDisabled]="!store.termsValid() || submitting()" (ctaClicked)="submit()">
+  <div class="request-card flex flex-col gap-3.5 p-4">
+    <div class="flex items-center gap-3">
+      <app-organizer-avatar class="size-13 rounded-[0.875rem] text-[1.0625rem]" [name]="name()" [logoUrl]="logoUrl()" />
+      <div class="min-w-0 grow">
+        <div class="text-[1.0625rem] font-extrabold">{{ name() }}</div>
+        <div class="mt-1 flex flex-wrap gap-1">
+          @if (type(); as type) {
+          <app-organizer-type-badge [type]="type" />
+          }
+          @if (store.mode() === 'CLAIM') {
+          <span class="rounded-lg bg-(--ev-zone-on-bg) px-2 py-0.5 text-xs font-bold text-(--ev-zone-on-text)">Pagina esistente</span>
+          }
+        </div>
+      </div>
+      <a [routerLink]="profileUrl" class="self-start py-1 text-sm font-bold text-(--ev-link)">
+        {{ store.mode() === 'CLAIM' ? 'Cambia' : 'Modifica' }}
+      </a>
+    </div>
+
+    <hr class="border-(--ev-edge)" />
+
+    <div class="flex flex-col gap-2.5 text-sm text-(--ev-soft)">
+      @for (row of rows(); track $index) {
+      <div class="flex items-start gap-2.5">
+        <ng-icon [name]="row.icon" size="1.125rem" class="mt-px shrink-0 text-muted" aria-hidden="true" />
+        <span class="min-w-0 leading-snug wrap-break-word">
+          @if (row.title; as title) {
+          <b class="block text-(--ev-text)">{{ title }}</b>
+          }
+          {{ row.text }}
+        </span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <h2 class="mt-6 font-display text-[1.1875rem] font-extrabold">Cosa succede adesso</h2>
+  <ol class="mt-3 flex flex-col gap-3">
+    @for (item of whatHappensNext; track item.title; let number = $index) {
+    <li class="flex items-start gap-3">
+      <span class="flex size-7 shrink-0 items-center justify-center rounded-full bg-(--ev-raised) text-[0.8125rem] font-extrabold" aria-hidden="true">{{ number + 1 }}</span>
+      <div>
+        <div class="text-[0.9375rem] font-bold">{{ item.title }}</div>
+        <div class="mt-0.5 text-[0.8125rem] text-(--ev-soft)">{{ item.text }}</div>
+      </div>
+    </li>
+    }
+  </ol>
+
+  <label class="mt-5 flex items-start gap-3 text-sm leading-snug text-(--ev-soft)">
+    <input type="checkbox" class="size-5 shrink-0 accent-rose" [formControl]="store.termsAccepted" />
+    <span>Pubblicherò solo serate reali, con data, luogo e prezzo corretti.</span>
+  </label>
+
+  @if (errorMessage(); as message) {
+  <p class="mt-4 text-sm text-(--ev-error)" role="alert">{{ message }}</p>
+  }
+</app-request-step>

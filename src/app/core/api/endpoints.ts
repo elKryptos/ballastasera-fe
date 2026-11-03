@@ -8,14 +8,11 @@ export const endpoints = {
   },
 
   admin: {
-    getPendingOrganizers: '/rest/admin/organizers/pending',//Used
     getVerifiedOrganizers: '/rest/admin/organizers/verified',//Used
-    verifyOrganizer: (id: string) => `/rest/admin/organizers/${id}/verify`,
     createUnclaimedOrganizer: '/rest/admin/organizers/unclaimed',//Used
     getOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
     updateOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
     deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
-    claimOrganizer: (id: string) => `/rest/organizers/${id}/claim`,
     createEvent: '/rest/admin/events',//Used
     updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,//Used
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
@@ -27,6 +24,9 @@ export const endpoints = {
     deleteVenue: (id: string) => `/rest/admin/venues/${id}`,//Used
     updateVenueLogo: (id: string) => `/rest/admin/venues/${id}/logo`,//Used
     deleteVenueLogo: (id: string) => `/rest/admin/venues/${id}/logo`,//Used
+    organizerRequests: '/rest/admin/organizer-requests',
+    approveOrganizerRequest: (id: string) => `/rest/admin/organizer-requests/${id}/approve`,
+    rejectOrganizerRequest: (id: string) => `/rest/admin/organizer-requests/${id}/reject`,
   },
 
   users: {
@@ -80,8 +80,16 @@ export const endpoints = {
     generateOccurrences: (id: string) => `/rest/event-series/${id}/occurrences`,
   },
 
+  organizerRequests: {
+    create: '/rest/organizer-requests',
+    me: '/rest/organizer-requests/me',
+    logo: (id: string) => `/rest/organizer-requests/${id}/logo`,
+    cancel: (id: string) => `/rest/organizer-requests/${id}`,
+    acknowledge: (id: string) => `/rest/organizer-requests/${id}/acknowledge`,
+  },
+
   organizers: {
-    create: '/rest/organizers',
+    claimable: '/rest/organizers/claimable',
     getBySlug: (slug: string) => `/rest/organizers/${slug}`,
     myOrganizers: '/rest/organizers/me',
     update: (id: string) => `/rest/organizers/${id}`,

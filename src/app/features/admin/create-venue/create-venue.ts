@@ -2,8 +2,8 @@ import { Component, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { catchError, of } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { catchError, of, take } from 'rxjs';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { BrnSelectTrigger, BrnSelectValue } from '@spartan-ng/brain/select';
 import { HlmAutocomplete, HlmAutocompleteImports, HlmAutocompleteSearch } from '@spartan-ng/helm/autocomplete';
@@ -35,6 +35,12 @@ export class CreateVenue {
   private readonly adminService = inject(AdminService);
   private readonly citiesService = inject(CitiesService);
   private readonly router = inject(Router);
+  private readonly queryParams = inject(ActivatedRoute).snapshot.queryParamMap;
+
+  /** Opened from a request's "Crea il locale" (admin/organizer-requests):
+   * filled in from it, and the new venue goes back to it. Approving links the
+   * two, so there's no organizer to pick here. */
+  protected readonly requestId = this.queryParams.get('richiesta');
 
   readonly venueTypes = VENUE_TYPES;
   protected readonly contactFields = CONTACT_FIELDS;
@@ -73,8 +79,32 @@ export class CreateVenue {
   protected readonly address = injectAddressSearch(this.form.controls, ADDRESS_SEARCH_DEBOUNCE_MS);
   private readonly addressAutocomplete = viewChild(HlmAutocompleteSearch, { read: BrnAutocompleteSearch });
 
+  constructor() {
+    if (this.requestId) this.fillFromRequest();
+  }
+
   protected openAddressDropdown(): void {
     this.addressAutocomplete()?.open();
+  }
+
+  protected backToRequest(venue: VenueDetailDto): void {
+    this.router.navigate(['/admin/organizer-requests'], { queryParams: { richiesta: this.requestId, locale: venue.id } });
+  }
+
+  private fillFromRequest(): void {
+    const address = this.queryParams.get('indirizzo') ?? '';
+    this.form.patchValue({
+      name: this.queryParams.get('nome') ?? '',
+      type: (this.queryParams.get('tipo') as VenueType | null) ?? '',
+      address,
+    });
+    this.address.search.set(address);
+    // The request only has the city's name, the form wants its id.
+    const cityName = this.queryParams.get('citta');
+    this.citiesService.getCities().pipe(take(1), catchError(() => of<CityDto[]>([]))).subscribe((cities) => {
+      const city = cities.find((c) => c.name === cityName);
+      if (city) this.form.patchValue({ cityId: city.id });
+    });
   }
 
   protected submit(): void {

@@ -2,7 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
 import { OrganizerCreateDto, OrganizerDetailDto, OrganizerSummaryDto, OrganizerUpdateDto } from '../models/organizer.model';
-import { PageDto, SpringPage } from '../models/page.model';
+import { OrganizerRequestAdminDto, OrganizerRequestApproveDto, OrganizerRequestRejectDto, OrganizerRequestStatus } from '../models/organizer-request.model';
+import { SpringPage } from '../models/page.model';
 import { environment } from '../../../environments/environment';
 import { endpoints } from '../api/endpoints';
 import { EventCardDto, EventCreateDto, EventDetailDto, EventSeriesCreateDto, EventSeriesDetailDto, EventSeriesGenerateOccurrencesDto } from '../models/event.model';
@@ -11,15 +12,6 @@ import { VenueCreateDto, VenueDetailDto, VenueUpdateDto } from '../models/venue.
 @Service()
 export class AdminService {
   private readonly http = inject(HttpClient);
-
-  getPendingOrganizer(page = 0, size = 20): Observable<PageDto<OrganizerDetailDto>> {
-    const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<PageDto<OrganizerDetailDto>>(`${environment.apiUrl}${endpoints.admin.getPendingOrganizers}`, { params })
-  }
-
-  verifyOrganizer(id: string): Observable<OrganizerDetailDto> {
-    return this.http.patch<OrganizerDetailDto>(`${environment.apiUrl}${endpoints.admin.verifyOrganizer(id)}`, {})
-  }
 
   createUnclaimedOrganizer(body: OrganizerCreateDto): Observable<OrganizerCreateDto> {
     return this.http.post<OrganizerCreateDto>(`${environment.apiUrl}${endpoints.admin.createUnclaimedOrganizer}`, body);
@@ -88,5 +80,19 @@ export class AdminService {
 
   deleteVenueLogo(id: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}${endpoints.admin.deleteVenueLogo(id)}`);
+  }
+
+  /** Oldest first while pending, latest reviewed first otherwise: the backend sorts them. */
+  getOrganizerRequests(status: OrganizerRequestStatus, page = 0, size = 20): Observable<SpringPage<OrganizerRequestAdminDto>> {
+    const params = new HttpParams().set('status', status).set('page', page).set('size', size);
+    return this.http.get<SpringPage<OrganizerRequestAdminDto>>(`${environment.apiUrl}${endpoints.admin.organizerRequests}`, { params });
+  }
+
+  approveOrganizerRequest(id: string, body: OrganizerRequestApproveDto): Observable<OrganizerRequestAdminDto> {
+    return this.http.patch<OrganizerRequestAdminDto>(`${environment.apiUrl}${endpoints.admin.approveOrganizerRequest(id)}`, body);
+  }
+
+  rejectOrganizerRequest(id: string, body: OrganizerRequestRejectDto): Observable<OrganizerRequestAdminDto> {
+    return this.http.patch<OrganizerRequestAdminDto>(`${environment.apiUrl}${endpoints.admin.rejectOrganizerRequest(id)}`, body);
   }
 }

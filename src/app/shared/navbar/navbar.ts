@@ -6,6 +6,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { AuthModal } from '../auth-modal/auth-modal';
 import { AuthService } from '../../core/services/auth.service';
+import { watchOrganizerRequest } from '../../core/services/organizer-request-watcher';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { AVAILABLE_LANGS } from '../../core/config/i18n';
@@ -16,6 +17,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { RailTooltip } from '../directives/rail-tooltip.directive';
 import { RoleDirective } from '../directives/role.directive';
 import { HalloweenBats, HalloweenCard, HalloweenSpider, HalloweenWeb } from '../season/halloween';
+import { OrganizerMenuCard } from './organizer-menu-card/organizer-menu-card';
 
 /**
  * Site navigation: a Spartan sidebar (icon rail on desktop, expandable; an
@@ -38,6 +40,7 @@ import { HalloweenBats, HalloweenCard, HalloweenSpider, HalloweenWeb } from '../
     HalloweenCard,
     HalloweenSpider,
     HalloweenWeb,
+    OrganizerMenuCard,
   ],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
@@ -91,6 +94,11 @@ export class Navbar {
   // the Parteciperò badge and shows the email in place of the stats line.
   protected readonly goingCount = signal<number | null>(null);
   protected readonly likesCount = signal<number | null>(null);
+
+  constructor() {
+    // Here, not in the "Organizza" card: on mobile the card only exists while the drawer is open.
+    watchOrganizerRequest();
+  }
 
   protected toggleTheme(): void {
     this.themeService.toggle();

@@ -6,7 +6,7 @@ import { AdminService } from '../../core/services/admin.service';
 import { GeocodingService } from '../../core/services/geocoding.service';
 import { VenuesService } from '../../core/services/venues.service';
 import { AddressSuggestion } from '../../core/models/geocoding.model';
-import { OrganizerSummaryDto } from '../../core/models/organizer.model';
+import { OrganizerAdminDto } from '../../core/models/organizer.model';
 import { VenuesSummaryDto } from '../../core/models/venue.model';
 
 /*
@@ -30,9 +30,9 @@ export function injectOrganizerPicker(organizerId: FormControl<string>) {
       .getVerifiedOrganizers(0, 100)
       .pipe(
         map((page) => page.content),
-        catchError(() => of<OrganizerSummaryDto[]>([])),
+        catchError(() => of<OrganizerAdminDto[]>([])),
       ),
-    { initialValue: [] as OrganizerSummaryDto[] },
+    { initialValue: [] as OrganizerAdminDto[] },
   );
   const search = signal('');
   const selectedId = toSignal(organizerId.valueChanges, { initialValue: organizerId.value });

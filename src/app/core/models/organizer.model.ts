@@ -1,4 +1,4 @@
-export type OrganizerType = 'PERSON' | 'VENUE' | 'CLUB' | 'SCHOOL' | 'ASSOCIATION';
+export type OrganizerType = 'PERSON' | 'VENUE' | 'CLUB' | 'SCHOOL';
 
 export interface OrganizerDetailDto {
   id: string;
@@ -49,4 +49,20 @@ export interface OrganizerSummaryDto {
   whatsapp: string | null;
   type: OrganizerType;
   verified: boolean;
+}
+
+/** GET /rest/admin/organizers/verified: the admin list, with each page's owner (admin only, never public).
+ * See organizerOwnership() for what claimed and ownerId mean together. */
+export interface OrganizerAdminDto {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  instagram: string | null;
+  type: OrganizerType;
+  verified: boolean;
+  claimed: boolean;
+  ownerId: string | null;
+  ownerName: string | null;
+  ownerEmail: string | null;
 }

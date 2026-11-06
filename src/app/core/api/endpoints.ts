@@ -13,6 +13,7 @@ export const endpoints = {
     getOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
     updateOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
     deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
+    unclaimOrganizer: (id: string) => `/rest/admin/organizers/${id}/unclaim`,
     createEvent: '/rest/admin/events',//Used
     updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,//Used
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,

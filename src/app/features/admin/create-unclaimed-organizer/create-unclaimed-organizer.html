@@ -21,8 +21,8 @@
           </hlm-select-trigger>
           <ng-template hlmSelectPortal>
             <hlm-select-content>
-              @for (t of organizerTypes; track t.value) {
-              <hlm-select-item [value]="t.value">{{ t.label }}</hlm-select-item>
+              @for (type of organizerTypes; track type) {
+              <hlm-select-item [value]="type">{{ typeLabels[type] }}</hlm-select-item>
               }
             </hlm-select-content>
           </ng-template>

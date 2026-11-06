@@ -6,14 +6,7 @@ import { AdminService } from '../../../core/services/admin.service';
 import { OrganizerType } from '../../../core/models/organizer.model';
 import { instagramHandle } from '../../../core/utils/event-format';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
-
-const ORGANIZER_TYPES: { value: OrganizerType; label: string }[] = [
-  { value: 'PERSON', label: 'Persona' },
-  { value: 'VENUE', label: 'Locale' },
-  { value: 'CLUB', label: 'Club' },
-  { value: 'SCHOOL', label: 'Scuola' },
-  { value: 'ASSOCIATION', label: 'Associazione' },
-];
+import { ORGANIZER_TYPE_LABELS, ORGANIZER_TYPES } from '../../../core/config/organizer-types';
 
 @Component({
   selector: 'app-update-organizer',
@@ -29,7 +22,8 @@ export class UpdateOrganizer {
 
   private readonly organizerId = this.route.snapshot.paramMap.get('id')!;
 
-  readonly organizerTypes = ORGANIZER_TYPES;
+  protected readonly organizerTypes = ORGANIZER_TYPES;
+  protected readonly typeLabels = ORGANIZER_TYPE_LABELS;
   protected readonly loading = signal(true);
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);

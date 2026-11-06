@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideDisc3, lucideGraduationCap, lucideMartini, lucideUser, lucideUsers } from '@ng-icons/lucide';
-import { ORGANIZER_TYPE_LABELS } from '../../../../core/config/organizer-types';
+import { lucideDisc3, lucideGraduationCap, lucideMartini, lucideUser } from '@ng-icons/lucide';
+import { ORGANIZER_TYPE_LABELS, ORGANIZER_TYPES } from '../../../../core/config/organizer-types';
 import { OrganizerType } from '../../../../core/models/organizer.model';
 import { OrganizerRequestsService } from '../../../../core/services/organizer-requests.service';
 import { OrganizerRequestFormStore, requestStepUrl } from '../../organizer-request-form.store';
@@ -15,19 +15,21 @@ interface TypeOption {
   tone: string;
 }
 
-const TYPE_OPTIONS: TypeOption[] = [
-  { type: 'PERSON', hint: 'Organizzi serate a tuo nome', icon: 'lucideUser', tone: 'bg-rose/15 text-rose' },
-  { type: 'SCHOOL', hint: 'Corsi, stage e serate della scuola', icon: 'lucideGraduationCap', tone: 'bg-violet/25 text-violet' },
-  { type: 'CLUB', hint: 'Serate e party nel tuo club', icon: 'lucideDisc3', tone: 'bg-(--ev-zone-on-bg) text-(--ev-zone-on-text)' },
-  { type: 'VENUE', hint: 'Un locale dove si balla', icon: 'lucideMartini', tone: 'bg-amber/15 text-amber' },
-  { type: 'ASSOCIATION', hint: 'ASD, circolo o collettivo', icon: 'lucideUsers', tone: 'bg-blue-500/15 text-blue-500' },
-];
+/** A Record, so a type added to or removed from OrganizerType breaks the build here too. */
+const TYPE_CARDS: Record<OrganizerType, Omit<TypeOption, 'type'>> = {
+  PERSON: { hint: 'Organizzi serate a tuo nome', icon: 'lucideUser', tone: 'bg-rose/15 text-rose' },
+  SCHOOL: { hint: 'Corsi, stage e serate, anche come ASD', icon: 'lucideGraduationCap', tone: 'bg-violet/25 text-violet' },
+  CLUB: { hint: 'Serate e party nel tuo club', icon: 'lucideDisc3', tone: 'bg-(--ev-zone-on-bg) text-(--ev-zone-on-text)' },
+  VENUE: { hint: 'Un locale dove si balla', icon: 'lucideMartini', tone: 'bg-amber/15 text-amber' },
+};
+
+const TYPE_OPTIONS: TypeOption[] = ORGANIZER_TYPES.map((type) => ({ type, ...TYPE_CARDS[type] }));
 
 /** Step 1. Also where "Modifica e reinvia" lands, with ?da=<rejected request's id>. */
 @Component({
   selector: 'app-request-chi-sei',
   imports: [NgIcon, RequestStepShell],
-  providers: [provideIcons({ lucideDisc3, lucideGraduationCap, lucideMartini, lucideUser, lucideUsers })],
+  providers: [provideIcons({ lucideDisc3, lucideGraduationCap, lucideMartini, lucideUser })],
   host: { class: 'block' },
   templateUrl: './chi-sei.html',
 })

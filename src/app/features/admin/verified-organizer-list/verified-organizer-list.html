@@ -2,15 +2,20 @@
   <div class="mx-auto max-w-4xl px-6 py-4">
     <h1 class="font-display text-2xl font-bold">Organizzatori verificati</h1>
 
+    @if (errorMessage(); as message) {
+    <p class="mt-4 text-sm text-red-600" role="alert">{{ message }}</p>
+    }
+
     @if (loading()) {
     <p class="mt-6 text-lead">Caricamento…</p>
     } @else if (organizers().length === 0) {
     <p class="mt-6 text-lead">Nessun organizzatore verificato.</p>
     } @else {
     <ul class="mt-6 flex flex-col gap-3">
-      @for (org of organizers(); track org.id) {
+      @for (row of rows(); track row.organizer.id) {
+      @let org = row.organizer;
       <li class="flex flex-col gap-3 rounded-xl border border-line p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-2">
+        <div class="flex min-w-0 items-center gap-2">
           @if (org.verified) {
           <span title="Verificato"
             class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500 text-xs text-white">
@@ -29,10 +34,21 @@
               </a>
               }
             </p>
+            <p class="truncate text-sm text-lead">
+              @switch (row.ownership) {
+              @case ('ADMIN_UNOWNED') { Creato dall'admin · senza titolare }
+              @case ('CLAIMED') { Creato dall'admin · titolare: {{ org.ownerName }} }
+              @case ('CREATED_BY_OWNER') { Creato da {{ org.ownerName }} }
+              }
+              @if (org.ownerEmail) {
+              ·
+              <a [href]="'mailto:' + org.ownerEmail" class="font-semibold text-rose hover:underline">{{ org.ownerEmail }}</a>
+              }
+            </p>
           </div>
         </div>
 
-        <div class="flex items-center justify-center gap-2 sm:justify-end">
+        <div class="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
           <hlm-alert-dialog>
             <button hlmBtn hlmAlertDialogTrigger size="sm" class="px-6 bg-violet text-white hover:bg-violet/80">
               Aggiorna dati
@@ -50,6 +66,35 @@
             </hlm-alert-dialog-content>
           </hlm-alert-dialog>
 
+          @if (row.ownership === 'CLAIMED') {
+          <hlm-alert-dialog>
+            <button hlmBtn hlmAlertDialogTrigger variant="outline" size="sm" class="px-6">
+              Rimuovi titolare
+            </button>
+            <hlm-alert-dialog-content *brnAlertDialogContent="let ctx" class="ring-amber/30">
+              <hlm-alert-dialog-header>
+                <hlm-alert-dialog-media class="bg-amber/15 text-amber text-lg">⚠</hlm-alert-dialog-media>
+                <h3 hlmAlertDialogTitle class="text-amber">Rimuovere il titolare di {{ org.name }}?</h3>
+                <p hlmAlertDialogDescription>
+                  {{ org.ownerName }} non gestirà più la pagina e riceverà un'email. La pagina, il locale e le
+                  serate restano, e chiunque potrà chiedere di nuovo la pagina.
+                </p>
+              </hlm-alert-dialog-header>
+              <hlm-alert-dialog-footer>
+                <button hlmAlertDialogCancel [disabled]="busyId() === org.id">Annulla</button>
+                <button
+                  hlmAlertDialogAction
+                  variant="default"
+                  [disabled]="busyId() === org.id"
+                  (click)="unclaimOrganizer(org)"
+                >
+                  {{ busyId() === org.id ? 'Rimozione…' : 'Rimuovi titolare' }}
+                </button>
+              </hlm-alert-dialog-footer>
+            </hlm-alert-dialog-content>
+          </hlm-alert-dialog>
+          }
+
           <hlm-alert-dialog>
             <button hlmBtn hlmAlertDialogTrigger variant="destructive" size="sm" class="px-6">
               Elimina
@@ -59,18 +104,22 @@
                 <hlm-alert-dialog-media class="bg-rose/15 text-rose text-lg">⚠</hlm-alert-dialog-media>
                 <h3 hlmAlertDialogTitle class="text-rose">Eliminare {{ org.name }}?</h3>
                 <p hlmAlertDialogDescription>
-                  L'organizzatore verrà rimosso definitivamente. Questa azione non è reversibile.
+                  L'organizzatore verrà rimosso definitivamente e le sue serate future verranno annullate.
+                  @if (org.ownerName) {
+                  {{ org.ownerName }} tornerà un utente normale.
+                  }
+                  Questa azione non è reversibile.
                 </p>
               </hlm-alert-dialog-header>
               <hlm-alert-dialog-footer>
-                <button hlmAlertDialogCancel [disabled]="deletingId() === org.id">Annulla</button>
+                <button hlmAlertDialogCancel [disabled]="busyId() === org.id">Annulla</button>
                 <button
                   hlmAlertDialogAction
                   variant="default"
-                  [disabled]="deletingId() === org.id"
+                  [disabled]="busyId() === org.id"
                   (click)="deleteOrganizer(org)"
                 >
-                  {{ deletingId() === org.id ? 'Eliminazione…' : 'Elimina' }}
+                  {{ busyId() === org.id ? 'Eliminazione…' : 'Elimina' }}
                 </button>
               </hlm-alert-dialog-footer>
             </hlm-alert-dialog-content>

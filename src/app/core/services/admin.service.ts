@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
-import { OrganizerCreateDto, OrganizerDetailDto, OrganizerSummaryDto, OrganizerUpdateDto } from '../models/organizer.model';
+import { OrganizerAdminDto, OrganizerCreateDto, OrganizerDetailDto, OrganizerUpdateDto } from '../models/organizer.model';
 import { OrganizerRequestAdminDto, OrganizerRequestApproveDto, OrganizerRequestRejectDto, OrganizerRequestStatus } from '../models/organizer-request.model';
 import { SpringPage } from '../models/page.model';
 import { environment } from '../../../environments/environment';
@@ -17,13 +17,19 @@ export class AdminService {
     return this.http.post<OrganizerCreateDto>(`${environment.apiUrl}${endpoints.admin.createUnclaimedOrganizer}`, body);
   }
 
-  getVerifiedOrganizers(page = 0, size = 20): Observable<SpringPage<OrganizerSummaryDto>> {
+  getVerifiedOrganizers(page = 0, size = 20): Observable<SpringPage<OrganizerAdminDto>> {
     const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<SpringPage<OrganizerSummaryDto>>(`${environment.apiUrl}${endpoints.admin.getVerifiedOrganizers}`, { params });
+    return this.http.get<SpringPage<OrganizerAdminDto>>(`${environment.apiUrl}${endpoints.admin.getVerifiedOrganizers}`, { params });
   }
 
   deleteOrganizer(id: string): Observable<void> {
     return this.http.delete<void>(`${environment.apiUrl}${endpoints.admin.deleteOrganizer(id)}`);
+  }
+
+  /** Takes a claimed page back from its owner, who gets an email. 409 ORGANIZER_NOT_CLAIMED without an owner,
+   * ORGANIZER_CREATED_BY_OWNER if the owner created it (those are only deleted). */
+  unclaimOrganizer(id: string): Observable<OrganizerDetailDto> {
+    return this.http.patch<OrganizerDetailDto>(`${environment.apiUrl}${endpoints.admin.unclaimOrganizer(id)}`, null);
   }
 
   getOrganizer(id: string): Observable<OrganizerDetailDto> {

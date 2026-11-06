@@ -10,6 +10,8 @@ const CONFLICT_MESSAGES: Record<string, string> = {
   LOGO_NOT_ALLOWED: 'Il logo si può caricare una sola volta, dopo l\'invio della richiesta.',
   VENUE_REQUIRED: 'Manca il locale: crealo prima di approvare.',
   VENUE_ALREADY_LINKED: 'Questo locale è già collegato a un altro organizzatore.',
+  ORGANIZER_NOT_CLAIMED: 'Questa pagina non ha più un titolare.',
+  ORGANIZER_CREATED_BY_OWNER: 'Questa pagina l\'ha creata il titolare: si può solo eliminare.',
 };
 
 const STATUS_MESSAGES: Record<number, string> = {

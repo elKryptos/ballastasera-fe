@@ -1,7 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 import { AdminService } from '../../../core/services/admin.service';
-import { OrganizerSummaryDto } from '../../../core/models/organizer.model';
+import { OrganizerAdminDto } from '../../../core/models/organizer.model';
+import { organizerOwnership } from '../../../core/config/organizer-types';
+import { requestErrorMessage } from '../../../core/utils/organizer-request-errors';
 import { BrnAlertDialogContent } from '@spartan-ng/brain/alert-dialog';
 import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -18,15 +21,21 @@ export class VerifiedOrganizerList {
   private readonly admin = inject(AdminService);
   private readonly router = inject(Router);
 
-  protected readonly organizers = signal<OrganizerSummaryDto[]>([]);
+  protected readonly organizers = signal<OrganizerAdminDto[]>([]);
   protected readonly loading = signal<boolean>(true);
   protected readonly page = signal<number>(0);
   protected readonly totalPages = signal<number>(0);
-  protected readonly deletingId = signal<string | null>(null);
+  /** The row with an action on its way: one at a time, and its dialogs stay disabled meanwhile. */
+  protected readonly busyId = signal<string | null>(null);
+  protected readonly errorMessage = signal<string | null>(null);
+  /** Each organizer with who owns it, which decides its label and which buttons it gets. */
+  protected readonly rows = computed(() =>
+    this.organizers().map((organizer) => ({ organizer, ownership: organizerOwnership(organizer) })),
+  );
   /** Older organizers may hold a profile URL instead of the handle. */
   protected readonly instagramUrl = instagramUrl;
   protected readonly instagramHandle = instagramHandle;
-  
+
   constructor() {
     this.load();
   }
@@ -46,26 +55,23 @@ export class VerifiedOrganizerList {
     })
   }
 
-  protected updateOrganizer(org: OrganizerSummaryDto): void {
+  protected updateOrganizer(org: OrganizerAdminDto): void {
     this.router.navigate(['/admin/update-organizer', org.id]);
   }
 
-  protected deleteOrganizer(org: OrganizerSummaryDto): void {
-    this.deletingId.set(org.id);
-    this.admin.deleteOrganizer(org.id).subscribe({
-      next: () => {
-        this.organizers.update((organizers) => organizers.filter((o) => o.id !== org.id));
-        this.deletingId.set(null);
-      },
-      error: (error) => {
-        console.error('Error deleting organizer:', error);
-        this.deletingId.set(null);
-      }
-    });
+  protected deleteOrganizer(org: OrganizerAdminDto): void {
+    this.runOnRow(org, this.admin.deleteOrganizer(org.id), () =>
+      this.organizers.update((organizers) => organizers.filter((o) => o.id !== org.id)),
+    );
+  }
+
+  /** The page, its venue and its events stay: reloading shows it as the backend left it, without an owner. */
+  protected unclaimOrganizer(org: OrganizerAdminDto): void {
+    this.runOnRow(org, this.admin.unclaimOrganizer(org.id), () => this.load());
   }
 
   protected nextPage(): void {
-    if (this.page() + 1 < this.totalPages()) return;
+    if (this.page() + 1 >= this.totalPages()) return;
     this.page.update((p) => p + 1);
     this.load();
   }
@@ -74,5 +80,22 @@ export class VerifiedOrganizerList {
     if (this.page() === 0) return;
     this.page.update((p) => p - 1);
     this.load();
+  }
+
+  /** What every row action shares: one at a time, and the backend's error in the admin's words. */
+  private runOnRow(org: OrganizerAdminDto, action: Observable<unknown>, onDone: () => void): void {
+    if (this.busyId()) return;
+    this.busyId.set(org.id);
+    this.errorMessage.set(null);
+    action.subscribe({
+      next: () => {
+        this.busyId.set(null);
+        onDone();
+      },
+      error: (error) => {
+        this.busyId.set(null);
+        this.errorMessage.set(`${org.name}: ${requestErrorMessage(error)}`);
+      },
+    });
   }
 }

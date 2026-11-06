@@ -6,14 +6,7 @@ import { Router } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { instagramHandle } from '../../../core/utils/event-format';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
-
-const ORGANIZER_TYPES: { value: OrganizerType; label: string }[] = [
-  { value: 'PERSON', label: 'Persona'},
-  { value: 'VENUE', label: 'Locale'},
-  { value: 'CLUB', label: 'Club'},
-  { value: 'SCHOOL', label: 'Scuola'},
-  { value: 'ASSOCIATION', label: 'Associazione'},
-]
+import { ORGANIZER_TYPE_LABELS, ORGANIZER_TYPES } from '../../../core/config/organizer-types';
 
 @Component({
   selector: 'app-create-unclaimed-organizer',
@@ -26,7 +19,8 @@ export class CreateUnclaimedOrganizer {
   private readonly admin = inject(AdminService);
   private readonly router = inject(Router);
 
-  readonly organizerTypes = ORGANIZER_TYPES;
+  protected readonly organizerTypes = ORGANIZER_TYPES;
+  protected readonly typeLabels = ORGANIZER_TYPE_LABELS;
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly createdOrganizer = signal<OrganizerCreateDto | null>(null);

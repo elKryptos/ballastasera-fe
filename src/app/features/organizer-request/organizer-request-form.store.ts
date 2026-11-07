@@ -1,6 +1,6 @@
 import { Service, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { AbstractControl, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { catchError, map, of, startWith, switchMap, take } from 'rxjs';
 import { requiresVenue } from '../../core/config/organizer-types';
 import { CityDto } from '../../core/models/city.model';
@@ -10,26 +10,16 @@ import { AuthService } from '../../core/services/auth.service';
 import { CitiesService } from '../../core/services/cities.service';
 import { OrganizersService } from '../../core/services/organizers.service';
 import { instagramHandle } from '../../core/utils/event-format';
+import { WEBSITE_PATTERN, notBlank, validInstagram } from '../../core/utils/form-validators';
+import { REQUEST_URL } from '../../core/utils/organizer-request-status';
 
 export type RequestStep = 'chi-sei' | 'profilo' | 'locale' | 'conferma';
 
 /** The organizer a CLAIM asks for. A resubmitted request only knows these. */
 export type ClaimTarget = Pick<OrganizerSummaryDto, 'id' | 'name' | 'slug' | 'type' | 'logoUrl'>;
 
-export const REQUEST_BASE_URL = '/diventa-organizzatore';
-
 export function requestStepUrl(step: RequestStep | 'richiesta-inviata'): string {
-  return `${REQUEST_BASE_URL}/${step}`;
-}
-
-/** Same rule as the backend's @Pattern, on the handle left of whatever was
- * typed or pasted: "@name" or an instagram.com link are fine too. */
-function validInstagram(control: AbstractControl<string>): ValidationErrors | null {
-  return /^[A-Za-z0-9._]{1,30}$/.test(instagramHandle(control.value)) ? null : { instagram: true };
-}
-
-function notBlank(control: AbstractControl<string>): ValidationErrors | null {
-  return control.value.trim() ? null : { required: true };
+  return `${REQUEST_URL}/${step}`;
 }
 
 /** A form's validity as a signal, for the templates and computeds that read it. */
@@ -77,7 +67,7 @@ export class OrganizerRequestFormStore {
     name: ['', [notBlank, Validators.maxLength(120)]],
     description: ['', [Validators.maxLength(500)]],
     phone: ['', [Validators.maxLength(20)]],
-    website: ['', [Validators.maxLength(100), Validators.pattern(/^https?:\/\/\S+$/i)]],
+    website: ['', [Validators.maxLength(100), Validators.pattern(WEBSITE_PATTERN)]],
   });
   readonly locale = this.fb.group({
     venueAddress: ['', [notBlank, Validators.maxLength(150)]],

@@ -610,7 +610,9 @@ app-school-list,
 app-my-nights,
 app-organizer-request,
 app-organizer-requests,
-app-organizer-welcome {
+app-organizer-welcome,
+app-account,
+app-organizer-profile {
   --ev-surface: color-mix(in srgb, var(--color-violet) 9%, var(--color-ink));
   --ev-raised: color-mix(in srgb, var(--color-violet) 17%, var(--color-ink));
   --ev-edge: color-mix(in srgb, var(--color-violet) 32%, var(--color-ink));
@@ -666,7 +668,7 @@ app-organizer-welcome {
   --ev-invert-link: #be123c;
 }
 
-:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list, app-my-nights, app-organizer-request, app-organizer-requests, app-organizer-welcome) {
+:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list, app-my-nights, app-organizer-request, app-organizer-requests, app-organizer-welcome, app-account, app-organizer-profile) {
   --color-ground: #fbf8f3;
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;

@@ -40,6 +40,11 @@ export interface OrganizerUpdateDto {
   facebook: string;
 }
 
+/** PATCH /rest/organizers/{id}, by its owner: no type (the backend has none to change) and no logoUrl
+ * (the owner uploads the logo: PATCH /rest/organizers/{id}/logo). The backend skips nulls, so an
+ * emptied field goes as "". */
+export type OrganizerOwnerUpdateDto = Omit<OrganizerUpdateDto, 'type' | 'logoUrl'>;
+
 export interface OrganizerSummaryDto {
   id: string;
   name: string;

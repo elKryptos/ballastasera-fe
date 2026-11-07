@@ -1,0 +1,133 @@
+<!-- From the Claude Design canvas "Diventa organizzatore": "Profilo organizzatore · logo". -->
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-2 pb-10">
+    <a [routerLink]="back.url" class="-ml-1 flex h-11 items-center gap-1 self-start text-sm font-semibold text-(--ev-soft) no-underline">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      {{ back.label }}
+    </a>
+
+    @if (!loaded()) {
+    <p class="mt-6 text-sm text-(--ev-soft)" role="status">Carico la tua pagina…</p>
+    } @else if (organizer(); as organizer) {
+    <p class="mt-2 text-[0.8125rem] font-bold text-(--ev-zone-on-text)">{{ typeLabel() }}</p>
+    <h1 class="mt-1 font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">La tua pagina</h1>
+    <p class="mt-2 text-[0.9375rem] leading-[1.45] text-(--ev-soft)">È quello che vedono i ballerini quando aprono una tua serata.</p>
+
+    <div class="request-card mt-5 p-4">
+      <app-logo-picker [previewUrl]="organizer.logoUrl" [label]="organizer.logoUrl ? 'Cambia logo' : 'Carica il logo'" [optional]="false"
+        hint="Quadrato, PNG o JPG. Sostituisce quello attuale." (fileSelected)="changeLogo($event)" />
+      @if (logoUpload.busy()) {
+      <p class="mt-3 text-[0.8125rem] text-(--ev-soft)" role="status">Carico il logo…</p>
+      } @else if (logoUpload.error(); as message) {
+      <p class="mt-3 text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="mt-5 flex flex-col gap-4.5">
+      <app-request-field label="Nome" fieldId="profile-name" [control]="form.controls.name" error="Inserisci il nome."
+        hint="Il link della pagina resta lo stesso anche se cambi il nome.">
+        <input id="profile-name" type="text" formControlName="name" maxlength="120" class="request-input" />
+      </app-request-field>
+
+      <app-request-field label="Descrizione" fieldId="profile-description" [control]="form.controls.description"
+        [optional]="true" [maxLength]="2000" error="Massimo 2000 caratteri.">
+        <textarea id="profile-description" rows="4" formControlName="description" class="request-input"></textarea>
+      </app-request-field>
+
+      <app-request-field label="Instagram" fieldId="profile-instagram" [control]="form.controls.instagram" [optional]="true"
+        error="Inserisci il nome del profilo Instagram, senza spazi.">
+        <app-instagram-input fieldId="profile-instagram" [control]="form.controls.instagram" />
+      </app-request-field>
+
+      <app-request-field label="Email di contatto" fieldId="profile-email" [control]="form.controls.contactEmail"
+        [optional]="true" error="Inserisci un'email valida.">
+        <input id="profile-email" type="email" formControlName="contactEmail" autocomplete="email" class="request-input" />
+      </app-request-field>
+
+      <app-request-field label="Telefono o WhatsApp" fieldId="profile-phone" [control]="form.controls.phone"
+        [optional]="true" error="Massimo 20 caratteri.">
+        <input id="profile-phone" type="tel" formControlName="phone" placeholder="+39 …" autocomplete="tel" class="request-input" />
+      </app-request-field>
+
+      <app-request-field label="Sito web" fieldId="profile-website" [control]="form.controls.website" [optional]="true"
+        error="Inserisci un indirizzo completo: https://…">
+        <input id="profile-website" type="url" formControlName="website" placeholder="https://" class="request-input" />
+      </app-request-field>
+
+      <app-request-field label="Facebook" fieldId="profile-facebook" [control]="form.controls.facebook" [optional]="true"
+        error="Massimo 100 caratteri.">
+        <input id="profile-facebook" type="text" formControlName="facebook" placeholder="Link o nome della pagina" class="request-input" />
+      </app-request-field>
+
+      <div class="flex items-center justify-end gap-3">
+        @if (saving.saved()) {
+        <p class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)" role="status">Modifiche salvate</p>
+        }
+        @if (saving.error(); as message) {
+        <p class="text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+        }
+        <button type="submit" [disabled]="saving.busy() || form.pristine"
+          class="h-12 cursor-pointer rounded-2xl bg-rose px-6 text-[0.9375rem] font-extrabold text-(--ev-on-rose) disabled:cursor-default disabled:opacity-50">
+          {{ saving.busy() ? 'Salvataggio…' : 'Salva le modifiche' }}
+        </button>
+      </div>
+    </form>
+
+    <h2 class="mt-8 font-display text-[1.1875rem] font-extrabold">{{ venues().length > 1 ? 'I tuoi locali' : 'Il tuo locale' }}</h2>
+    @for (venue of venues(); track venue.id) {
+    <div class="request-card mt-2.5 flex items-start gap-2.5 p-3.5 text-sm text-(--ev-soft)">
+      <svg viewBox="0 0 24 24" class="mt-px size-4.5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+        <circle cx="12" cy="9.5" r="2.5" />
+      </svg>
+      <span class="leading-snug">
+        <a [routerLink]="['/luogo', venue.id]" class="font-bold text-(--ev-text)">{{ venue.name }}</a><br />
+        {{ venue.address }}
+      </span>
+    </div>
+    } @empty {
+    <p class="mt-2.5 text-sm text-(--ev-soft)">Nessun locale collegato.</p>
+    }
+    <p class="mt-2 text-[0.8125rem] text-muted">Per collegare o cambiare un locale scrivici: lo gestiamo noi.</p>
+
+    @let way = exit();
+    <div class="mt-8 flex flex-col gap-2.5 rounded-[1.125rem] border border-(--ev-error)/35 p-3.5">
+      <p class="text-[0.9375rem] font-extrabold">{{ way.title }}</p>
+      <p class="text-[0.8125rem] leading-snug text-(--ev-soft)">{{ way.text }}</p>
+      @if (leaving.error(); as message) {
+      <p class="text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+      }
+      <hlm-alert-dialog>
+        <button hlmAlertDialogTrigger type="button"
+          class="h-11 cursor-pointer self-start rounded-[0.875rem] border border-(--ev-error)/50 px-4 text-sm font-extrabold text-(--ev-error)">
+          {{ way.title }}
+        </button>
+        <hlm-alert-dialog-content *brnAlertDialogContent="let ctx">
+          <hlm-alert-dialog-header>
+            <h3 hlmAlertDialogTitle>{{ way.confirmVerb }} {{ organizer.name }}?</h3>
+            <p hlmAlertDialogDescription>{{ way.confirmText }}</p>
+          </hlm-alert-dialog-header>
+          <hlm-alert-dialog-footer>
+            <button hlmAlertDialogCancel [disabled]="leaving.busy()">Indietro</button>
+            <button hlmAlertDialogAction variant="destructive" [disabled]="leaving.busy()" (click)="leave()">
+              {{ leaving.busy() ? 'Un momento…' : way.confirmAction }}
+            </button>
+          </hlm-alert-dialog-footer>
+        </hlm-alert-dialog-content>
+      </hlm-alert-dialog>
+    </div>
+    } @else if (loadFailed()) {
+    <p class="mt-6 text-sm text-(--ev-error)" role="alert">Non siamo riusciti a caricare la tua pagina. Riprova tra poco.</p>
+    } @else if (leaving.busy()) {
+    <!-- Left or deleted: it's no longer theirs, and the menu is next once the session says so. -->
+    <p class="mt-6 text-sm text-(--ev-soft)" role="status">Un momento…</p>
+    } @else {
+    <h1 class="mt-4 font-display text-[1.625rem] font-extrabold">Nessuna pagina</h1>
+    <p class="mt-2 text-[0.9375rem] text-(--ev-soft)">Non gestisci nessuna pagina da organizzatore.</p>
+    }
+  </div>
+</main>

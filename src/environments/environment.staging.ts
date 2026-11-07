@@ -19,6 +19,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   adminHomePage: true,
   createUnclaimedOrganizerPage: true,
   organizerRequestPage: true,
+  accountPage: true,
   verifiedOrganizersPage: true,
   updateOrganizerPage: true,
   createEventPage: true,

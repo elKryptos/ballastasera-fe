@@ -12,6 +12,7 @@ import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { AVAILABLE_LANGS } from '../../core/config/i18n';
 import { writeLangCookie } from '../../core/i18n/lang-cookie';
 import { UserRole } from '../../core/models/user.model';
+import { initialOf } from '../../core/utils/initials';
 import { SeasonService } from '../../core/services/season.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { RailTooltip } from '../directives/rail-tooltip.directive';
@@ -70,10 +71,12 @@ export class Navbar {
   protected readonly learnEnabled = computed(() =>
     this.featureFlags.isEnabled(FEATURE_FLAGS.learnToDancePage),
   );
-  /** Each row is marked only on its own tab (?tab=mi-piace for the likes). */
-  protected readonly exactTab = { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' } as const;
+  /** "Le tue serate" is one row for both its tabs (?tab=mi-piace for the likes). */
+  protected readonly anyTab = { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' } as const;
+  /** The profile card opens "Il tuo account". */
+  protected readonly accountEnabled = computed(() => this.featureFlags.isEnabled(FEATURE_FLAGS.accountPage));
 
-  protected readonly initial = computed(() => this.currentUser()?.displayName.trim().charAt(0).toUpperCase() ?? '');
+  protected readonly initial = computed(() => initialOf(this.currentUser()?.displayName));
 
   protected readonly theme = this.themeService.theme;
   /** The theme row names the theme you're in. The switch itself stays "Tema

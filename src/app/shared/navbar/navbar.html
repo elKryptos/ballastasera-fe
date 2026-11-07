@@ -110,8 +110,8 @@
     }
 
     @if (currentUser(); as user) {
-    <!-- Profile: no page yet, the chevron is already there for it. -->
-    <div class="drawer-card" [appRailTooltip]="user.displayName">
+    <!-- Profile: opens "Il tuo account" once its page is on (accountPage). -->
+    <ng-template #profileCard>
       @if (user.avatarUrl) {
       <img [src]="user.avatarUrl" alt="" referrerpolicy="no-referrer" class="drawer-avatar" />
       } @else {
@@ -144,7 +144,17 @@
         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M9 6l6 6-6 6" />
       </svg>
+    </ng-template>
+    @if (accountEnabled()) {
+    <a class="drawer-card text-inherit no-underline transition-transform active:scale-[0.98]" routerLink="/il-tuo-account"
+      routerLinkActive ariaCurrentWhenActive="page" (click)="closeDrawer()" [appRailTooltip]="user.displayName">
+      <ng-container [ngTemplateOutlet]="profileCard" />
+    </a>
+    } @else {
+    <div class="drawer-card" [appRailTooltip]="user.displayName">
+      <ng-container [ngTemplateOutlet]="profileCard" />
     </div>
+    }
     } @else {
     <button type="button" (click)="closeDrawer(); openAuth()" appRailTooltip="Accedi"
       class="drawer-card w-full cursor-pointer text-left transition-transform active:scale-[0.98]">
@@ -272,31 +282,19 @@
         <ng-container [ngTemplateOutlet]="learnItem" />
       </div>
       }
-      <ng-template #goingItem>
-        <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M8 12.5l2.5 2.5L16 9.5" />
-        </svg>
-        <span class="grow">Parteciperò</span>
-      </ng-template>
-      <ng-template #likedItem>
+      <!-- One row for "Le tue serate": its page has both tabs, Parteciperò and Mi piace. -->
+      <a class="drawer-item" routerLink="/le-tue-serate" routerLinkActive [routerLinkActiveOptions]="anyTab"
+        ariaCurrentWhenActive="page" (click)="closeDrawer()" appRailTooltip="Le tue serate">
         <svg viewBox="0 0 24 24" class="text-rose" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="16" rx="3" />
+          <path d="M3 10h18M8 3v4M16 3v4" />
+          <path d="M12 18.4s-3.2-1.9-3.2-4.2a1.7 1.7 0 0 1 3.2-.8 1.7 1.7 0 0 1 3.2.8c0 2.3-3.2 4.2-3.2 4.2z" />
         </svg>
-        <span class="grow">Serate che ti piacciono</span>
-      </ng-template>
-      <!-- "Le tue serate"'s two tabs. -->
-      <a class="drawer-item" routerLink="/le-tue-serate" routerLinkActive [routerLinkActiveOptions]="exactTab"
-        ariaCurrentWhenActive="page" (click)="closeDrawer()" appRailTooltip="Parteciperò">
-        <ng-container [ngTemplateOutlet]="goingItem" />
-        <span class="drawer-chip drawer-chip-new">Nuovo</span>
-      </a>
-      <a class="drawer-item" routerLink="/le-tue-serate" [queryParams]="{ tab: 'mi-piace' }" routerLinkActive
-        [routerLinkActiveOptions]="exactTab" ariaCurrentWhenActive="page" (click)="closeDrawer()"
-        appRailTooltip="Serate che ti piacciono">
-        <ng-container [ngTemplateOutlet]="likedItem" />
+        <span class="flex min-w-0 grow flex-col leading-tight">
+          <span>Le tue serate</span>
+          <span class="truncate text-xs font-medium text-(--drawer-soft)">Parteciperò · Mi piacciono</span>
+        </span>
         <span class="drawer-chip drawer-chip-new">Nuovo</span>
       </a>
       <!-- Amici: no page yet, "Presto" says so. -->
@@ -339,26 +337,16 @@
           <span class="grow">Pubblica una serata</span>
           <span class="drawer-chip drawer-chip-new">Nuovo</span>
         </div>
-        <!-- Organizers only: their own nights and public page. Neither has a
-            page yet. -->
-        <ng-container *appRole="'ORGANIZER'">
-          <div class="drawer-item" appRailTooltip="Le mie serate">
-            <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" aria-hidden="true">
-              <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
-            </svg>
-            <span class="grow">Le mie serate</span>
-          </div>
-          <div class="drawer-item" appRailTooltip="Profilo organizzatore">
-            <svg viewBox="0 0 24 24" class="text-(--drawer-sky)" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="5" width="18" height="14" rx="3" />
-              <circle cx="9" cy="11" r="2" />
-              <path d="M6.5 16c.5-1.5 1.5-2.2 2.5-2.2s2 .7 2.5 2.2M14 10h4M14 14h3" />
-            </svg>
-            <span class="grow">Profilo organizzatore</span>
-          </div>
-        </ng-container>
+        <!-- Organizers only: the nights they published, no page yet. Not "Le
+            mie serate", too close to "Le tue serate" above. Their own page is
+            reached from the profile card, through "Il tuo account". -->
+        <div *appRole="'ORGANIZER'" class="drawer-item" appRailTooltip="Serate pubblicate">
+          <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" aria-hidden="true">
+            <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+          </svg>
+          <span class="grow">Serate pubblicate</span>
+        </div>
         <a *appRole="'ADMIN'" class="drawer-item" routerLink="/admin" routerLinkActive ariaCurrentWhenActive="page"
           (click)="closeDrawer()" appRailTooltip="Pannello admin">
           <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"

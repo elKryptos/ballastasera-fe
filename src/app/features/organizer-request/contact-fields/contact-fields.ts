@@ -1,21 +1,19 @@
 import { Component, inject, input } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { OrganizerRequestFormStore } from '../organizer-request-form.store';
+import { InstagramInput } from '../../../shared/instagram-input/instagram-input';
 import { RequestField } from '../../../shared/request-field/request-field';
 
 /** Instagram and email: how both kinds of request prove they're theirs. */
 @Component({
   selector: 'app-request-contact-fields',
-  imports: [ReactiveFormsModule, RequestField],
+  imports: [ReactiveFormsModule, InstagramInput, RequestField],
   host: { class: 'flex flex-col gap-4.5' },
   template: `
     <ng-container [formGroup]="store.contact">
       <app-request-field label="Instagram" fieldId="request-instagram" [control]="store.contact.controls.instagram"
         [hint]="instagramHint()" error="Inserisci il nome del profilo Instagram, senza spazi.">
-        <div class="request-input request-input-group">
-          <span class="text-muted" aria-hidden="true">&#64;</span>
-          <input id="request-instagram" type="text" formControlName="instagram" autocomplete="off" autocapitalize="none" />
-        </div>
+        <app-instagram-input fieldId="request-instagram" [control]="store.contact.controls.instagram" />
       </app-request-field>
 
       <app-request-field label="Email di contatto" fieldId="request-email" [control]="store.contact.controls.contactEmail"

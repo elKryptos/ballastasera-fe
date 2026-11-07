@@ -25,6 +25,9 @@ export const FEATURE_FLAGS = {
   createUnclaimedOrganizerPage: 'createUnclaimedOrganizerPage',
   /** /diventa-organizzatore routes: a user asks to become an organizer (also gated on the USER role). */
   organizerRequestPage: 'organizerRequestPage',
+  /** /il-tuo-account route, opened from the menu's profile card: name and email from Google, Instagram
+   * and "Profilo visibile", and the way to the organizer's page. */
+  accountPage: 'accountPage',
   /** /admin/verified-organizers route (also gated on the ADMIN role). */
   verifiedOrganizersPage: 'verifiedOrganizersPage',
   /** /admin/update-organizer route (also gated on the ADMIN role). */

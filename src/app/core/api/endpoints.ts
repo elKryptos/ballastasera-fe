@@ -99,6 +99,8 @@ export const endpoints = {
     venues: (id: string) => `/rest/organizers/${id}/venues`,
     eventSeries: (id: string) => `/rest/organizers/${id}/event-series`,
     delete: (id: string) => `/rest/organizers/${id}`,
+    logo: (id: string) => `/rest/organizers/${id}/logo`,
+    release: (id: string) => `/rest/organizers/${id}/release`,
   },
 
 }

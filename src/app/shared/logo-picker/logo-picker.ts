@@ -22,7 +22,10 @@ import { lucideCamera } from '@ng-icons/lucide';
       </span>
       <span>
         <span class="block text-[0.9375rem] font-extrabold">
-          {{ label() }} <span class="font-medium text-muted">· facoltativo</span>
+          {{ label() }}
+          @if (optional()) {
+          <span class="font-medium text-muted">· facoltativo</span>
+          }
         </span>
         <span class="mt-0.5 block text-[0.8125rem] leading-snug text-muted">{{ hint() }}</span>
       </span>
@@ -33,6 +36,8 @@ export class LogoPicker {
   readonly previewUrl = input<string | null>(null);
   readonly label = input('Carica il logo');
   readonly hint = input('Quadrato, PNG o JPG.');
+  /** A request's logo is optional; changing the one a page has isn't a field to skip. */
+  readonly optional = input(true);
   readonly fileSelected = output<File>();
 
   protected onFileChange(event: Event): void {

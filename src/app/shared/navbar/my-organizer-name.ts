@@ -1,6 +1,6 @@
 import { Signal, computed, inject } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { catchError, filter, of, switchMap } from 'rxjs';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
@@ -8,9 +8,10 @@ import { OrganizersService } from '../../core/services/organizers.service';
 
 /**
  * The name of the page the signed-in organizer owns, for the menu's profile
- * card. Follows the role, so it shows the moment someone's approved. Null for
- * anyone else, and if it doesn't load: the card shows the email instead. Call
- * from an injection context.
+ * card. Follows the role, so it shows the moment someone's approved, and
+ * OrganizersService.myOrganizer, so a new name shows the moment it's saved.
+ * Null for anyone else, and if it doesn't load: the card shows the email
+ * instead. Call from an injection context.
  */
 export function injectMyOrganizerName(): Signal<string | null> {
   const auth = inject(AuthService);
@@ -19,17 +20,13 @@ export function injectMyOrganizerName(): Signal<string | null> {
 
   const isOrganizer = computed(() => enabled && auth.currentUser()?.role === 'ORGANIZER');
 
-  return toSignal(
-    toObservable(isOrganizer).pipe(
-      switchMap((organizer) =>
-        !organizer
-          ? of(null)
-          : organizers.getMyOrganizers().pipe(
-              map((owned) => owned[0]?.name ?? null),
-              catchError(() => of(null)),
-            ),
-      ),
-    ),
-    { initialValue: null },
-  );
+  toObservable(isOrganizer)
+    .pipe(
+      filter(Boolean),
+      switchMap(() => organizers.ensureMine().pipe(catchError(() => of(null)))),
+      takeUntilDestroyed(),
+    )
+    .subscribe();
+
+  return computed(() => (isOrganizer() ? (organizers.myOrganizer()?.name ?? null) : null));
 }

@@ -4,12 +4,12 @@
     rail keeps just the icon, with a dot in the status's colour. -->
 @if (ready()) {
 @if (status(); as status) {
-<div class="drawer-promo {{ status.tone }}" [appRailTooltip]="status.title">
+<div class="drawer-promo drawer-promo-{{ status.tone }}" [appRailTooltip]="status.title">
   <div class="flex items-start gap-3">
     <span class="drawer-promo-icon relative">
       <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        @if (status.tone === 'drawer-promo-pending') {
+        @if (status.tone === 'pending') {
         <circle cx="12" cy="12" r="9" />
         <path d="M12 7v5l3 2" />
         } @else {

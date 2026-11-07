@@ -86,6 +86,21 @@ export const routes: Routes = [
       },
 
       {
+        // Opened from the menu's profile card: every role, since a role only exists with a session.
+        path: 'il-tuo-account',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.accountPage), roleGuard('USER', 'ORGANIZER', 'ADMIN')],
+        loadComponent: () => import('./features/account/account').then((m) => m.Account),
+      },
+
+      {
+        // The owner's page: an admin may own one too (the page says so when there's none).
+        path: 'profilo-organizzatore',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.organizerRequestPage), roleGuard('ORGANIZER', 'ADMIN')],
+        loadComponent: () =>
+          import('./features/organizer-profile/organizer-profile').then((m) => m.OrganizerProfile),
+      },
+
+      {
         path: 'admin',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
         loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),

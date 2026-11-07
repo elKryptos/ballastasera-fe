@@ -1,6 +1,6 @@
 import { Signal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, map, of, tap, throwError } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { OrganizersService } from '../../core/services/organizers.service';
@@ -8,6 +8,8 @@ import { injectMyOrganizerName } from './my-organizer-name';
 
 describe('injectMyOrganizerName', () => {
   const currentUser = signal<{ role: string } | null>(null);
+  /** OrganizersService.myOrganizer: what ensureMine() answered, and what's saved since. */
+  const myOrganizer = signal<{ name: string } | null>(null);
   let answer: () => Observable<{ name: string }[]>;
   let asks: number;
 
@@ -19,9 +21,13 @@ describe('injectMyOrganizerName', () => {
         {
           provide: OrganizersService,
           useValue: {
-            getMyOrganizers: () => {
+            myOrganizer,
+            ensureMine: () => {
               asks++;
-              return answer();
+              return answer().pipe(
+                map((owned) => owned[0] ?? null),
+                tap((organizer) => myOrganizer.set(organizer)),
+              );
             },
           },
         },
@@ -34,8 +40,16 @@ describe('injectMyOrganizerName', () => {
 
   beforeEach(() => {
     currentUser.set({ role: 'ORGANIZER' });
+    myOrganizer.set(null);
     answer = () => of([{ name: 'Salsa Loca Milano' }]);
     asks = 0;
+  });
+
+  it('shows a new name the moment it is saved', async () => {
+    const name = await start();
+    myOrganizer.set({ name: 'Salsa Loca Isola' });
+    expect(name()).toBe('Salsa Loca Isola');
+    expect(asks).toBe(1);
   });
 
   it('gives an organizer the name of their page', async () => {

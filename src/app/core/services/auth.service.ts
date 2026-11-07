@@ -3,7 +3,7 @@ import { PLATFORM_ID, Service, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, catchError, of, shareReplay, tap, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { UserDto } from '../models/user.model';
+import { UserDto, UserUpdateDto } from '../models/user.model';
 import { TokenStorageService } from './token-storage.service';
 import { endpoints } from '../api/endpoints';
 import { Router } from '@angular/router';
@@ -91,6 +91,17 @@ export class AuthService {
    * for, so a revoked token never opens a guarded page even for a moment. */
   sessionChecked(): Observable<UserDto | null> {
     return this.sessionCheck ?? of(this.currentUserSignal());
+  }
+
+  /** Instagram and "Profilo visibile", from the account page. The answer is the
+   * whole user again: it replaces the one in the session and in storage. */
+  updateMe(body: UserUpdateDto): Observable<UserDto> {
+    return this.http.patch<UserDto>(`${environment.apiUrl}${endpoints.auth.updateMe}`, body).pipe(
+      tap((user) => {
+        this.currentUserSignal.set(user);
+        this.tokenStorage.setUser(user);
+      }),
+    );
   }
 
   logout() {

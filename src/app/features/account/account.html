@@ -1,0 +1,141 @@
+<!-- From the Claude Design canvas "Diventa organizzatore": "Il tuo account" (an
+    organizer) and "Il tuo account · utente". -->
+<main appSidebarPush class="pt-(--header-h) md:pt-0">
+  @if (user(); as user) {
+  <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-6 pb-10">
+    <h1 class="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Il tuo account</h1>
+
+    <div class="request-card mt-5 flex items-center gap-3.5 p-4">
+      @if (user.avatarUrl) {
+      <img [src]="user.avatarUrl" alt="" referrerpolicy="no-referrer" class="size-16 shrink-0 rounded-full object-cover" />
+      } @else {
+      <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-rose font-display text-[1.625rem] font-extrabold text-(--ev-on-rose)" aria-hidden="true">{{ initial() }}</span>
+      }
+      <div class="min-w-0">
+        <p class="truncate text-[1.1875rem] font-extrabold">{{ user.displayName }}</p>
+        <p class="truncate text-sm text-(--ev-soft)">{{ user.email }}</p>
+        <p class="mt-1 flex items-center gap-1.5 text-xs text-muted">
+          <svg viewBox="0 0 24 24" class="size-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+          </svg>
+          Nome, foto ed email arrivano da Google
+        </p>
+      </div>
+    </div>
+
+    <h2 class="mt-7 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">I tuoi dati</h2>
+    <form [formGroup]="form" (ngSubmit)="save()" class="request-card mt-2.5 flex flex-col gap-4 p-4">
+      <app-request-field label="Instagram" fieldId="account-instagram" [control]="form.controls.instagram" [optional]="true"
+        error="Inserisci il nome del profilo Instagram, senza spazi.">
+        <app-instagram-input fieldId="account-instagram" [control]="form.controls.instagram" />
+      </app-request-field>
+
+      <hr class="border-(--ev-edge)" />
+
+      <div class="flex items-start gap-3">
+        <div class="min-w-0 grow">
+          <p id="account-public-label" class="text-[0.9375rem] font-bold">Profilo visibile</p>
+          <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">
+            @if (form.controls.showProfilePublic.value) {
+            Chi apre una serata ti vede tra chi partecipa.
+            } @else {
+            Partecipi in incognito: gli altri non vedono il tuo nome.
+            }
+          </p>
+        </div>
+        <button type="button" role="switch" aria-labelledby="account-public-label"
+          [attr.aria-checked]="form.controls.showProfilePublic.value" (click)="togglePublic()"
+          class="group flex h-11 w-13 shrink-0 cursor-pointer items-center justify-center">
+          <span aria-hidden="true"
+            class="flex h-7.5 w-13 rounded-full bg-(--ev-edge) p-0.75 transition-colors duration-200 group-aria-checked:bg-rose">
+            <span class="size-6 rounded-full bg-white shadow-sm transition-transform duration-200 group-aria-checked:translate-x-5.5"></span>
+          </span>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3">
+        @if (saving.saved()) {
+        <p class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)" role="status">Salvato</p>
+        }
+        @if (saving.error(); as message) {
+        <p class="text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+        }
+        <button type="submit" [disabled]="saving.busy() || form.pristine"
+          class="h-11 cursor-pointer rounded-[0.875rem] bg-rose px-5 text-sm font-extrabold text-(--ev-on-rose) disabled:cursor-default disabled:opacity-50">
+          {{ saving.busy() ? 'Salvataggio…' : 'Salva' }}
+        </button>
+      </div>
+    </form>
+
+    @if (organizerEnabled) {
+    @if (organizer(); as organizer) {
+    <h2 class="mt-7 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">La tua pagina da organizzatore</h2>
+    <a routerLink="/profilo-organizzatore"
+      class="mt-2.5 flex items-center gap-3.5 rounded-[1.125rem] border border-(--ev-zone-on-text)/40 bg-(--ev-zone-on-bg) p-3.5 text-(--ev-text) no-underline">
+      <app-organizer-avatar class="size-13 rounded-full font-display text-[1.1875rem]" [name]="organizer.name" [logoUrl]="organizer.logoUrl" />
+      <span class="flex min-w-0 grow flex-col gap-0.5">
+        <span class="truncate text-base font-extrabold">{{ organizer.name }}</span>
+        <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ organizerType() }}</span>
+        <span class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)">Modifica la pagina</span>
+      </span>
+      <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-(--ev-zone-on-text)" fill="none" stroke="currentColor"
+        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" />
+      </svg>
+    </a>
+    <p class="mt-2 px-0.5 text-[0.8125rem] leading-snug text-muted">Logo, descrizione e contatti che vedono i ballerini nelle tue serate.</p>
+    } @else if (isUser()) {
+    <h2 class="mt-7 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">Organizza</h2>
+    @if (requestStatus(); as status) {
+    <div class="request-card mt-2.5 flex flex-col gap-3 p-3.5">
+      <div>
+        <p class="text-[0.9375rem] font-extrabold" [class]="status.tone === 'pending' ? 'text-amber' : 'text-(--ev-error)'">{{ status.title }}</p>
+        <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--ev-soft)">{{ status.text }}</p>
+      </div>
+      @if (status.reason || status.reasonMessage) {
+      <p class="rounded-xl bg-(--ev-raised) px-3 py-2.5 text-[0.8125rem] leading-snug text-(--ev-soft)">
+        @if (status.reason; as reason) {
+        <b class="block text-(--ev-text)">Motivo: {{ reason }}</b>
+        }
+        {{ status.reasonMessage }}
+      </p>
+      }
+      <a [routerLink]="status.action.url" [queryParams]="status.action.queryParams"
+        class="flex h-11 items-center justify-center rounded-[0.875rem] text-sm font-extrabold no-underline"
+        [class]="status.action.primary ? 'bg-rose text-(--ev-on-rose)' : 'border border-(--ev-edge) text-(--ev-text)'">
+        {{ status.action.label }}
+      </a>
+    </div>
+    } @else {
+    <div class="mt-2.5 flex flex-col gap-3 rounded-[1.125rem] border border-(--ev-zone-on-text)/40 bg-(--ev-zone-on-bg) p-3.5">
+      <div>
+        <p class="text-[0.9375rem] font-extrabold">Organizzi serate?</p>
+        <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--ev-soft)">
+          Crea la tua pagina o rivendica quella che esiste già: pubblichi le serate e ti trovano sulla mappa.
+        </p>
+      </div>
+      <a [routerLink]="requestUrl" class="flex h-11 items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-(--ev-on-rose) no-underline">
+        Diventa organizzatore
+        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </a>
+    </div>
+    }
+    }
+    }
+
+    <button type="button" (click)="logout()"
+      class="mt-8 flex h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-error)/45 text-[0.9375rem] font-extrabold text-(--ev-error)">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />
+      </svg>
+      Esci
+    </button>
+  </div>
+  }
+</main>

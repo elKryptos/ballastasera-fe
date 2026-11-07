@@ -34,6 +34,10 @@
         </span>
         @if (step.done) {
         <span class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)">Fatto</span>
+        } @else if (step.link; as link) {
+        <a [routerLink]="link" class="flex h-11 items-center px-1 text-[0.8125rem] font-extrabold text-rose no-underline">
+          Vai<span class="sr-only">: {{ step.title }}</span>
+        </a>
         } @else {
         <span class="rounded-lg bg-(--ev-raised) px-2 py-0.5 text-[0.6875rem] font-bold text-(--ev-soft)">Presto</span>
         }

@@ -3,50 +3,11 @@ import { Component, computed, effect, inject, output, signal, untracked } from '
 import { RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
 import { FEATURE_FLAGS } from '../../../core/config/feature-flags';
-import { REJECT_REASON_LABELS } from '../../../core/config/organizer-types';
 import { OrganizerRequestDto } from '../../../core/models/organizer-request.model';
 import { FeatureFlagService } from '../../../core/services/feature-flag.service';
 import { OrganizerRequestsService } from '../../../core/services/organizer-requests.service';
-import { requestDayLabel } from '../../../core/utils/request-dates';
+import { REQUEST_URL, requestStatusOf } from '../../../core/utils/organizer-request-status';
 import { RailTooltip } from '../../directives/rail-tooltip.directive';
-
-const REQUEST_URL = '/diventa-organizzatore';
-
-/** What the card says about a request that's in review or was turned down. */
-interface RequestStatus {
-  tone: 'drawer-promo-pending' | 'drawer-promo-rejected';
-  title: string;
-  text: string;
-  /** Why it was turned down. */
-  reason?: string;
-  reasonMessage?: string | null;
-  action: { label: string; url: string; queryParams?: Record<string, string>; primary: boolean };
-  /** The three steps of the request, how many are done: in review only. */
-  progress?: boolean[];
-}
-
-function statusOf(request: OrganizerRequestDto | null): RequestStatus | null {
-  if (request?.status === 'PENDING') {
-    return {
-      tone: 'drawer-promo-pending',
-      title: 'Richiesta in revisione',
-      text: `${request.organizerName} · inviata ${requestDayLabel(request.submittedAt)}. Ti avvisiamo appena è approvata.`,
-      progress: [true, true, false],
-      action: { label: 'Vedi la richiesta', url: `${REQUEST_URL}/richiesta-inviata`, primary: false },
-    };
-  }
-  if (request?.status === 'REJECTED') {
-    return {
-      tone: 'drawer-promo-rejected',
-      title: 'Richiesta non approvata',
-      text: request.organizerName,
-      reason: request.rejectionReason ? REJECT_REASON_LABELS[request.rejectionReason] : undefined,
-      reasonMessage: request.rejectionMessage,
-      action: { label: 'Modifica e reinvia', url: `${REQUEST_URL}/chi-sei`, queryParams: { da: request.id }, primary: true },
-    };
-  }
-  return null;
-}
 
 /** The admin deleted the page a request was asking for: the request was
  * cancelled with a message, and no email tells the user. */
@@ -76,7 +37,7 @@ export class OrganizerMenuCard {
 
   protected readonly requestUrl = REQUEST_URL;
   protected readonly enabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.organizerRequestPage);
-  protected readonly status = computed(() => statusOf(this.requests.myRequest()));
+  protected readonly status = computed(() => requestStatusOf(this.requests.myRequest()));
   /** Told once: it's acknowledged as soon as it shows, and stays until the menu goes. */
   protected readonly notice = signal<string | null>(null);
 

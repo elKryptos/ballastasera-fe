@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { CanActivateFn, Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
-import { catchError, map, of } from 'rxjs';
+import { catchError, forkJoin, map, of } from 'rxjs';
 import { OrganizerRequestDto } from '../../core/models/organizer-request.model';
 import { OrganizerRequestsService } from '../../core/services/organizer-requests.service';
 import { OrganizersService } from '../../core/services/organizers.service';
@@ -28,6 +28,8 @@ interface FirstStep {
   title: string;
   text?: string;
   done?: boolean;
+  /** Where it's done, once that page exists. */
+  link?: string;
 }
 
 /**
@@ -51,7 +53,7 @@ export class OrganizerWelcome {
   private readonly page = toSignal(this.loadPage(), { initialValue: null });
 
   protected readonly name = computed(() => this.request()?.organizerName ?? '');
-  protected readonly logoUrl = computed(() => this.page()?.detail.logoUrl ?? this.request()?.logoUrl ?? null);
+  protected readonly logoUrl = computed(() => this.page()?.detail?.logoUrl ?? this.request()?.logoUrl ?? null);
   private readonly venue = computed(() => this.page()?.venues[0] ?? null);
 
   protected readonly lead = computed(() => {
@@ -69,7 +71,9 @@ export class OrganizerWelcome {
       { title: 'Pubblica la prima serata', text: venue ? 'Data, stili e flyer: il luogo è già il tuo locale' : 'Data, luogo, stili e flyer' },
       { title: 'Crea una serata ricorrente', text: 'Per corsi e social di ogni settimana' },
       // Only once it's known there's no logo: it doesn't flash at someone who has one.
-      ...(page && !this.logoUrl() ? [{ title: 'Completa il profilo', text: 'Manca ancora il logo' }] : []),
+      ...(page && !this.logoUrl()
+        ? [{ title: 'Completa il profilo', text: 'Manca ancora il logo', link: '/profilo-organizzatore' }]
+        : []),
     ];
   });
 
@@ -81,11 +85,13 @@ export class OrganizerWelcome {
     });
   }
 
+  /** The page is the one the menu already keeps (OrganizersService.myOrganizer): asked for only if it
+   * isn't yet, and at most once with the menu's. Its venues are asked for here. */
   private loadPage() {
-    const request = this.requests.myRequest();
-    if (!request?.organizerId || !request.organizerSlug) return of(null);
-    return this.organizers
-      .getWithVenues({ id: request.organizerId, slug: request.organizerSlug })
-      .pipe(catchError(() => of(null)));
+    const organizerId = this.requests.myRequest()?.organizerId;
+    if (!organizerId) return of(null);
+    return forkJoin({ detail: this.organizers.ensureMine(), venues: this.organizers.getVenues(organizerId) }).pipe(
+      catchError(() => of(null)),
+    );
   }
 }

@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, GuardResult, Router, RouterStateSnapshot, UrlTree, provideRouter } from '@angular/router';
-import { Observable, firstValueFrom, of, throwError } from 'rxjs';
+import { Observable, firstValueFrom, map, of, throwError } from 'rxjs';
 import { OrganizerRequestDto } from '../../core/models/organizer-request.model';
 import { OrganizerRequestsService } from '../../core/services/organizer-requests.service';
 import { OrganizersService } from '../../core/services/organizers.service';
@@ -21,7 +21,8 @@ const VENUE = { id: 'v1', name: 'Sala', address: 'Via Borsieri 12', cityName: 'M
 describe('OrganizerWelcome', () => {
   let fixture: ComponentFixture<OrganizerWelcome>;
   let acknowledged: string[];
-  let page: () => Observable<unknown>;
+  /** The page and its venues, as OrganizersService answers them: an error fails both. */
+  let page: () => Observable<{ detail: { logoUrl: string | null }; venues: (typeof VENUE)[] }>;
   const myRequest = signal<OrganizerRequestDto | null>(REQUEST);
 
   const text = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
@@ -44,7 +45,13 @@ describe('OrganizerWelcome', () => {
             },
           },
         },
-        { provide: OrganizersService, useValue: { getWithVenues: () => page() } },
+        {
+          provide: OrganizersService,
+          useValue: {
+            ensureMine: () => page().pipe(map((answer) => answer.detail)),
+            getVenues: () => page().pipe(map((answer) => answer.venues)),
+          },
+        },
       ],
     });
   });

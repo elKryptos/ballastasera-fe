@@ -1,0 +1,77 @@
+<!-- From the Claude Design canvas "Diventa organizzatore", row "3 · Gestire le serate": SerataModifica. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <!-- On phones the canvas's column; from @5xl up as wide as a venue's page (max-w-300, px-8, pt-6). -->
+  <div class="mx-auto flex w-full max-w-300 flex-col px-4 pt-1 pb-10 @5xl:px-8 @5xl:pt-6">
+    <a [routerLink]="context.basePath"
+      class="-ml-1 flex h-11 items-center gap-1 self-start text-sm font-semibold text-lead no-underline">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      {{ context.listLabel }}
+    </a>
+
+    @if (!loaded()) {
+    <p class="mt-6 text-sm text-lead" role="status">Carico la serata…</p>
+    } @else if (event(); as event) {
+    <div class="mt-2 flex items-end gap-3.5">
+      <app-flyer-cover [flyerUrl]="flyerShown()" [title]="event.title" [disabled]="flyerUpload.busy()"
+        (fileSelected)="changeFlyer($event)" />
+      <div class="flex min-w-0 flex-col gap-1.5">
+        <app-event-status-badge class="self-start" size="md" [status]="event.status" [ended]="ended()" />
+        <h1 class="font-display text-[1.625rem] leading-[1.1] font-extrabold tracking-[-0.02em]">{{ event.title }}</h1>
+        <span class="text-sm text-lead">{{ when() }}</span>
+      </div>
+    </div>
+
+    @if (flyerUpload.busy()) {
+    <p class="mt-3 text-[0.8125rem] text-lead" role="status">Carico il flyer…</p>
+    } @else if (flyerUpload.error(); as message) {
+    <p class="mt-3 text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+    } @else if (flyerSkipped()) {
+    <p class="mt-3 text-[0.8125rem] text-(--ev-error)" role="alert">
+      La serata è salvata, ma il flyer non è stato caricato: riprova dalla fotocamera sul flyer, con un JPG o un PNG più
+      leggero.
+    </p>
+    } @else if (flyerProcessing()) {
+    <p class="mt-3 text-[0.8125rem] text-lead" role="status">Il flyer è in elaborazione: tra poco lo vedono tutti.</p>
+    } @else if (flyerConversionFailed()) {
+    <p class="mt-3 text-[0.8125rem] text-(--ev-error)" role="alert">
+      Non siamo riusciti a preparare il flyer: riprova con un'altra immagine.
+    </p>
+    }
+
+    <div class="mt-4.5 grid grid-cols-3 gap-2">
+      <div class="rounded-[0.875rem] border border-line bg-(--ev-raised) px-3 py-2.5">
+        <div class="font-display text-[1.375rem] font-extrabold">{{ event.goingCount }}</div>
+        <div class="text-xs text-lead">ci vado</div>
+      </div>
+      <div class="rounded-[0.875rem] border border-line bg-(--ev-raised) px-3 py-2.5">
+        <div class="font-display text-[1.375rem] font-extrabold">{{ event.likesCount }}</div>
+        <div class="text-xs text-lead">like</div>
+      </div>
+      <a [routerLink]="['/evento', event.id]"
+        class="flex flex-col justify-center rounded-[0.875rem] border border-line bg-(--ev-raised) px-3 py-2.5 text-[0.8125rem] font-extrabold text-(--ev-like) no-underline">
+        Vedi la pagina ↗
+      </a>
+    </div>
+
+    <!-- Side by side from @3xl up. -->
+    <div class="@3xl:grid @3xl:grid-cols-2 @3xl:items-start @3xl:gap-6">
+      <section>
+        <h2 class="mt-6.5 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">Dettagli</h2>
+        <app-event-details-summary class="mt-2.5" [event]="event" [editUrl]="editUrl" [placeNote]="placeNote()" />
+      </section>
+      <section>
+        <h2 class="mt-7 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase @3xl:mt-6.5">Se qualcosa cambia</h2>
+        <app-event-danger-zone class="mt-2.5" [event]="event" [ended]="ended()" (cancelled)="onCancelled($event)"
+          (deleted)="onDeleted()" />
+      </section>
+    </div>
+    } @else {
+    <p class="mt-6 text-sm text-(--ev-error)" role="alert">
+      {{ loadFailed() ? 'Non siamo riusciti a caricare la serata. Riprova tra poco.' : 'Questa serata non esiste più.' }}
+    </p>
+    }
+  </div>
+</main>

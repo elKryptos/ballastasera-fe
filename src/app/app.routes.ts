@@ -101,6 +101,23 @@ export const routes: Routes = [
       },
 
       {
+        // The organizer's nights: the list, a new one, one's page and its form. An admin may own a
+        // page too. The pages are in event-management.routes.ts, shared with admin/serate.
+        path: 'serate-pubblicate',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.eventManagementPage), roleGuard('ORGANIZER', 'ADMIN')],
+        loadChildren: () =>
+          import('./features/event-management/event-management.routes').then((m) => m.ORGANIZER_EVENT_ROUTES),
+      },
+
+      {
+        // Every night, for the admin: the same pages as serate-pubblicate.
+        path: 'admin/serate',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.eventManagementPage), roleGuard('ADMIN')],
+        loadChildren: () =>
+          import('./features/event-management/event-management.routes').then((m) => m.ADMIN_EVENT_ROUTES),
+      },
+
+      {
         path: 'admin',
         canMatch: [featureFlagGuard(FEATURE_FLAGS.adminHomePage), roleGuard('ADMIN')],
         loadComponent: () => import('./features/admin/admin-home/admin-home').then((m) => m.AdminHome),

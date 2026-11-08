@@ -1,0 +1,30 @@
+<!-- SerataModifica.dc.html, "Se qualcosa cambia". -->
+@if (canCancel()) {
+<div class="flex flex-col gap-2.5 rounded-[1.125rem] border border-amber/40 bg-amber/6 p-3.5">
+  <p class="text-[0.9375rem] font-extrabold">Annulla la serata</p>
+  <p class="text-[0.8125rem] leading-[1.4] text-lead">
+    Resta visibile con la scritta «Annullata»: chi ha detto «ci vado» lo scopre aprendo la serata. Consigliato se l'hai
+    già annunciata.
+  </p>
+  <button type="button" (click)="ask('cancel')"
+    class="h-11 cursor-pointer self-start rounded-[0.875rem] border border-amber/60 px-4 text-sm font-extrabold text-amber">
+    Annulla la serata
+  </button>
+</div>
+}
+
+<div class="flex flex-col gap-2.5 rounded-[1.125rem] border border-rose-lit/35 p-3.5">
+  <p class="text-[0.9375rem] font-extrabold">Elimina</p>
+  <p class="text-[0.8125rem] leading-[1.4] text-lead">La cancella del tutto, flyer compreso. Per un errore di inserimento.</p>
+  <button type="button" (click)="ask('delete')"
+    class="h-11 cursor-pointer self-start rounded-[0.875rem] border border-rose-lit/50 px-4 text-sm font-extrabold text-(--ev-like)">
+    Elimina la serata
+  </button>
+</div>
+
+<app-confirm-sheet titleId="confirm-cancel-title" title="Annullare la serata?" [text]="cancelText()"
+  confirmLabel="Sì, annulla la serata" tone="amber" [busy]="cancelling.busy()" [error]="cancelling.error()"
+  [open]="asking() === 'cancel'" (openChange)="$event || ask(null)" (confirmed)="cancel()" />
+<app-confirm-sheet titleId="confirm-delete-title" title="Eliminare la serata?" [text]="deleteText()"
+  confirmLabel="Elimina per sempre" tone="rose" [busy]="deleting.busy()" [error]="deleting.error()"
+  [open]="asking() === 'delete'" (openChange)="$event || ask(null)" (confirmed)="delete()" />

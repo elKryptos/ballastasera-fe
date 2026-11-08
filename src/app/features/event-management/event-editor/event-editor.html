@@ -1,0 +1,58 @@
+<!-- From the Claude Design canvas "Diventa organizzatore", row "3 · Gestire le serate": SerataNuova. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <!-- On phones the canvas's column; from @5xl up as wide as a venue's page (max-w-300, px-8, pt-6), the
+      blocks in two columns, in the canvas's order down the left one and then the right. -->
+  <div class="mx-auto flex w-full max-w-300 flex-col px-4 pt-1 @5xl:px-8 @5xl:pt-6">
+    <a [routerLink]="backToNight() ? [context.basePath, eventId] : context.basePath"
+      class="-ml-1 flex h-11 items-center gap-1 self-start text-sm font-semibold text-lead no-underline">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      {{ backToNight() ? 'La serata' : context.listLabel }}
+    </a>
+
+    <h1 class="mt-1 font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">
+      {{ eventId ? 'Modifica serata' : 'Nuova serata' }}
+    </h1>
+
+    @if (!loaded()) {
+    <p class="mt-6 text-sm text-lead" role="status">Un momento…</p>
+    } @else if (loadFailed()) {
+    <p class="mt-6 text-sm text-(--ev-error)" role="alert">Non siamo riusciti a caricare la serata. Riprova tra poco.</p>
+    } @else if (missing()) {
+    <p class="mt-6 text-sm text-(--ev-error)" role="alert">Questa serata non esiste più.</p>
+    } @else if (noOrganizer()) {
+    <p class="mt-4 text-[0.9375rem] text-lead">Per pubblicare una serata ti serve una pagina da organizzatore.</p>
+    } @else {
+    <p class="mt-2 text-[0.9375rem] leading-[1.45] text-lead">Cinque blocchi brevi. I campi con * sono obbligatori.</p>
+
+    <form class="mt-3.5 flex flex-col" novalidate [formGroup]="store.form" (ngSubmit)="save()">
+      <div class="flex flex-col gap-3.5 @3xl:block @3xl:columns-2 @3xl:gap-4 @3xl:*:mb-4 @3xl:*:break-inside-avoid">
+        @if (isAdmin) {
+        <app-organizer-section />
+        }
+        <app-flyer-picker [previewUrl]="flyerShown()" [disabled]="saving.busy()" (fileSelected)="pickFlyer($event)" />
+        <app-basics-section />
+        <app-schedule-section />
+        <app-place-section />
+        <app-entry-section />
+        <app-contacts-section />
+      </div>
+
+      <!-- The canvas's bottom bar, over a fade: the button always in reach. -->
+      <div class="sticky bottom-0 z-10 -mx-4 flex flex-col gap-2 bg-linear-to-t from-ground from-76% to-transparent px-4 pt-7 pb-6 @3xl:items-end @5xl:-mx-8 @5xl:px-8">
+        @if (saving.error(); as message) {
+        <p class="text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+        } @else if (invalidOnSave()) {
+        <p class="text-[0.8125rem] text-(--ev-error)" role="alert">Manca qualcosa: controlla i campi in rosso.</p>
+        }
+        <button type="submit" [disabled]="saving.busy()"
+          class="h-13 cursor-pointer rounded-2xl bg-rose text-base font-extrabold text-(--ev-on-rose) disabled:cursor-default disabled:opacity-50 @3xl:w-80">
+          {{ saving.busy() ? 'Salvataggio…' : eventId ? 'Salva le modifiche' : 'Pubblica serata' }}
+        </button>
+      </div>
+    </form>
+    }
+  </div>
+</main>

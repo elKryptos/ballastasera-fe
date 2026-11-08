@@ -12,6 +12,16 @@ const KM_PER_DEGREE = (Math.PI * EARTH_RADIUS_KM) / 180;
 
 const toRad = (deg: number): number => (deg * Math.PI) / 180;
 
+/** A point as Google Maps copies it ("45.48812, 9.18923"), or with a space or a semicolon between
+ * the two. Null when it isn't a point on Earth. */
+export function parseCoordinates(text: string): GeoPoint | null {
+  const match = text.trim().match(/^(-?\d{1,3}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)$/);
+  if (!match) return null;
+  const lat = Number(match[1]);
+  const lng = Number(match[2]);
+  return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
+}
+
 /** Straight-line (haversine) distance — what "1,2 km" on a card means. */
 export function distanceKm(a: GeoPoint, b: GeoPoint): number {
   const dLat = toRad(b.lat - a.lat);

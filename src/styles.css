@@ -598,7 +598,8 @@ venue-details, school-list), from the Claude Design canvas ("Mappa con filtri
 e bottom sheet", "Lista per giorno", "Scheda evento", "Pagina luogo – mobile"
 with its "Lista scuole" rows, "Menu rivisto") translated onto the brand tokens
 above. Global rather than in each component: they're read by components of
-all three, the dialog included. By day the brand tokens switch to the
+all three, the dialog included. The nights' management (features/event-management:
+its list, a night's page and its form) is on it too. By day the brand tokens switch to the
 basemap's paper palette, same values as the daytime sidebar's, and the few
 colours that don't follow from them get their own. */
 app-menu,
@@ -612,7 +613,10 @@ app-organizer-request,
 app-organizer-requests,
 app-organizer-welcome,
 app-account,
-app-organizer-profile {
+app-organizer-profile,
+app-managed-events,
+app-managed-event,
+app-event-editor {
   --ev-surface: color-mix(in srgb, var(--color-violet) 9%, var(--color-ink));
   --ev-raised: color-mix(in srgb, var(--color-violet) 17%, var(--color-ink));
   --ev-edge: color-mix(in srgb, var(--color-violet) 32%, var(--color-ink));
@@ -668,7 +672,7 @@ app-organizer-profile {
   --ev-invert-link: #be123c;
 }
 
-:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list, app-my-nights, app-organizer-request, app-organizer-requests, app-organizer-welcome, app-account, app-organizer-profile) {
+:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list, app-my-nights, app-organizer-request, app-organizer-requests, app-organizer-welcome, app-account, app-organizer-profile, app-managed-events, app-managed-event, app-event-editor) {
   --color-ground: #fbf8f3;
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
@@ -1437,6 +1441,13 @@ dialog, etc.) render in the site's ink/rose/amber theme. */
   --sidebar-accent-foreground: var(--color-ink);
   --sidebar-border: var(--color-line);
   --sidebar-ring: var(--color-amber);
+}
+
+/* Spartan's calendar (the nights' form, "Giorno") with days big enough for a
+thumb: its own size is 1.75rem. Unlayered, so it wins over the calendar's
+[--cell-size:…] utility. */
+[data-slot='calendar'] {
+  --cell-size: 2.5rem;
 }
 
 @layer base {

@@ -1,0 +1,65 @@
+<app-editor-section title="Dove" sectionId="editor-place" [step]="3">
+  @if (chooseCity()) {
+  <div class="flex flex-col gap-1.5">
+    <label for="editor-city" class="text-[0.8125rem] font-bold text-lead">Città *</label>
+    <select id="editor-city" class="request-input" [formControl]="controls.cityId">
+      <option [ngValue]="''" disabled>Scegli la città</option>
+      @for (city of cities(); track city.id) {
+      <option [ngValue]="city.id">{{ city.name }}</option>
+      }
+    </select>
+  </div>
+  }
+
+  @if (canLeaveVenue()) {
+  <app-choice-group label="Dove" appearance="segmented" [choices]="placeChoices" [formControl]="controls.placeMode" />
+  }
+
+  @if (atVenue()) {
+  @if (store.venue(); as venue) {
+  <!-- SerataNuova.dc.html: the picked venue, edged in mint, with "Cambia". -->
+  <div class="flex items-start gap-2.5 rounded-[0.875rem] border border-mint/35 bg-(--ev-surface) p-3">
+    <svg viewBox="0 0 24 24" class="mt-0.5 size-4.5 shrink-0 text-mint" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+    <span class="min-w-0 grow text-sm leading-[1.4] text-lead">
+      <b class="text-(--ev-text)">{{ venue.name }}</b><br />{{ venue.address }}
+    </span>
+    <button type="button" class="h-9 shrink-0 cursor-pointer rounded-xl border border-bone/20 px-3 text-[0.8125rem] font-bold text-lead"
+      (click)="store.clearVenue()">
+      Cambia
+    </button>
+  </div>
+  <p class="text-[0.8125rem] leading-[1.4] text-muted">Indirizzo, città e punto sulla mappa li prendiamo dal locale.</p>
+  } @else {
+  @if (ownVenuesOf(); as organizerId) {
+  <app-own-venues [organizerId]="organizerId" [required]="store.venueBound()" />
+  }
+  @if (!store.venueBound()) {
+  @if (cityId()) {
+  <app-venue-search />
+  } @else {
+  <p class="text-[0.8125rem] text-muted">Scegli la città per cercare il locale.</p>
+  }
+  }
+  }
+  } @else {
+  <app-address-search />
+  }
+
+  @if (!canLeaveVenue() && store.scope() === 'admin') {
+  <p class="text-[0.8125rem] leading-[1.4] text-muted">Da qui la serata può solo passare a un altro locale.</p>
+  }
+
+  @if (showErrors()) {
+  @if (store.form.hasError('venueRequired')) {
+  <p class="text-[0.8125rem] text-(--ev-error)" role="alert">Scegli il locale.</p>
+  } @else if (store.form.hasError('addressRequired')) {
+  <p class="text-[0.8125rem] text-(--ev-error)" role="alert">Inserisci l'indirizzo.</p>
+  } @else if (controls.cityId.invalid) {
+  <p class="text-[0.8125rem] text-(--ev-error)" role="alert">Scegli la città.</p>
+  }
+  }
+</app-editor-section>

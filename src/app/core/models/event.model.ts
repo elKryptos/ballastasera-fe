@@ -4,6 +4,11 @@ import { VenueDetailDto } from "./venue.model";
 /** Mirrors EventType in the backend. */
 export type EventType = 'EVENT' | 'SCHOOL' | 'CLUB' | 'BAR' | 'RESTAURANT';
 export type FlyerStatus = 'NONE' | 'PROCESSING' | 'READY' | 'FAILED';
+/** Mirrors EventStatus in the backend. A night is born PUBLISHED; a CANCELLED one stays online, marked as such. */
+export type EventStatus = 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'CANCELLED';
+/** Mirrors EventManagementTab in the backend, the tabs of the nights' management lists: UPCOMING and
+ * CANCELLED hold the nights not over yet (endAt still ahead), PAST the ones over, whatever their status. */
+export type EventManagementTab = 'UPCOMING' | 'CANCELLED' | 'PAST';
 /** Mirrors java.time.DayOfWeek, used by EventSeries recurrence. */
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 
@@ -41,6 +46,7 @@ export interface EventCardDto {
    * endpoint only — empty, or missing, from the others. */
   goingAvatars?: string[];
   likesCount: number;
+  status: EventStatus;
 }
 
 export interface EventCreateDto {
@@ -98,7 +104,14 @@ export interface EventDetailDto {
   danceStyles: string[];
   likesCount: number;
   goingCount: number;
+  status: EventStatus;
 }
+
+/** Body for PATCH /events/{id} and /admin/events/{id}. Only the fields sent change: the backend
+ * skips nulls, so a field is cleared with "", never with null. The organizer can't change, nor
+ * the status (it has its own endpoint). startAt must lie ahead: send it, and endAt, only when the
+ * time changes. */
+export type EventUpdateDto = Partial<Omit<EventCreateDto, 'organizerId'>>;
 
 /** One of the people going, for "Chi ci va" on the event's page (GET
  * /events/{id}/attendees, a SpringPage of these). Shaped after UserDto:

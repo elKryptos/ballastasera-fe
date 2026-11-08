@@ -25,6 +25,13 @@ export class AdminHome {
           routerLink: '/admin/organizer-requests',
         }]
       : []),
+    ...(inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventManagementPage)
+      ? [{
+          title: 'Serate',
+          description: 'Tutte le serate: cerca, modifica, annulla o elimina, e pubblicane una nuova.',
+          routerLink: '/admin/serate',
+        }]
+      : []),
     {
       title: 'Crea venue',
       description: 'Aggiungi un locale, bar o discoteca',

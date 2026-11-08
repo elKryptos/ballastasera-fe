@@ -28,6 +28,10 @@ export const FEATURE_FLAGS = {
   /** /il-tuo-account route, opened from the menu's profile card: name and email from Google, Instagram
    * and "Profilo visibile", and the way to the organizer's page. */
   accountPage: 'accountPage',
+  /** The nights' management: /admin/serate for the admin (also gated on the ADMIN role) and
+   * /serate-pubblicate for the organizer, each with its list, its form and a night's page. Also turns
+   * the menu's "Pubblica una serata" and "Serate pubblicate" into links. */
+  eventManagementPage: 'eventManagementPage',
   /** /admin/verified-organizers route (also gated on the ADMIN role). */
   verifiedOrganizersPage: 'verifiedOrganizersPage',
   /** /admin/update-organizer route (also gated on the ADMIN role). */

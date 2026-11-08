@@ -1,0 +1,28 @@
+<app-editor-section title="La serata" sectionId="editor-basics" [step]="1">
+  <app-request-field label="Titolo *" fieldId="editor-title" [control]="controls.title"
+    error="Inserisci il titolo (massimo 150 caratteri).">
+    <input id="editor-title" type="text" [formControl]="controls.title" maxlength="150" class="request-input" />
+  </app-request-field>
+
+  <div class="flex flex-col gap-1.5">
+    <span class="text-[0.8125rem] font-bold text-lead">Che tipo di serata *</span>
+    <app-choice-group label="Che tipo di serata" appearance="grid" [choices]="typeChoices" [formControl]="controls.eventType" />
+    @if (controls.eventType.invalid && controls.eventType.touched) {
+    <p class="text-[0.8125rem] text-(--ev-error)" role="alert">Scegli il tipo di serata.</p>
+    }
+  </div>
+
+  <div class="flex flex-col gap-1.5">
+    <span class="text-[0.8125rem] font-bold text-lead">
+      Stili <span class="font-medium text-muted">· scegli tutti quelli che si ballano</span>
+    </span>
+    <app-choice-group label="Stili" appearance="chips" multiple [choices]="styleChoices()"
+      [formControl]="controls.danceStyleIds" />
+  </div>
+
+  <div class="flex flex-col gap-1.5">
+    <label for="editor-description" class="text-[0.8125rem] font-bold text-lead">Descrizione</label>
+    <textarea id="editor-description" rows="3" [formControl]="controls.description" maxlength="2000"
+      placeholder="DJ, scaletta, dress code, lezione prima della social…" class="request-input h-24!"></textarea>
+  </div>
+</app-editor-section>

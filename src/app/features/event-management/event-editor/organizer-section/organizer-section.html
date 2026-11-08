@@ -1,0 +1,44 @@
+<!-- SerataNuova.dc.html, "Chi la organizza": the picked organizer in a row with "Cambia". -->
+<app-editor-section title="Chi la organizza *" sectionId="editor-organizer" badge="Solo admin">
+  @if (organizer(); as organizer) {
+  <div class="flex items-center gap-3 rounded-[0.875rem] border border-line bg-(--ev-surface) p-2.5">
+    <app-organizer-avatar class="size-10 rounded-full bg-violet/28! font-display text-[0.9375rem] text-(--ev-going)!"
+      [name]="organizer.name" [logoUrl]="organizer.logoUrl" />
+    <span class="flex min-w-0 grow flex-col">
+      <span class="truncate text-[0.9375rem] font-bold">{{ organizer.name }}</span>
+      <span class="text-xs text-muted">{{ typeLabel() }}</span>
+    </span>
+    @if (!editing()) {
+    <button type="button" class="h-9 shrink-0 cursor-pointer rounded-xl border border-bone/20 px-3 text-[0.8125rem] font-bold text-lead"
+      (click)="change()">
+      Cambia
+    </button>
+    }
+  </div>
+  @if (venueBound()) {
+  <p class="text-[0.8125rem] leading-snug text-muted">È un club o un locale: la serata va in uno dei suoi locali.</p>
+  }
+  } @else if (editing()) {
+  <p class="text-[0.8125rem] text-muted">L'organizzatore di questa serata è stato eliminato.</p>
+  } @else {
+  <label for="editor-organizer-search" class="sr-only">Cerca l'organizzatore</label>
+  <hlm-autocomplete class="block" [formControl]="control" [itemToString]="picker.itemToString" [search]="picker.search()"
+    (searchChange)="picker.search.set($event)">
+    <input id="editor-organizer-search" brnAutocompleteInput brnAutocompleteAnchor placeholder="Cerca l'organizzatore"
+      class="request-input" (click)="openDropdown()" />
+    <ng-template hlmAutocompletePortal>
+      <hlm-autocomplete-content>
+        <div hlmAutocompleteList>
+          @for (option of picker.filtered(); track option.id) {
+          <hlm-autocomplete-item [value]="option.id">{{ option.name }}</hlm-autocomplete-item>
+          }
+          <hlm-autocomplete-empty>Nessun organizzatore trovato</hlm-autocomplete-empty>
+        </div>
+      </hlm-autocomplete-content>
+    </ng-template>
+  </hlm-autocomplete>
+  @if (control.invalid && control.touched) {
+  <p class="text-[0.8125rem] text-(--ev-error)" role="alert">Scegli chi organizza la serata.</p>
+  }
+  }
+</app-editor-section>

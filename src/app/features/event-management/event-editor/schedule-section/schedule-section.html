@@ -1,0 +1,37 @@
+<app-editor-section title="Quando" sectionId="editor-schedule" [step]="2">
+  <div class="flex flex-col gap-1.5">
+    <label for="editor-date" class="text-[0.8125rem] font-bold text-lead">Giorno *</label>
+    <app-day-picker fieldId="editor-date" [formControl]="controls.date" />
+  </div>
+
+  <div class="grid grid-cols-2 gap-2.5">
+    <div class="flex flex-col gap-1.5">
+      <label for="editor-start" class="text-[0.8125rem] font-bold text-lead">Inizia alle *</label>
+      <app-time-select fieldId="editor-start" [control]="controls.start" />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="editor-end" class="text-[0.8125rem] font-bold text-lead">Finisce alle *</label>
+      <app-time-select fieldId="editor-end" [control]="controls.end" />
+    </div>
+  </div>
+
+  @if (missing()) {
+  <p class="-mt-1 text-[0.8125rem] text-(--ev-error)" role="alert">Inserisci il giorno e gli orari.</p>
+  } @else if (schedule.hasError('startsInPast')) {
+  <p class="-mt-1 text-[0.8125rem] text-(--ev-error)" role="alert">La serata deve iniziare più avanti di adesso.</p>
+  } @else if (endNote(); as note) {
+  <p class="-mt-1 flex items-center gap-1.5 text-[0.8125rem] text-mint" role="status">
+    <svg viewBox="0 0 24 24" class="size-3.75 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+    </svg>
+    {{ note }}
+  </p>
+  }
+
+  @if (offerSeries()) {
+  <a routerLink="/admin/create-event-series" class="self-start text-[0.8125rem] font-bold text-(--ev-link)">
+    È una serata fissa ogni settimana? Crea una serie
+  </a>
+  }
+</app-editor-section>

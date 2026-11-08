@@ -328,7 +328,8 @@
     <ng-container *appRole="managerRoles">
       <div class="flex flex-col gap-0.5">
         <h2 class="drawer-label">Gestione</h2>
-        <div class="drawer-item" appRailTooltip="Pubblica una serata">
+        <!-- Links once the nights' pages are on (eventManagementPage); until then rows without a page. -->
+        <ng-template #publishRow>
           <svg viewBox="0 0 24 24" class="text-(--drawer-mint)" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" aria-hidden="true">
             <rect x="3" y="5" width="18" height="16" rx="3" />
@@ -336,17 +337,40 @@
           </svg>
           <span class="grow">Pubblica una serata</span>
           <span class="drawer-chip drawer-chip-new">Nuovo</span>
+        </ng-template>
+        @if (eventManagementEnabled()) {
+        <a class="drawer-item" [routerLink]="publishUrl()" routerLinkActive ariaCurrentWhenActive="page"
+          (click)="closeDrawer()" appRailTooltip="Pubblica una serata">
+          <ng-container *ngTemplateOutlet="publishRow" />
+        </a>
+        } @else {
+        <div class="drawer-item" appRailTooltip="Pubblica una serata">
+          <ng-container *ngTemplateOutlet="publishRow" />
         </div>
-        <!-- Organizers only: the nights they published, no page yet. Not "Le
-            mie serate", too close to "Le tue serate" above. Their own page is
-            reached from the profile card, through "Il tuo account". -->
-        <div *appRole="'ORGANIZER'" class="drawer-item" appRailTooltip="Serate pubblicate">
+        }
+        <!-- Organizers only: the nights they published. Not "Le mie serate",
+            too close to "Le tue serate" above. Their own page is reached from
+            the profile card, through "Il tuo account". -->
+        <ng-template #publishedRow>
           <svg viewBox="0 0 24 24" class="text-(--drawer-violet)" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" aria-hidden="true">
             <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
           </svg>
           <span class="grow">Serate pubblicate</span>
-        </div>
+        </ng-template>
+        <ng-container *appRole="'ORGANIZER'">
+          @if (eventManagementEnabled()) {
+          <a class="drawer-item" routerLink="/serate-pubblicate" routerLinkActive
+            [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page" (click)="closeDrawer()"
+            appRailTooltip="Serate pubblicate">
+            <ng-container *ngTemplateOutlet="publishedRow" />
+          </a>
+          } @else {
+          <div class="drawer-item" appRailTooltip="Serate pubblicate">
+            <ng-container *ngTemplateOutlet="publishedRow" />
+          </div>
+          }
+        </ng-container>
         <a *appRole="'ADMIN'" class="drawer-item" routerLink="/admin" routerLinkActive ariaCurrentWhenActive="page"
           (click)="closeDrawer()" appRailTooltip="Pannello admin">
           <svg viewBox="0 0 24 24" class="text-(--drawer-yellow)" fill="none" stroke="currentColor" stroke-width="2"

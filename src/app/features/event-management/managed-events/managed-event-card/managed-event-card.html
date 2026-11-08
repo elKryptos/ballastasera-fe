@@ -1,0 +1,39 @@
+<!-- The canvas's card (AdminSerate.dc.html, SeratePubblicate.dc.html): #2a1640 is --ev-raised, the
+    border rgba(253,242,236,.14) is line, #ead6dc lead and #c2a0ae muted. -->
+<a [routerLink]="link()"
+  class="flex gap-3 rounded-[1.125rem] border border-line bg-(--ev-raised) p-2.5 text-(--ev-text) no-underline">
+  <span aria-hidden="true"
+    class="flex h-20 w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-linear-160 from-rose/25 to-(--ev-tag-bg)">
+    <span class="text-[0.6875rem] font-extrabold tracking-[0.08em] text-(--ev-like)">{{ date().weekday }}</span>
+    <span class="font-display text-[1.625rem] leading-none font-extrabold">{{ date().day }}</span>
+    <span class="text-[0.6875rem] font-bold text-lead">{{ date().month }}</span>
+  </span>
+
+  <span class="flex min-w-0 grow flex-col gap-0.75">
+    <span class="text-[0.9375rem] leading-tight font-extrabold">{{ event().title }}</span>
+    <span class="text-[0.8125rem] text-lead">{{ time() }} · {{ place() }}</span>
+    @if (variant() === 'admin') {
+    <span class="text-xs text-muted">di {{ event().organizerName ?? 'organizzatore eliminato' }}</span>
+    <span class="mt-0.5 flex items-center gap-2">
+      <app-event-status-badge [status]="event().status" [ended]="ended()" />
+      <span class="text-xs text-muted">{{ event().goingCount }} ci vado</span>
+    </span>
+    } @else {
+    @if (series(); as series) {
+    <span class="self-start rounded-lg bg-(--ev-going-bg) px-2 py-0.5 text-[0.6875rem] font-extrabold text-(--ev-going)">{{ series }}</span>
+    }
+    @if (event().status === 'CANCELLED') {
+    <app-event-status-badge class="self-start" [status]="event().status" />
+    }
+    <span class="flex gap-3 text-xs text-muted">
+      <span>{{ event().goingCount }} ci vado</span>
+      <span>{{ event().likesCount }} like</span>
+    </span>
+    }
+  </span>
+
+  <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 self-center text-muted" fill="none" stroke="currentColor"
+    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+</a>

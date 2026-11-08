@@ -1,0 +1,35 @@
+<div class="flex flex-col gap-1.5">
+  <label for="editor-address" class="text-[0.8125rem] font-bold text-lead">Indirizzo *</label>
+  <hlm-autocomplete-search class="block" [formControl]="controls.address" [search]="address.search()"
+    (searchChange)="address.search.set($event)" [itemToString]="address.itemToString">
+    <input id="editor-address" brnAutocompleteInput brnAutocompleteAnchor placeholder="Via, numero, città"
+      class="request-input" (click)="openDropdown()" />
+    <ng-template hlmAutocompletePortal>
+      <hlm-autocomplete-content>
+        <div hlmAutocompleteList>
+          @if (address.searching()) {
+          <hlm-autocomplete-status>Ricerca in corso…</hlm-autocomplete-status>
+          } @else {
+          @for (suggestion of address.suggestions(); track suggestion.label) {
+          <hlm-autocomplete-item [value]="suggestion">{{ suggestion.label }}</hlm-autocomplete-item>
+          }
+          <hlm-autocomplete-empty>Nessun indirizzo trovato</hlm-autocomplete-empty>
+          }
+        </div>
+      </hlm-autocomplete-content>
+    </ng-template>
+  </hlm-autocomplete-search>
+</div>
+
+@if (spot(); as spot) {
+<!-- The canvas's little map, with the spot in the middle. -->
+<div class="relative h-27.5 overflow-hidden rounded-[0.875rem] border border-line bg-(--ev-surface)">
+  <app-map-preview class="absolute inset-0" [center]="spot" [zoom]="16" />
+  <span class="absolute top-1/2 left-1/2 size-3.5 -translate-1/2 rounded-full border-2 border-bone bg-rose shadow-md"
+    aria-hidden="true"></span>
+</div>
+}
+
+<p class="text-[0.8125rem] leading-[1.4] text-muted">Scegli un suggerimento: il punto sulla mappa si compila da solo.</p>
+
+<app-spot-field />

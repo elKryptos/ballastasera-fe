@@ -75,6 +75,14 @@ export class Navbar {
   protected readonly anyTab = { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' } as const;
   /** The profile card opens "Il tuo account". */
   protected readonly accountEnabled = computed(() => this.featureFlags.isEnabled(FEATURE_FLAGS.accountPage));
+  /** "Pubblica una serata" and "Serate pubblicate" lead to the nights' pages. */
+  protected readonly eventManagementEnabled = computed(() =>
+    this.featureFlags.isEnabled(FEATURE_FLAGS.eventManagementPage),
+  );
+  /** The admin publishes from their own list, where any organizer can be picked. */
+  protected readonly publishUrl = computed(() =>
+    this.currentUser()?.role === 'ADMIN' ? '/admin/serate/nuova' : '/serate-pubblicate/nuova',
+  );
 
   protected readonly initial = computed(() => initialOf(this.currentUser()?.displayName));
 

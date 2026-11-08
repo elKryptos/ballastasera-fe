@@ -1,0 +1,33 @@
+@if (appearance() === 'pills') {
+<!-- AdminSerate.dc.html: "Filtra per stato". -->
+<div role="group" aria-label="Filtra per stato" class="flex gap-1.5 overflow-x-auto ev-scroll-row">
+  @for (item of tabs(); track item.tab) {
+  @let selected = tab() === item.tab;
+  <button type="button" [attr.aria-pressed]="selected" (click)="tabChange.emit(item.tab)"
+    class="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[0.8125rem] font-bold"
+    [class]="selected ? 'border-rose bg-rose text-(--ev-on-rose)' : 'border-line bg-(--ev-raised) text-lead'">
+    {{ item.label }}
+    @let count = counts()[item.tab];
+    @if (count !== undefined) {
+    <span class="font-mono text-xs opacity-80">{{ count }}</span>
+    }
+  </button>
+  }
+</div>
+} @else {
+<!-- SeratePubblicate.dc.html: "Serate". -->
+<div role="tablist" aria-label="Serate" class="grid grid-cols-3 gap-1 rounded-[0.875rem] bg-(--ev-raised) p-1">
+  @for (item of tabs(); track item.tab) {
+  @let selected = tab() === item.tab;
+  <button type="button" role="tab" [attr.aria-selected]="selected" (click)="tabChange.emit(item.tab)"
+    class="h-10 cursor-pointer rounded-[0.625rem] text-[0.8125rem] font-bold"
+    [class]="selected ? 'bg-rose text-(--ev-on-rose)' : 'text-lead'">
+    {{ item.label }}
+    @let count = counts()[item.tab];
+    @if (count !== undefined) {
+    · {{ count }}
+    }
+  </button>
+  }
+</div>
+}

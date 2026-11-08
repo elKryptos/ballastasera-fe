@@ -15,6 +15,10 @@ export const endpoints = {
     deleteOrganizer: (id: string) => `/rest/admin/organizers/${id}`,//Used
     unclaimOrganizer: (id: string) => `/rest/admin/organizers/${id}/unclaim`,
     createEvent: '/rest/admin/events',//Used
+    events: '/rest/admin/events',
+    updateEvent: (id: string) => `/rest/admin/events/${id}`,
+    updateEventStatus: (id: string) => `/rest/admin/events/${id}/status`,
+    deleteEvent: (id: string) => `/rest/admin/events/${id}`,
     updateEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,//Used
     deleteEventFlyer: (id: string) => `/rest/admin/events/${id}/flyer`,
     createEventSeries: '/rest/admin/event-series',
@@ -93,6 +97,7 @@ export const endpoints = {
     claimable: '/rest/organizers/claimable',
     getBySlug: (slug: string) => `/rest/organizers/${slug}`,
     myOrganizers: '/rest/organizers/me',
+    myEvents: '/rest/organizers/me/events',
     update: (id: string) => `/rest/organizers/${id}`,
     list: '/rest/organizers',
     events: (id: string) => `/rest/organizers/${id}/events`,

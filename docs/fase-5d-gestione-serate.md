@@ -48,8 +48,15 @@ Estado al 09/11/2026. Rama `feature/organizer-requests`. Backend de la fase ya e
   día siguiente («Finisce sabato 15 alle 02:00»).
 - **Dove**: un local (buscador por ciudad, y los locales propios del organizador primero) u otra
   dirección (Photon, mapa pequeño, coordenadas a mano con «Il punto non è giusto?»).
-  Elegir un local rellena dirección, ciudad, contactos y tipo de serata.
-- **D12**: un CLUB o VENUE solo elige entre sus locales; si tiene uno solo, se elige solo.
+  Elegir un local rellena dirección, ciudad y contactos, y pone «Dove» en «In un locale».
+- **Tipo de serata** (`9faf27c`): en un local, el tipo es el del local (`EVENT_TYPE_OF_VENUE`) y
+  queda bloqueado, con el texto «Il tipo lo prende dal locale». En una escuela solo se puede elegir
+  «Serata / social» o «Lezione o stage» (`SCHOOL_VENUE_EVENT_TYPES`); por defecto, «Lezione».
+  Con «Altro indirizzo» o tras «Cambia», las 5 opciones vuelven a estar libres. Al editar, si el tipo
+  guardado no coincide con el del local, se corrige y se envía al guardar. Solo en el FE: el BE no
+  lo comprueba.
+- **D12**: un CLUB o VENUE solo elige entre sus locales; si tiene uno solo, se elige solo y no
+  aparece «Cambia» (con varios, sí). Los locales propios se cargan en `PlaceSection`.
 - Al editar se envía **solo lo que cambió**; un campo vaciado va como `""`. `startAt` solo se
   envía si se tocó el día o la hora de inicio (así se puede alargar una serata ya empezada).
 - Pasar de un local a otra dirección (organizador): primero el PATCH, después `removeVenue`, para
@@ -68,7 +75,7 @@ Estado al 09/11/2026. Rama `feature/organizer-requests`. Backend de la fase ya e
 
 ### Tests
 
-- 191 tests en verde. Solo falla `app.spec.ts` (transloco), que ya fallaba antes.
+- 195 tests en verde. Solo falla `app.spec.ts` (transloco), que ya fallaba antes.
 - Specs solo de lógica, junto a cada archivo: servicio, store del formulario, `event-schedule`,
   `file-preview`, `geo`, errores.
 
@@ -80,7 +87,14 @@ Estado al 09/11/2026. Rama `feature/organizer-requests`. Backend de la fase ya e
 - [ ] Dirección escrita a mano sin elegir sugerencia → el BE geocodifica, o sale el mensaje de
       «Non troviamo questo indirizzo».
 - [ ] Coordenadas pegadas a mano.
-- [ ] D12: organizador CLUB/VENUE con uno y con varios locales; sin locales.
+- [ ] D12: organizador CLUB/VENUE con uno y con varios locales; sin locales. Con uno solo no
+      aparece «Cambia»; con varios, sí.
+- [ ] CLUB/VENUE que edita una serata que el admin dejó en una dirección: elige su local, guarda y
+      la serata queda en el local.
+- [ ] Tipo de serata: elegir un tipo y después un local Club → pasa a «Club» y queda bloqueado.
+      Local escuela → solo «Serata / social» y «Lezione o stage». «Cambia» o «Altro indirizzo» →
+      las 5 opciones libres.
+- [ ] Editar una serata cuyo tipo no coincide con el de su local → al guardar se envía el del local.
 - [ ] Anular y eliminar; comprobar la página pública después.
 - [ ] Flyer: cambio desde la página, «in elaborazione» que se actualiza solo, flyer fallido.
 - [ ] Abrir por URL una serata de otro organizador (página y `modifica`) → «non esiste più».
@@ -103,6 +117,35 @@ Estado al 09/11/2026. Rama `feature/organizer-requests`. Backend de la fase ya e
    sería un `errors.code` en el BE, como en los 409.
 6. **Caché del flyer**: ventana mínima en la que Redis puede quedarse con `PROCESSING` si una
    consulta coincide con el fin de la conversión.
+7. **Páginas antiguas del admin**: `admin/create-event` y `admin/create-event-series` no aplican
+   las reglas del tipo de serata (bloqueo al tipo del local, dos opciones en una escuela).
+
+## Pendiente para después de producción
+
+Decidido el 09/11: no bloquea el paso a producción.
+
+1. **Escuela sin sede propia** (BE + FE). Hoy SCHOOL necesita un local para ser aprobada (D11).
+   Si no tiene sede propia, el admin tendría que hacerla dueña de un local ajeno, y el dueño real
+   ya no podría reclamarlo (`VENUE_ALREADY_LINKED`). Propuesta:
+   - BE: `OrganizerType.requiresVenue()` solo VENUE/CLUB y un nuevo `allowsVenue()` (todos menos
+     PERSON). `OrganizerRequestValidator`: dirección obligatoria si `requiresVenue`, prohibida si
+     no `allowsVenue`. Ajustar `OrganizerRequestCreateDtoValidationTest` y los tests de approve de
+     `OrganizerRequestsServiceImplTest` (pasarlos a CLUB).
+   - FE: en el wizard, el paso «Il tuo locale» opcional para SCHOOL («Non ho una sede mia»). En la
+     tarjeta de la solicitud del admin, mostrar la dirección propuesta y «Crea il locale» también
+     cuando el locale es opcional (hoy solo sale con `missingVenue`).
+   - Mientras tanto: una escuela sin sede se registra como «Insegnante, DJ o promoter» (PERSON).
+2. **Aviso de serate que se solapan** (BE + FE). `GET /rest/events/overlaps?venueId&startAt&endAt[&excludeId]`:
+   serate PUBLISHED en el mismo local cuyo horario se solapa (las antiguas sin `end_at` cuentan
+   4 h). El editor avisa sin bloquear: «C'è già una serata in questo locale in quell'orario…».
+   Autenticado: añadirlo antes del `permitAll` de `/rest/events/{id}` en `SecurityConfig`.
+3. **Email al dueño del locale** (BE). Cuando otro organizador publica en un local que tiene
+   dueño: «X ha pubblicato una serata nel tuo locale», con forma de avisar al admin. El dueño del
+   local no puede editar serate de otros; el admin resuelve.
+4. **Aviso en el editor** (BE + FE, opcional): «Il locale è gestito da Y. La serata sarà pubblicata
+   a nome tuo.» Necesita `organizerId`/`organizerName` en `VenuesSummaryDto`.
+5. **Tipo de serata en el BE**: hoy las reglas del tipo solo están en el FE. Si se quieren
+   garantizar, aplicarlas también al crear y editar en `EventsServiceImpl`.
 
 ## Falta en el BE
 

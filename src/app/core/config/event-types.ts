@@ -12,8 +12,9 @@ export const EVENT_TYPE_CHOICES: { value: EventType; label: string }[] = [
   { value: 'RESTAURANT', label: 'Ristorante' },
 ];
 
-/** The night's kind a venue suggests when it's picked. A venue has no EVENT (a social), but a
- * generic place (OTHER: a hall, a theatre, a square) most often holds one. */
+/** The night's kind at a venue, taken from it and locked in the nights' form (a school's, only the
+ * default: see SCHOOL_VENUE_EVENT_TYPES). A venue has no EVENT (a social), but a generic place
+ * (OTHER: a hall, a theatre, a square) most often holds one. */
 export const EVENT_TYPE_OF_VENUE: Record<VenueType, EventType> = {
   CLUB: 'CLUB',
   BAR: 'BAR',
@@ -21,3 +22,7 @@ export const EVENT_TYPE_OF_VENUE: Record<VenueType, EventType> = {
   SCHOOL: 'SCHOOL',
   OTHER: 'EVENT',
 };
+
+/** A school holds lessons and socials alike: at one, the night is one of these two, picked by hand.
+ * At any other venue the kind is the venue's (EVENT_TYPE_OF_VENUE). */
+export const SCHOOL_VENUE_EVENT_TYPES: readonly EventType[] = ['EVENT', 'SCHOOL'];

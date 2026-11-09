@@ -50,7 +50,7 @@ const EVENT = {
   instagramUrl: 'https://www.instagram.com/salsaloca.milano/',
   whatsappUrl: 'https://wa.me/393331234567',
   organizer: ORGANIZER,
-  venue: { id: 'v1', name: 'Sala Isola', address: VENUE.address },
+  venue: { id: 'v1', name: 'Sala Isola', address: VENUE.address, type: 'OTHER' },
   danceStyles: ['Salsa', 'Kizomba'],
   status: 'PUBLISHED',
 } as unknown as EventDetailDto;
@@ -105,7 +105,7 @@ describe('EventEditorFormStore', () => {
       expect(value).toEqual(expect.objectContaining({ venueId: 'v1', address: VENUE.address, latitude: 45.49, cityId: 1 }));
       expect(value.instagram).toBe('sala.isola');
       expect(value.whatsapp).toBe('+39 02 1234567');
-      expect(store.venue()).toEqual({ id: 'v1', name: 'Sala Isola', address: VENUE.address });
+      expect(store.venue()).toEqual({ id: 'v1', name: 'Sala Isola', address: VENUE.address, type: 'CLUB' });
     });
 
     it('is sent whole, with the links built from the handle and the number', () => {
@@ -129,17 +129,57 @@ describe('EventEditorFormStore', () => {
       expect(new Date(body.endAt).getDate()).toBe(15);
     });
 
-    it('takes the kind the venue suggests until one is picked by hand', () => {
+    it("takes the venue's kind over one picked by hand, and locks it", () => {
       store.startCreate('admin', null, [MILANO]);
+      const { eventType } = store.form.controls;
+      eventType.setValue('SCHOOL');
+      eventType.markAsDirty();
       store.pickVenue(VENUE);
-      expect(store.form.controls.eventType.value).toBe('CLUB');
+      TestBed.tick();
+      expect(eventType.value).toBe('CLUB');
+      expect(eventType.disabled).toBe(true);
       store.pickVenue({ ...VENUE, id: 'v2', type: 'OTHER' });
-      expect(store.form.controls.eventType.value).toBe('EVENT');
+      TestBed.tick();
+      expect(eventType.value).toBe('EVENT');
+    });
 
-      store.form.controls.eventType.setValue('SCHOOL');
-      store.form.controls.eventType.markAsDirty();
-      store.pickVenue({ ...VENUE, id: 'v3', type: 'BAR' });
-      expect(store.form.controls.eventType.value).toBe('SCHOOL');
+    it("leaves a school's kind to a lesson or a social: a lesson, unless one of them is already chosen", () => {
+      store.startCreate('admin', null, [MILANO]);
+      const { eventType } = store.form.controls;
+      const SCHOOL_VENUE = { ...VENUE, id: 'v2', type: 'SCHOOL' } as const;
+      store.pickVenue(VENUE);
+      TestBed.tick();
+      store.pickVenue(SCHOOL_VENUE);
+      TestBed.tick();
+      expect(eventType.value).toBe('SCHOOL');
+      expect(eventType.enabled).toBe(true);
+
+      eventType.setValue('EVENT');
+      store.pickVenue(SCHOOL_VENUE);
+      TestBed.tick();
+      expect(eventType.value).toBe('EVENT');
+      expect(store.venueEventType()).toBeNull();
+      expect(store.schoolEventTypes()).toEqual(['EVENT', 'SCHOOL']);
+
+      store.form.controls.placeMode.setValue('address');
+      expect(store.schoolEventTypes()).toBeNull();
+    });
+
+    it('frees the kind, as it was left, without a venue', () => {
+      store.startCreate('admin', null, [MILANO]);
+      const { eventType } = store.form.controls;
+      store.pickVenue(VENUE);
+      TestBed.tick();
+      store.clearVenue();
+      TestBed.tick();
+      expect(eventType.enabled).toBe(true);
+      expect(eventType.value).toBe('CLUB');
+
+      store.pickVenue(VENUE);
+      TestBed.tick();
+      store.form.controls.placeMode.setValue('address');
+      TestBed.tick();
+      expect(eventType.enabled).toBe(true);
     });
 
     it('goes without a venue when held at an address', () => {
@@ -237,9 +277,27 @@ describe('EventEditorFormStore', () => {
       expect(body.endAt).toBeDefined();
     });
 
-    it('keeps its kind when the venue changes', () => {
+    it('keeps its kind locked while it matches the venue, and sends nothing for it', () => {
+      TestBed.tick();
+      expect(store.form.controls.eventType.disabled).toBe(true);
+      expect(store.updateBody()).toEqual({});
+    });
+
+    it('sends the venue picked by a CLUB for a night the admin left at an address', () => {
+      const club = { ...ORGANIZER, type: 'CLUB' } as OrganizerDetailDto;
+      store.startEdit('organizer', { ...EVENT, organizer: club, venue: null } as EventDetailDto, [MILANO], STYLES);
+      expect(store.form.controls.placeMode.value).toBe('address');
       store.pickVenue({ ...VENUE, id: 'v2', type: 'BAR' });
-      expect(store.form.controls.eventType.value).toBe('EVENT');
+      TestBed.tick();
+      expect(store.updateBody().venueId).toBe('v2');
+      expect(store.form.controls.eventType.value).toBe('BAR');
+    });
+
+    it('takes the kind of the venue it moves to', () => {
+      store.pickVenue({ ...VENUE, id: 'v2', type: 'BAR' });
+      TestBed.tick();
+      expect(store.form.controls.eventType.value).toBe('BAR');
+      expect(store.updateBody().eventType).toBe('BAR');
     });
 
     it('sends the place with a point typed by hand', () => {

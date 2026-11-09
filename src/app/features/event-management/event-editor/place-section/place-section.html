@@ -27,15 +27,17 @@
     <span class="min-w-0 grow text-sm leading-[1.4] text-lead">
       <b class="text-(--ev-text)">{{ venue.name }}</b><br />{{ venue.address }}
     </span>
+    @if (canChangeVenue()) {
     <button type="button" class="h-9 shrink-0 cursor-pointer rounded-xl border border-bone/20 px-3 text-[0.8125rem] font-bold text-lead"
       (click)="store.clearVenue()">
       Cambia
     </button>
+    }
   </div>
   <p class="text-[0.8125rem] leading-[1.4] text-muted">Indirizzo, città e punto sulla mappa li prendiamo dal locale.</p>
   } @else {
-  @if (ownVenuesOf(); as organizerId) {
-  <app-own-venues [organizerId]="organizerId" [required]="store.venueBound()" />
+  @if (ownVenuesOf()) {
+  <app-own-venues [venues]="ownVenues()" [required]="store.venueBound()" />
   }
   @if (!store.venueBound()) {
   @if (cityId()) {

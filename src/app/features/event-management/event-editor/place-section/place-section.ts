@@ -1,9 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
-import { catchError, map, of, startWith } from 'rxjs';
+import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { CityDto } from '../../../../core/models/city.model';
+import { VenuesSummaryDto } from '../../../../core/models/venue.model';
 import { CitiesService } from '../../../../core/services/cities.service';
+import { OrganizersService } from '../../../../core/services/organizers.service';
 import { Choice, ChoiceGroup } from '../choice-group/choice-group';
 import { EditorSection } from '../editor-section/editor-section';
 import { EventEditorFormStore, PlaceMode } from '../event-editor-form.store';
@@ -48,6 +50,18 @@ export class PlaceSection {
   protected readonly ownVenuesOf = computed(() =>
     this.store.scope() === 'organizer' ? (this.store.organizer()?.id ?? null) : null,
   );
+  private readonly organizers = inject(OrganizersService);
+  /** The organizer's own venues, the ones the admin linked to their page. Loaded here and not in
+   * OwnVenues, which is gone once a venue is picked: "Cambia" depends on them too. Undefined while loading. */
+  protected readonly ownVenues = toSignal(
+    toObservable(this.ownVenuesOf).pipe(
+      switchMap((id) =>
+        id ? this.organizers.getVenues(id).pipe(catchError(() => of<VenuesSummaryDto[]>([]))) : of<VenuesSummaryDto[]>([]),
+      ),
+    ),
+  );
+  /** A CLUB or a VENUE publishes only in its own venues (D12): with a single one, there's nothing to change it for. */
+  protected readonly canChangeVenue = computed(() => !this.store.venueBound() || (this.ownVenues()?.length ?? 0) > 1);
   protected readonly atVenue = computed(() => this.store.venueBound() || this.store.placeMode() === 'venue');
   /** The venues are searched in a city: none until one is chosen. */
   protected readonly cityId = toSignal(

@@ -6,8 +6,12 @@
 
   <div class="flex flex-col gap-1.5">
     <span class="text-[0.8125rem] font-bold text-lead">Che tipo di serata *</span>
-    <app-choice-group label="Che tipo di serata" appearance="grid" [choices]="typeChoices" [formControl]="controls.eventType" />
-    @if (controls.eventType.invalid && controls.eventType.touched) {
+    <app-choice-group label="Che tipo di serata" appearance="grid" [choices]="typeChoices()" [formControl]="controls.eventType" />
+    @if (store.venueEventType()) {
+    <p class="text-[0.8125rem] leading-[1.4] text-muted">Il tipo lo prende dal locale scelto in «Dove».</p>
+    } @else if (store.schoolEventTypes()) {
+    <p class="text-[0.8125rem] leading-[1.4] text-muted">In una scuola: lezione o serata, scegli tu.</p>
+    } @else if (controls.eventType.invalid && controls.eventType.touched) {
     <p class="text-[0.8125rem] text-(--ev-error)" role="alert">Scegli il tipo di serata.</p>
     }
   </div>

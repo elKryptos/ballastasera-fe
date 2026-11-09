@@ -2,7 +2,7 @@ import { Service, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, NonNullableFormBuilder, ValidationErrors, Validators } from '@angular/forms';
 import { Subject, catchError, of, switchMap } from 'rxjs';
-import { EVENT_TYPE_OF_VENUE } from '../../../core/config/event-types';
+import { EVENT_TYPE_OF_VENUE, SCHOOL_VENUE_EVENT_TYPES } from '../../../core/config/event-types';
 import { isVenueBound } from '../../../core/config/organizer-types';
 import { CityDto } from '../../../core/models/city.model';
 import { DanceStyleDto } from '../../../core/models/dance-style.model';
@@ -18,11 +18,12 @@ import { notBlank, optionalInstagram } from '../../../core/utils/form-validators
 /** Where a night is held: one of the venues, or an address of its own. */
 export type PlaceMode = 'venue' | 'address';
 
-/** The venue a night is held at, as the form shows it. */
+/** The venue a night is held at, as the form shows it. Its type gives the night's kind. */
 export interface PickedVenue {
   id: string;
   name: string;
   address: string;
+  type: VenueType;
 }
 
 /** A WhatsApp number as it's typed: digits and spaces, a + in front. */
@@ -120,6 +121,16 @@ export class EventEditorFormStore {
   readonly removesVenue = computed(
     () => this.mode() === 'edit' && this.event()?.venue != null && this.placeMode() === 'address',
   );
+  /** The venue the night is held at, if "Dove" says it's at one. */
+  private readonly heldAt = computed(() => (this.placeMode() === 'venue' ? this.venue() : null));
+  /** At a school only a lesson or a social can be picked (SCHOOL_VENUE_EVENT_TYPES). Null elsewhere. */
+  readonly schoolEventTypes = computed(() => (this.heldAt()?.type === 'SCHOOL' ? SCHOOL_VENUE_EVENT_TYPES : null));
+  /** At any other venue the night's kind is the venue's (EVENT_TYPE_OF_VENUE) and can't be picked by
+   * hand. Null without one (at an address of its own, or after "Cambia"). */
+  readonly venueEventType = computed(() => {
+    const venue = this.heldAt();
+    return venue && !this.schoolEventTypes() ? EVENT_TYPE_OF_VENUE[venue.type] : null;
+  });
 
   /** The picked venue's Instagram and WhatsApp, which come before the organizer's. */
   private readonly venueContacts = signal<{ instagram: string; phone: string } | null>(null);
@@ -144,6 +155,22 @@ export class EventEditorFormStore {
       this.prefill(this.form.controls.instagram, instagramHandle(venue?.instagram || organizer?.instagram || ''));
       this.prefill(this.form.controls.whatsapp, venue?.phone || organizer?.phone || '');
     });
+
+    // The venue's kind, locked while the night is held there. At a school a lesson or a social, a lesson
+    // unless one of them is already chosen. Free again, as it was left, without a venue. Changed only
+    // when it differs, so a saved night that already fits isn't sent again.
+    effect(() => {
+      const kind = this.venueEventType();
+      const schoolKinds = this.schoolEventTypes();
+      const eventType = this.form.controls.eventType;
+      if (kind) {
+        this.setKind(kind);
+        if (eventType.enabled) eventType.disable();
+        return;
+      }
+      if (eventType.disabled) eventType.enable();
+      if (schoolKinds && !schoolKinds.includes(eventType.value as EventType)) this.setKind(EVENT_TYPE_OF_VENUE.SCHOOL);
+    });
   }
 
   /** A new night. The organizer publishes as their page; the admin picks one in the form. With a
@@ -166,7 +193,8 @@ export class EventEditorFormStore {
     this.mode.set('edit');
     this.event.set(event);
     this.organizer.set(event.organizer);
-    this.venue.set(event.venue ? { id: event.venue.id, name: event.venue.name, address: event.venue.address } : null);
+    const venue = event.venue;
+    this.venue.set(venue ? { id: venue.id, name: venue.name, address: venue.address, type: venue.type } : null);
     this.form.reset({
       organizerId: event.organizer?.id ?? '',
       title: event.title,
@@ -193,20 +221,19 @@ export class EventEditorFormStore {
     this.organizer.set(organizer);
   }
 
-  /** A venue, from the search or from the organizer's own: the night takes its address and place
-   * on the map, and its city and contacts once its detail is in. A new night also takes the kind
-   * the venue suggests, until one is picked by hand. */
-  pickVenue(venue: PickedVenue & { latitude: number | null; longitude: number | null; type: VenueType }): void {
+  /** A venue, from the search or from the organizer's own: the night takes its address, its place
+   * on the map and its kind, then its city and contacts once its detail is in. It's held at a venue
+   * from now on: a CLUB or a VENUE editing a night the admin left at an address picks one with
+   * "Dove" still on the address, and without this the venue would never be sent. */
+  pickVenue(venue: PickedVenue & { latitude: number | null; longitude: number | null }): void {
     const controls = this.form.controls;
+    controls.placeMode.setValue('venue');
     controls.venueId.setValue(venue.id);
     controls.venueId.markAsDirty();
     controls.address.setValue(venue.address);
     controls.latitude.setValue(venue.latitude);
     controls.longitude.setValue(venue.longitude);
-    if (this.mode() === 'create' && controls.eventType.pristine) {
-      controls.eventType.setValue(EVENT_TYPE_OF_VENUE[venue.type]);
-    }
-    this.venue.set({ id: venue.id, name: venue.name, address: venue.address });
+    this.venue.set({ id: venue.id, name: venue.name, address: venue.address, type: venue.type });
     this.venuePicked$.next(venue.id);
   }
 
@@ -217,6 +244,13 @@ export class EventEditorFormStore {
     longitude.setValue(spot.lng);
     latitude.markAsDirty();
     longitude.markAsDirty();
+  }
+
+  private setKind(kind: EventType): void {
+    const eventType = this.form.controls.eventType;
+    if (eventType.value === kind) return;
+    eventType.setValue(kind);
+    eventType.markAsDirty();
   }
 
   /** "Cambia": the venue goes, its address stays until another is picked. */

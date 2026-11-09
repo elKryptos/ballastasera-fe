@@ -1,12 +1,9 @@
 import { Component, effect, inject, input } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
 import { VenuesSummaryDto } from '../../../../../core/models/venue.model';
-import { OrganizersService } from '../../../../../core/services/organizers.service';
 import { EventEditorFormStore } from '../../event-editor-form.store';
 
 /** The organizer's own venues, the ones the admin linked to their page, to pick with a tap. The only
- * choice for a CLUB or a VENUE (D12), picked on its own when there's just one. */
+ * choice for a CLUB or a VENUE (D12), picked on its own when there's just one. PlaceSection loads them. */
 @Component({
   selector: 'app-own-venues',
   host: { class: 'flex flex-col gap-2' },
@@ -38,17 +35,11 @@ import { EventEditorFormStore } from '../../event-editor-form.store';
 })
 export class OwnVenues {
   private readonly store = inject(EventEditorFormStore);
-  private readonly organizers = inject(OrganizersService);
 
-  readonly organizerId = input.required<string>();
+  /** Undefined while loading. */
+  readonly venues = input<VenuesSummaryDto[] | undefined>();
   /** Only these can be picked (D12): an empty list is worth saying. */
   readonly required = input(false);
-
-  protected readonly venues = toSignal(
-    toObservable(this.organizerId).pipe(
-      switchMap((id) => this.organizers.getVenues(id).pipe(catchError(() => of<VenuesSummaryDto[]>([])))),
-    ),
-  );
 
   constructor() {
     // A new night with just the one venue to choose: it's that one. Only while no venue has been

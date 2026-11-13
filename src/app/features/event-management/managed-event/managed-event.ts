@@ -12,7 +12,9 @@ import { FilePreview } from '../../../core/utils/file-preview';
 import { PendingAction } from '../../../core/utils/pending-action';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { EVENT_MANAGEMENT_CONTEXT } from '../event-management.context';
+import { eventErrorMessage } from '../event-management-errors';
 import { EventStatusBadge } from '../event-status-badge/event-status-badge';
+import { ConfirmSheet } from './confirm-sheet/confirm-sheet';
 import { EventDangerZone } from './event-danger-zone/event-danger-zone';
 import { EventDetailsSummary } from './event-details-summary/event-details-summary';
 import { FlyerCover } from './flyer-cover/flyer-cover';
@@ -23,13 +25,21 @@ const FLYER_POLL_TRIES = 20;
 const FLYER_UPLOAD_FAILED = 'Il flyer non è stato caricato. Prova con un JPG o un PNG più leggero.';
 
 /**
- * A night's page in its management, as on the canvas (SerataModifica): its flyer, which changes at
- * once, its status, how many are going and like it, its details with a "Modifica" each, and
- * cancelling or deleting it.
+ * A night's page in its management, as on the canvas (SerataModifica): its flyer, which changes or
+ * comes off at once, its status, how many are going and like it, its details with a "Modifica"
+ * each, and cancelling or deleting it.
  */
 @Component({
   selector: 'app-managed-event',
-  imports: [RouterLink, SidebarPushDirective, FlyerCover, EventStatusBadge, EventDetailsSummary, EventDangerZone],
+  imports: [
+    RouterLink,
+    SidebarPushDirective,
+    FlyerCover,
+    EventStatusBadge,
+    EventDetailsSummary,
+    EventDangerZone,
+    ConfirmSheet,
+  ],
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
   templateUrl: './managed-event.html',
 })
@@ -69,8 +79,24 @@ export class ManagedEvent {
   protected readonly flyerShown = computed(() => this.flyerPreview.url() ?? this.event()?.flyerUrl ?? null);
   protected readonly flyerProcessing = computed(() => this.event()?.flyerStatus === 'PROCESSING');
   protected readonly flyerConversionFailed = computed(() => this.event()?.flyerStatus === 'FAILED');
+  /** What the form says about the flyer when it leads here after saving (EventEditor.save). */
+  private readonly savedState = this.router.currentNavigation()?.extras.state;
   /** The form saved the night but its flyer didn't go up: said here, where it can be picked again. */
-  protected readonly flyerSkipped = signal(!!this.router.currentNavigation()?.extras.state?.['flyerFailed']);
+  protected readonly flyerSkipped = signal(!!this.savedState?.['flyerFailed']);
+
+  /** Taking the flyer off: asked first in a bottom sheet, then done at once. */
+  protected readonly flyerRemoval = new PendingAction();
+  protected readonly askingFlyerRemoval = signal(false);
+  /** Said under the flyer once it came off, until another goes up. */
+  protected readonly flyerRemoved = signal(false);
+  /** The form saved the night but couldn't take its flyer off: said here, where the bin is. */
+  protected readonly flyerRemoveFailed = signal(!!this.savedState?.['flyerRemoveFailed']);
+  /** Only a flyer that's there and done: while it's PROCESSING, the conversion would put it back.
+   * During an upload the bin stays, disabled like the camera. */
+  protected readonly canRemoveFlyer = computed(() => {
+    const event = this.event();
+    return !!event?.flyerUrl && event.flyerStatus !== 'PROCESSING';
+  });
 
   constructor() {
     // Another page's night, for the organizer, is null like a missing one: "Questa serata non esiste più".
@@ -107,12 +133,30 @@ export class ManagedEvent {
 
   protected changeFlyer(file: File): void {
     this.flyerSkipped.set(false);
+    this.flyerRemoved.set(false);
+    this.flyerRemoveFailed.set(false);
     this.flyerUpload.run(this.service.uploadFlyer(this.context.scope, this.id, file), {
       next: (event) => {
         this.flyerPreview.show(file);
         this.event.set(event);
       },
       errorMessage: () => FLYER_UPLOAD_FAILED,
+    });
+  }
+
+  /** Confirmed in the sheet: the flyer comes off (admin or organizer endpoint, by scope) and the
+   * cover falls back to the title on the gradient, as the public page falls back to the logo. */
+  protected removeFlyer(): void {
+    this.flyerRemoval.run(this.service.deleteFlyer(this.context.scope, this.id), {
+      next: (event) => {
+        this.flyerPreview.clear();
+        this.flyerSkipped.set(false);
+        this.flyerRemoveFailed.set(false);
+        this.event.set(event);
+        this.askingFlyerRemoval.set(false);
+        this.flyerRemoved.set(true);
+      },
+      errorMessage: eventErrorMessage,
     });
   }
 

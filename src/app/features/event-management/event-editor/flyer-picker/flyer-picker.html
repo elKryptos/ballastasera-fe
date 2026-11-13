@@ -1,0 +1,40 @@
+<!-- SerataNuova.dc.html, "Flyer": the box that picks it, and «Rimuovi» / «Ripristina». -->
+<label
+  class="relative flex h-30 w-24 shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-[0.875rem] border-2 border-dashed border-rose-lit/50 bg-rose-lit/6 text-xs font-extrabold text-(--ev-like) has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-amber">
+  <input type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" [disabled]="disabled()"
+    (change)="onFileChange($event)" />
+  @if (previewUrl(); as preview) {
+  <img [src]="preview" alt="" class="absolute inset-0 size-full object-cover" />
+  <span class="sr-only">Cambia il flyer</span>
+  } @else {
+  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 16V4M7 9l5-5 5 5" />
+    <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+  </svg>
+  Carica
+  }
+</label>
+
+<div class="flex min-w-0 flex-col gap-1">
+  <h2 class="text-[0.9375rem] font-extrabold">Flyer</h2>
+  <p class="text-[0.8125rem] leading-snug text-lead">
+    Verticale, JPG o PNG. Si carica insieme alla serata: non serve salvare prima.
+  </p>
+  @if (processing()) {
+  <p class="text-xs text-muted" role="status">In elaborazione: potrai cambiarlo tra poco, dalla pagina della serata.</p>
+  } @else if (removalPending()) {
+  <p class="text-xs text-(--ev-like)" role="status">Verrà tolto quando salvi: al suo posto si vedrà il logo.</p>
+  <button type="button" [disabled]="disabled()" (click)="restored.emit()"
+    class="mt-1 h-11 cursor-pointer self-start rounded-[0.875rem] border border-bone/20 px-3.5 text-[0.8125rem] font-extrabold text-(--ev-text) disabled:cursor-default disabled:opacity-60">
+    Ripristina
+  </button>
+  } @else if (removable()) {
+  <button type="button" [disabled]="disabled()" (click)="removed.emit()"
+    class="mt-1 h-11 cursor-pointer self-start rounded-[0.875rem] border border-rose-lit/50 px-3.5 text-[0.8125rem] font-extrabold text-(--ev-like) disabled:cursor-default disabled:opacity-60">
+    Rimuovi
+  </button>
+  } @else if (!previewUrl()) {
+  <p class="text-xs text-muted">Facoltativo · senza flyer usiamo il logo</p>
+  }
+</div>

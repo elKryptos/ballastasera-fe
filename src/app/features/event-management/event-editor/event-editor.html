@@ -32,7 +32,10 @@
         @if (isAdmin) {
         <app-organizer-section />
         }
-        <app-flyer-picker [previewUrl]="flyerShown()" [disabled]="saving.busy()" (fileSelected)="pickFlyer($event)" />
+        <app-flyer-picker [previewUrl]="flyerShown()" [disabled]="saving.busy() || flyerProcessing()"
+          [processing]="flyerProcessing()" [removable]="flyerRemovable()" [removalPending]="flyerRemoval()"
+          (fileSelected)="pickFlyer($event)" (removed)="removeFlyer()"
+          (restored)="restoreFlyer()" />
         <app-basics-section />
         <app-schedule-section />
         <app-place-section />

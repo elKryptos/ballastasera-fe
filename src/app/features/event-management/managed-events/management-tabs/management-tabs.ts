@@ -6,7 +6,7 @@ interface TabItem {
   label: string;
 }
 
-/** The admin's pills (AdminSerate.dc.html) and the organizer's segmented bar
+/** The admin's chips (AdminSerate.dc.html) and the organizer's segmented bar
  * (SeratePubblicate.dc.html): their own words and their own order. */
 const ADMIN_TABS: TabItem[] = [
   { tab: 'UPCOMING', label: 'Prossime' },
@@ -19,7 +19,7 @@ const ORGANIZER_TABS: TabItem[] = [
   { tab: 'CANCELLED', label: 'Annullate' },
 ];
 
-/** The lists' three tabs, each with how many nights it holds once known: pills for the admin, a
+/** The lists' three tabs, each with how many nights it holds once known: chips for the admin, a
  * segmented bar for the organizer, as the canvas draws them. */
 @Component({
   selector: 'app-management-tabs',
@@ -29,8 +29,8 @@ const ORGANIZER_TABS: TabItem[] = [
 export class ManagementTabs {
   readonly tab = input.required<EventManagementTab>();
   readonly counts = input<Partial<Record<EventManagementTab, number>>>({});
-  readonly appearance = input<'pills' | 'segmented'>('segmented');
+  readonly appearance = input<'chips' | 'segmented'>('segmented');
   readonly tabChange = output<EventManagementTab>();
 
-  protected readonly tabs = computed(() => (this.appearance() === 'pills' ? ADMIN_TABS : ORGANIZER_TABS));
+  protected readonly tabs = computed(() => (this.appearance() === 'chips' ? ADMIN_TABS : ORGANIZER_TABS));
 }

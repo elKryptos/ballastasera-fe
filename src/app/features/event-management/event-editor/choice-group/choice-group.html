@@ -1,0 +1,10 @@
+<div [attr.role]="multiple() ? 'group' : 'radiogroup'" [attr.aria-label]="label()" [class]="groupClass()">
+  @for (choice of choices(); track choice.value) {
+  @let on = isOn(choice.value);
+  <button type="button" [attr.role]="multiple() ? null : 'radio'" [attr.aria-checked]="multiple() ? null : on"
+    [attr.aria-pressed]="multiple() ? on : null" [disabled]="disabled()"
+    [class]="buttonClass(on)" (click)="pick(choice.value)">
+    {{ choice.label }}
+  </button>
+  }
+</div>

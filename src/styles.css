@@ -628,6 +628,10 @@ app-event-editor {
   /* Text on rose (the selected day): fixed night ink in both themes,
   >= 5.6:1 on #ff4d6d. LIVE badges are white on --color-live instead. */
   --ev-on-rose: #1a0e2e;
+  /* A form's picked option (choice-group: tipo, stili, Dove, Ingresso): sky blue, so rose stays
+  the main action's. Night ink on it, ~7.9:1. */
+  --ev-pick: #8ab4ff;
+  --ev-on-pick: #0d1a33;
   /* Pressed toggles and Parteciperò: white text >= 4.5:1. */
   --ev-primary: #6b46e0;
   --ev-like: #ff8fab;
@@ -712,6 +716,9 @@ app-event-editor {
   --ev-going-edge: rgba(109, 40, 217, 0.25);
   --ev-going-mark: #ffffff;
   --ev-invert-link: #ff8fab;
+  /* The picked option by day: a deeper blue, white on it ~6.2:1. */
+  --ev-pick: #2f5bd3;
+  --ev-on-pick: #ffffff;
 }
 
 /* "Diventa organizzatore" (features/organizer-request): the look every step's

@@ -10,15 +10,18 @@ export interface Choice<T> {
  * wrap) and "Dove" / "Ingresso" (the two halves of a switch). */
 type Appearance = 'grid' | 'chips' | 'segmented';
 
+/** Grid and chips are the same button (h-11, rounded-xl), laid out differently: the form's
+ * buttons all share one shape. */
 const BUTTON: Record<Appearance, string> = {
   grid: 'h-11 rounded-xl border text-sm font-bold',
-  chips: 'h-9 rounded-full border px-3 text-[0.8125rem] font-bold',
+  chips: 'h-11 rounded-xl border px-3.5 text-sm font-bold',
   segmented: 'h-10 rounded-[0.625rem] text-sm font-bold',
 };
+/** Picked: sky blue (--ev-pick), not rose, which the form keeps for «Pubblica serata». */
 const ON: Record<Appearance, string> = {
-  grid: 'border-rose bg-rose text-(--ev-on-rose)',
-  chips: 'border-rose bg-rose text-(--ev-on-rose)',
-  segmented: 'bg-rose text-(--ev-on-rose)',
+  grid: 'border-(--ev-pick) bg-(--ev-pick) text-(--ev-on-pick)',
+  chips: 'border-(--ev-pick) bg-(--ev-pick) text-(--ev-on-pick)',
+  segmented: 'bg-(--ev-pick) text-(--ev-on-pick)',
 };
 const OFF: Record<Appearance, string> = {
   grid: 'border-line bg-(--ev-surface) text-lead',
@@ -36,18 +39,7 @@ const GROUP: Record<Appearance, string> = {
   selector: 'app-choice-group',
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => ChoiceGroup), multi: true }],
   host: { class: 'block' },
-  template: `
-    <div [attr.role]="multiple() ? 'group' : 'radiogroup'" [attr.aria-label]="label()" [class]="groupClass()">
-      @for (choice of choices(); track choice.value) {
-      @let on = isOn(choice.value);
-      <button type="button" [attr.role]="multiple() ? null : 'radio'" [attr.aria-checked]="multiple() ? null : on"
-        [attr.aria-pressed]="multiple() ? on : null" [disabled]="disabled()"
-        [class]="buttonClass(on)" (click)="pick(choice.value)">
-        {{ choice.label }}
-      </button>
-      }
-    </div>
-  `,
+  templateUrl: './choice-group.html',
 })
 export class ChoiceGroup<T> implements ControlValueAccessor {
   readonly choices = input.required<Choice<T>[]>();

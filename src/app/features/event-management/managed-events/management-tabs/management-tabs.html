@@ -1,11 +1,12 @@
-@if (appearance() === 'pills') {
-<!-- AdminSerate.dc.html: "Filtra per stato". -->
+@if (appearance() === 'chips') {
+<!-- AdminSerate.dc.html: "Filtra per stato". The form's chips (choice-group): h-11, rounded-xl,
+  sky blue when picked. -->
 <div role="group" aria-label="Filtra per stato" class="flex gap-1.5 overflow-x-auto ev-scroll-row">
   @for (item of tabs(); track item.tab) {
   @let selected = tab() === item.tab;
   <button type="button" [attr.aria-pressed]="selected" (click)="tabChange.emit(item.tab)"
-    class="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[0.8125rem] font-bold"
-    [class]="selected ? 'border-rose bg-rose text-(--ev-on-rose)' : 'border-line bg-(--ev-raised) text-lead'">
+    class="flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3.5 text-sm font-bold"
+    [class]="selected ? 'border-(--ev-pick) bg-(--ev-pick) text-(--ev-on-pick)' : 'border-line bg-(--ev-raised) text-lead'">
     {{ item.label }}
     @let count = counts()[item.tab];
     @if (count !== undefined) {
@@ -21,7 +22,7 @@
   @let selected = tab() === item.tab;
   <button type="button" role="tab" [attr.aria-selected]="selected" (click)="tabChange.emit(item.tab)"
     class="h-10 cursor-pointer rounded-[0.625rem] text-[0.8125rem] font-bold"
-    [class]="selected ? 'bg-rose text-(--ev-on-rose)' : 'text-lead'">
+    [class]="selected ? 'bg-(--ev-pick) text-(--ev-on-pick)' : 'text-lead'">
     {{ item.label }}
     @let count = counts()[item.tab];
     @if (count !== undefined) {

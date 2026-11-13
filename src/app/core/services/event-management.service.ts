@@ -104,6 +104,14 @@ export class EventManagementService {
     return this.http.patch<EventDetailDto>(this.url(endpoints.events.updateFlyer(id)), formData);
   }
 
+  /** Takes the flyer off: the night's page shows the organizer's logo again. The answer is the
+   * night with flyerUrl null and flyerStatus NONE. Not while a flyer is PROCESSING: the conversion
+   * would put it back when it ends. */
+  deleteFlyer(scope: EventManagementScope, id: string): Observable<EventDetailDto> {
+    if (scope === 'admin') return this.admin.deleteEventFlyer(id);
+    return this.http.delete<EventDetailDto>(this.url(endpoints.events.deleteFlyer(id)));
+  }
+
   /** Takes the venue off a night, which keeps its address. The organizer's only (the admin has no
    * such endpoint), and refused for a CLUB or a VENUE, which publish in their venues only (D12). */
   removeVenue(id: string): Observable<EventDetailDto> {

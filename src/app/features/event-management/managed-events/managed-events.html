@@ -21,7 +21,7 @@
     </div>
 
     <app-event-search class="mt-4" (searchChange)="onSearch($event)" />
-    <app-management-tabs class="mt-3" appearance="pills" [tab]="tab()" [counts]="counts()" (tabChange)="selectTab($event)" />
+    <app-management-tabs class="mt-3" appearance="chips" [tab]="tab()" [counts]="counts()" (tabChange)="selectTab($event)" />
     <app-organizer-filter class="mt-2.5 self-start" (organizerChange)="onOrganizer($event)" />
     } @else {
     @if (organizer(); as organizer) {

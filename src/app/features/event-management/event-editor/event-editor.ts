@@ -32,6 +32,14 @@ interface EditorStart {
   organizer: OrganizerDetailDto | null;
 }
 
+/** How the flyer went after saving, told to the night's page through the navigation state. */
+type FlyerOutcome = 'ok' | 'uploadFailed' | 'removeFailed';
+
+interface SavedNight {
+  event: EventDetailDto;
+  flyer: FlyerOutcome;
+}
+
 /**
  * "Nuova serata" (nuova) and editing a night (:id/modifica): one form for the admin and the
  * organizer, in five blocks plus the flyer, as on the canvas (SerataNuova). The flyer goes up after
@@ -78,7 +86,20 @@ export class EventEditor {
 
   private readonly flyerFile = signal<File | null>(null);
   private readonly flyerPreview = new FilePreview();
-  protected readonly flyerShown = computed(() => this.flyerPreview.url() ?? this.store.event()?.flyerUrl ?? null);
+  /** Editing a night with a flyer and «Rimuovi» tapped: it comes off once the night is saved. */
+  protected readonly flyerRemoval = signal(false);
+  protected readonly flyerShown = computed(
+    () => this.flyerPreview.url() ?? (this.flyerRemoval() ? null : (this.store.event()?.flyerUrl ?? null)),
+  );
+  /** The saved flyer is still being converted: it can't be changed or removed until it's done, or a
+   * second conversion would race the first for the same file. */
+  protected readonly flyerProcessing = computed(() => this.store.event()?.flyerStatus === 'PROCESSING');
+  /** «Rimuovi» for a picked file, or for the saved flyer once it's done converting. While a removal
+   * is pending the picker shows «Ripristina» instead, whatever this says. */
+  protected readonly flyerRemovable = computed(() => {
+    if (this.flyerFile()) return true;
+    return !!this.store.event()?.flyerUrl && !this.flyerProcessing();
+  });
   protected readonly saving = new PendingAction();
   /** The form has something to fix: said by the button, the fields say what. */
   protected readonly invalidOnSave = signal(false);
@@ -90,6 +111,21 @@ export class EventEditor {
   protected pickFlyer(file: File): void {
     this.flyerFile.set(file);
     this.flyerPreview.show(file);
+    // A new flyer replaces the saved one anyway: nothing left to take off.
+    this.flyerRemoval.set(false);
+  }
+
+  /** A picked file is just dropped (the saved flyer, if any, shows again). The saved flyer is
+   * marked to come off on save, so «Salva» stays the only thing that changes the night. */
+  protected removeFlyer(): void {
+    const hadPick = this.flyerFile() !== null;
+    this.flyerFile.set(null);
+    this.flyerPreview.clear();
+    if (!hadPick && this.store.event()?.flyerUrl) this.flyerRemoval.set(true);
+  }
+
+  protected restoreFlyer(): void {
+    this.flyerRemoval.set(false);
   }
 
   protected save(): void {
@@ -101,10 +137,13 @@ export class EventEditor {
     }
     this.invalidOnSave.set(false);
     const saved = this.eventId ? this.saveChanges(this.eventId) : this.service.create(this.context.scope, this.store.createBody());
-    this.saving.run(saved.pipe(switchMap((event) => this.uploadFlyer(event))), {
-      // The night's page says so when the flyer didn't go up (managed-event reads flyerFailed).
-      next: ({ event, flyerFailed }) =>
-        this.router.navigate([this.context.basePath, event.id], { state: { flyerFailed } }),
+    this.saving.run(saved.pipe(switchMap((event) => this.applyFlyer(event))), {
+      // The night's page says so when the flyer didn't go up or didn't come off
+      // (managed-event reads flyerFailed and flyerRemoveFailed).
+      next: ({ event, flyer }) =>
+        this.router.navigate([this.context.basePath, event.id], {
+          state: { flyerFailed: flyer === 'uploadFailed', flyerRemoveFailed: flyer === 'removeFailed' },
+        }),
       errorMessage: eventErrorMessage,
     });
   }
@@ -119,15 +158,23 @@ export class EventEditor {
     return this.store.removesVenue() ? updated.pipe(switchMap(() => this.service.removeVenue(id))) : updated;
   }
 
-  /** The picked flyer, once the night exists. A flyer that fails doesn't lose the night: its page
-   * says so, and it can be picked again there. */
-  private uploadFlyer(event: EventDetailDto): Observable<{ event: EventDetailDto; flyerFailed: boolean }> {
+  /** The flyer, once the night exists: the picked file goes up, or the saved one comes off. Either
+   * failing doesn't lose the night: its page says so, and it can be done again there. */
+  private applyFlyer(event: EventDetailDto): Observable<SavedNight> {
     const file = this.flyerFile();
-    if (!file) return of({ event, flyerFailed: false });
-    return this.service.uploadFlyer(this.context.scope, event.id, file).pipe(
-      map((uploaded) => ({ event: uploaded, flyerFailed: false })),
-      catchError(() => of({ event, flyerFailed: true })),
-    );
+    if (file) {
+      return this.service.uploadFlyer(this.context.scope, event.id, file).pipe(
+        map((uploaded): SavedNight => ({ event: uploaded, flyer: 'ok' })),
+        catchError(() => of<SavedNight>({ event, flyer: 'uploadFailed' })),
+      );
+    }
+    if (this.flyerRemoval() && event.flyerUrl) {
+      return this.service.deleteFlyer(this.context.scope, event.id).pipe(
+        map((updated): SavedNight => ({ event: updated, flyer: 'ok' })),
+        catchError(() => of<SavedNight>({ event, flyer: 'removeFailed' })),
+      );
+    }
+    return of<SavedNight>({ event, flyer: 'ok' });
   }
 
   private load(): void {

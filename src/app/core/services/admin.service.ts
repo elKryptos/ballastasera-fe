@@ -64,6 +64,11 @@ export class AdminService {
     return this.http.patch<EventDetailDto>(`${environment.apiUrl}${endpoints.admin.updateEventFlyer(id)}`, formData);
   }
 
+  /** Takes the flyer off any night, no ownership check: flyerUrl null, flyerStatus NONE. */
+  deleteEventFlyer(id: string): Observable<EventDetailDto> {
+    return this.http.delete<EventDetailDto>(`${environment.apiUrl}${endpoints.admin.deleteEventFlyer(id)}`);
+  }
+
   createVenue(body: VenueCreateDto): Observable<VenueDetailDto>{
     return this.http.post<VenueDetailDto>(`${environment.apiUrl}${endpoints.admin.createVenue}` , body)
   }

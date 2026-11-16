@@ -19,9 +19,9 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   stagingDemo: false,
   adminHomePage: true,
   createUnclaimedOrganizerPage: true,
-  organizerRequestPage: false,
-  accountPage: false,
-  eventManagementPage: false,
+  organizerRequestPage: true,
+  accountPage: true,
+  eventManagementPage: true,
   verifiedOrganizersPage: true,
   updateOrganizerPage: true,
   createEventPage: true,
@@ -39,7 +39,6 @@ const featureFlags: Record<FeatureFlag, boolean> = {
 
 export const environment = {
   production: true,
-  // TODO: point at the real API host once the backend has a public prod URL.
   apiUrl: 'https://api.ballastasera.it',
   // apiUrl: 'http://localhost:8080',
   featureFlags,

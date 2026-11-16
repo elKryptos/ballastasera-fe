@@ -3,15 +3,29 @@ import { Component, computed, input } from '@angular/core';
 /** A run of an owner's text: plain, or a link to open. */
 type Part = { text: string; href?: string };
 
-/** Web addresses (with their scheme, or starting at "www.") and emails. */
-const LINK = /(https?:\/\/[^\s<>"]+|www\.[^\s<>"]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/gi;
+/** Web addresses (with their scheme, or starting at "www."), emails and
+ * Instagram handles ("📍 @club_name"). Addresses and emails come first, so the
+ * "@" inside one of them is never taken for a handle; a handle's "@" also
+ * can't follow a letter, a dot or another "@". Handles are Instagram's:
+ * letters, digits, "_" and ".", up to 30, never ending on a dot — a longer
+ * one isn't a handle, so it isn't cut down to a link to someone else. */
+const LINK =
+  /(https?:\/\/[^\s<>"]+|www\.[^\s<>"]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+|(?<![\w.@])@[a-z0-9_](?:[a-z0-9._]{0,28}[a-z0-9_])?(?!\w))/gi;
 
 /** What closes the sentence the address sits in, not the address itself:
  * "iscriviti qui: https://… ." or "(www.club.it)". */
 const TRAILING = /[.,;:!?)\]}'"»]+$/;
 
-/** Splits text into plain runs and links. Emails become mailto: links, and a
- * bare "www." gets its https://. */
+/** Where a link takes you: a handle to its Instagram profile, an email to a
+ * new message, and a bare "www." gets its https://. */
+function hrefOf(link: string): string {
+  if (link.startsWith('@')) return `https://www.instagram.com/${link.slice(1)}/`;
+  if (/^https?:/i.test(link)) return link;
+  if (/^www\./i.test(link)) return `https://${link}`;
+  return `mailto:${link}`;
+}
+
+/** Splits text into plain runs and links. */
 export function linkParts(text: string): Part[] {
   const parts: Part[] = [];
   let last = 0;
@@ -19,10 +33,7 @@ export function linkParts(text: string): Part[] {
     const link = match[0].replace(TRAILING, '');
     const start = match.index;
     if (start > last) parts.push({ text: text.slice(last, start) });
-    const href = link.includes('@') && !/^https?:|^www\./i.test(link)
-      ? `mailto:${link}`
-      : /^https?:/i.test(link) ? link : `https://${link}`;
-    parts.push({ text: link, href });
+    parts.push({ text: link, href: hrefOf(link) });
     last = start + link.length;
   }
   if (last < text.length) parts.push({ text: text.slice(last) });
@@ -30,9 +41,10 @@ export function linkParts(text: string): Part[] {
 }
 
 /** Text written by a club, a venue or an organizer, with the addresses in it
- * made tappable (a sign-up form, their site, an email). Inline, so it goes
- * inside the <p> that sets the text's look — line breaks and clamping stay
- * that paragraph's. Their links, not ours: nofollow and ugc. */
+ * made tappable (a sign-up form, their site, an email, the DJ's or the club's
+ * @instagram). Inline, so it goes inside the <p> that sets the text's look —
+ * line breaks and clamping stay that paragraph's. Their links, not ours:
+ * nofollow and ugc. */
 @Component({
   selector: 'app-linked-text',
   // Every text sits tight inside its element: the whitespace-only lines

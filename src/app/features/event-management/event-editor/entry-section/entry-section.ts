@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Choice, ChoiceGroup } from '../choice-group/choice-group';
+import { Choice, ChoiceGroup } from '../../../../shared/choice-group/choice-group';
 import { EditorSection } from '../editor-section/editor-section';
 import { EventEditorFormStore } from '../event-editor-form.store';
 

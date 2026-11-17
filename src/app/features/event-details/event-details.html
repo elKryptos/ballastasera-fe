@@ -1,4 +1,4 @@
-<app-auth-modal [(open)]="authOpen" />
+<app-auth-modal [(open)]="authOpen" [text]="authText()" />
 
 <!-- "Scheda evento" from the Claude Design canvas: the flyer, then where
     it's held, when and how much, who's going, the description, who organizes
@@ -219,48 +219,70 @@
 
       <!-- Who's going: their faces and names once EventsService.getAttendees
         answers, the count until then — and no section at all while nobody
-        is (crowd() is null). A "Vedi tutti" next to the heading will open
-        the whole list, once that dialog exists. -->
+        is (crowd() is null). With the dancerProfile flag, the faces and
+        "Vedi tutti" open the whole list (app-attendees-sheet), and from it
+        each person's profile. -->
       @if (crowd(); as crowd) {
       <section class="flex flex-col gap-3">
-        <h2 class="font-display text-[1.1875rem] font-extrabold">Chi ci va</h2>
-        <div class="flex items-center gap-3">
-          <div class="flex shrink-0" aria-hidden="true">
-            @for (face of crowd.faces; track face.userId; let first = $first) {
-            @if (face.avatarUrl) {
-            <img [src]="face.avatarUrl" alt="" class="size-10 rounded-full border-3 border-ground object-cover"
-              [class.-ml-3]="!first" />
-            } @else {
-            <span class="flex size-10 items-center justify-center rounded-full border-3 border-ground text-sm font-extrabold"
-              [class]="face.tone" [class.-ml-3]="!first">{{ face.initial }}</span>
-            }
-            } @empty {
-            <span class="flex size-10 items-center justify-center rounded-full bg-(--ev-raised) text-(--ev-tag-text)">
-              <ng-icon name="lucideUsers" class="size-5" />
-            </span>
-            }
-            @if (crowd.faces.length && crowd.more > 0) {
-            <span
-              class="-ml-3 flex size-10 items-center justify-center rounded-full border-3 border-ground bg-(--ev-tag-bg) text-xs font-extrabold text-(--ev-tag-text) tabular-nums">
-              +{{ crowd.more }}
-            </span>
-            }
-          </div>
-          <p class="text-sm leading-snug text-(--ev-soft)">
-            @if (crowd.names) {
-            <strong class="font-bold text-(--ev-text)">{{ crowd.names }}</strong>
-            @if (crowd.others > 0) {
-            e {{ crowd.others === 1 ? 'un altro' : 'altri ' + crowd.others }}
-            }
-            {{ crowd.total === 1 ? 'partecipa' : 'partecipano' }}
-            } @else {
-            <strong class="font-bold text-(--ev-text) tabular-nums">{{ crowd.total }}</strong>
-            {{ crowd.total === 1 ? 'partecipa' : 'partecipano' }}
-            }
-          </p>
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="font-display text-[1.1875rem] font-extrabold">Chi ci va</h2>
+          @if (dancerProfileEnabled) {
+          <button type="button" (click)="openAttendees()"
+            class="-mr-2 h-11 cursor-pointer rounded-[0.875rem] px-2 text-sm font-extrabold text-(--ev-link)">
+            Vedi tutti
+          </button>
+          }
         </div>
+        @if (dancerProfileEnabled) {
+        <button type="button" (click)="openAttendees()"
+          class="-mx-2 flex cursor-pointer items-center gap-3 rounded-2xl px-2 py-1 text-left transition-colors hover:bg-(--ev-raised)">
+          <ng-container *ngTemplateOutlet="crowdFaces; context: { $implicit: crowd }" />
+        </button>
+        } @else {
+        <div class="flex items-center gap-3">
+          <ng-container *ngTemplateOutlet="crowdFaces; context: { $implicit: crowd }" />
+        </div>
+        }
       </section>
       }
+
+      <!-- The faces and who they are in words: in a button that opens the list, or
+        just shown (flag off). Spans only: a <button> may hold no <div> or <p>. -->
+      <ng-template #crowdFaces let-crowd>
+        <span class="flex shrink-0" aria-hidden="true">
+          @for (face of crowd.faces; track face.userId; let first = $first) {
+          @if (face.avatarUrl) {
+          <img [src]="face.avatarUrl" alt="" class="size-10 rounded-full border-3 border-ground object-cover"
+            [class.-ml-3]="!first" />
+          } @else {
+          <span class="flex size-10 items-center justify-center rounded-full border-3 border-ground text-sm font-extrabold"
+            [style.background]="face.tone.bg" [style.color]="face.tone.fg" [class.-ml-3]="!first">{{ face.initial }}</span>
+          }
+          } @empty {
+          <span class="flex size-10 items-center justify-center rounded-full bg-(--ev-raised) text-(--ev-tag-text)">
+            <ng-icon name="lucideUsers" class="size-5" />
+          </span>
+          }
+          @if (crowd.faces.length && crowd.more > 0) {
+          <span
+            class="-ml-3 flex size-10 items-center justify-center rounded-full border-3 border-ground bg-(--ev-tag-bg) text-xs font-extrabold text-(--ev-tag-text) tabular-nums">
+            +{{ crowd.more }}
+          </span>
+          }
+        </span>
+        <span class="block text-sm leading-snug text-(--ev-soft)">
+          @if (crowd.names) {
+          <strong class="font-bold text-(--ev-text)">{{ crowd.names }}</strong>
+          @if (crowd.others > 0) {
+          e {{ crowd.others === 1 ? 'un altro' : 'altri ' + crowd.others }}
+          }
+          {{ crowd.total === 1 ? 'partecipa' : 'partecipano' }}
+          } @else {
+          <strong class="font-bold text-(--ev-text) tabular-nums">{{ crowd.total }}</strong>
+          {{ crowd.total === 1 ? 'partecipa' : 'partecipano' }}
+          }
+        </span>
+      </ng-template>
 
       @if (event.description; as description) {
       <section class="flex flex-col gap-2.5">
@@ -366,6 +388,11 @@
         (click)="toggleFlyerZoom(); $event.stopPropagation()" />
     </div>
   </div>
+  }
+
+  @if (dancerProfileEnabled) {
+  <app-attendees-sheet [(open)]="attendeesOpen" [eventId]="event.id" [goingCount]="event.goingCount"
+    (signInRequested)="askSignInForProfile()" />
   }
   } @else {
   <div class="flex flex-col items-center gap-4 px-4 py-16 text-center">

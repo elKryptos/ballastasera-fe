@@ -5,15 +5,15 @@ import { map, startWith, switchMap } from 'rxjs';
 
 /** A form field's label and what goes under it: its hint, its error once
  * touched, its character count. The input itself is projected, with the
- * .request-input look (styles.css). */
+ * .request-input look; the label is .request-label (both in styles.css). */
 @Component({
   selector: 'app-request-field',
   host: { class: 'flex flex-col gap-1.5' },
   template: `
-    <label [for]="fieldId()" class="text-[0.8125rem] font-bold text-(--ev-soft)">
+    <label [for]="fieldId()" class="request-label">
       {{ label() }}
       @if (optional()) {
-      <span class="font-medium text-muted">· facoltativo</span>
+      <span class="request-optional">· facoltativo</span>
       }
     </label>
     <ng-content />

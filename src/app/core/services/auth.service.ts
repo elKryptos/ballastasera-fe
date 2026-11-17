@@ -93,7 +93,7 @@ export class AuthService {
     return this.sessionCheck ?? of(this.currentUserSignal());
   }
 
-  /** Instagram and "Profilo visibile", from the account page. The answer is the
+  /** The whole profile, from the account page (see toUserUpdate). The answer is the
    * whole user again: it replaces the one in the session and in storage. */
   updateMe(body: UserUpdateDto): Observable<UserDto> {
     return this.http.patch<UserDto>(`${environment.apiUrl}${endpoints.auth.updateMe}`, body).pipe(

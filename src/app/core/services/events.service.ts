@@ -36,10 +36,10 @@ export class EventsService {
     return this.http.get<EventDetailDto>(`${environment.apiUrl}${endpoints.events.detail(id)}`, { context: publicApi() });
   }
 
-  /** The first `size` people going, for "Chi ci va" — only the event's page
-   * asks, once it's open. */
-  getAttendees(eventId: string, size: number): Observable<SpringPage<EventAttendeeDto>> {
-    const params = new HttpParams().set('size', size);
+  /** Who's going, public profiles only, `size` at a time (`page` counts from 0): the first
+   * faces of "Chi ci va" on the event's page, and the whole list in its sheet. */
+  getAttendees(eventId: string, size: number, page = 0): Observable<SpringPage<EventAttendeeDto>> {
+    const params = new HttpParams().set('size', size).set('page', page);
     return this.http.get<SpringPage<EventAttendeeDto>>(`${environment.apiUrl}${endpoints.events.attendees(eventId)}`, {
       params,
       context: publicApi(),

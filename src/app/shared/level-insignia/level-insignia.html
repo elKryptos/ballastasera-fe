@@ -1,0 +1,11 @@
+<svg viewBox="0 0 24 24" class="insignia">
+  @if (isTeacher()) {
+  <!-- The shield filled whole, the star a hole in it (evenodd). -->
+  <path [attr.d]="teacherBadge" fill="currentColor" fill-rule="evenodd" />
+  } @else {
+  <path [attr.d]="shield" class="shield" />
+  @for (chevron of chevrons(); track $index) {
+  <path [attr.d]="chevron" fill="currentColor" />
+  }
+  }
+</svg>

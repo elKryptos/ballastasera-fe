@@ -21,8 +21,12 @@
       Entra nella scena
     </h2>
     <p class="mb-6 text-sm leading-relaxed text-lead">
+      @if (text(); as text) {
+      {{ text }}
+      } @else {
       Accedi con il tuo account Google per mettere like alle serate e dire a quali partecipi. Niente password da
       ricordare.
+      }
     </p>
 
     <div class="flex flex-col gap-3">

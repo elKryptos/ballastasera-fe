@@ -1,0 +1,142 @@
+<!-- While the header is pulled down, the sheet follows the finger (pull) without its transition. -->
+<dialog #dialog class="ev-dialog sheet" [class.pulling]="pulling()" [style.translate]="pullOffset()"
+  aria-labelledby="attendees-title" (close)="onClose()" (click)="closeOnBackdrop($event)">
+  <!-- On a phone the header is the sheet's handle: pulled down past CLOSE_PULL_PX it closes, and a tap
+    on the line at its top closes it too. The line is for fingers only: out of the Tab order and
+    hidden from screen readers, which have the ✕ ("Chiudi") for the same. -->
+  <header class="header" (pointerdown)="startPull($event)">
+    <button type="button" class="grabber-hit md:hidden" tabindex="-1" aria-hidden="true" (click)="closeFromGrabber()">
+      <span class="grabber"></span>
+    </button>
+    @if (selected(); as attendee) {
+    <button type="button" class="back" (click)="backToList()">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.4"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      Chi ci va
+    </button>
+    <h2 id="attendees-title" class="sr-only">Il profilo di {{ attendee.displayName }}</h2>
+    } @else {
+    <!-- Who's there at a glance: a few faces, the title, how many and how many in incognito. -->
+    <div class="heading">
+      @if (headerFaces().length) {
+      <span class="stack" aria-hidden="true">
+        @for (row of headerFaces(); track row.attendee.userId) {
+        @if (row.attendee.avatarUrl; as url) {
+        <img class="stack-face" [src]="url" alt="" referrerpolicy="no-referrer" />
+        } @else {
+        <span class="stack-face" [style.background]="row.tone.bg" [style.color]="row.tone.fg">{{ row.initial }}</span>
+        }
+        }
+      </span>
+      }
+      <div class="heading-text">
+        <h2 id="attendees-title" class="title">Chi ci va</h2>
+        <p class="subtitle">{{ subtitle() }}</p>
+      </div>
+    </div>
+    }
+    <button type="button" class="close" aria-label="Chiudi" (click)="open.set(false)">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </header>
+
+  <!-- Each view has its own scrolling body, so the profile opens at its top and the list
+    comes back from its own. -->
+  @if (selected(); as attendee) {
+  <div class="body">
+    <app-attendee-profile [attendee]="attendee" (back)="backToList()" />
+  </div>
+  } @else {
+  <div class="body">
+    @if (rows().length) {
+    <ul class="people">
+      @for (row of rows(); track row.attendee.userId) {
+      <li>
+        <!-- --tone: the person's colour (personTone), for the ring round the face. -->
+        <button type="button" class="person" [class.is-me]="row.isMe" [style.--tone]="row.tone.bg"
+          (click)="openProfile(row.attendee)">
+          @if (row.attendee.avatarUrl; as url) {
+          <img class="face" [src]="url" alt="" referrerpolicy="no-referrer" />
+          } @else {
+          <span class="face face-initial" [style.color]="row.tone.fg" aria-hidden="true">{{ row.initial }}</span>
+          }
+          <span class="person-text">
+            <span class="person-name">
+              <span class="name">{{ row.attendee.displayName }}</span>
+              @if (row.isMe) {
+              <span class="me">Tu</span>
+              }
+            </span>
+            @if (row.handle; as handle) {
+            <span class="person-hint">
+              <svg viewBox="0 0 24 24" class="hint-icon" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" aria-hidden="true">
+                <rect x="4" y="4" width="16" height="16" rx="5" />
+                <circle cx="12" cy="12" r="3.5" />
+              </svg>
+              {{ handle }}
+            </span>
+            } @else {
+            <span class="person-hint">{{ row.isMe ? 'Il tuo profilo' : 'Vedi il profilo' }}</span>
+            }
+          </span>
+          <span class="go" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </span>
+        </button>
+      </li>
+      }
+    </ul>
+    } @else if (loaded()) {
+    <div class="empty">
+      <span class="empty-icon" aria-hidden="true">
+        <ng-icon name="lucideEyeOff" class="size-6" />
+      </span>
+      <p class="empty-title">Tutti in incognito</p>
+      <p class="note">Chi partecipa ha il profilo privato: per ora non si vede nessun nome.</p>
+    </div>
+    } @else if (loading()) {
+    <!-- The first page on its way: rows' shapes, not a line of text. -->
+    <ul class="people" role="status" aria-label="Caricamento di chi partecipa">
+      @for (skeleton of skeletons; track skeleton) {
+      <li class="skeleton" aria-hidden="true">
+        <span class="skeleton-face"></span>
+        <span class="skeleton-lines">
+          <span class="skeleton-line"></span>
+          <span class="skeleton-line short"></span>
+        </span>
+      </li>
+      }
+    </ul>
+    }
+
+    @if (failed()) {
+    <div class="message">
+      <p class="note" role="alert">Non siamo riusciti a caricare chi partecipa.</p>
+      <button type="button" class="secondary-button" (click)="loadMore()">Riprova</button>
+    </div>
+    } @else if (loading() && rows().length) {
+    <p class="note loading-more" role="status">Caricamento…</p>
+    } @else if (hasMore()) {
+    <button type="button" class="secondary-button" (click)="loadMore()">
+      Carica altri <span class="count">{{ remaining() }}</span>
+    </button>
+    }
+
+    @if (loaded() && hiddenCount() > 0 && rows().length) {
+    <p class="incognito">
+      <ng-icon name="lucideEyeOff" class="size-4 shrink-0" aria-hidden="true" />
+      {{ hiddenCount() === 1 ? 'Un altro partecipa in incognito' : 'Altri ' + hiddenCount() + ' partecipano in incognito' }}
+    </p>
+    }
+  </div>
+  }
+</dialog>

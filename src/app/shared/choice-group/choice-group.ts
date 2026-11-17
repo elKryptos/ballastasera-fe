@@ -10,6 +10,10 @@ export interface Choice<T> {
  * wrap) and "Dove" / "Ingresso" (the two halves of a switch). */
 type Appearance = 'grid' | 'chips' | 'segmented';
 
+/** The picked option's colour: sky blue in the nights' form, which keeps rose for «Pubblica serata»;
+ * inverted (cream by night, ink by day) in "Il tuo account". */
+type Tone = 'pick' | 'invert';
+
 /** Grid and chips are the same button (h-11, rounded-xl), laid out differently: the form's
  * buttons all share one shape. */
 const BUTTON: Record<Appearance, string> = {
@@ -17,11 +21,18 @@ const BUTTON: Record<Appearance, string> = {
   chips: 'h-11 rounded-xl border px-3.5 text-sm font-bold',
   segmented: 'h-10 rounded-[0.625rem] text-sm font-bold',
 };
-/** Picked: sky blue (--ev-pick), not rose, which the form keeps for «Pubblica serata». */
-const ON: Record<Appearance, string> = {
-  grid: 'border-(--ev-pick) bg-(--ev-pick) text-(--ev-on-pick)',
-  chips: 'border-(--ev-pick) bg-(--ev-pick) text-(--ev-on-pick)',
-  segmented: 'bg-(--ev-pick) text-(--ev-on-pick)',
+/** Picked, by tone. Whole class strings, so Tailwind finds them. */
+const ON: Record<Tone, Record<Appearance, string>> = {
+  pick: {
+    grid: 'border-(--ev-pick) bg-(--ev-pick) text-(--ev-on-pick)',
+    chips: 'border-(--ev-pick) bg-(--ev-pick) text-(--ev-on-pick)',
+    segmented: 'bg-(--ev-pick) text-(--ev-on-pick)',
+  },
+  invert: {
+    grid: 'border-(--ev-invert-bg) bg-(--ev-invert-bg) text-(--ev-invert-text)',
+    chips: 'border-(--ev-invert-bg) bg-(--ev-invert-bg) text-(--ev-invert-text)',
+    segmented: 'bg-(--ev-invert-bg) text-(--ev-invert-text)',
+  },
 };
 const OFF: Record<Appearance, string> = {
   grid: 'border-line bg-(--ev-surface) text-lead',
@@ -47,10 +58,13 @@ export class ChoiceGroup<T> implements ControlValueAccessor {
   readonly label = input.required<string>();
   readonly multiple = input(false, { transform: booleanAttribute });
   readonly appearance = input<Appearance>('chips');
+  readonly tone = input<Tone>('pick');
+  /** One value that may stay empty: tapping the picked one again unpicks it (the value turns null). */
+  readonly clearable = input(false, { transform: booleanAttribute });
 
   protected readonly selected = signal<T[]>([]);
   protected readonly disabled = signal(false);
-  private onChange: (value: T | T[]) => void = () => {};
+  private onChange: (value: T | T[] | null) => void = () => {};
   private onTouched: () => void = () => {};
 
   protected groupClass(): string {
@@ -59,7 +73,7 @@ export class ChoiceGroup<T> implements ControlValueAccessor {
 
   protected buttonClass(on: boolean): string {
     const appearance = this.appearance();
-    return `cursor-pointer disabled:cursor-default disabled:opacity-50 ${BUTTON[appearance]} ${on ? ON[appearance] : OFF[appearance]}`;
+    return `cursor-pointer disabled:cursor-default disabled:opacity-50 ${BUTTON[appearance]} ${on ? ON[this.tone()][appearance] : OFF[appearance]}`;
   }
 
   protected isOn(value: T): boolean {
@@ -71,6 +85,9 @@ export class ChoiceGroup<T> implements ControlValueAccessor {
       const next = this.isOn(value) ? this.selected().filter((v) => v !== value) : [...this.selected(), value];
       this.selected.set(next);
       this.onChange(next);
+    } else if (this.clearable() && this.isOn(value)) {
+      this.selected.set([]);
+      this.onChange(null);
     } else {
       this.selected.set([value]);
       this.onChange(value);
@@ -83,7 +100,7 @@ export class ChoiceGroup<T> implements ControlValueAccessor {
     else this.selected.set(value === null || value === '' ? [] : [value]);
   }
 
-  registerOnChange(fn: (value: T | T[]) => void): void {
+  registerOnChange(fn: (value: T | T[] | null) => void): void {
     this.onChange = fn;
   }
 

@@ -5,6 +5,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   model,
   signal,
   viewChild,
@@ -43,6 +44,9 @@ export class AuthModal {
 
   /** Two-way: the opener (the navbar's "Accedi" button, a like/Parteciperò tap) toggles this. */
   readonly open = model(false);
+  /** Why it opened, when it isn't a like or Parteciperò ("Chi ci va": someone's profile).
+   * Null: the usual text. */
+  readonly text = input<string | null>(null);
 
   protected readonly step = signal<Step>('form');
 

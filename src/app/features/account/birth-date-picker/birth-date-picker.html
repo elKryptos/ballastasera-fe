@@ -1,0 +1,17 @@
+<hlm-date-picker class="min-w-0 grow" align="start" captionLayout="dropdown" autoCloseOnSelect [date]="date()"
+  [defaultFocusedDate]="firstLook" [minDate]="minDate" [maxDate]="maxDate" [formatDate]="formatBirthDate"
+  [disabled]="disabled()" (dateChange)="pick($event)">
+  <hlm-date-picker-trigger [buttonId]="fieldId()" [class]="triggerClass">
+    Scegli la data
+  </hlm-date-picker-trigger>
+</hlm-date-picker>
+
+<!-- The birth date is optional: once given, it can be taken away again. -->
+@if (date()) {
+<button type="button" class="clear" aria-label="Togli la data di nascita" [disabled]="disabled()" (click)="clear()">
+  <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2"
+    stroke-linecap="round" aria-hidden="true">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+</button>
+}

@@ -1,0 +1,16 @@
+<app-request-field label="Data di nascita" fieldId="account-birth-date" [control]="form.controls.birthDate"
+  [optional]="true" hint="Gli altri vedono solo la tua età." error="Per il profilo devi avere tra 16 e 100 anni.">
+  <app-birth-date-picker fieldId="account-birth-date" [formControl]="form.controls.birthDate" />
+</app-request-field>
+
+<!-- The visible label sits over each group; ChoiceGroup's own `label` names it for screen readers. -->
+<div class="group">
+  <p class="request-label">Sesso <span class="request-optional">· facoltativo</span></p>
+  <app-choice-group label="Sesso" tone="invert" clearable [choices]="genders" [formControl]="form.controls.gender" />
+</div>
+
+<div class="group">
+  <p class="request-label">Ruolo <span class="request-optional">· facoltativo</span></p>
+  <app-choice-group label="Ruolo" appearance="segmented" tone="invert" clearable [choices]="roles"
+    [formControl]="form.controls.danceRole" />
+</div>

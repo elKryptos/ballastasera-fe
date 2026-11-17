@@ -6,7 +6,7 @@ import { CityDto } from '../../../../core/models/city.model';
 import { VenuesSummaryDto } from '../../../../core/models/venue.model';
 import { CitiesService } from '../../../../core/services/cities.service';
 import { OrganizersService } from '../../../../core/services/organizers.service';
-import { Choice, ChoiceGroup } from '../choice-group/choice-group';
+import { Choice, ChoiceGroup } from '../../../../shared/choice-group/choice-group';
 import { EditorSection } from '../editor-section/editor-section';
 import { EventEditorFormStore, PlaceMode } from '../event-editor-form.store';
 import { AddressSearch } from './address-search/address-search';

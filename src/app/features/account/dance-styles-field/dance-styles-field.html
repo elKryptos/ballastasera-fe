@@ -1,0 +1,62 @@
+<div class="group" role="group" aria-labelledby="account-styles-label">
+  <div class="heading">
+    <p id="account-styles-label" class="request-label">Cosa balli <span class="request-optional">· facoltativo</span></p>
+    <span class="count">{{ picked().length }} di {{ max }}</span>
+  </div>
+
+  <!-- A style can't be added past the limit: the chips not picked are disabled then. -->
+  <div class="chips">
+    @for (chip of chips(); track chip.id) {
+    <button type="button" class="chip" [attr.aria-pressed]="chip.picked" [disabled]="!chip.picked && full()"
+      (click)="toggle(chip.id)">
+      @if (chip.picked) {
+      <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.6"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12l5 5 9-10" />
+      </svg>
+      }
+      {{ chip.name }}
+    </button>
+    } @empty {
+    @if (stylesFailed()) {
+    <p class="hint" role="alert">Non siamo riusciti a caricare gli stili. Ricarica la pagina per sceglierli.</p>
+    } @else {
+    <p class="hint">Caricamento stili…</p>
+    }
+    }
+  </div>
+
+  @if (!picked().length) {
+  <p class="hint">Scegli cosa balli: chi apre il tuo profilo lo vede insieme al tuo livello.</p>
+  }
+
+  <!-- One card per picked style: on a phone name and levels stacked, on desktop one row each. -->
+  @if (cards().length) {
+  <div class="cards">
+    @for (card of cards(); track card.id) {
+    <div class="card">
+      <div class="card-head">
+        <span class="card-name">{{ card.name }}</span>
+        <span class="card-level" [class]="'level-' + card.rank">{{ card.levelLabel }}</span>
+        <button type="button" class="remove" [attr.aria-label]="'Togli ' + card.name" (click)="remove(card.id)">
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+      <div class="levels" role="group" [attr.aria-label]="'Il tuo livello in ' + card.name">
+        @for (level of card.levels; track level.value) {
+        <!-- The level's insignia on a phone, its name where there's room: aria-label names it either way. -->
+        <button type="button" class="level" [class]="'level-' + level.rank" [attr.aria-pressed]="level.picked"
+          [attr.aria-label]="level.label" (click)="setLevel(card.id, level.value)">
+          <app-level-insignia class="insignia" [rank]="level.rank" />
+          <span class="level-label" aria-hidden="true">{{ level.label }}</span>
+        </button>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

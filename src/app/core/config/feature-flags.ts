@@ -55,6 +55,10 @@ export const FEATURE_FLAGS = {
   socialPostsPage: 'socialPostsPage',
   /** The seasonal looks (Halloween), dated by SeasonService. */
   seasonalThemes: 'seasonalThemes',
+  /** The dancer's profile: in "Il tuo account" age, gender, role, styles with their level and
+   * WhatsApp; on an event's page the whole "Chi ci va" list and each person's profile. Off, the
+   * account still sends every field when saving (see toUserUpdate). */
+  dancerProfile: 'dancerProfile',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

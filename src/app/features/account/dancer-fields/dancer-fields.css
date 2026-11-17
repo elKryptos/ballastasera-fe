@@ -1,0 +1,12 @@
+/* The choices' look is ChoiceGroup's, the labels' .request-label (styles.css): here only the spacing. */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

@@ -47,11 +47,12 @@
 
     <div class="flex shrink-0 items-center gap-2">
       @if (currentUser(); as user) {
-      <!-- Status indicator only, not a control: opening the sidebar is the
-          hamburger trigger's job alone, so this doesn't duplicate it. -->
-      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full outline-offset-2" aria-hidden="true">
+      <!-- Straight to "Il tuo account", without opening the drawer: the hamburger stays
+          the only way to open that. -->
+      <a routerLink="/il-tuo-account" routerLinkActive ariaCurrentWhenActive="page" aria-label="Il tuo account"
+        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full outline-offset-2">
         @if (user.avatarUrl) {
-        <img [src]="user.avatarUrl" [alt]="user.displayName" referrerpolicy="no-referrer"
+        <img [src]="user.avatarUrl" alt="" referrerpolicy="no-referrer"
           class="avatar-img size-8 shrink-0 rounded-full object-cover" />
         } @else {
         <span
@@ -59,7 +60,7 @@
           {{ initial() }}
         </span>
         }
-      </span>
+      </a>
       } @else {
       <button type="button" (click)="openAuth()" aria-label="Accedi"
         class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-line p-0 text-bone outline-offset-2 active:border-rose active:bg-rose/12">

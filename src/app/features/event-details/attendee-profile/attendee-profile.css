@@ -1,0 +1,239 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+}
+
+/* The header, tinted with the person's colour (--tone, set from personTone). */
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
+  border-radius: 1.375rem;
+  background: color-mix(in srgb, var(--tone) 18%, var(--ev-surface));
+}
+
+.avatar {
+  width: 4.5rem;
+  height: 4.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 3px var(--ev-surface),
+    0 0 0 5px var(--tone);
+}
+
+.avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tone);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.hero-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+/* Age, gender and role, each in its own colour. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.25rem 0.625rem;
+  border: 1px solid color-mix(in srgb, var(--chip) 35%, transparent);
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--chip) 16%, transparent);
+  color: var(--chip);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.chip-age {
+  --chip: var(--ev-pick);
+}
+.chip-gender {
+  --chip: var(--ev-like);
+}
+.chip-role {
+  --chip: var(--ev-zone-on-text);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.note {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}
+
+/* "Cosa balla": one row per style, its level on the right (app-level-meter). */
+.styles {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ev-edge);
+  border-radius: 1.125rem;
+  background: var(--ev-raised);
+  list-style: none;
+}
+
+.style-row {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.875rem;
+}
+
+.style-row + .style-row {
+  border-top: 1px solid var(--ev-edge);
+}
+
+.style-name {
+  flex-grow: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* Contacts: each in its app's colour. */
+.contact {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--brand) 13%, var(--ev-surface));
+  color: var(--ev-text);
+  text-decoration: none;
+}
+
+.contact-whatsapp {
+  --brand: #25d366;
+}
+.contact-instagram {
+  --brand: #d6249f;
+}
+
+.contact-tile {
+  display: flex;
+  width: 2.375rem;
+  height: 2.375rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  color: #ffffff;
+}
+
+.tile-whatsapp {
+  background: #25d366;
+}
+
+.contact-text {
+  display: flex;
+  min-width: 0;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.contact-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.contact-hint {
+  overflow: hidden;
+  font-size: 0.75rem;
+  color: var(--ev-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--ev-soft);
+}
+
+/* "Profilo non disponibile" and a failed load. */
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+/* The same outlined button as the list's (attendees-sheet) and the rest of the app: h-11, rounded 0.875rem. */
+.secondary-button {
+  height: 2.75rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary-button {
+  display: flex;
+  height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+}

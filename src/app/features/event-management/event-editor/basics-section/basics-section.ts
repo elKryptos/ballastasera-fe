@@ -4,7 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { catchError, map, of } from 'rxjs';
 import { DanceStylesService } from '../../../../core/services/dance-styles.service';
 import { RequestField } from '../../../../shared/request-field/request-field';
-import { Choice, ChoiceGroup } from '../choice-group/choice-group';
+import { Choice, ChoiceGroup } from '../../../../shared/choice-group/choice-group';
 import { EditorSection } from '../editor-section/editor-section';
 import { EVENT_TYPE_CHOICES } from '../../../../core/config/event-types';
 import { EventEditorFormStore } from '../event-editor-form.store';

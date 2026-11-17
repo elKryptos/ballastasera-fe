@@ -34,6 +34,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   schoolListPage: true,
   socialPostsPage: true,
   seasonalThemes: true,
+  dancerProfile: true,
 };
 
 export const environment = {

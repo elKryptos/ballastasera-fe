@@ -1,0 +1,6 @@
+<button type="button" role="switch" [attr.aria-labelledby]="labelledBy()" [attr.aria-checked]="checked()"
+  (click)="toggled.emit()">
+  <span class="track" aria-hidden="true">
+    <span class="thumb"></span>
+  </span>
+</button>

@@ -1,27 +1,9 @@
 import { Component, forwardRef, input, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { type BrnCalendarI18n, provideBrnCalendarI18n } from '@spartan-ng/brain/calendar';
+import { provideBrnCalendarI18n } from '@spartan-ng/brain/calendar';
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker';
+import { CALENDAR_IT } from '../../../../../core/config/calendar-it';
 import { dayDate, dayKey, pickedDayLabel } from '../../../../../core/utils/event-schedule';
-
-const WEEKDAYS = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
-const MONTHS = [
-  'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
-  'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre',
-] as const;
-
-/** Spartan's calendar in Italian, the week from Monday. */
-const CALENDAR_IT: Partial<BrnCalendarI18n> = {
-  formatWeekdayName: (index) => WEEKDAYS[index].slice(0, 2).toUpperCase(),
-  labelWeekday: (index) => WEEKDAYS[index],
-  months: () => [...MONTHS],
-  formatHeader: (month, year) => `${MONTHS[month]} ${year}`,
-  formatMonth: (month) => MONTHS[month].slice(0, 3),
-  formatYear: (year) => String(year),
-  labelPrevious: () => 'Mese precedente',
-  labelNext: () => 'Mese successivo',
-  firstDayOfWeek: () => 1,
-};
 
 /** The trigger's button, looking like the form's other fields. Bound with [class], never as a plain
  * class attribute: the trigger has a `class` input, and a static attribute would also land on its

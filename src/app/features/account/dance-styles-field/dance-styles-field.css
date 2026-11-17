@@ -1,0 +1,206 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ev-soft);
+}
+
+/* Every style, the look of ChoiceGroup's chips (the gender's, the nights' form): picked ones
+inverted, with a tick. Not a ChoiceGroup itself: each pick carries its level, and a full list
+disables the rest. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.chip {
+  display: inline-flex;
+  height: 2.75rem;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  background: var(--ev-surface);
+  color: var(--color-lead);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--ev-invert-bg);
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+}
+
+.chip:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* The picked styles, one under the other. A container: how much room there is decides how
+compact each one gets (see the @container rules below). */
+.cards {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* One card per picked style: its name and "Togli", the four levels under them. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.625rem 0.625rem 0.625rem 0.875rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 1rem;
+  background: var(--ev-raised);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The picked level's name, in its colour: on a phone, where the buttons show only insignia. */
+.card-level {
+  flex-shrink: 0;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--level-color) 16%, transparent);
+  color: var(--level-color);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.remove {
+  margin-left: auto;
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--ev-soft);
+  cursor: pointer;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  background: var(--ev-surface);
+}
+
+/* From about 26rem there's room for the levels' names ("Principiante" needs it): they replace
+the insignia, and the name next to the style's isn't needed any more. */
+@container (min-width: 26rem) {
+  .insignia,
+  .card-level {
+    display: none;
+  }
+
+  .level-label {
+    display: inline;
+  }
+}
+
+/* With the form's whole width (desktop), one row per style: name, levels, "Togli". */
+@container (min-width: 40rem) {
+  .card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(24rem, 30rem) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.375rem 0.375rem 0.375rem 1rem;
+  }
+
+  .card-head {
+    display: contents;
+  }
+
+  .levels {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .remove {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+/* Each level button, its insignia and the name next to the style's read --level-color, set by
+the global .level-N class (styles.css): the same green-to-gold the profile shows to others. */
+.level {
+  display: flex;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.5625rem;
+  background: transparent;
+  color: var(--ev-soft);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.level[aria-pressed='true'] {
+  background: var(--level-color);
+  color: var(--ev-on-level);
+}
+
+/* The insignia, a game's rank badge (app-level-insignia). Each button's in its level's colour,
+so the row reads green to gold even before one is picked. */
+.insignia {
+  width: 1.625rem;
+  height: 1.625rem;
+  color: var(--level-color);
+}
+
+.level[aria-pressed='true'] .insignia {
+  color: inherit;
+}
+
+.level-label {
+  display: none;
+}

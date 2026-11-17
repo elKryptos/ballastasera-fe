@@ -644,6 +644,14 @@ app-event-editor {
   --ev-price: #fbbf24;
   /* "Gratis", where a price would be: green, apart from the mint of --ev-place. */
   --ev-free: #4ade80;
+  /* A dancer's level (DANCE_LEVELS, levelRank), from green to gold: beginner,
+  intermediate, advanced, teacher. The insignia and the word in someone's profile,
+  and the level picked in "Il tuo account", with --ev-on-level on it. */
+  --ev-level-1: #4ade80;
+  --ev-level-2: #9be15d;
+  --ev-level-3: #f5c04a;
+  --ev-level-4: #ffa62b;
+  --ev-on-level: #1a1405;
   /* Text on a solid --ev-price fill (the "Inizia tra" badge). */
   --ev-on-price: #1a0e2e;
   /* Count on the Filtri button, and the distance chips once picked. */
@@ -727,6 +735,12 @@ app-event-editor {
   /* The picked option by day: a deeper blue, white on it ~6.2:1. */
   --ev-pick: #2f5bd3;
   --ev-on-pick: #ffffff;
+  /* The levels, deep enough to read on white, white on them. */
+  --ev-level-1: #15803d;
+  --ev-level-2: #4d7c0f;
+  --ev-level-3: #a16207;
+  --ev-level-4: #b45309;
+  --ev-on-level: #ffffff;
 }
 
 /* "Diventa organizzatore" (features/organizer-request): the look every step's
@@ -791,6 +805,35 @@ across several components. 16px text, or iPhones zoom in on focus. */
     border: 1px solid var(--ev-edge);
     border-radius: 1.125rem;
     background: var(--ev-surface);
+  }
+
+  /* A field's label (app-request-field), or a group's, like "Sesso" over its choices, with
+  "· facoltativo" after it when it may stay empty. */
+  .request-label {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--ev-soft);
+  }
+
+  .request-optional {
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+
+  /* A dance level's colour, green to gold (--ev-level-N), as --level-color for whatever shows it:
+  app-level-meter, the level picker in "Il tuo account". class="level-{{ levelRank(level) }}". */
+  .level-1 {
+    --level-color: var(--ev-level-1);
+  }
+  .level-2 {
+    --level-color: var(--ev-level-2);
+  }
+  .level-3 {
+    --level-color: var(--ev-level-3);
+  }
+  .level-4 {
+    --level-color: var(--ev-level-4);
   }
 }
 
@@ -899,8 +942,11 @@ know @starting-style, which the open/close transition needs. */
   }
 }
 
-/* The page behind it stays put while it's open. */
-html:has(dialog.ev-dialog[open]) {
+/* The page behind it stays put while it's open. On body, not html: with html and body at
+height 100%, overflow on html stops body's from passing to the viewport, so the viewport
+has nothing left to scroll and jumps to the top (and body starts scrolling, from 0). On
+body it passes to the viewport, which keeps where it was, like lockBodyScrollWhile. */
+body:has(dialog.ev-dialog[open]) {
   overflow: hidden;
 }
 

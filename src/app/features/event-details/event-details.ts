@@ -17,7 +17,9 @@ import {
   lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
+import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { EVENT_TYPE_LABELS, VENUE_TYPE_LABELS } from '../../core/config/map-pins';
+import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
@@ -26,6 +28,7 @@ import { LinkedText } from '../../shared/linked-text/linked-text';
 import { EventPrice } from '../../shared/event-price/event-price';
 import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventPinIcon, VenuePinIcon } from '../../shared/event-filters/pin-icons';
+import { AttendeesSheet } from './attendees-sheet/attendees-sheet';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ORIGIN, PageSeo, SeoService, ShareImage, clip } from '../../core/services/seo.service';
@@ -33,6 +36,8 @@ import { EventAttendeeDto, EventDetailDto } from '../../core/models/event.model'
 import { OrganizerDetailDto } from '../../core/models/organizer.model';
 import { eventIcs } from '../../core/utils/calendar';
 import { injectPageShare } from '../../core/utils/page-share';
+import { firstNameOf, initialOf } from '../../core/utils/initials';
+import { personTone } from '../../core/utils/person-tone';
 import { lockBodyScrollWhile } from '../../core/utils/scroll-lock';
 import { capitalize, nightDateLabel, nightLongDate } from '../../core/utils/event-filters';
 import {
@@ -67,15 +72,9 @@ const MINI_MAP_ZOOM = 16;
  * the venue's description in its card starts folded, with "Leggi tutto". */
 const LONG_VENUE_ABOUT_CHARS = 140;
 
-/** Faces shown in "Chi ci va" before the "+N". */
+/** Faces shown in "Chi ci va" before the "+N". Without a photo, each in its person's colour
+ * (personTone): the same as in the whole list and in their profile. */
 const CROWD_FACES = 3;
-/** Their colours when there's no photo: the canvas' sky, mint and yellow,
- * each with a dark initial on it. */
-const FACE_TONES = [
-  'bg-[#6aa8ff] text-[#0d1a33]',
-  'bg-(--color-mint) text-[#0e2a26]',
-  'bg-[#f5c04a] text-[#2a1d05]',
-];
 
 /** An event's page, from the "Scheda evento" artboard of the Claude Design
  * canvas: the flyer, where it's held, when and how much, who's going, the
@@ -84,7 +83,18 @@ const FACE_TONES = [
 @Component({
   selector: 'app-event-details',
   templateUrl: './event-details.html',
-  imports: [AuthModal, SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, EventPinIcon, VenuePinIcon, LinkedText, EventPrice],
+  imports: [
+    AuthModal,
+    SidebarPushDirective,
+    NgIcon,
+    NgTemplateOutlet,
+    MapPreview,
+    EventPinIcon,
+    VenuePinIcon,
+    LinkedText,
+    EventPrice,
+    AttendeesSheet,
+  ],
   host: {
     class: 'block min-h-dvh bg-ground text-(--ev-text)',
     // On the document, not the lightbox <div>: that div never holds focus, so a
@@ -129,6 +139,12 @@ export class EventDetails {
    * Parteciperò/Mi piace: both require a session server-side (same pattern
    * as map.ts). */
   protected readonly authOpen = signal(false);
+  /** The login's text when it isn't about a like or Parteciperò; null: its usual one. */
+  protected readonly authText = signal<string | null>(null);
+
+  /** "Chi ci va" as a whole list, and from it each person's profile (AttendeesSheet). */
+  protected readonly dancerProfileEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.dancerProfile);
+  protected readonly attendeesOpen = signal(false);
   protected readonly going = signal(false);
   protected readonly liked = signal(false);
 
@@ -257,12 +273,12 @@ export class EventDetails {
     const people = this.attendees();
     const total = Math.max(event.goingCount, people.length);
     if (total === 0) return null;
-    const faces = people.slice(0, CROWD_FACES).map((person, i) => ({
+    const faces = people.slice(0, CROWD_FACES).map((person) => ({
       ...person,
-      initial: person.displayName.trim().charAt(0).toUpperCase(),
-      tone: FACE_TONES[i % FACE_TONES.length],
+      initial: initialOf(person.displayName),
+      tone: personTone(person.userId),
     }));
-    const names = people.slice(0, 2).map((person) => person.displayName.trim().split(/\s+/)[0]);
+    const names = people.slice(0, 2).map((person) => firstNameOf(person.displayName));
     return {
       total,
       faces,
@@ -363,6 +379,16 @@ export class EventDetails {
     );
   }
 
+  protected openAttendees(): void {
+    this.attendeesOpen.set(true);
+  }
+
+  /** Someone's profile was tapped signed out: the list is closed by now, the login opens. */
+  protected askSignInForProfile(): void {
+    this.authText.set('Accedi con il tuo account Google per vedere il profilo di chi partecipa: cosa balla, a che livello e come contattarlo. Niente password da ricordare.');
+    this.authOpen.set(true);
+  }
+
   protected toggleLike(): void {
     const event = this.event();
     if (!event) return;
@@ -439,6 +465,7 @@ export class EventDetails {
     saved?: () => void,
   ): void {
     if (!this.authService.isAuthenticated()) {
+      this.authText.set(null);
       this.authOpen.set(true);
       return;
     }

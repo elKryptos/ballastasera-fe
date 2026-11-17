@@ -1,0 +1,473 @@
+/* The dialog itself is .ev-dialog (styles.css): a sheet from the bottom on phones, a card from md
+up. This one keeps the same height in the list and in a profile, so switching between them
+doesn't make the sheet jump. */
+.sheet[open] {
+  height: min(88dvh, 46rem);
+}
+
+@media (min-width: 768px) {
+  .sheet[open] {
+    width: min(30rem, calc(100% - 2rem));
+    height: min(80dvh, 44rem);
+  }
+}
+
+.header {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.375rem 1.25rem 0.875rem;
+  border-bottom: 1px solid var(--ev-edge);
+  /* The handle: a finger on it pulls the sheet, it doesn't scroll the page. */
+  touch-action: none;
+}
+
+/* While pulled, the sheet sits under the finger; let go short of closing, it springs back.
+.ev-dialog's own transitions (styles.css) are repeated here, with translate added. */
+.sheet {
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.28s ease,
+    overlay 0.28s allow-discrete,
+    display 0.28s allow-discrete,
+    translate 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sheet.pulling {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    transition: none;
+  }
+}
+
+/* The line at the top: a button (tap: close) wider than the line, so it's easy to hit. */
+.grabber-hit {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: flex;
+  width: 5rem;
+  height: 1.375rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+.grabber {
+  width: 2.5rem;
+  height: 0.3125rem;
+  border-radius: 999px;
+  background: var(--ev-edge);
+  transition: background-color 0.15s;
+}
+
+.grabber-hit:hover .grabber {
+  background: var(--ev-soft);
+}
+
+.heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* The first faces, overlapping, each cut out of the sheet by a ring of its background. */
+.stack {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.stack-face {
+  display: flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ev-surface);
+  border-radius: 999px;
+  object-fit: cover;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.stack-face + .stack-face {
+  margin-left: -0.75rem;
+}
+
+.heading-text {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--ev-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The app's outlined button (h-11, rounded 0.875rem), never a pill. */
+.back {
+  display: flex;
+  height: 2.75rem;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.875rem 0 0.5rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: var(--ev-raised);
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.back:hover {
+  background: var(--ev-edge);
+}
+
+.close {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ev-raised);
+  color: var(--ev-text);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.close:hover {
+  background: var(--ev-edge);
+}
+
+.body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.875rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.75rem 0.75rem 1.75rem;
+}
+
+/* The list: whole rows tappable, lit on hover and press rather than split by lines. */
+.people {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.person {
+  display: flex;
+  width: 100%;
+  min-height: 4rem;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 1rem;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    transform 0.1s;
+}
+
+.person:hover,
+.person:focus-visible {
+  background: var(--ev-raised);
+}
+
+.person:active {
+  transform: scale(0.99);
+}
+
+/* The viewer's own row, first in the list, set apart by a light wash of the inverted colour
+(cream on dark, ink on light), the same that marks a picked option in the account. */
+.person.is-me {
+  margin-bottom: 0.375rem;
+  background: color-mix(in srgb, var(--ev-invert-bg) 9%, transparent);
+}
+
+.person.is-me:hover,
+.person.is-me:focus-visible {
+  background: color-mix(in srgb, var(--ev-invert-bg) 14%, transparent);
+}
+
+/* Each face ringed in its person's colour: the same colour as their profile's header. */
+.face {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 2px var(--ev-surface),
+    0 0 0 4px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+
+.face-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tone);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.person-text {
+  display: flex;
+  min-width: 0;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.person-name {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.name {
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.me {
+  flex-shrink: 0;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+  font-size: 0.6875rem;
+  font-weight: 800;
+}
+
+.person-hint {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.3125rem;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  color: var(--ev-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hint-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* The way in: a small round arrow, lit with the row. */
+.go {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ev-raised);
+  color: var(--ev-soft);
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.person:hover .go,
+.person:focus-visible .go {
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+}
+
+/* Loading: the rows' shapes, softly pulsing. */
+.skeleton {
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.5rem;
+}
+
+.skeleton-face,
+.skeleton-line {
+  background: var(--ev-raised);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-face {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+
+.skeleton-lines {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-line {
+  width: 55%;
+  height: 0.75rem;
+  border-radius: 999px;
+}
+
+.skeleton-line.short {
+  width: 35%;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-face,
+  .skeleton-line {
+    animation: none;
+  }
+
+  .person {
+    transition: none;
+  }
+}
+
+.note {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}
+
+.loading-more {
+  text-align: center;
+}
+
+/* Nobody public: the sheet says why, rather than standing empty. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.empty-icon {
+  display: flex;
+  width: 3.25rem;
+  height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ev-raised);
+  color: var(--ev-soft);
+}
+
+.empty-title {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.secondary-button {
+  display: flex;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 0.5rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.secondary-button:hover {
+  background: var(--ev-raised);
+}
+
+.count {
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* How many are going without a name: a quiet line at the end of the list. */
+.incognito {
+  display: flex;
+  align-self: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0;
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  background: var(--ev-raised);
+  font-size: 0.8125rem;
+  color: var(--ev-soft);
+}
+
+/* The profile keeps the wider margins the list's rows have by their own padding. */
+app-attendee-profile {
+  padding: 0.25rem 0.5rem 0;
+}

@@ -9,15 +9,15 @@
 /* Design tokens. Tailwind turns these into utilities: bg-ink, text-rose,
 font-display, border-line, and so on. */
 @theme {
-  /* Ink: dark plum, warm rather than cold-violet — the base a city skyline
-sunset sits on once the sun's down. The cards, surfaces, sidebar and bars
-are mixed from it, and it's the ink on rose. */
-  --color-ink: #1a0e2e;
-  --color-ink-2: #2a1640;
-  /* The pages' ground under all of that: a warm black, the same as the
-  lesson's night (--night in lesson-look.css). By day the pages that follow
-  the light theme swap it for paper, like --color-ink. */
-  --color-ground: #0f0a12;
+  /* Ink: a warm neutral charcoal (it was a dark plum until 17/11/2026: the violet tint
+left everything looking purple). The cards, surfaces, sidebar and bars are mixed from it,
+so people's photos and colours, rose and the levels are what stands out; and it's the
+ink on rose. */
+  --color-ink: #1b1819;
+  --color-ink-2: #2a2527;
+  /* The pages' ground under all of that: a warm black, a step below the ink. By day the
+  pages that follow the light theme swap it for paper, like --color-ink. */
+  --color-ground: #0f0d0e;
 
   /* One accent, coral-rose rather than hot-pink — the warm end of the
 sunset. Everything loud is this colour. */
@@ -617,23 +617,27 @@ app-organizer-profile,
 app-managed-events,
 app-managed-event,
 app-event-editor {
-  --ev-surface: color-mix(in srgb, var(--color-violet) 9%, var(--color-ink));
-  --ev-raised: color-mix(in srgb, var(--color-violet) 17%, var(--color-ink));
-  --ev-edge: color-mix(in srgb, var(--color-violet) 32%, var(--color-ink));
+  /* Surfaces: the charcoal ink, each step lighter with a little bone in it (no violet). */
+  --ev-surface: var(--color-ink);
+  --ev-raised: color-mix(in srgb, var(--color-bone) 7%, var(--color-ink));
+  --ev-edge: color-mix(in srgb, var(--color-bone) 15%, var(--color-ink));
   --ev-text: var(--color-bone);
-  --ev-soft: color-mix(in srgb, var(--color-violet) 22%, var(--color-lead));
+  --ev-soft: color-mix(in srgb, var(--color-lead) 80%, var(--color-ink));
   /* Dance style tags. */
-  --ev-tag-bg: color-mix(in srgb, var(--color-violet) 34%, var(--color-ink));
-  --ev-tag-text: color-mix(in srgb, var(--color-violet) 18%, var(--color-bone));
+  --ev-tag-bg: color-mix(in srgb, var(--color-bone) 11%, var(--color-ink));
+  --ev-tag-text: var(--color-lead);
   /* Text on rose (the selected day): fixed night ink in both themes,
   >= 5.6:1 on #ff4d6d. LIVE badges are white on --color-live instead. */
-  --ev-on-rose: #1a0e2e;
+  --ev-on-rose: #1b1819;
   /* A form's picked option (choice-group: tipo, stili, Dove, Ingresso): sky blue, so rose stays
   the main action's. Night ink on it, ~7.9:1. */
   --ev-pick: #8ab4ff;
   --ev-on-pick: #0d1a33;
-  /* Pressed toggles and Parteciperò: white text >= 4.5:1. */
-  --ev-primary: #6b46e0;
+  /* Pressed toggles, picked filters and Parteciperò, and the buttons that were violet: the
+  inverted pair (cream on charcoal by night, ink on paper by day), with --ev-on-primary on it.
+  Rose stays the one loud colour. */
+  --ev-primary: var(--ev-invert-bg);
+  --ev-on-primary: var(--ev-invert-text);
   --ev-like: #ff8fab;
   --ev-like-bg: rgba(255, 47, 109, 0.16);
   --ev-like-on: #e0245c;
@@ -652,7 +656,7 @@ app-event-editor {
   --ev-place: var(--ev-zone-on-text);
   /* "Cerca in questa zona": inverted, so it reads as the one action on the map. */
   --ev-invert-bg: var(--color-bone);
-  --ev-invert-text: #1a0e2e;
+  --ev-invert-text: #1b1819;
   --ev-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
   /* Chips floating straight on the map: tight enough not to get clipped by
   their scrolling row. */
@@ -666,12 +670,13 @@ app-event-editor {
   --ev-glass-edge: rgba(255, 255, 255, 0.3);
   --ev-glass-text: #ffffff;
   /* "Le tue serate" ("La tua scena" on the canvas): Parteciperò's check,
-  already on, as the button that takes a night out of the list — lilac,
-  apart from the rose of Mi piace; the tick drawn in --ev-going-mark on it. */
-  --ev-going: #bea0f2;
-  --ev-going-bg: rgba(190, 160, 242, 0.16);
-  --ev-going-edge: rgba(190, 160, 242, 0.35);
-  --ev-going-mark: #1a0e2e;
+  already on, as the button that takes a night out of the list — cream, like
+  Parteciperò pressed, apart from the rose of Mi piace; the tick drawn in
+  --ev-going-mark on it. */
+  --ev-going: var(--color-bone);
+  --ev-going-bg: rgba(253, 242, 236, 0.1);
+  --ev-going-edge: rgba(253, 242, 236, 0.28);
+  --ev-going-mark: #1b1819;
   /* Annulla on the inverted toast. */
   --ev-invert-link: #be123c;
 }
@@ -688,11 +693,14 @@ app-event-editor {
   --color-line: rgba(29, 38, 64, 0.14);
 
   --ev-surface: #ffffff;
-  --ev-raised: color-mix(in srgb, var(--color-violet) 5%, #ffffff);
+  /* Warm greys, like the night's charcoal: no lilac by day either. */
+  --ev-raised: #f5f2ed;
   --ev-edge: rgba(29, 38, 64, 0.14);
   --ev-soft: #4a5571;
-  --ev-tag-bg: rgba(107, 70, 224, 0.12);
-  --ev-tag-text: #5a35d1;
+  /* Opaque and warm: the faces' "+N" overlaps the last face (a see-through fill let it show
+  through), and an ink wash read cold, lilac, on the cream page. Like the night's tags. */
+  --ev-tag-bg: #ece7e1;
+  --ev-tag-text: #36425f;
   --ev-like: #be123c;
   --ev-like-bg: rgba(224, 36, 92, 0.12);
   --ev-price: #b45309;
@@ -711,9 +719,9 @@ app-event-editor {
   --ev-glass: rgba(255, 255, 255, 0.82);
   --ev-glass-edge: rgba(29, 38, 64, 0.14);
   --ev-glass-text: #1d2640;
-  --ev-going: #6d28d9;
-  --ev-going-bg: rgba(109, 40, 217, 0.1);
-  --ev-going-edge: rgba(109, 40, 217, 0.25);
+  --ev-going: #1d2640;
+  --ev-going-bg: rgba(29, 38, 64, 0.08);
+  --ev-going-edge: rgba(29, 38, 64, 0.22);
   --ev-going-mark: #ffffff;
   --ev-invert-link: #ff8fab;
   /* The picked option by day: a deeper blue, white on it ~6.2:1. */
@@ -843,7 +851,7 @@ know @starting-style, which the open/close transition needs. */
 }
 
 .ev-dialog::backdrop {
-  background: rgb(8 4 16 / 0);
+  background: rgb(10 8 9 / 0);
   transition:
     background-color 0.28s ease,
     overlay 0.28s allow-discrete,
@@ -851,12 +859,12 @@ know @starting-style, which the open/close transition needs. */
 }
 
 .ev-dialog[open]::backdrop {
-  background: rgb(8 4 16 / 0.55);
+  background: rgb(10 8 9 / 0.55);
 }
 
 @starting-style {
   .ev-dialog[open]::backdrop {
-    background: rgb(8 4 16 / 0);
+    background: rgb(10 8 9 / 0);
   }
 }
 

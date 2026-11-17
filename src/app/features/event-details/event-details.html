@@ -108,7 +108,7 @@
       <div
         class="sticky bottom-0 z-10 order-3 mt-auto flex gap-2.5 border-t border-(--ev-edge) bg-ground/90 px-4 pt-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] backdrop-blur-md @5xl:static @5xl:mt-0 @5xl:border-0 @5xl:bg-transparent @5xl:p-0 @5xl:backdrop-blur-none">
         <button type="button" [attr.aria-pressed]="going()" (click)="toggleGoing()"
-          class="flex h-13 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-primary) bg-transparent text-base font-bold text-(--ev-text) tabular-nums transition-colors aria-pressed:bg-(--ev-primary) aria-pressed:text-white">
+          class="flex h-13 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-primary) bg-transparent text-base font-bold text-(--ev-text) tabular-nums transition-colors aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary)">
           <ng-icon name="lucideCircleCheck" class="size-5" />
           Parteciperò{{ event.goingCount > 0 ? ' · ' + event.goingCount : '' }}
         </button>
@@ -282,7 +282,7 @@
             @if (organizer.logoUrl) {
             <img [src]="organizer.logoUrl" alt="" class="size-11 shrink-0 rounded-[0.875rem] object-cover" />
             } @else {
-            <span class="flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-(--ev-primary) font-display font-extrabold text-white"
+            <span class="flex size-11 shrink-0 items-center justify-center rounded-[0.875rem] bg-(--ev-primary) font-display font-extrabold text-(--ev-on-primary)"
               aria-hidden="true">{{ organizerInitials(organizer) }}</span>
             }
             <div class="min-w-0 flex-1">

@@ -78,7 +78,7 @@
           aria-label="Stile">
           @for (style of danceStyles(); track style.id) {
           <button type="button"
-            class="h-9 shrink-0 cursor-pointer rounded-[0.625rem] border border-(--ev-edge) px-3.5 text-[0.8125rem] font-semibold whitespace-nowrap text-(--ev-soft) transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+            class="h-9 shrink-0 cursor-pointer rounded-[0.625rem] border border-(--ev-edge) px-3.5 text-[0.8125rem] font-semibold whitespace-nowrap text-(--ev-soft) transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary)"
             [attr.aria-pressed]="filters.styles().has(style.name)" (click)="filters.toggleStyle(style.name)">
             {{ style.name }}
           </button>
@@ -117,7 +117,7 @@
     @if (!hasData() && error()) {
     <div class="mt-8 flex flex-col items-center gap-3 text-center">
       <p class="font-display text-[1.0625rem] font-extrabold">Non riusciamo a caricare le serate</p>
-      <button type="button" class="h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
+      <button type="button" class="h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-(--ev-on-primary)"
         (click)="retry()">Riprova</button>
     </div>
     } @else if (!hasData()) {
@@ -246,7 +246,7 @@
         Prova ad allargare la zona o togliere qualche filtro.
       </p>
       <button type="button"
-        class="mt-1.5 h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
+        class="mt-1.5 h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-(--ev-on-primary)"
         (click)="showEverything()">
         Tutta {{ city()?.name ?? 'la città' }}, tutte le date
       </button>

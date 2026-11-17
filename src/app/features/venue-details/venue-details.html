@@ -99,7 +99,7 @@
       [class]="actionsLayout().columns">
       @if (place(); as place) {
       <a [href]="place.directionsUrl" target="_blank" rel="noopener noreferrer"
-        class="flex items-center justify-center rounded-[1.125rem] border border-(--ev-primary) bg-(--ev-primary) font-bold text-white"
+        class="flex items-center justify-center rounded-[1.125rem] border border-(--ev-primary) bg-(--ev-primary) font-bold text-(--ev-on-primary)"
         [class]="actionsLayout().stacked ? 'flex-col gap-1.5 px-1 py-3 text-xs' : 'h-13 gap-2 text-sm'">
         <ng-icon name="lucideNavigation" class="size-5.5" />
         Indicazioni

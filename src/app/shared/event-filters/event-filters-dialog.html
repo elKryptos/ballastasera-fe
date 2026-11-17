@@ -31,7 +31,7 @@
       <div class="flex flex-wrap gap-2">
         @for (style of danceStyles(); track style.id) {
         <button type="button"
-          class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+          class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary)"
           [attr.aria-pressed]="filters.styles().has(style.name)" (click)="filters.toggleStyle(style.name)">
           {{ style.name }}
         </button>
@@ -53,7 +53,7 @@
       <div class="grid grid-cols-2 gap-2">
         @for (option of typeOptions; track option.type) {
         <button type="button"
-          class="flex h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-3 text-left text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+          class="flex h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-3 text-left text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary)"
           [attr.aria-pressed]="filters.types().has(option.type)" (click)="filters.toggleType(option.type)">
           <app-event-pin-icon [type]="option.type" [size]="24" />
           {{ option.label }}
@@ -68,7 +68,7 @@
       </h3>
       <div class="flex flex-wrap gap-2">
         <button type="button"
-          class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+          class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary)"
           [attr.aria-pressed]="filters.freeOnly()" (click)="filters.freeOnly.set(!filters.freeOnly())">
           Solo serate gratis
         </button>
@@ -86,7 +86,7 @@
       Azzera
     </button>
     <button type="button"
-      class="h-12 flex-1 cursor-pointer rounded-xl bg-(--ev-primary) px-4 text-[0.9375rem] font-bold text-white transition-transform active:scale-[0.98]"
+      class="h-12 flex-1 cursor-pointer rounded-xl bg-(--ev-primary) px-4 text-[0.9375rem] font-bold text-(--ev-on-primary) transition-transform active:scale-[0.98]"
       (click)="open.set(false)">
       {{ resultLabel() }}
     </button>

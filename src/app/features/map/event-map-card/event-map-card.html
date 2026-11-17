@@ -85,7 +85,7 @@
   <!-- Pressed styling comes from aria-pressed via Tailwind's aria-pressed: variant. -->
   <div class="flex gap-2.5">
     <button type="button"
-      class="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-primary) bg-transparent text-[0.9375rem] font-bold text-(--ev-text) transition-colors aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+      class="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-primary) bg-transparent text-[0.9375rem] font-bold text-(--ev-text) transition-colors aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary)"
       [attr.aria-pressed]="going()" (click)="goingToggled.emit()">
       <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

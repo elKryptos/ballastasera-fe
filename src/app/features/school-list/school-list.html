@@ -106,7 +106,7 @@
     @if (!hasData() && error()) {
     <div class="mt-8 flex flex-col items-center gap-3 text-center">
       <p class="font-display text-[1.0625rem] font-extrabold">Non riusciamo a caricare {{ words().the }}</p>
-      <button type="button" class="h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
+      <button type="button" class="h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-(--ev-on-primary)"
         (click)="retry()">Riprova</button>
     </div>
     } @else if (!hasData()) {
@@ -194,7 +194,7 @@
       <p class="font-display text-[1.0625rem] font-extrabold">Nessun risultato per «{{ query() }}»</p>
       <p class="text-sm leading-relaxed text-(--ev-soft)">Prova con il nome o con la via.</p>
       <button type="button"
-        class="mt-1.5 h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-white"
+        class="mt-1.5 h-11 cursor-pointer rounded-xl bg-(--ev-primary) px-5 text-sm font-bold text-(--ev-on-primary)"
         (click)="clearSearch()">
         Mostra {{ words().the }}
       </button>

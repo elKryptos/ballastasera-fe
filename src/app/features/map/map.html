@@ -106,7 +106,7 @@
     <div class="flex flex-wrap gap-2" role="group" aria-labelledby="map-filters-layer">
       @for (option of layerOptions; track option.value) {
       <button type="button"
-        class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-white"
+        class="h-10 cursor-pointer rounded-xl border border-(--ev-edge) bg-(--ev-raised) px-4 text-sm font-semibold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary)"
         [attr.aria-pressed]="mapLayer() === option.value" (click)="selectLayer(option.value)">
         {{ option.label }}
       </button>

@@ -8,7 +8,7 @@ const STORAGE_KEY = 'ballastasera.theme';
 
 /** Browser chrome colour (Android status bar), matching the top edge of the
  * navbar's mobile bar in each theme — same values as the inline script in index.html. */
-const THEME_COLORS: Record<Theme, string> = { dark: '#1a0e2e', light: '#fbf8f3' };
+const THEME_COLORS: Record<Theme, string> = { dark: '#1b1819', light: '#fbf8f3' };
 
 /**
  * The visitor's light/dark choice, persisted in localStorage and applied as

@@ -1,4 +1,5 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, PLATFORM_ID, computed, inject, input, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideBadgeCheck } from '@ng-icons/lucide';
@@ -28,13 +29,16 @@ export class ClaimPagePrompt {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly enabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.organizerRequestPage);
+  /** Never on the server: signed out there, it would render for everyone, flash for an organizer or
+   * admin until hydration took it away, and end up in the night's search snippet. */
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly name = input.required<string>();
   readonly slug = input.required<string>();
 
   protected readonly visible = computed(() => {
     const role = this.auth.currentUser()?.role;
-    return this.enabled && (!role || role === 'USER');
+    return this.isBrowser && this.enabled && (!role || role === 'USER');
   });
   protected readonly claimUrl = computed(() => claimRequestUrl(this.slug()));
   protected readonly authText = computed(

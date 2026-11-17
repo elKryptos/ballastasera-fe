@@ -90,6 +90,31 @@ describe('OrganizerRequestFormStore', () => {
     });
   });
 
+  describe('startClaimOf', () => {
+    it('answers "Chi sei?" with the page\'s type and picks it in the search', () => {
+      store.startClaimOf({ ...TARGET, type: 'CLUB' });
+
+      expect(store.organizerType()).toBe('CLUB');
+      expect(store.searchQuery()).toBe('Salsa Loca');
+      expect(store.claimTarget()).toEqual({ ...TARGET, type: 'CLUB' });
+      expect(store.mode()).toBe('CLAIM');
+      // A claimed club brings its venue: no "Il tuo locale".
+      expect(store.steps()).toEqual(['chi-sei', 'profilo', 'conferma']);
+      expect(store.firstIncompleteStep()).toBe('profilo');
+    });
+
+    it('turns a new profile already started into the claim', () => {
+      store.organizerType.set('PERSON');
+      store.startNew('Ana');
+
+      store.startClaimOf(TARGET);
+
+      expect(store.mode()).toBe('CLAIM');
+      expect(store.organizerType()).toBe('SCHOOL');
+      expect(store.toCreateDto()).toEqual(expect.objectContaining({ type: 'CLAIM', targetOrganizerId: 'o1' }));
+    });
+  });
+
   describe('validation', () => {
     it.each([
       ['ana.salsa', true],

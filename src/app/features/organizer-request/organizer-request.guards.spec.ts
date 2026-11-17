@@ -1,10 +1,21 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, GuardResult, MaybeAsync, Router, RouterStateSnapshot, UrlTree, provideRouter } from '@angular/router';
-import { firstValueFrom, isObservable, of, throwError } from 'rxjs';
+import {
+  ActivatedRouteSnapshot,
+  GuardResult,
+  MaybeAsync,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+  convertToParamMap,
+  provideRouter,
+} from '@angular/router';
+import { Observable, firstValueFrom, isObservable, of, throwError } from 'rxjs';
+import { OrganizerDetailDto } from '../../core/models/organizer.model';
 import { AuthService } from '../../core/services/auth.service';
 import { OrganizerRequestsService } from '../../core/services/organizer-requests.service';
-import { noPendingRequestGuard, pendingRequestGuard, requestStepGuard } from './organizer-request.guards';
-import { OrganizerRequestFormStore } from './organizer-request-form.store';
+import { OrganizersService } from '../../core/services/organizers.service';
+import { claimLinkGuard, noPendingRequestGuard, pendingRequestGuard, requestStepGuard } from './organizer-request.guards';
+import { ClaimTarget, OrganizerRequestFormStore } from './organizer-request-form.store';
 
 const route = {} as ActivatedRouteSnapshot;
 const state = {} as RouterStateSnapshot;
@@ -19,7 +30,14 @@ describe('organizer request guards', () => {
     load: () => of(null as unknown),
     myRequest: () => null as unknown,
   };
-  const store = { ensureOwnDraft: () => {}, canEnter: () => true, firstIncompleteStep: () => 'chi-sei' };
+  const store = {
+    ensureOwnDraft: () => {},
+    canEnter: () => true,
+    firstIncompleteStep: () => 'chi-sei',
+    startClaimOf: (target: ClaimTarget) => void claimed.push(target),
+  };
+  let claimed: ClaimTarget[];
+  let organizerBySlug: (slug: string) => Observable<Partial<OrganizerDetailDto>>;
   let role: string;
 
   const redirectOf = (result: GuardResult) =>
@@ -30,6 +48,8 @@ describe('organizer request guards', () => {
     requests.load = () => of(null);
     requests.myRequest = () => null;
     store.canEnter = () => true;
+    claimed = [];
+    organizerBySlug = () => of({});
     role = 'USER';
     TestBed.configureTestingModule({
       providers: [
@@ -37,6 +57,7 @@ describe('organizer request guards', () => {
         { provide: AuthService, useValue: { currentUser: () => ({ role }) } },
         { provide: OrganizerRequestsService, useValue: requests },
         { provide: OrganizerRequestFormStore, useValue: store },
+        { provide: OrganizersService, useValue: { getBySlug: (slug: string) => organizerBySlug(slug) } },
       ],
     });
   });
@@ -94,5 +115,44 @@ describe('organizer request guards', () => {
 
   it('opens a step the draft reaches', async () => {
     expect(await run(requestStepGuard('profilo'))).toBe(true);
+  });
+
+  describe('claimLinkGuard', () => {
+    const PAGE = { id: 'o1', name: 'Salsa Loca', slug: 'salsa-loca', type: 'SCHOOL' as const, logoUrl: null };
+
+    const runWith = (params: Record<string, string>) =>
+      settle(
+        TestBed.runInInjectionContext(() =>
+          claimLinkGuard({ queryParamMap: convertToParamMap(params) } as ActivatedRouteSnapshot, state),
+        ) as MaybeAsync<GuardResult>,
+      );
+
+    it('opens "Chi sei?" as usual without a page to claim', async () => {
+      organizerBySlug = () => throwError(() => new Error('not asked'));
+      expect(await runWith({})).toBe(true);
+      expect(claimed).toEqual([]);
+    });
+
+    it('picks a claimable page and goes on to "Il tuo profilo"', async () => {
+      let asked = '';
+      organizerBySlug = (slug) => ((asked = slug), of({ ...PAGE, claimable: true }));
+
+      expect(redirectOf(await runWith({ rivendica: 'salsa-loca' }))).toBe('/diventa-organizzatore/profilo');
+      expect(asked).toBe('salsa-loca');
+      expect(claimed).toEqual([expect.objectContaining(PAGE)]);
+    });
+
+    // Without the param, or "Chi sei?" would ask for the page again on every visit.
+    it('drops a page someone owns by now and starts the steps as usual', async () => {
+      organizerBySlug = () => of({ ...PAGE, claimable: false });
+      expect(redirectOf(await runWith({ rivendica: 'salsa-loca' }))).toBe('/diventa-organizzatore/chi-sei');
+      expect(claimed).toEqual([]);
+    });
+
+    it('starts the steps as usual if the page does not load', async () => {
+      organizerBySlug = () => throwError(() => new Error('404'));
+      expect(redirectOf(await runWith({ rivendica: 'gone' }))).toBe('/diventa-organizzatore/chi-sei');
+      expect(claimed).toEqual([]);
+    });
   });
 });

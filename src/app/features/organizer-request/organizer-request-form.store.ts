@@ -163,6 +163,14 @@ export class OrganizerRequestFormStore {
     this.claimTarget.set(organizer);
   }
 
+  /** "È la tua pagina?" on a night or a venue (claimLinkGuard): "Chi sei?" answered with the page's
+   * own type, and the search showing it, picked. */
+  startClaimOf(organizer: ClaimTarget): void {
+    this.organizerType.set(organizer.type);
+    this.searchQuery.set(organizer.name);
+    this.selectClaim(organizer);
+  }
+
   /** The name they searched for, not found, is likely the new profile's. */
   startNew(name: string): void {
     this.claimTarget.set(null);

@@ -47,6 +47,8 @@ export class AuthModal {
   /** Why it opened, when it isn't a like or Parteciperò ("Chi ci va": someone's profile).
    * Null: the usual text. */
   readonly text = input<string | null>(null);
+  /** Where to land once signed in, when it isn't the usual page (claiming a page: the request's steps). */
+  readonly returnUrl = input<string | null>(null);
 
   protected readonly step = signal<Step>('form');
 
@@ -118,6 +120,6 @@ export class AuthModal {
 
     // Full-page redirect to the backend's OAuth2 flow — it lands back on
     // /oauth2/callback with our JWT once Google confirms the login.
-    this.auth.loginWithGoogle();
+    this.auth.loginWithGoogle(this.returnUrl());
   }
 }

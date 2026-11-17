@@ -37,6 +37,11 @@ export class Oauth2Callback implements OnInit {
   }
 
   private postLoginUrl(): string {
+    // Asked to sign in on the way somewhere (say, claiming a page): back there,
+    // even on a first login. Read either way, so it doesn't outlive this login.
+    const returnUrl = this.auth.takeReturnUrl();
+    if (returnUrl && this.auth.currentUser()) return returnUrl;
+
     if (!this.featureFlags.isEnabled(FEATURE_FLAGS.welcomePage)) {
       return '/';
     }

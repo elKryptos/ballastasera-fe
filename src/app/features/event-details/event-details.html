@@ -323,6 +323,10 @@
           @if (organizer.description; as bio) {
           <p class="text-sm leading-relaxed text-(--ev-soft)"><app-linked-text [text]="bio" /></p>
           }
+          <!-- "È la tua pagina?": nobody owns this organizer's page yet. -->
+          @if (organizer.claimable) {
+          <app-claim-page-prompt [name]="organizer.name" [slug]="organizer.slug" class="border-t border-(--ev-edge) pt-3" />
+          }
           }
 
           @if (contacts().length) {

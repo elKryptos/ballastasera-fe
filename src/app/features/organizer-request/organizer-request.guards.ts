@@ -3,6 +3,8 @@ import { CanActivateFn, Router } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { OrganizerRequestsService } from '../../core/services/organizer-requests.service';
+import { OrganizersService } from '../../core/services/organizers.service';
+import { CLAIM_QUERY_PARAM } from '../../core/utils/organizer-request-status';
 import { OrganizerRequestFormStore, RequestStep, requestStepUrl } from './organizer-request-form.store';
 
 /** A step opens only once the draft reaches it: reloading on a later step
@@ -24,6 +26,24 @@ export const noPendingRequestGuard: CanActivateFn = () => {
   return inject(OrganizerRequestsService).ensureLoaded().pipe(
     catchError(() => of(null)),
     map((request) => (request?.status === 'PENDING' ? router.createUrlTree([requestStepUrl('richiesta-inviata')]) : true)),
+  );
+};
+
+/** "Chi sei?" with ?rivendica=<slug> ("È la tua pagina?" on a night or a venue): that page picked and
+ * straight on to "Il tuo profilo", the link left out of the history. A page someone owns by now, or
+ * one that doesn't load, opens the steps as usual: the search is there. */
+export const claimLinkGuard: CanActivateFn = (route) => {
+  const slug = route.queryParamMap.get(CLAIM_QUERY_PARAM);
+  if (!slug) return true;
+  const store = inject(OrganizerRequestFormStore);
+  const router = inject(Router);
+  return inject(OrganizersService).getBySlug(slug).pipe(
+    map((organizer) => {
+      if (!organizer.claimable) return router.createUrlTree([requestStepUrl('chi-sei')]);
+      store.startClaimOf(organizer);
+      return router.createUrlTree([requestStepUrl('profilo')]);
+    }),
+    catchError(() => of(router.createUrlTree([requestStepUrl('chi-sei')]))),
   );
 };
 

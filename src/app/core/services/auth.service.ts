@@ -12,6 +12,15 @@ import { Router } from '@angular/router';
  * revoked (401, see SecurityConfig), or its user gone. */
 const REFUSED_TOKEN_STATUSES = [401, 403, 404];
 
+/** Where a visitor was going when asked to sign in: sessionStorage, so it outlives the trip to Google
+ * on this tab only. */
+const RETURN_URL_KEY = 'auth.returnUrl';
+
+/** Only a path of this app: "//host" or a full URL would send the visitor elsewhere after signing in. */
+function isInAppPath(url: string): boolean {
+  return url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/\\');
+}
+
 /**
  * Session state, backed by the JWT the backend hands out after Google OAuth2
  * (see OAuth2LoginSuccessHandler) and read here from localStorage.
@@ -29,10 +38,29 @@ export class AuthService {
   /** The last /auth/me check, in flight or settled — see sessionChecked. */
   private sessionCheck: Observable<UserDto | null> | null = null;
 
-  /** Sends the browser to Google's consent screen; the backend redirects back to /oauth2/callback. */
-  loginWithGoogle(): void {
+  /** Sends the browser to Google's consent screen; the backend redirects back to /oauth2/callback.
+   * returnUrl: the in-app path to land on afterwards instead of the usual one (see takeReturnUrl). */
+  loginWithGoogle(returnUrl?: string | null): void {
     if (!this.isBrowser) return;
+    try {
+      if (returnUrl && isInAppPath(returnUrl)) sessionStorage.setItem(RETURN_URL_KEY, returnUrl);
+      else sessionStorage.removeItem(RETURN_URL_KEY);
+    } catch {
+      // Storage blocked: the login still works, it lands on the usual page.
+    }
     window.location.href = `${environment.apiUrl}${endpoints.auth.googleLogin}`;
+  }
+
+  /** The returnUrl loginWithGoogle() kept, read once: the next login starts without it. */
+  takeReturnUrl(): string | null {
+    if (!this.isBrowser) return null;
+    try {
+      const url = sessionStorage.getItem(RETURN_URL_KEY);
+      sessionStorage.removeItem(RETURN_URL_KEY);
+      return url && isInAppPath(url) ? url : null;
+    } catch {
+      return null;
+    }
   }
 
   /** Called once by the /oauth2/callback route after it extracts ?token= from the redirect. */

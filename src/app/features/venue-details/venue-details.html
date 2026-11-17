@@ -127,6 +127,13 @@
     </p>
     }
 
+    <!-- "È la tua pagina?": the venue's organizer page has no owner yet. As
+      wide as the actions above (max-w-xl less their padding). -->
+    @if (venue.organizerClaimable && venue.organizerSlug && venue.organizerName) {
+    <app-claim-page-prompt [name]="venue.organizerName" [slug]="venue.organizerSlug"
+      class="mx-4 mt-5 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-4.5 @5xl:mx-6 @5xl:max-w-[33rem]" />
+    }
+
     <!-- Two columns only with a "Chi siamo" to fill the left one; Dove alone
       keeps to a card's width. -->
     <div class="mt-7 flex flex-col gap-4 px-4 @5xl:px-0"

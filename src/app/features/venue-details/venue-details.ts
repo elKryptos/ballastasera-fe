@@ -21,6 +21,7 @@ import { SidebarPushDirective } from '../../shared/directives/sidebar-push.direc
 import { LinkedText } from '../../shared/linked-text/linked-text';
 import { MapPreview } from '../../shared/map-preview/map-preview';
 import { VenuePinIcon } from '../../shared/event-filters/pin-icons';
+import { ClaimPagePrompt } from '../../shared/claim-page-prompt/claim-page-prompt';
 import { addressPrimary, addressSecondary, googleMapsUrl, withoutCountry } from '../../core/utils/event-format';
 import { injectPageShare } from '../../core/utils/page-share';
 import { lockBodyScrollWhile } from '../../core/utils/scroll-lock';
@@ -49,7 +50,7 @@ const ACTION_COLUMNS = ['', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-c
 @Component({
   selector: 'app-venue-details',
   templateUrl: './venue-details.html',
-  imports: [SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, VenuePinIcon, LinkedText],
+  imports: [SidebarPushDirective, NgIcon, NgTemplateOutlet, MapPreview, VenuePinIcon, LinkedText, ClaimPagePrompt],
   host: {
     class: 'block min-h-dvh bg-ground text-(--ev-text)',
     // On the document, not the lightbox <div>: that div never holds focus, so a

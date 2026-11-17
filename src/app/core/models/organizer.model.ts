@@ -14,6 +14,8 @@ export interface OrganizerDetailDto {
   facebook: string | null;
   verified: boolean;
   claimed: boolean;
+  /** Verified and nobody owns it: a user may ask for it with a CLAIM ("È la tua pagina?"). */
+  claimable: boolean;
 }
 
 export interface OrganizerCreateDto {

@@ -23,6 +23,7 @@ import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { injectGoBack } from '../../core/routing/go-back';
 import { MapViewStateService } from '../../core/services/map-view-state.service';
 import { AuthModal } from '../../shared/auth-modal/auth-modal';
+import { ClaimPagePrompt } from '../../shared/claim-page-prompt/claim-page-prompt';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { LinkedText } from '../../shared/linked-text/linked-text';
 import { EventPrice } from '../../shared/event-price/event-price';
@@ -94,6 +95,7 @@ const CROWD_FACES = 3;
     LinkedText,
     EventPrice,
     AttendeesSheet,
+    ClaimPagePrompt,
   ],
   host: {
     class: 'block min-h-dvh bg-ground text-(--ev-text)',

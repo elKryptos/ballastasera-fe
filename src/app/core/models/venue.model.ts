@@ -7,6 +7,9 @@ export interface VenueDetailDto {
   /** Null when the venue has no organizer profile of its own. */
   organizerId: string | null;
   organizerName: string | null;
+  organizerSlug: string | null;
+  /** Its organizer is verified and nobody owns it: "È la tua pagina?". False without an organizer. */
+  organizerClaimable: boolean;
   cityId: number;
   cityName: string;
   name: string;

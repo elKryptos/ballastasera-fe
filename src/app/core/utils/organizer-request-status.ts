@@ -6,6 +6,14 @@ import { requestDayLabel } from './request-dates';
  * request's form store); the two the status links to are written out below. */
 export const REQUEST_URL = '/diventa-organizzatore';
 
+/** The query param that opens the steps with a page already picked to claim (claimLinkGuard). */
+export const CLAIM_QUERY_PARAM = 'rivendica';
+
+/** "È la tua pagina?" on a night or a venue: the request's steps with that page picked. */
+export function claimRequestUrl(slug: string): string {
+  return `${REQUEST_URL}/chi-sei?${CLAIM_QUERY_PARAM}=${encodeURIComponent(slug)}`;
+}
+
 /** What to tell a user about a request that's in review or was turned down: the menu's
  * "Organizza" card and the account page say the same thing, each in its own look. */
 export interface RequestStatus {

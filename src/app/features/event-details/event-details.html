@@ -11,10 +11,14 @@
   @if (loading()) {
   <p class="px-4 py-16 text-center text-sm text-(--ev-soft)">Caricamento evento…</p>
   } @else if (event(); as event) {
-  <!-- Live/soon badge, shared by its two spots: on the flyer, or next to the
-    eyebrow when there's no flyer. -->
+  <!-- Live/soon badge, or "Annullata" in its place, shared by its two spots: on
+    the flyer, or next to the eyebrow when there's no flyer. -->
   <ng-template #statusBadge>
-    @if (status(); as status) {
+    @if (cancelled()) {
+    <span class="inline-flex h-7 items-center rounded-full bg-(--ev-error) px-3 text-xs font-extrabold tracking-[0.03em] text-ground uppercase">
+      Annullata
+    </span>
+    } @else if (status(); as status) {
     <span class="inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-extrabold tracking-[0.03em] uppercase"
       [class]="status.live ? 'bg-live text-white' : 'bg-(--ev-price) text-(--ev-on-price)'">
       @if (status.live) {
@@ -104,7 +108,8 @@
       <!-- Parteciperò and Mi piace: a bar stuck to the bottom on phones, under
         the flyer from @5xl up. Pressed styling comes from aria-pressed. Each
         shows its count only once there is one: a 0 on every new night reads
-        as an empty room. -->
+        as an empty room. None on a cancelled night. -->
+      @if (!cancelled()) {
       <div
         class="sticky bottom-0 z-10 order-3 mt-auto flex gap-2.5 border-t border-(--ev-edge) bg-ground/90 px-4 pt-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] backdrop-blur-md @5xl:static @5xl:mt-0 @5xl:border-0 @5xl:bg-transparent @5xl:p-0 @5xl:backdrop-blur-none">
         <button type="button" [attr.aria-pressed]="going()" (click)="toggleGoing()"
@@ -120,9 +125,18 @@
           }
         </button>
       </div>
+      }
     </div>
 
     <div class="order-2 flex flex-col gap-5 px-4 pt-5 pb-8 @5xl:col-start-2 @5xl:row-start-2 @5xl:gap-6 @5xl:p-0 @5xl:pb-16">
+      @if (cancelled()) {
+      <div class="rounded-[0.875rem] border border-(--ev-error)/35 px-3.5 py-3" role="status">
+        <p class="text-[0.9375rem] font-extrabold text-(--ev-error)">Questa serata è stata annullata</p>
+        <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--ev-soft)">
+          Non si terrà.{{ contacts().length || venueLinks().length ? ' Per informazioni usa i contatti qui sotto.' : '' }}
+        </p>
+      </div>
+      }
       <div class="flex flex-col gap-2">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <p class="flex items-center gap-1.5 text-xs font-bold tracking-[0.08em] text-(--ev-soft) uppercase">

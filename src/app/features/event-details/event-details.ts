@@ -132,6 +132,9 @@ export class EventDetails {
   private readonly seo = inject(SeoService);
 
   protected readonly event = signal<EventDetailDto | null>(null);
+  /** Cancelled: the lists and the map leave it out, but a saved or shared link still opens it,
+   * so the page says so and has nothing to sign up for. */
+  protected readonly cancelled = computed(() => this.event()?.status === 'CANCELLED');
   protected readonly loading = signal(true);
   /** Who's going, by name — see loadAttendees(). Empty until it answers,
    * or if it can't: "Chi ci va" then goes by goingCount alone. */
@@ -268,10 +271,10 @@ export class EventDetails {
    * total — it already counts a tap on Parteciperò — while the names, first
    * names only, come from the attendees, when there are any. Null while
    * nobody's going: the section isn't shown, rather than saying so on every
-   * new night. */
+   * new night. Null on a cancelled night too: nobody's going to it any more. */
   protected readonly crowd = computed(() => {
     const event = this.event();
-    if (!event) return null;
+    if (!event || this.cancelled()) return null;
     const people = this.attendees();
     const total = Math.max(event.goingCount, people.length);
     if (total === 0) return null;
@@ -309,9 +312,10 @@ export class EventDetails {
 
     // Parteciperò/Mi piace state follows the session, not just the first
     // load: signing in from the auth modal fetches it, signing out clears it.
+    // A cancelled night has no buttons to fill in.
     effect(() => {
       const id = this.eventId();
-      if (!id || !this.authService.isAuthenticated()) {
+      if (!id || this.cancelled() || !this.authService.isAuthenticated()) {
         this.going.set(false);
         this.liked.set(false);
         return;
@@ -346,7 +350,7 @@ export class EventDetails {
       next: (event) => {
         this.event.set(event);
         this.loading.set(false);
-        this.loadAttendees(event.id);
+        if (event.status !== 'CANCELLED') this.loadAttendees(event.id);
       },
       error: () => this.loading.set(false),
     });
@@ -521,10 +525,12 @@ function eventSeo(event: EventDetailDto): PageSeo {
   const date = nightLongDate(event);
   const town = addressTown(event.address) ?? event.cityName;
   const where = [event.venue?.name, addressPrimary(event.address), town].filter(Boolean).join(', ');
+  // A cancelled night's link preview says so first, in the chat it's shared to too.
+  const cancelled = event.status === 'CANCELLED';
   return {
-    title: `${event.title} — ${event.venue?.name ?? town}, ${date}`,
+    title: `${cancelled ? 'Annullata: ' : ''}${event.title} — ${event.venue?.name ?? town}, ${date}`,
     description: clip(
-      [capitalize(date), where, styleFamilies(event.danceStyles).join(', '), formatPrice(event)]
+      [cancelled && 'Serata annullata', capitalize(date), where, styleFamilies(event.danceStyles).join(', '), formatPrice(event)]
         .filter(Boolean)
         .join(' · '),
       160,

@@ -1,5 +1,8 @@
-<div class="mx-auto flex min-h-[calc(100dvh-var(--header-h))] w-full max-w-xl flex-col px-4 pt-11 pb-6 md:min-h-dvh">
-  <div class="flex flex-col items-center text-center">
+<!-- One column on a phone; from @4xl two, like the request's steps (RequestStep): the
+    outcome on the left, held in view, what comes next and the buttons on the right. -->
+<div class="mx-auto flex min-h-[calc(100dvh-var(--header-h))] w-full max-w-xl flex-col px-4 pt-11 pb-6 md:min-h-dvh
+  @4xl:grid @4xl:max-w-7xl @4xl:grid-cols-[20rem_minmax(0,1fr)] @4xl:gap-x-8 @4xl:px-8 @4xl:pt-8">
+  <div class="flex flex-col items-center text-center @4xl:sticky @4xl:top-8 @4xl:items-start @4xl:self-start @4xl:text-left">
     <span class="flex size-24 items-center justify-center rounded-full bg-mint/15" aria-hidden="true">
       <span class="flex size-16 items-center justify-center rounded-full bg-(--ev-badge-bg) text-(--ev-badge-text)">
         <ng-icon name="lucideCheck" size="2rem" />
@@ -11,13 +14,14 @@
     </p>
   </div>
 
+  <div class="flex grow flex-col">
   @if (logoFailed) {
-  <p class="mt-5 rounded-[0.875rem] bg-amber/15 px-3.5 py-3 text-[0.8125rem] leading-snug text-amber" role="status">
+  <p class="mt-5 rounded-[0.875rem] @4xl:mt-0 @4xl:mb-5 bg-amber/15 px-3.5 py-3 text-[0.8125rem] leading-snug text-amber" role="status">
     Il logo non è stato caricato: potrai aggiungerlo dopo l'approvazione.
   </p>
   }
 
-  <ol class="request-card mt-7 flex flex-col p-4.5">
+  <ol class="request-card mt-7 flex flex-col p-4.5 @4xl:mt-0">
     @for (item of timeline(); track item.title; let last = $last) {
     <li class="flex gap-3.5">
       <div class="flex w-6 shrink-0 flex-col items-center" aria-hidden="true">
@@ -53,15 +57,15 @@
     }
   </ol>
 
-  <p class="mx-6 mt-4.5 text-center text-[0.8125rem] leading-[1.45] text-muted">
+  <p class="mx-6 mt-4.5 text-center text-[0.8125rem] @4xl:mx-0.5 @4xl:text-left leading-[1.45] text-muted">
     Nel frattempo continui a usare ballastasera come sempre: like, serate salvate, mappa.
   </p>
 
   @if (errorMessage(); as message) {
-  <p class="mt-4 text-center text-sm text-(--ev-error)" role="alert">{{ message }}</p>
+  <p class="mt-4 text-center text-sm text-(--ev-error) @4xl:text-left" role="alert">{{ message }}</p>
   }
 
-  <div class="mt-auto flex flex-col gap-2 pt-6">
+  <div class="mt-auto flex flex-col gap-2 pt-6 @4xl:mt-0">
     <a routerLink="/menu" class="flex h-13 items-center justify-center rounded-2xl bg-rose text-base font-extrabold text-(--ev-on-rose)">
       Torna alla home
     </a>
@@ -83,5 +87,6 @@
         </hlm-alert-dialog-footer>
       </hlm-alert-dialog-content>
     </hlm-alert-dialog>
+  </div>
   </div>
 </div>

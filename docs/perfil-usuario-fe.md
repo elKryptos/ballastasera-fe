@@ -4,28 +4,22 @@ Fecha: 16/11/2026 · Rama `feature/user-profile` (desde `main`). Backend: rama `
 `ballastasera-be`, terminado y con tests; plan en `ballastasera-be/docs/user-profile-plan.md` (contrato
 API en su sección 5 y en `ballastasera-be/docs/API.md`).
 
-Todo lo nuevo va detrás del flag **`dancerProfile`** (prod `false`, staging `true`): para verlo en local,
-`ng serve --configuration staging`.
+Todo lo nuevo va detrás del flag **`dancerProfile`**, hoy `true` en prod y en staging. Ponerlo en `false`
+en `environment.ts` apaga la feature en prod sin tocar el BE.
 
 Convención de estado:
 - `[ ]` no empezado
 - `[~]` en progreso (dejar nota de qué falta)
 - `[x]` hecho y probado
 
-## ▶ Dónde retomar (17/11/2026)
+## ▶ Estado (22/11/2026): en producción
 
-**Paso actual: código escrito, falta probarlo contra el BE local** (sección 5, «Prueba contra el BE
-local», con `pnpm start:staging` y el BE de la rama `feature/user-profile` corriendo).
-
-Estado:
-- Canvas revisado y aprobado por el usuario el 17/11, con los cambios F9 (colores) y F10 (foto, solo diseño).
-- Código del FE commiteado en la rama `feature/user-profile` (17/11), **sin push**: un commit con la paleta (F13) y otro con la feature. El merge a `main` lo hace el usuario, junto con el BE y después del SQL en prod. `ng build` (dev y prod) limpio;
-  `ng test`: 26 de 27 archivos en verde. Falla `app.spec.ts` por falta del provider de Transloco
+- FE en `main` (commit «Add dancer profile to the account and a Chi ci va sheet with attendee profiles»)
+  y desplegado con `dancerProfile` en `true`.
+- BE desplegado: el 22/11 `GET /rest/events/{id}/attendees` en prod ya devuelve `instagram`, campo
+  nuevo de `AttendeeDto`. `GET /rest/users/{id}` pide login: no se probó sin sesión.
+- `ng build` de prod limpio. `ng test`: falla solo `app.spec.ts` por falta del provider de Transloco
   (`TRANSLOCO_TRANSPILER`), ajeno a esta feature.
-- Fuera de esta feature, sin seguimiento: `docs/antes-de-contactar-locales.md` y `public/.well-known/`. No
-  commitearlos con esto.
-- Backend terminado y commiteado en su rama `feature/user-profile` (343 tests en verde), sin push; pendiente la
-  prueba con Postman. Ver `ballastasera-be/docs/user-profile-plan.md`.
 - Pendiente de decidir: borrar el canvas vacío «Profilo ballerino»
   (https://claude.ai/artifact/8qmyYeEcdYuP2LJEHMG1mg), creado por error antes de usar el canvas de abajo.
 

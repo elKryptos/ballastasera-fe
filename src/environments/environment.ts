@@ -8,7 +8,6 @@ import { FeatureFlag } from '../app/core/config/feature-flags';
 // would silently allow a missing key. This form makes TS error if one is missing.
 const featureFlags: Record<FeatureFlag, boolean> = {
   navbarAuth: true,
-  // Off until apiUrl above points at a real backend — see the TODO.
   googleAuth: true,
   mapPage: true,
   eventListPage: true,
@@ -35,7 +34,7 @@ const featureFlags: Record<FeatureFlag, boolean> = {
   schoolListPage: true,
   socialPostsPage: true,
   seasonalThemes: true,
-  dancerProfile: false,
+  dancerProfile: true,
 };
 
 export const environment = {

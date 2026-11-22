@@ -1,7 +1,7 @@
-<!-- From the Claude Design canvas "Diventa organizzatore", "Approvata". The
-    publishing pages don't exist yet, so their steps read "Presto" instead of
-    linking and the one button goes to the menu: when they land, each step
-    becomes a link and "Pubblica la prima serata" the main button. -->
+<!-- From the Claude Design canvas "Diventa organizzatore", "Approvata". A step
+    with a page links to it; one without reads "Presto" (the weekly series,
+    admin-only for now). The main button publishes the first night, or goes
+    to the menu while the nights' pages are off. -->
 <main appSidebarPush class="pt-(--header-h) md:pt-0">
   <div class="mx-auto flex min-h-[calc(100dvh-var(--header-h))] w-full max-w-xl flex-col px-4 pt-9 pb-6 md:min-h-dvh">
     <div class="relative size-22 self-start" aria-hidden="true">
@@ -45,8 +45,8 @@
       }
     </ol>
 
-    <a routerLink="/menu" class="mt-auto flex h-13 items-center justify-center rounded-2xl bg-rose text-base font-extrabold text-(--ev-on-rose) no-underline">
-      Vai al menu
+    <a [routerLink]="publishLink ?? '/menu'" class="mt-auto flex h-13 items-center justify-center rounded-2xl bg-rose text-base font-extrabold text-(--ev-on-rose) no-underline">
+      {{ publishLink ? 'Pubblica la prima serata' : 'Vai al menu' }}
     </a>
   </div>
 </main>

@@ -4,7 +4,9 @@ import { CanActivateFn, Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
 import { catchError, forkJoin, map, of } from 'rxjs';
+import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { OrganizerRequestDto } from '../../core/models/organizer-request.model';
+import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { OrganizerRequestsService } from '../../core/services/organizer-requests.service';
 import { OrganizersService } from '../../core/services/organizers.service';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
@@ -49,6 +51,12 @@ export class OrganizerWelcome {
 
   protected readonly request = this.requests.myRequest;
 
+  /** "Nuova serata" (eventManagementPage): the second step's link and the main button. Off, the step
+   * reads "Presto" and the button goes to the menu. */
+  protected readonly publishLink = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventManagementPage)
+    ? '/serate-pubblicate/nuova'
+    : undefined;
+
   /** Its logo and its venue. The page reads fine without them if they don't load. */
   private readonly page = toSignal(this.loadPage(), { initialValue: null });
 
@@ -68,7 +76,12 @@ export class OrganizerWelcome {
     const venue = this.venue();
     return [
       { title: venue ? 'Profilo e locale collegati' : 'Profilo pronto', done: true },
-      { title: 'Pubblica la prima serata', text: venue ? 'Data, stili e flyer: il luogo è già il tuo locale' : 'Data, luogo, stili e flyer' },
+      {
+        title: 'Pubblica la prima serata',
+        text: venue ? 'Data, stili e flyer: il luogo è già il tuo locale' : 'Data, luogo, stili e flyer',
+        link: this.publishLink,
+      },
+      // "Presto": for now only the admin creates a series (the editor's schedule offers it to them only).
       { title: 'Crea una serata ricorrente', text: 'Per corsi e social di ogni settimana' },
       // Only once it's known there's no logo: it doesn't flash at someone who has one.
       ...(page && !this.logoUrl()

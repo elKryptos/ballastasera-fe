@@ -1,17 +1,18 @@
 <!-- The canvas's "La tua scena" (LeTueSerate, SeratePassate, the Vuoto and
     Paginazione boards), on the --ev-* tokens in styles.css, so it follows the
     day theme too (LeTueSerateGiorno). The selected tab is rose with ink on it
-    (--ev-on-rose), as on the canvas. A phone screen there: here one column
-    up to max-w-2xl, the cards don't need more. -->
-<main appSidebarPush class="pt-(--header-h) md:pt-0">
-  <div class="mx-auto flex max-w-2xl flex-col gap-5 px-4 pt-5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+    (--ev-on-rose), as on the canvas. A phone screen there: here one column on
+    a phone; from @5xl as wide as the nights' other lists (max-w-300, px-8,
+    pt-6), each night's cards two, then three, to a row. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex max-w-300 flex-col gap-5 px-4 pt-5 pb-[calc(6rem+env(safe-area-inset-bottom))] @5xl:px-8 @5xl:pt-6">
     <div>
       <p class="text-[0.9375rem] font-semibold text-(--ev-link)">La tua scena</p>
       <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Le tue serate</h1>
     </div>
 
     <div role="tablist" aria-label="Le tue serate"
-      class="flex shrink-0 gap-1 rounded-2xl border border-(--ev-edge) bg-(--ev-surface) p-1">
+      class="flex shrink-0 gap-1 rounded-2xl border border-(--ev-edge) bg-(--ev-surface) p-1 @3xl:max-w-xl">
       <button type="button" role="tab" id="tab-going" aria-controls="panel"
         class="group flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-extrabold text-(--ev-soft) transition-colors aria-selected:bg-rose aria-selected:text-(--ev-on-rose)"
         [attr.aria-selected]="tab() === 'going'" (click)="selectTab('going')">
@@ -60,9 +61,9 @@
       <ng-container [ngTemplateOutlet]="placeholders" />
       } @else {
       @for (group of upcomingGroups(); track group.night) {
-      <section class="flex flex-col gap-2.5" [attr.aria-labelledby]="'night-' + group.night">
+      <section class="grid items-start gap-2.5 @3xl:grid-cols-2 @6xl:grid-cols-3" [attr.aria-labelledby]="'night-' + group.night">
         <h2 [id]="'night-' + group.night"
-          class="px-1 text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+          class="col-span-full px-1 text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
           {{ group.heading }}
         </h2>
         @for (event of group.events; track event.id) {
@@ -142,9 +143,9 @@
       @if (pastOpen()) {
       <div id="past-nights" class="flex flex-col gap-5">
         @for (group of pastGroups(); track group.night) {
-        <section class="flex flex-col gap-2.5" [attr.aria-labelledby]="'past-' + group.night">
+        <section class="grid items-start gap-2.5 @3xl:grid-cols-2 @6xl:grid-cols-3" [attr.aria-labelledby]="'past-' + group.night">
           <h2 [id]="'past-' + group.night"
-            class="px-1 text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+            class="col-span-full px-1 text-[0.6875rem] font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
             {{ group.heading }}
           </h2>
           @for (event of group.events; track event.id) {
@@ -217,7 +218,7 @@
     jumps when the nights come in. With more = true, the "Carico altre
     serate…" line under them. -->
 <ng-template #placeholders let-more>
-  <div class="flex flex-col gap-2.5" role="status" aria-label="Carico altre serate">
+  <div class="grid gap-2.5 @3xl:grid-cols-2 @6xl:grid-cols-3" role="status" aria-label="Carico altre serate">
     @for (placeholder of [1, 2]; track placeholder) {
     <div class="flex gap-3 rounded-[1.25rem] border border-(--ev-edge) bg-(--ev-surface) p-3"
       [class.opacity-60]="placeholder === 2" aria-hidden="true">
@@ -231,7 +232,7 @@
     </div>
     }
     @if (more) {
-    <p class="flex items-center justify-center gap-2 pt-1 text-[0.8125rem] font-semibold text-(--ev-soft)">
+    <p class="col-span-full flex items-center justify-center gap-2 pt-1 text-[0.8125rem] font-semibold text-(--ev-soft)">
       <svg viewBox="0 0 24 24" class="size-4.5 animate-spin" fill="none" stroke-width="2.6" stroke-linecap="round"
         aria-hidden="true">
         <circle cx="12" cy="12" r="9" stroke="var(--ev-edge)" />

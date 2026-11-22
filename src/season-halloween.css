@@ -1,5 +1,5 @@
 /* Halloween: <html data-season="halloween">, set by SeasonService in its
-season (SEASON_START to SEASON_END there). Mostly a layer over the navbar —
+season (SEASONS there). Mostly a layer over the navbar —
 nothing in the base styles changed for it, and none of this applies the rest
 of the year: the pieces it adds (shared/season, the lists' Halloween chip and
 cards) aren't even in the page then. Global, like the menu's own styles in
@@ -48,17 +48,13 @@ gradient (styles.css, "Sidebar menu"). The paper of the light theme stays. */
 }
 
 /* The logo turns into a pumpkin: its stem, leaf and ribs (navbar.html,
-.season-halloween) show up, and its glow follows the colour. */
+.season-halloween) show up; its glow, made of rose, follows the colour. */
 .season-halloween {
   display: none;
 }
 
 :root[data-season='halloween'] .season-halloween {
   display: inline;
-}
-
-:root[data-season='halloween'] .brand-mark {
-  filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--pumpkin) 50%, transparent));
 }
 
 /* "Nuovo": pumpkin into candlelight, with night-ink text, which reads better

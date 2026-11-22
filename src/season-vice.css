@@ -1,0 +1,133 @@
+/* Vice City, for GTA VI's launch: <html data-season="vice">, set by
+SeasonService in its season (SEASONS there). Like season-halloween.css, a
+layer over the navbar: its pieces (shared/season/vice.ts, the logo's palm)
+are only in the page, or only shown, while it's on, and nothing here applies
+the rest of the year. Nothing of the game's own logo or type: its sunset,
+palm, neon and stars only. Global and unlayered, for the same reasons as
+season-halloween.css. */
+
+/* Vice City's palette, the one place its colours are set. */
+:root {
+  --vice-sun: #ffc93c;
+  --vice-orange: #ff7a3d;
+  --vice-pink: #ff2d8a;
+  --vice-violet: #a21caf;
+  --vice-teal: #2de2e6;
+
+  /* What the navbar paints with: the palette by night, deeper by day so it
+  still reads on the paper. */
+  --vice-rose: var(--vice-pink);
+  --vice-palm: var(--vice-teal);
+  --vice-text-sun: var(--vice-sun);
+  --vice-text-orange: var(--vice-orange);
+  --vice-text-pink: var(--vice-pink);
+  --vice-glow: color-mix(in srgb, var(--vice-pink) 28%, transparent);
+}
+
+:root[data-theme='light'] {
+  --vice-rose: #db2777;
+  --vice-palm: #0e9fb8;
+  --vice-text-sun: #d97706;
+  --vice-text-orange: #ea580c;
+  --vice-text-pink: #db2777;
+  --vice-glow: color-mix(in srgb, var(--vice-orange) 18%, transparent);
+}
+
+/* Neon pink in place of rose, in the top bar, the drawer and the rail only,
+as Halloween's pumpkin: the logo's glow, the avatar, the switches, the "Nuovo"
+chip and the bar's edge follow. */
+:root[data-season='vice'] :is(.mobile-bar, [data-mobile='true'], app-navbar [data-slot='sidebar-inner']) {
+  --color-rose: var(--vice-rose);
+}
+
+/* The logo: the drop turns into a retro sunset (ViceDefs), its palm shows. */
+:root[data-season='vice'] .brand-drop {
+  fill: url(#vice-sun);
+  mask: url(#vice-stripes);
+}
+
+.season-vice {
+  display: none;
+}
+
+:root[data-season='vice'] .season-vice {
+  display: inline;
+}
+
+/* "stasera" in the sunset's colours, top to bottom. */
+:root[data-season='vice'] .brand-night {
+  background: linear-gradient(
+    180deg,
+    var(--vice-text-sun) 10%,
+    var(--vice-text-orange) 50%,
+    var(--vice-text-pink) 90%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The wanted stars (ViceStars): white, ink-edged, flashing in turns. Hard
+stops on linear timing rather than steps(), which WebKit won't run off the
+main thread. */
+.vice-stars {
+  display: flex;
+  gap: 1.5px;
+  margin-left: 0.25rem;
+}
+
+.vice-stars svg {
+  width: 0.625rem;
+  height: 0.625rem;
+  animation: vice-wanted 0.9s linear infinite;
+}
+
+.vice-stars svg:nth-child(even) {
+  animation-delay: -0.45s;
+}
+
+.vice-stars path {
+  fill: #fff;
+  stroke: #111;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+
+/* The top bar (ViceHorizon): a sunset glow rising under the logo, a neon
+horizon along its foot. */
+.vice-horizon {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 120% at 50% 130%, var(--vice-glow), transparent 70%);
+}
+
+.vice-horizon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--vice-teal), var(--vice-pink) 45%, var(--vice-orange) 70%, var(--vice-teal));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--vice-pink) 70%, transparent);
+}
+
+/* Animations top-level, the motion preference only turning them off: kept
+out of @media blocks, where the built CSS has dropped them before. */
+@media (prefers-reduced-motion: reduce) {
+  .vice-stars svg {
+    animation: none;
+  }
+}
+
+@keyframes vice-wanted {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.25;
+  }
+}

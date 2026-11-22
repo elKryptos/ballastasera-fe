@@ -130,14 +130,16 @@ styles.css) — and the night-sky star scatter goes away. */
   display: none;
 }
 
+/* The logo's glow, in its rose: here rather than a Tailwind drop-shadow-[…],
+which bakes the colour in, so it follows a season's (season-*.css). */
+.brand-mark {
+  filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--color-rose) 45%, transparent));
+}
+
 /* The logo keeps its night-ink equaliser bars, whatever --color-ink is now. */
 :host-context([data-theme='light']) a[aria-label='ballastasera — home'] svg g {
   fill: #1a0e2e;
 }
-
-/* "stasera" = tonight — same tiny star scatter as the landing headline,
-shared globally (styles.css's .night) since it's used by both; the logo
-here just takes the default (smaller) size. */
 
 /* The mobile bar's account avatar. The sidebar menu itself is styled in
 styles.css ("Sidebar menu"), since on mobile it renders outside this

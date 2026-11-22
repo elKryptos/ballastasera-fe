@@ -6,6 +6,8 @@
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
 /* The navbar's Halloween layer, inert outside <html data-season="halloween">. */
 @import './season-halloween.css';
+/* Vice City (GTA VI's launch), inert outside <html data-season="vice">. */
+@import './season-vice.css';
 /* Design tokens. Tailwind turns these into utilities: bg-ink, text-rose,
 font-display, border-line, and so on. */
 @theme {

@@ -18,6 +18,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { RailTooltip } from '../directives/rail-tooltip.directive';
 import { RoleDirective } from '../directives/role.directive';
 import { HalloweenBats, HalloweenCard, HalloweenSpider, HalloweenWeb } from '../season/halloween';
+import { ViceDefs, ViceHorizon, ViceStars } from '../season/vice';
 import { injectMyOrganizerName } from './my-organizer-name';
 import { OrganizerMenuCard } from './organizer-menu-card/organizer-menu-card';
 
@@ -42,6 +43,9 @@ import { OrganizerMenuCard } from './organizer-menu-card/organizer-menu-card';
     HalloweenCard,
     HalloweenSpider,
     HalloweenWeb,
+    ViceDefs,
+    ViceHorizon,
+    ViceStars,
     OrganizerMenuCard,
   ],
   templateUrl: './navbar.html',
@@ -93,6 +97,8 @@ export class Navbar {
 
   /** Halloween's extras in the bar and the menu (shared/season), there only in its season. */
   protected readonly halloween = this.seasonService.halloween;
+  /** Vice City's extras (GTA VI's launch, shared/season): the logo's sunset and stars, the bar's horizon. */
+  protected readonly vice = this.seasonService.vice;
 
   private readonly transloco = inject(TranslocoService);
 

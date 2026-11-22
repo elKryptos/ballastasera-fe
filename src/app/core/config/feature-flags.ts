@@ -53,7 +53,7 @@ export const FEATURE_FLAGS = {
   schoolListPage: 'schoolListPage',
   /** /admin/social route: the nights and the lesson as pictures for Instagram, to download (also gated on the ADMIN role). */
   socialPostsPage: 'socialPostsPage',
-  /** The seasonal looks (Halloween), dated by SeasonService. */
+  /** The seasonal looks (Halloween, Vice City for GTA VI's launch), dated by SeasonService. */
   seasonalThemes: 'seasonalThemes',
   /** The dancer's profile: in "Il tuo account" age, gender, role, styles with their level and
    * WhatsApp; on an event's page the whole "Chi ci va" list and each person's profile. Off, the

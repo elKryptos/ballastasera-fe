@@ -1,6 +1,6 @@
 # Antes de contactar a los locales
 
-Estado al 13/11/2026. Qué falta para ofrecer ballastasera gratis a los locales sin que se cansen en
+Creado el 13/11/2026, estado revisado contra el código el 22/11/2026. Qué falta para ofrecer ballastasera gratis a los locales sin que se cansen en
 la primera semana, y cómo mostrar la plataforma mientras todavía hay pocos usuarios.
 
 Convención: `[ ]` no empezado · `[~]` en progreso (con nota) · `[x]` hecho y probado.
@@ -9,18 +9,23 @@ Convención: `[ ]` no empezado · `[~]` en progreso (con nota) · `[x]` hecho y 
 
 ## 1. Bloqueantes (antes del primer contacto)
 
+### 1.0 Reclamar una página sin dueño
+- [x] En la ficha de una serata («Chi organizza») y en la del local, si el organizador no tiene dueño,
+      aparece el aviso para reclamarla (`app-claim-page-prompt`), que lleva al flujo de «Diventa
+      organizzatore» con esa página. Así un local que se encuentra ya publicado no tiene que escribirnos.
+
 ### 1.1 Bienvenida del organizador con pasos en «Presto»
-- [ ] `organizer-welcome.ts:71-72`: «Pubblica la prima serata» y «Crea una serata ricorrente» no tienen
-      `link`, así que muestran «Presto» aunque `eventManagementPage` ya está en `true` en prod.
-- [ ] Enlazar «Pubblica la prima serata» a `/serate-pubblicate/nuova`.
-- [ ] El botón principal de abajo pasa de «Vai al menu» a «Pubblica la prima serata».
-- [ ] Actualizar el comentario de `organizer-welcome.html:1-4` (dice que las páginas no existen).
+- [x] «Pubblica la prima serata» enlaza a `/serate-pubblicate/nuova` (con `eventManagementPage` activo).
+- [x] El botón principal de abajo pasa de «Vai al menu» a «Pubblica la prima serata».
+- [x] Comentario de `organizer-welcome.html` actualizado.
+- «Crea una serata ricorrente» sigue en «Presto» a propósito: ver 1.2.
 
-Por qué: es lo primero que ve un local recién aprobado, y hoy le dice «todavía no se puede».
+### 1.2 Serate fijas semanales: por ahora solo el admin
+**Decisión (22/11/2026): las series las crea solo el admin.** Si un local tiene un social fijo cada
+semana, se lo creamos nosotros desde `/admin/create-event-series`. `offerSeries` en
+`schedule-section.ts:25` sigue exigiendo `scope === 'admin'`, y en la bienvenida el paso queda en «Presto».
 
-### 1.2 Serate fijas semanales para organizadores
-- [ ] Hoy solo el admin puede crear una serie (`schedule-section.ts:25`, `offerSeries` exige
-      `scope === 'admin'`, y enlaza a `/admin/create-event-series`).
+Para cuando se abra a los organizadores (no antes del primer contacto):
 - [ ] Crear series desde `/serate-pubblicate` (organizador): mismo formulario o paso «Ogni settimana».
 - [ ] Generar las ocurrencias al crear (endpoint `eventSeries.generateOccurrences` ya existe).
 - [ ] Ver y editar la serie desde la lista de serate (no solo cada ocurrencia).
@@ -28,14 +33,12 @@ Por qué: es lo primero que ve un local recién aprobado, y hoy le dice «todav�
 - [ ] BE: decidir si las ocurrencias de un organizador verificado nacen ya publicadas (ver `ROADMAP.md`,
       «Notas de decisiones pendientes»).
 
-Por qué: un local de salsa con social todos los jueves no va a publicar a mano cada semana. Es lo
-primero que va a pedir.
-
 ### 1.3 Página del local con sus próximas serate
 - [ ] `/luogo/:id` hoy solo tiene «Chi siamo», «Dove» y contactos: añadir «Prossime serate».
 - [ ] BE: endpoint de eventos futuros por venue (o filtro `venueId` en `/rest/events`), si no existe.
-- [ ] Botón «Condividi» en la página del local (como en `event-details`).
-- [ ] SEO/OG de la página con el logo del local, para que el enlace se vea bien en Instagram/WhatsApp.
+- [x] Botón «Condividi» en la página del local.
+- [~] SEO de la página: título y descripción hechos (`venueSeo` en `venue-details.ts`); falta la imagen
+      OG con el logo del local, para que el enlace se vea bien en Instagram/WhatsApp.
 
 Por qué: es el enlace que el local pondrá en su bio de Instagram. Si lo comparten ellos, traen
 usuarios gratis — y eso resuelve en parte el problema de la sección 3.

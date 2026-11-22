@@ -80,7 +80,7 @@
 
           <!-- Wraps on a phone: a long error goes on its own line above the buttons. -->
           <div class="flex flex-wrap items-center justify-end gap-3"
-            [class]="dancerProfileEnabled ? '@6xl:col-span-2 @6xl:border-t @6xl:border-(--ev-edge) @6xl:pt-4' : ''">
+            [class]="dancerProfileEnabled ? '@6xl:col-span-2' : ''">
             @if (saving.saved()) {
             <p class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)" role="status">Salvato</p>
             }

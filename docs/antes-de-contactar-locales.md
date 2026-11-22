@@ -56,7 +56,7 @@ usuarios gratis — y eso resuelve en parte el problema de la sección 3.
       Con pocos locales vale; cuando crezca, que el organizador pueda pedir el cambio desde la app.
 
 ### 2.3 Dashboard del organizador con cifras honestas
-- [ ] `managed-event.html:53-60` muestra «0 ci vado / 0 like» en grande. Con 0, mostrar un estado
+- [ ] `managed-event.html` (las tarjetas de cifras) muestra «0 ci vado / 0 like» en grande. Con 0, mostrar un estado
       vacío útil en vez del cero: «Condividi il link: i primi ci vado arrivano da lì» + botón copiar.
 - [ ] Añadir **visualizaciones** de la página de la serata (contador real en el BE, sin login).
       Es la cifra que sube antes: la gente que llega desde Instagram mira sin registrarse.
@@ -104,4 +104,4 @@ usuarios gratis — y eso resuelve en parte el problema de la sección 3.
 - [ ] Email semanal «Questa settimana a Milano» con las serate de lo que sigues y lo que marcaste.
 - [ ] Recordatorio «Stasera vai a…» para los «ci vado» (Bloque 5 del ROADMAP).
 - [ ] Web push en la PWA (en iPhone solo con la app instalada en la pantalla de inicio).
-- [ ] «Amici» (hoy «Presto» en `navbar.html:300`): solo cuando haya volumen de usuarios.
+- [ ] «Amici» (hoy «Presto» en el menú lateral, `navbar.html`): solo cuando haya volumen de usuarios.

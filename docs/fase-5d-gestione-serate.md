@@ -1,8 +1,13 @@
 # Fase 5d — Gestión de serate (FE)
 
-Estado al 09/11/2026. Rama `feature/organizer-requests`. Backend de la fase ya en remoto
-(`068b9f2`, `f4b1b0c`). Todo lo nuevo está detrás del flag `eventManagementPage`
-(prod `false`, staging `true`): para verlo en local, `ng serve --configuration staging`.
+Escrito el 09/11/2026 en la rama `feature/organizer-requests`; estado revisado el 22/11/2026.
+**En producción:** el FE está en `main` y el flag `eventManagementPage` está en `true` en prod y en
+staging. Ponerlo en `false` en `environment.ts` apaga la gestión de serate sin tocar el BE.
+
+Cambios posteriores (22/11/2026):
+- La bienvenida del organizador enlaza «Pubblica la prima serata» a `/serate-pubblicate/nuova`.
+- Las serate fijas semanales las crea solo el admin (`offerSeries` exige `scope === 'admin'`): ver
+  `antes-de-contactar-locales.md` §1.2. Por eso el punto abierto 7 (páginas antiguas del admin) pesa más.
 
 ## Qué se hizo
 
@@ -152,9 +157,11 @@ Decidido el 09/11: no bloquea el paso a producción.
 - El admin no puede quitar el local de una serata (no hay `removeVenue` de admin): el formulario
   solo le deja cambiarla a otro local.
 
-## Antes de staging
+## Antes de staging (ya superado: la fase está en producción)
 
-- Marcar la parte FE de la fase 5d en `docs/organizer-requests-plan.md` (repo BE).
-- `schema.sql` + migración (`organizer_requests`, tipo de organizador sin ASSOCIATION).
-- Postman §16 (D12).
-- Push de la rama FE (lo hace el usuario).
+- [ ] Marcar la parte FE de la fase 5d en `docs/organizer-requests-plan.md` (repo BE). No se ha
+      comprobado desde el FE.
+- [x] `schema.sql` + migración (`organizer_requests`, tipo de organizador sin ASSOCIATION): las
+      solicitudes de organizador funcionan en prod.
+- [ ] Postman §16 (D12). No se ha comprobado desde el FE.
+- [x] Push de la rama FE.

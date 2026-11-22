@@ -32,7 +32,8 @@
     }
   </div>
 
-  <div class="flex grow flex-col @4xl:pt-11">
+  <!-- At most 48rem wide: past that the text fields get longer than anything typed in them. -->
+  <div class="flex grow flex-col @4xl:w-full @4xl:max-w-3xl @4xl:pt-11">
     <div class="mt-5 grow @4xl:mt-0 @4xl:grow-0">
       <ng-content />
     </div>

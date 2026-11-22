@@ -14,13 +14,9 @@
   <!-- Live/soon badge, or "Annullata" in its place, shared by its two spots: on
     the flyer, or next to the eyebrow when there's no flyer. -->
   <ng-template #statusBadge>
-    @if (cancelled()) {
-    <span class="inline-flex h-7 items-center rounded-full bg-(--ev-error) px-3 text-xs font-extrabold tracking-[0.03em] text-ground uppercase">
-      Annullata
-    </span>
-    } @else if (status(); as status) {
+    @if (status(); as status) {
     <span class="inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-extrabold tracking-[0.03em] uppercase"
-      [class]="status.live ? 'bg-live text-white' : 'bg-(--ev-price) text-(--ev-on-price)'">
+      [class]="status.tone">
       @if (status.live) {
       <span class="live-dot size-1.5 rounded-full bg-current" aria-hidden="true"></span>
       }

@@ -212,10 +212,14 @@ export class EventDetails {
   private readonly now = signal(Date.now());
 
   /** On the flyer (or, without one, next to the eyebrow): "Live · dalle
-   * 22:30" or "Inizia tra 12 min"; nothing otherwise. */
+   * 22:30" or "Inizia tra 12 min", "Annullata" whenever it's cancelled;
+   * nothing otherwise. tone is its colors. */
   protected readonly status = computed(() => {
     const event = this.event();
-    return event ? eventBadge(event, this.now()) : null;
+    if (!event) return null;
+    if (this.cancelled()) return { live: false, text: 'Annullata', tone: 'bg-(--ev-error) text-ground' };
+    const badge = eventBadge(event, this.now());
+    return badge && { ...badge, tone: badge.live ? 'bg-live text-white' : 'bg-(--ev-price) text-(--ev-on-price)' };
   });
 
   /** "Stasera, gio 1 ott", "Domani, …" or "Sabato 3 ottobre". */
@@ -350,7 +354,7 @@ export class EventDetails {
       next: (event) => {
         this.event.set(event);
         this.loading.set(false);
-        if (event.status !== 'CANCELLED') this.loadAttendees(event.id);
+        if (!this.cancelled()) this.loadAttendees(event.id);
       },
       error: () => this.loading.set(false),
     });

@@ -1,9 +1,13 @@
 <!-- From the Claude Design canvas "Diventa organizzatore", "Approvata". A step
     with a page links to it; one without reads "Presto" (the weekly series,
     admin-only for now). The main button publishes the first night, or goes
-    to the menu while the nights' pages are off. -->
-<main appSidebarPush class="pt-(--header-h) md:pt-0">
-  <div class="mx-auto flex min-h-[calc(100dvh-var(--header-h))] w-full max-w-xl flex-col px-4 pt-9 pb-6 md:min-h-dvh">
+    to the menu while the nights' pages are off. From @4xl two columns, like
+    the request's own pages: the news on the left, held in view, the first
+    steps and the button on the right. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex min-h-[calc(100dvh-var(--header-h))] w-full max-w-xl flex-col px-4 pt-9 pb-6 md:min-h-dvh
+    @4xl:grid @4xl:max-w-7xl @4xl:grid-cols-[20rem_minmax(0,1fr)] @4xl:gap-x-8 @4xl:px-8 @4xl:pt-8">
+    <div class="flex flex-col @4xl:sticky @4xl:top-8 @4xl:self-start">
     <div class="relative size-22 self-start" aria-hidden="true">
       <app-organizer-avatar class="size-22 rounded-3xl font-display text-[1.875rem]" [name]="name()" [logoUrl]="logoUrl()" />
       <span class="absolute -right-2 -bottom-2 flex size-8.5 items-center justify-center rounded-full border-3 border-ground bg-(--ev-badge-bg) text-(--ev-badge-text)">
@@ -14,8 +18,10 @@
     <p class="mt-6 text-[0.8125rem] font-extrabold tracking-[0.04em] text-(--ev-zone-on-text) uppercase">Richiesta approvata</p>
     <h1 class="mt-1.5 font-display text-[2rem] leading-[1.08] font-extrabold tracking-[-0.02em]">Sei un organizzatore!</h1>
     <p class="mt-2.5 text-[0.9375rem] leading-[1.45] text-(--ev-soft)">{{ lead() }}</p>
+    </div>
 
-    <h2 class="mt-7 font-display text-[1.1875rem] font-extrabold">Primi passi</h2>
+    <div class="flex grow flex-col @4xl:w-full @4xl:max-w-3xl">
+    <h2 class="mt-7 font-display text-[1.1875rem] font-extrabold @4xl:mt-0">Primi passi</h2>
     <ol class="request-card mt-3 flex flex-col">
       @for (step of steps(); track step.title; let number = $index; let last = $last) {
       <li class="flex min-h-15 items-center gap-3 px-3.5 py-2" [class.border-b]="!last" [class.border-(--ev-edge)]="!last">
@@ -45,8 +51,9 @@
       }
     </ol>
 
-    <a [routerLink]="publishLink ?? '/menu'" class="mt-auto flex h-13 items-center justify-center rounded-2xl bg-rose text-base font-extrabold text-(--ev-on-rose) no-underline">
+    <a [routerLink]="publishLink ?? '/menu'" class="mt-auto flex h-13 items-center justify-center rounded-2xl bg-rose text-base font-extrabold text-(--ev-on-rose) no-underline @4xl:mt-6">
       {{ publishLink ? 'Pubblica la prima serata' : 'Vai al menu' }}
     </a>
+    </div>
   </div>
 </main>

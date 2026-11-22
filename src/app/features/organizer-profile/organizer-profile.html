@@ -1,6 +1,9 @@
-<!-- From the Claude Design canvas "Diventa organizzatore": "Profilo organizzatore · logo". -->
-<main appSidebarPush class="pt-(--header-h) md:pt-0">
-  <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-2 pb-10">
+<!-- From the Claude Design canvas "Diventa organizzatore": "Profilo organizzatore · logo".
+    A phone stacks everything in one column. From @4xl (<main>'s width, like "Il tuo account")
+    the logo, the venues and leaving move to a column on the left, the form to the right; from
+    @6xl the form's short fields go two by two. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-2 pb-10 @4xl:max-w-7xl @4xl:px-8 @4xl:pt-6">
     <a [routerLink]="back.url" class="-ml-1 flex h-11 items-center gap-1 self-start text-sm font-semibold text-(--ev-soft) no-underline">
       <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -16,7 +19,8 @@
     <h1 class="mt-1 font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">La tua pagina</h1>
     <p class="mt-2 text-[0.9375rem] leading-[1.45] text-(--ev-soft)">È quello che vedono i ballerini quando aprono una tua serata.</p>
 
-    <div class="request-card mt-5 p-4">
+    <div class="flex flex-col @4xl:mt-6 @4xl:grid @4xl:grid-cols-[20rem_minmax(0,1fr)] @4xl:grid-rows-[auto_auto_1fr] @4xl:items-start @4xl:gap-x-8">
+    <div class="request-card mt-5 p-4 @4xl:col-start-1 @4xl:mt-0">
       <app-logo-picker [previewUrl]="organizer.logoUrl" [label]="organizer.logoUrl ? 'Cambia logo' : 'Carica il logo'" [optional]="false"
         hint="Quadrato, PNG o JPG. Sostituisce quello attuale." (fileSelected)="changeLogo($event)" />
       @if (logoUpload.busy()) {
@@ -26,13 +30,14 @@
       }
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="save()" class="mt-5 flex flex-col gap-4.5">
-      <app-request-field label="Nome" fieldId="profile-name" [control]="form.controls.name" error="Inserisci il nome."
+    <form [formGroup]="form" (ngSubmit)="save()"
+      class="mt-5 grid gap-4.5 @4xl:col-start-2 @4xl:row-span-3 @4xl:row-start-1 @4xl:mt-0 @6xl:grid-cols-2 @6xl:gap-x-6">
+      <app-request-field class="@6xl:col-span-2" label="Nome" fieldId="profile-name" [control]="form.controls.name" error="Inserisci il nome."
         hint="Il link della pagina resta lo stesso anche se cambi il nome.">
         <input id="profile-name" type="text" formControlName="name" maxlength="120" class="request-input" />
       </app-request-field>
 
-      <app-request-field label="Descrizione" fieldId="profile-description" [control]="form.controls.description"
+      <app-request-field class="@6xl:col-span-2" label="Descrizione" fieldId="profile-description" [control]="form.controls.description"
         [optional]="true" [maxLength]="2000" error="Massimo 2000 caratteri.">
         <textarea id="profile-description" rows="4" formControlName="description" class="request-input"></textarea>
       </app-request-field>
@@ -62,7 +67,7 @@
         <input id="profile-facebook" type="text" formControlName="facebook" placeholder="Link o nome della pagina" class="request-input" />
       </app-request-field>
 
-      <div class="flex items-center justify-end gap-3">
+      <div class="flex items-center justify-end gap-3 @6xl:col-span-2">
         @if (saving.saved()) {
         <p class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)" role="status">Modifiche salvate</p>
         }
@@ -76,7 +81,8 @@
       </div>
     </form>
 
-    <h2 class="mt-8 font-display text-[1.1875rem] font-extrabold">{{ venues().length > 1 ? 'I tuoi locali' : 'Il tuo locale' }}</h2>
+    <div class="@4xl:col-start-1">
+    <h2 class="mt-8 font-display text-[1.1875rem] font-extrabold @4xl:mt-6">{{ venues().length > 1 ? 'I tuoi locali' : 'Il tuo locale' }}</h2>
     @for (venue of venues(); track venue.id) {
     <div class="request-card mt-2.5 flex items-start gap-2.5 p-3.5 text-sm text-(--ev-soft)">
       <svg viewBox="0 0 24 24" class="mt-px size-4.5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2"
@@ -93,9 +99,10 @@
     <p class="mt-2.5 text-sm text-(--ev-soft)">Nessun locale collegato.</p>
     }
     <p class="mt-2 text-[0.8125rem] text-muted">Per collegare o cambiare un locale scrivici: lo gestiamo noi.</p>
+    </div>
 
     @let way = exit();
-    <div class="mt-8 flex flex-col gap-2.5 rounded-[1.125rem] border border-(--ev-error)/35 p-3.5">
+    <div class="mt-8 flex flex-col gap-2.5 rounded-[1.125rem] border border-(--ev-error)/35 p-3.5 @4xl:col-start-1 @4xl:mt-6">
       <p class="text-[0.9375rem] font-extrabold">{{ way.title }}</p>
       <p class="text-[0.8125rem] leading-snug text-(--ev-soft)">{{ way.text }}</p>
       @if (leaving.error(); as message) {
@@ -119,6 +126,7 @@
           </hlm-alert-dialog-footer>
         </hlm-alert-dialog-content>
       </hlm-alert-dialog>
+    </div>
     </div>
     } @else if (loadFailed()) {
     <p class="mt-6 text-sm text-(--ev-error)" role="alert">Non siamo riusciti a caricare la tua pagina. Riprova tra poco.</p>

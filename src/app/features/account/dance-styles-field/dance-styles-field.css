@@ -129,6 +129,13 @@ compact each one gets (see the @container rules below). */
   background: var(--ev-surface);
 }
 
+/* A level's name, hidden on a phone where its insignia stands in. Before the @container rule
+below that shows it: a container query adds no specificity, so a later .level-label would win
+and leave the buttons empty. */
+.level-label {
+  display: none;
+}
+
 /* From about 26rem there's room for the levels' names ("Principiante" needs it): they replace
 the insignia, and the name next to the style's isn't needed any more. */
 @container (min-width: 26rem) {
@@ -199,8 +206,4 @@ so the row reads green to gold even before one is picked. */
 
 .level[aria-pressed='true'] .insignia {
   color: inherit;
-}
-
-.level-label {
-  display: none;
 }

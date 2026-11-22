@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "it.ballastasera.twa",
+        "sha256_cert_fingerprints": ["55:46:10:A9:85:49:EE:33:4D:97:DE:74:B7:34:87:7D:E1:7E:68:6A:BA:2F:ED:AD:10:BD:8B:60:BB:CF:D8:44"]
+      }
+    }]

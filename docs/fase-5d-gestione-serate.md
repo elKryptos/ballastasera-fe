@@ -156,6 +156,17 @@ Decidido el 09/11: no bloquea el paso a producción.
 
 - El admin no puede quitar el local de una serata (no hay `removeVenue` de admin): el formulario
   solo le deja cambiarla a otro local.
+- **«Ci vado» y like en una serata anulada** (anotado el 22/11/2026). **El FE ya lo gestiona**
+  (`da803a3`): desde el link, `evento/:id` muestra «Annullata», un aviso, sin «Parteciperò» / «Mi
+  piace» ni «Chi ci va», y la vista previa del link dice «Annullata». **Falta el BE:**
+  `EventAttendanceServiceImpl.addAttendance` y `FavoritesServiceImpl.addFavorite` solo miran
+  `existsById`, así que con una llamada directa se sigue pudiendo marcar una serata anulada.
+  1. `EventsRepository`: `boolean existsByIdAndStatus(UUID id, EventStatus status);`.
+  2. En los dos `add…`, después del `existsById`: si no está `PUBLISHED`, 409 con una excepción
+     nueva `EventNotPublishedException` y su handler en `BackendErrorResponse` (como
+     `EventSeriesInactiveException`: `CONFLICT`, «Event is not published»).
+  3. Los `remove…` no cambian: quien ya iba tiene que poder quitarlo.
+  4. Tests: add sobre una serata `CANCELLED` → 409, sin guardar nada ni sumar a `goingCount`.
 
 ## Antes de staging (ya superado: la fase está en producción)
 

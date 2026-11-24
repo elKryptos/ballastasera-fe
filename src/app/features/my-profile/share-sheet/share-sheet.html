@@ -1,0 +1,32 @@
+<app-sheet [(open)]="open" title="Condividi il tuo profilo">
+  <!-- The card is a picture of what follows: its text is said here for screen readers. -->
+  <canvas #card class="card" [width]="width" [height]="height" role="img"
+    [attr.aria-label]="'Anteprima della card: ' + user().displayName + ', ' + linkLabel()"></canvas>
+
+  @if (!user().username) {
+  <p class="hint">
+    Con un nome utente il link è più corto: <a routerLink="/il-tuo-account" (click)="open.set(false)">sceglilo qui</a>.
+  </p>
+  }
+
+  <div sheetFooter class="footer">
+    <button type="button" class="primary" (click)="shareCard()">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="5" />
+        <circle cx="12" cy="12" r="3.5" />
+      </svg>
+      {{ canShareFiles ? 'Condividi nelle storie' : 'Scarica la card' }}
+    </button>
+    <button type="button" class="secondary" (click)="copyLink()">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+        <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+      </svg>
+      {{ copied() ? 'Link copiato' : 'Copia il link' }}
+    </button>
+    <!-- Said once the copy happened (the button's own text changes too). -->
+    <p class="sr-only" role="status">{{ copied() ? 'Link copiato' : '' }}</p>
+  </div>
+</app-sheet>

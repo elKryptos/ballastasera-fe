@@ -3,8 +3,10 @@ import { featureFlagGuard } from './core/guards/feature-flag.guard';
 import { FEATURE_FLAGS } from './core/config/feature-flags';
 import { roleGuard } from './core/guards/role.guard';
 import { PAGE_SEO } from './core/config/page-seo';
+import { usernameMatcher } from './core/routing/username-matcher';
 
 const loadLanding = () => import('./features/landing/landing').then((m) => m.Landing);
+const loadPerson = () => import('./features/person/person').then((m) => m.PersonPage);
 
 export const routes: Routes = [
   {
@@ -237,6 +239,57 @@ export const routes: Routes = [
         canMatch: [featureFlagGuard(FEATURE_FLAGS.socialPostsPage), roleGuard('ADMIN')],
         loadComponent: () =>
           import('./features/admin/social-posts/social-posts').then((m) => m.SocialPosts),
+      },
+
+      {
+        // Someone's page (social). No guard: signed out, the page itself asks to sign in and
+        // comes back here — someone opening a profile shared in a story.
+        path: 'persona/:id',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.social)],
+        loadComponent: loadPerson,
+      },
+
+      {
+        // One's own profile (social), opened from the menu's profile card: "Il tuo account" is
+        // where it's changed.
+        path: 'il-tuo-profilo',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.social), roleGuard('USER', 'ORGANIZER', 'ADMIN')],
+        loadComponent: () => import('./features/my-profile/my-profile').then((m) => m.MyProfile),
+      },
+
+      {
+        // Attività, the friends' lists and Scopri (social). Signed in only, like Le tue serate.
+        path: 'amici',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.social), roleGuard('USER', 'ORGANIZER', 'ADMIN')],
+        loadComponent: () => import('./features/friends/friends').then((m) => m.Friends),
+      },
+
+      {
+        // The bell (social): opening it marks the notices read.
+        path: 'avvisi',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.social), roleGuard('USER', 'ORGANIZER', 'ADMIN')],
+        loadComponent: () => import('./features/notifications/notifications').then((m) => m.Notifications),
+      },
+
+      {
+        // The same page by its @username: ballastasera.it/@name, the link people share.
+        matcher: usernameMatcher,
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.social)],
+        loadComponent: loadPerson,
+      },
+
+      {
+        // The reported profiles' queue (social): "Ignora" or "Banna".
+        path: 'admin/segnalazioni',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.social), roleGuard('ADMIN')],
+        loadComponent: () => import('./features/admin/reports/reports').then((m) => m.Reports),
+      },
+
+      {
+        // "Utenti bannati", with "Sbanna" (social).
+        path: 'admin/utenti-bannati',
+        canMatch: [featureFlagGuard(FEATURE_FLAGS.social), roleGuard('ADMIN')],
+        loadComponent: () => import('./features/admin/banned-users/banned-users').then((m) => m.BannedUsers),
       },
 
       {

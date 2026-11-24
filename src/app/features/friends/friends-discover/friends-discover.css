@@ -1,0 +1,97 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.person-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note,
+.failed {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}
+
+.failed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.failed p {
+  margin: 0;
+}
+
+.retry {
+  height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* The canvas' rose card. */
+.invite {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-rose) 35%, transparent);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--color-rose) 10%, var(--ev-surface));
+}
+
+.invite-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+
+.invite-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}
+
+.invite-button {
+  display: flex;
+  height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.875rem;
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Desktop: the suggestions, and the link card beside them. */
+@container (min-width: 56rem) {
+  :host {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    align-items: start;
+    gap: 2rem;
+  }
+}

@@ -6,6 +6,8 @@
  * (drawBackdrop): each takes its night's colours, so the profile's grid isn't
  * one purple square after another. */
 
+import { BODY_FONT, DISPLAY_FONT, MARK_HEIGHT, MARK_WIDTH, drawMark, drawWordmark } from '../../../core/utils/brand-canvas';
+
 /** A post's picture (4:5, the tallest a carousel shows whole) or a story's. */
 export type Format = 'post' | 'story';
 
@@ -139,8 +141,8 @@ const LINE = 'rgba(253, 242, 236, 0.14)';
 const PANEL = 'rgba(253, 242, 236, 0.07)';
 const TAG = 'rgba(139, 92, 246, 0.35)';
 
-const DISPLAY = '"Bricolage Grotesque", "Arial Black", sans-serif';
-const BODY = '"Instrument Sans", system-ui, sans-serif';
+const DISPLAY = DISPLAY_FONT;
+const BODY = BODY_FONT;
 
 /** Every font drawCard uses, for document.fonts.load: a canvas draws with a
  * fallback, and never again, if the web font isn't in yet. */
@@ -308,43 +310,9 @@ function drawSky(ctx: Ctx, { width, height }: Frame): void {
 /** The navbar's lockup: the mark, then "balla" and, in rose, "stasera". */
 function drawBrand(ctx: Ctx, frame: Frame): void {
   const markHeight = 58 * frame.scale;
-  drawMark(ctx, PAD, frame.top - markHeight + 10 * frame.scale, markHeight);
+  drawMark(ctx, PAD, frame.top - markHeight + 10 * frame.scale, markHeight, { pin: ROSE, bars: INK });
   const x = PAD + (markHeight * MARK_WIDTH) / MARK_HEIGHT + 14 * frame.scale;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'alphabetic';
-  ctx.font = `800 ${44 * frame.scale}px ${DISPLAY}`;
-  ctx.fillStyle = BONE;
-  ctx.fillText('balla', x, frame.top);
-  ctx.fillStyle = ROSE;
-  ctx.fillText('stasera', x + ctx.measureText('balla').width, frame.top);
-}
-
-// The brand's mark, as in the navbar: a map pin holding three equaliser
-// bars. Drawn in a 200×210 box, the pin itself from (48, 28).
-const MARK_PIN = 'M100,182 C78,140 48,116 48,80 A52 52 0 1 1 152,80 C152,116 122,140 100,182 Z';
-const MARK_BARS = [
-  [74, 66, 13, 30],
-  [93, 54, 13, 54],
-  [112, 62, 13, 38],
-] as const;
-const MARK_WIDTH = 104;
-const MARK_HEIGHT = 154;
-
-/** The mark `height` px tall, its top left at (x, y). */
-function drawMark(ctx: Ctx, x: number, y: number, height: number): void {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(height / MARK_HEIGHT, height / MARK_HEIGHT);
-  ctx.translate(-48, -28);
-  ctx.fillStyle = ROSE;
-  ctx.fill(new Path2D(MARK_PIN));
-  ctx.fillStyle = INK;
-  for (const [barX, barY, barWidth, barHeight] of MARK_BARS) {
-    ctx.beginPath();
-    ctx.roundRect(barX, barY, barWidth, barHeight, barWidth / 2);
-    ctx.fill();
-  }
-  ctx.restore();
+  drawWordmark(ctx, x, frame.top, 44 * frame.scale, { text: BONE, accent: ROSE });
 }
 
 /** The site and, in a carousel, which card of how many this is. A story

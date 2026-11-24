@@ -7,9 +7,24 @@
 <main appSidebarPush class="@container pt-(--header-h) md:pt-0">
   @if (user(); as user) {
   <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-6 pb-10 @4xl:max-w-7xl @4xl:px-8 @4xl:pt-8">
-    <h1 class="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Il tuo account</h1>
+    @if (socialEnabled) {
+    <!-- With the social features this is where "Il tuo profilo" is changed: the way back to it. -->
+    <a routerLink="/il-tuo-profilo" class="-ml-1 mb-3 flex h-11 items-center gap-1 self-start pr-3 text-sm font-bold text-lead no-underline">
+      <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      Il tuo profilo
+    </a>
+    }
+    <h1 class="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">
+      {{ socialEnabled ? 'Modifica profilo' : 'Il tuo account' }}
+    </h1>
 
     <div class="mt-5 flex flex-col @4xl:mt-6 @4xl:grid @4xl:grid-cols-[20rem_minmax(0,1fr)] @4xl:grid-rows-[auto_auto_1fr] @4xl:items-start @4xl:gap-x-8">
+      @if (socialEnabled) {
+      <app-avatar-editor class="@4xl:col-start-1" />
+      } @else {
       <div class="request-card flex items-center gap-3.5 p-4 @4xl:col-start-1">
         @if (user.avatarUrl) {
         <img [src]="user.avatarUrl" alt="" referrerpolicy="no-referrer" class="size-16 shrink-0 rounded-full object-cover" />
@@ -29,6 +44,7 @@
           </p>
         </div>
       </div>
+      }
 
       <section aria-labelledby="account-data-title" class="mt-7 @4xl:col-start-2 @4xl:row-span-3 @4xl:row-start-1 @4xl:mt-0">
         <h2 id="account-data-title" class="px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase @4xl:sr-only">I tuoi dati</h2>
@@ -38,6 +54,12 @@
           [class]="dancerProfileEnabled ? '@6xl:grid-cols-2' : ''">
           <!-- Contacts and visibility; next to them from @6xl, the dancer's profile. -->
           <div class="flex min-w-0 flex-col gap-4">
+            <!-- "Chi sei" (social): username, bio, town, country of origin. -->
+            @if (socialEnabled) {
+            <app-about-fields />
+            <hr class="border-(--ev-edge)" />
+            }
+
             <app-request-field label="Instagram" fieldId="account-instagram" [control]="form.controls.instagram" [optional]="true"
               error="Inserisci il nome del profilo Instagram, senza spazi.">
               <app-instagram-input fieldId="account-instagram" [control]="form.controls.instagram" />
@@ -52,6 +74,10 @@
 
             <hr class="border-(--ev-edge)" />
 
+            @if (socialEnabled) {
+            <!-- Who sees the nights one goes to, and "Profilo pubblico" said in full. -->
+            <app-privacy-fields />
+            } @else {
             <div class="flex items-start gap-3">
               <div class="min-w-0 grow">
                 <p id="account-public-label" class="text-[0.9375rem] font-bold">Profilo visibile</p>
@@ -65,6 +91,7 @@
               </div>
               <app-toggle-switch labelledBy="account-public-label" [checked]="isPublic()" (toggled)="togglePublic()" />
             </div>
+            }
           </div>
 
           @if (dancerProfileEnabled) {
@@ -76,6 +103,10 @@
             columns, their cards side by side. -->
           <hr class="border-(--ev-edge) @6xl:col-span-2" />
           <app-dance-styles-field class="min-w-0 @6xl:col-span-2" />
+          @if (socialEnabled) {
+          <hr class="border-(--ev-edge) @6xl:col-span-2" />
+          <app-school-field class="min-w-0 @6xl:col-span-2" />
+          }
           }
 
           <!-- Wraps on a phone: a long error goes on its own line above the buttons. -->
@@ -99,6 +130,16 @@
             </button>
           </div>
         </form>
+
+        <!-- Saved each on its own, at a tap: not part of the form's "Salva". -->
+        @if (socialEnabled) {
+        <h2 class="mt-7 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">Avvisi e persone</h2>
+        <div class="request-card mt-2.5 flex flex-col gap-4 p-4 @6xl:p-6">
+          <app-email-notifications-toggle />
+          <hr class="border-(--ev-edge)" />
+          <app-blocked-people />
+        </div>
+        }
       </section>
 
       @if (organizerEnabled) {

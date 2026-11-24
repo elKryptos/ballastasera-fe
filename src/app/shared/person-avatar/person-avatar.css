@@ -1,0 +1,30 @@
+/* A square from the caller's size-* class; the initial is 40% of it (a container query unit). */
+:host {
+  display: block;
+  flex-shrink: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  container-type: size;
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initial {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: var(--tone-bg);
+  color: var(--tone-fg);
+  font-family: var(--font-display);
+  font-size: 40cqh;
+  font-weight: 800;
+  line-height: 1;
+}

@@ -1,0 +1,61 @@
+.person-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  min-height: 3.625rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+}
+
+/* Each kind in its colour, as the canvas: rose, sky, mint, amber. */
+.style {
+  --accent: var(--color-rose);
+}
+.roles {
+  --accent: var(--ev-pick);
+}
+.friends {
+  --accent: var(--ev-zone-on-text);
+}
+.nights {
+  --accent: var(--color-amber);
+}
+
+.icon {
+  display: flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.detail {
+  font-size: 0.8125rem;
+  color: var(--ev-soft);
+}

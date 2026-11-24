@@ -1,0 +1,32 @@
+/* Role, age, gender and country of origin, each in its own colour. */
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.25rem 0.625rem;
+  border: 1px solid color-mix(in srgb, var(--chip) 35%, transparent);
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--chip) 16%, transparent);
+  color: var(--chip);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.chip-age {
+  --chip: var(--ev-pick);
+}
+.chip-gender {
+  --chip: var(--ev-like);
+}
+.chip-origin {
+  --chip: var(--color-amber);
+}
+.chip-role {
+  --chip: var(--ev-zone-on-text);
+}

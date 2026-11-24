@@ -40,16 +40,6 @@
       }
     </div>
 
-    @if (totalPages() > 1) {
-    <nav aria-label="Pagine" class="mt-5 flex items-center justify-between text-sm @3xl:justify-center @3xl:gap-6">
-      <button type="button" class="h-11 px-3 font-bold text-(--ev-link) disabled:opacity-40" [disabled]="page() === 0" (click)="goToPage(page() - 1)">
-        Precedente
-      </button>
-      <span class="text-(--ev-soft)">{{ page() + 1 }} / {{ totalPages() }}</span>
-      <button type="button" class="h-11 px-3 font-bold text-(--ev-link) disabled:opacity-40" [disabled]="page() + 1 >= totalPages()" (click)="goToPage(page() + 1)">
-        Successiva
-      </button>
-    </nav>
-    }
+    <app-page-nav [page]="page()" [totalPages]="totalPages()" (pageChange)="goToPage($event)" />
   </div>
 </main>

@@ -1,0 +1,184 @@
+<!-- Canvas 4c, "Il profilo di un'altra persona", laid out by app-profile-layout: stacked on a phone,
+  who they are on the left from @4xl (container query on <main>). -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-4 pb-10 @4xl:max-w-7xl @4xl:px-8 @4xl:pt-6">
+    <div class="top-bar">
+      <button type="button" class="back" (click)="goBack()">
+        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+        Indietro
+      </button>
+      @if (state() === 'ready' && profile(); as profile) {
+      <div class="top-actions">
+        <button type="button" class="icon-button" [attr.aria-label]="'Condividi il profilo di ' + firstName()"
+          (click)="share()">
+          <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 15V3M7 8l5-5 5 5" />
+            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+          </svg>
+        </button>
+        <button type="button" class="icon-button raised" aria-label="Altre azioni" aria-haspopup="dialog"
+          (click)="menuOpen.set(true)">
+          <svg viewBox="0 0 24 24" class="size-5" fill="currentColor" aria-hidden="true">
+            <circle cx="5" cy="12" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="19" cy="12" r="2" />
+          </svg>
+        </button>
+      </div>
+      }
+    </div>
+
+    @switch (state()) {
+    @case ('signed-out') {
+    <section class="request-card notice" aria-labelledby="person-signin-title">
+      <h1 id="person-signin-title" class="notice-title">Accedi per vedere il profilo</h1>
+      <p class="notice-text">
+        I profili di chi balla si vedono con un account: cosa balla, a che livello, le sue prossime serate.
+        Si entra con Google, senza password.
+      </p>
+      <button type="button" class="primary-button" (click)="openSignIn()">Accedi con Google</button>
+    </section>
+    }
+
+    @case ('loading') {
+    <p class="loading" role="status">Caricamento del profilo…</p>
+    }
+
+    @case ('gone') {
+    <section class="request-card notice" aria-labelledby="person-gone-title">
+      <h1 id="person-gone-title" class="notice-title">Profilo non disponibile</h1>
+      <p class="notice-text">Questa persona ha reso privato il suo profilo, oppure non usa più ballastasera.</p>
+      <a routerLink="/amici" class="secondary-button">Vai ai tuoi amici</a>
+    </section>
+    }
+
+    @case ('error') {
+    <section class="request-card notice">
+      <p class="notice-text" role="alert">Non siamo riusciti a caricare il profilo.</p>
+      <button type="button" class="secondary-button" (click)="retry()">Riprova</button>
+    </section>
+    }
+
+    @case ('blocked') {
+    <section class="request-card notice" aria-labelledby="person-blocked-title">
+      <h1 id="person-blocked-title" class="notice-title">Hai bloccato {{ firstName() }}</h1>
+      <p class="notice-text">
+        Non vedete più i profili e le serate l'uno dell'altra e non vi seguite più. {{ firstName() }} non riceve
+        nessun avviso.
+      </p>
+      <button type="button" class="secondary-button" [disabled]="blocking()" (click)="unblock()">
+        {{ blocking() ? 'Un momento…' : 'Sblocca' }}
+      </button>
+    </section>
+    }
+
+    @case ('ready') {
+    @if (profile(); as profile) {
+    <app-profile-layout>
+      <app-profile-hero profileSide [view]="profile" [relation]="relation()"
+        [lookingForPartner]="profile.lookingForPartnerToday">
+        <div class="actions">
+          @if (followTarget(); as target) {
+          <app-follow-button size="wide" [person]="target" (relationChange)="relationChanged($event)" />
+          }
+          @if (friends()) {
+          <!-- Friends only (the backend's rule); a private profile can't invite: disabled, said below. -->
+          <button type="button" class="invite" aria-haspopup="dialog" [disabled]="myProfilePrivate()"
+            (click)="inviteOpen.set(true)">
+            <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
+            </svg>
+            Invita a ballare
+          </button>
+          }
+          @if (whatsappUrl(); as url) {
+          <a class="whatsapp" [href]="url" target="_blank" rel="noopener"
+            [attr.aria-label]="'Scrivi a ' + firstName() + ' su WhatsApp'">
+            <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 20l1.4-4A8 8 0 1 1 8.6 19z" />
+              <path d="M9 9c0 3.3 2.7 6 6 6" />
+            </svg>
+          </a>
+          } @else {
+          <button type="button" class="whatsapp locked" aria-label="WhatsApp: perché non lo vedi"
+            (click)="whatsappLocked()">
+            <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" aria-hidden="true">
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+            </svg>
+          </button>
+          }
+        </div>
+        @if (friends() && myProfilePrivate()) {
+        <p class="invite-private">{{ invitePrivateText }} <a routerLink="/il-tuo-account">Cambia la privacy</a></p>
+        }
+        @if (profile.lookingForPartnerToday) {
+        <p class="partner">
+          <span class="partner-dot" aria-hidden="true"></span>
+          <span><strong>Cerca qualcuno con cui ballare</strong> a una delle sue prossime serate.</span>
+        </p>
+        }
+      </app-profile-hero>
+
+      @if (inCommon().length) {
+      <app-profile-section heading="Avete in comune">
+        <app-in-common [items]="inCommon()" />
+      </app-profile-section>
+      }
+
+      <app-profile-section heading="Cosa balla">
+        <app-profile-styles [styles]="profile.danceStyles" [shared]="sharedStyles()"
+          emptyText="Non ha ancora detto cosa balla." />
+      </app-profile-section>
+
+      <app-profile-section heading="Le sue prossime serate">
+        <app-person-nights [userId]="profile.userId" [firstName]="firstName()" [now]="now()" />
+      </app-profile-section>
+
+      <app-profile-section heading="Traguardi">
+        <app-profile-milestones [eventsCount]="profile.eventsCount" [venuesCount]="profile.venuesCount"
+          [memberSince]="profile.memberSince" />
+      </app-profile-section>
+
+      @if (profile.schoolName; as school) {
+      <app-profile-section heading="Scuola o crew">
+        <app-profile-school [name]="school" />
+      </app-profile-section>
+      }
+
+      <app-profile-section heading="Contatti">
+        <app-profile-contacts [instagram]="profile.instagram" [whatsapp]="profile.whatsapp"
+          [lockedText]="whatsappLock()" [emptyText]="firstName() + ' non mostra i suoi contatti.'" />
+      </app-profile-section>
+
+      <button type="button" class="report-link wide" (click)="reportOpen.set(true)">
+        Qualcosa non va? Segnala il profilo
+      </button>
+    </app-profile-layout>
+
+    <app-person-menu [(open)]="menuOpen" [firstName]="firstName()" [canMute]="relation() === 'FOLLOWING' || friends()"
+      [muted]="muted()" (picked)="onMenu($event)" />
+    @if (friends() && !myProfilePrivate()) {
+    <app-invite-to-night-sheet [(open)]="inviteOpen" [userId]="profile.userId" [firstName]="firstName()" [now]="now()"
+      (invited)="invited()" />
+    }
+    <app-report-sheet [(open)]="reportOpen" [userId]="profile.userId" [firstName]="firstName()"
+      (reported)="reported($event)" />
+    <app-confirm-sheet [(open)]="blockOpen" titleId="person-block-title" [title]="'Bloccare ' + firstName() + '?'"
+      [text]="'Non vedrete più i profili e le serate l\'uno dell\'altra e smetterete di seguirvi. ' + firstName() + ' non riceve nessun avviso.'"
+      confirmLabel="Blocca" cancelLabel="Annulla" [busy]="blocking()" (confirmed)="block()" />
+    }
+    }
+    }
+  </div>
+</main>
+
+<app-auth-modal [(open)]="authOpen" [returnUrl]="returnUrl()"
+  text="Accedi con il tuo account Google per vedere il profilo: cosa balla, a che livello e le sue prossime serate. Niente password da ricordare." />

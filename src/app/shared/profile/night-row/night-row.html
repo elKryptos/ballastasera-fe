@@ -1,0 +1,12 @@
+<a class="link" [routerLink]="['/evento', night().id]">
+  <span class="tile" [class.tonight]="tile().tonight" aria-hidden="true">
+    <span class="weekday">{{ tile().weekday }}</span>
+    <span class="day">{{ tile().day }}</span>
+  </span>
+  <span class="text">
+    <span class="title">{{ night().title }}</span>
+    <span class="place">{{ place() }}</span>
+    <ng-content select="[nightExtra]" />
+  </span>
+</a>
+<ng-content />

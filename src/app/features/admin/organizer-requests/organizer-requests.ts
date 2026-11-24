@@ -7,6 +7,7 @@ import { Subject, catchError, of, switchMap } from 'rxjs';
 import { OrganizerRequestAdminDto, OrganizerRequestStatus } from '../../../core/models/organizer-request.model';
 import { AdminService } from '../../../core/services/admin.service';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
+import { PageNav } from '../../../shared/page-nav/page-nav';
 import { OrganizerRequestCard } from './organizer-request-card/organizer-request-card';
 
 const TABS: { status: OrganizerRequestStatus; label: string }[] = [
@@ -21,7 +22,7 @@ const TABS: { status: OrganizerRequestStatus; label: string }[] = [
  * just created for that request, to link when approving it. */
 @Component({
   selector: 'app-organizer-requests',
-  imports: [RouterLink, NgIcon, SidebarPushDirective, OrganizerRequestCard],
+  imports: [RouterLink, NgIcon, SidebarPushDirective, OrganizerRequestCard, PageNav],
   providers: [provideIcons({ lucideChevronLeft })],
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
   templateUrl: './organizer-requests.html',

@@ -4,10 +4,12 @@ import { firstValueFrom } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { AVAILABLE_LANGS, isAppLang } from './core/config/i18n';
 import { readLangCookie } from './core/i18n/lang-cookie';
+import { ToastHost } from './shared/toast/toast';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  // ToastHost: the app's one place for short messages (ToastService), on every page.
+  imports: [RouterOutlet, ToastHost],
   templateUrl: './app.html',
 })
 export class App {

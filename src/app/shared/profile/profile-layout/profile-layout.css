@@ -1,0 +1,42 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.side,
+.sections {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.side {
+  gap: 0.875rem;
+}
+
+/* Desktop: who they are on the left, sticky; the sections on the right. */
+@container (min-width: 56rem) {
+  :host {
+    display: grid;
+    grid-template-columns: 22rem minmax(0, 1fr);
+    align-items: start;
+    gap: 2rem;
+  }
+
+  .side {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+/* A wide page: the sections two by two (a page gives the whole row to what it wants). */
+@container (min-width: 72rem) {
+  .sections {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 1.75rem 1.5rem;
+  }
+}

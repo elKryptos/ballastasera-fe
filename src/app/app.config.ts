@@ -9,6 +9,7 @@ import { provideHlmSidebarConfig } from '@spartan-ng/helm/sidebar';
 import { routes } from './app.routes';
 import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { rateLimitInterceptor } from './core/interceptors/rate-limit.interceptor';
 import { KeepAliveReuseStrategy } from './core/routing/keep-alive-reuse.strategy';
 import { AuthService } from './core/services/auth.service';
 import { SeoService } from './core/services/seo.service';
@@ -70,7 +71,8 @@ export const appConfig: ApplicationConfig = {
     // requests for them go without one too (PUBLIC_API), or the cache would
     // pass over them for a signed-in visitor.
     provideClientHydration(withHttpTransferCacheOptions({ includeNonCacheableRequests: true })),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    // rateLimitInterceptor: a 429 from the API tells the user to slow down, from any page.
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor, rateLimitInterceptor])),
     provideTransloco({
       config: {
         availableLangs: [...AVAILABLE_LANGS],

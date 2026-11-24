@@ -1,0 +1,133 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.search {
+  display: flex;
+  height: 3rem;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: var(--ev-surface);
+  color: var(--ev-soft);
+}
+
+.search:focus-within {
+  border-color: var(--ev-text);
+}
+
+.search input {
+  min-width: 0;
+  height: 2.75rem;
+  flex-grow: 1;
+  border: 0;
+  background: transparent;
+  color: var(--ev-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  outline: none;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  display: flex;
+  height: 2.5rem;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--ev-soft);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--ev-invert-bg);
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+  font-weight: 800;
+}
+
+.chip-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.person-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note,
+.failed {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}
+
+.failed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.failed p {
+  margin: 0;
+}
+
+.retry {
+  height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.controls,
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Desktop: the search and the chips in a column on the left, sticky; the list beside them. */
+@container (min-width: 56rem) {
+  :host {
+    display: grid;
+    grid-template-columns: 20rem minmax(0, 1fr);
+    align-items: start;
+    gap: 2rem;
+  }
+
+  .controls {
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  .chips {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chip {
+    justify-content: space-between;
+  }
+}

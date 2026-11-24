@@ -1,0 +1,14 @@
+<app-username-field />
+
+<hr class="border-(--ev-edge)" />
+
+<app-request-field label="Bio" fieldId="account-bio" [control]="form.controls.bio" [optional]="true"
+  [maxLength]="bioMax" hint="Da quanto balli, dove ti trovano, cosa ti piace." [error]="'Al massimo ' + bioMax + ' caratteri.'">
+  <textarea id="account-bio" class="request-input min-h-23 resize-none py-3 leading-[1.45]" rows="3"
+    [maxLength]="bioMax" placeholder="Ballo salsa dal 2019, il sabato mi trovi in pista…"
+    [formControl]="form.controls.bio"></textarea>
+</app-request-field>
+
+<app-home-city-field />
+
+<app-origin-country-field />

@@ -1,0 +1,46 @@
+<!-- As the organizer requests' queue: one column on a phone; from @5xl as wide as the admin's nights,
+  the cards two, then three, to a row. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex w-full max-w-300 flex-col px-4 pt-1 pb-8 @5xl:px-8 @5xl:pt-6">
+    <a routerLink="/admin" class="-ml-1 flex h-11 items-center gap-1 self-start text-sm font-semibold text-(--ev-soft)">
+      <ng-icon name="lucideChevronLeft" size="1.125rem" aria-hidden="true" />
+      Pannello admin
+    </a>
+    <div class="mt-1 flex flex-wrap items-baseline justify-between gap-2">
+      <h1 class="font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Segnalazioni</h1>
+      <a routerLink="/admin/utenti-bannati" class="text-sm font-bold text-(--ev-link)">Utenti bannati</a>
+    </div>
+
+    <div role="tablist" aria-label="Stato delle segnalazioni" class="request-card mt-4 flex rounded-[0.875rem]! p-1 @3xl:max-w-xl">
+      @for (tab of tabs; track tab.status) {
+      @let selected = status() === tab.status;
+      <button type="button" role="tab" class="h-9 flex-1 rounded-[0.625rem] text-[0.8125rem]"
+        [class]="selected ? 'bg-rose font-extrabold text-(--ev-on-rose)' : 'font-bold text-(--ev-soft)'"
+        [attr.aria-selected]="selected" (click)="selectTab(tab.status)">
+        {{ tab.label }}
+        @if (tab.status === 'OPEN' && openCount() !== null) {
+        · {{ openCount() }}
+        }
+      </button>
+      }
+    </div>
+
+    @if (notice(); as message) {
+    <p class="mt-4 rounded-[0.875rem] bg-(--ev-zone-on-bg) px-3.5 py-3 text-sm text-(--ev-zone-on-text)" role="status">{{ message }}</p>
+    }
+
+    @if (reports.failed()) {
+    <p class="mt-6 text-sm text-(--ev-error)" role="alert">Non siamo riusciti a caricare le segnalazioni. Ricarica la pagina.</p>
+    } @else if (reports.items().length === 0) {
+    <p class="mt-6 text-(--ev-soft)" role="status">{{ reports.loading() ? 'Caricamento…' : 'Nessuna segnalazione.' }}</p>
+    }
+
+    <div class="mt-4 grid items-start gap-3.5 @3xl:grid-cols-2 @6xl:grid-cols-3">
+      @for (report of reports.items(); track report.id) {
+      <app-report-card [report]="report" (reviewed)="onReviewed($event)" (alreadyReviewed)="onAlreadyReviewed()" />
+      }
+    </div>
+
+    <app-page-nav [page]="reports.page()" [totalPages]="reports.totalPages()" (pageChange)="reports.goTo($event)" />
+  </div>
+</main>

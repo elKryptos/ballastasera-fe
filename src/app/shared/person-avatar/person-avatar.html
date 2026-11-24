@@ -1,0 +1,7 @@
+<!-- The name is said next to the face wherever it shows: the face itself is decoration. width and height
+  only give the photo its square shape before it loads; its size is the host's. -->
+@if (url(); as url) {
+<img class="photo" [src]="url" alt="" width="96" height="96" referrerpolicy="no-referrer" [attr.loading]="loading()" />
+} @else {
+<span class="initial" aria-hidden="true">{{ initial() }}</span>
+}

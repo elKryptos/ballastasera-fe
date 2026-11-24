@@ -1,0 +1,40 @@
+<button type="button" class="row" aria-haspopup="dialog" (click)="show()">
+  <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-(--ev-error)" fill="none" stroke="currentColor"
+    stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M5.6 5.6l12.8 12.8" />
+  </svg>
+  <span class="grow">
+    <span class="title">Persone bloccate</span>
+    <span class="hint">Chi hai bloccato non vede il tuo profilo, e tu non vedi il suo.</span>
+  </span>
+  <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-(--ev-soft)" fill="none" stroke="currentColor"
+    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+</button>
+
+<app-sheet [(open)]="open" title="Persone bloccate">
+  @if (people(); as people) {
+  @if (people.length) {
+  <ul class="person-list list">
+    @for (person of people; track person.userId) {
+    <li>
+      <app-person-row [person]="person" [linked]="false">
+        <button type="button" class="unblock" [disabled]="unblocking() === person.userId" (click)="unblock(person)">
+          {{ unblocking() === person.userId ? 'Un momento…' : 'Sblocca' }}<span class="sr-only">: {{ person.displayName }}</span>
+        </button>
+      </app-person-row>
+    </li>
+    }
+  </ul>
+  } @else {
+  <p class="note">Non hai bloccato nessuno.</p>
+  }
+  } @else if (failed()) {
+  <p class="note" role="alert">Non siamo riusciti a caricare la lista.</p>
+  <button type="button" class="unblock self-start" (click)="load()">Riprova</button>
+  } @else {
+  <p class="note" role="status">Caricamento…</p>
+  }
+</app-sheet>

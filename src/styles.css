@@ -809,6 +809,32 @@ across several components. 16px text, or iPhones zoom in on focus. */
     background: var(--ev-surface);
   }
 
+  /* People one under the other (app-person-row): one card, a line between them. A <ul> of them, or
+  rows straight inside. */
+  .person-list {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--ev-edge);
+    border-radius: 1.125rem;
+    background: var(--ev-surface);
+  }
+
+  .person-list > * + * {
+    border-top: 1px solid var(--ev-edge);
+  }
+
+  /* A small uppercase title over a section of a profile or a list ("COSA BALLA", "NOVITÀ"). */
+  .section-label {
+    margin: 0;
+    padding: 0 0.125rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
   /* A field's label (app-request-field), or a group's, like "Sesso" over its choices, with
   "· facoltativo" after it when it may stay empty. */
   .request-label {
@@ -1186,6 +1212,14 @@ bg-* on a .drawer-chip) still wins over these defaults. */
     font-weight: 700;
   }
 
+  /* How many notices are new, next to "Avvisi" (social). */
+  .drawer-chip-count {
+    background: var(--color-rose);
+    color: var(--ev-on-rose);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
   /* "Nuovo": the sunset gradient with a soft glow, and a light sweeping
   across it now and then, so a page that just opened stands apart from the
   grey "Presto" chips. */
@@ -1517,4 +1551,12 @@ thumb: its own size is 1.75rem. Unlayered, so it wins over the calendar's
   * {
     @apply border-border outline-ring/50;
   }
+}
+
+/* The bell's dot (social): a circle drawn inside the bell's own icon, rose, cut out from whatever is
+behind it. Global: on phones the menu renders in a CDK overlay, outside the navbar. */
+.bell-dot {
+  fill: var(--color-rose);
+  stroke: var(--color-ink);
+  stroke-width: 2;
 }

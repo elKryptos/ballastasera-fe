@@ -3,6 +3,7 @@ import { Service, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { EventAttendeeDto, EventDetailDto, MapEventsDto } from '../models/event.model';
 import { SpringPage } from '../models/page.model';
+import { MyAttendanceDto, UserSummaryDto } from '../models/social.model';
 import { Observable } from 'rxjs';
 import { endpoints } from '../api/endpoints';
 import { publicApi } from '../interceptors/auth.interceptor';
@@ -46,8 +47,21 @@ export class EventsService {
     });
   }
 
-  addAttendance(eventId: string): Observable<void> {
-    return this.http.post<void>(`${environment.apiUrl}${endpoints.events.addAttendance(eventId)}`, {});
+  /** "Ci vado". With lookingForPartner (social), also sets or clears "Cerco qualcuno con cui ballare"
+   * at this night; without it, that stays as it was. */
+  addAttendance(eventId: string, lookingForPartner?: boolean): Observable<void> {
+    const body = lookingForPartner === undefined ? {} : { lookingForPartner };
+    return this.http.post<void>(`${environment.apiUrl}${endpoints.events.addAttendance(eventId)}`, body);
+  }
+
+  /** Whether the viewer is going, and looking for a partner there (social). */
+  getMyAttendance(eventId: string): Observable<MyAttendanceDto> {
+    return this.http.get<MyAttendanceDto>(`${environment.apiUrl}${endpoints.events.myAttendance(eventId)}`);
+  }
+
+  /** The viewer's friends going ("Sara e Luca ci vanno"), outside the event's cache: it's per viewer. */
+  getFriendsGoing(eventId: string): Observable<UserSummaryDto[]> {
+    return this.http.get<UserSummaryDto[]>(`${environment.apiUrl}${endpoints.events.friendsGoing(eventId)}`);
   }
 
   removeAttendance(eventId: string): Observable<void> {

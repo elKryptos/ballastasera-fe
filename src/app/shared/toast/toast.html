@@ -1,0 +1,28 @@
+<!-- The canvas' toast (4c): cream on the dark theme, ink on the light one, with a check. Not a live
+  region itself: the message is read out by announce(), once. -->
+<div #region class="toast-region" role="region" aria-label="Notifiche" [attr.popover]="popover"
+  (pointerenter)="pointerOn(true)" (pointerleave)="pointerOn(false)" (focusin)="focusIn($event)"
+  (focusout)="focusOut($event)">
+  @if (shown(); as toast) {
+  <div class="toast-card">
+    <svg viewBox="0 0 24 24" class="toast-icon" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+      stroke-linejoin="round" aria-hidden="true">
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+    <p class="toast-message">{{ toast.message }}</p>
+    <button type="button" class="toast-close" aria-label="Chiudi" (click)="close()">
+      <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+        stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </div>
+  }
+</div>
+
+<!-- Where ariaNotify() is missing: a live region that's here from the first render, as screen readers
+  need, said to be what it is for anyone who reads the page through. -->
+<div class="sr-only">
+  <p>Annunci</p>
+  <p aria-live="polite">{{ liveText() }}</p>
+</div>

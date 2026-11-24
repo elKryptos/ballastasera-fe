@@ -59,6 +59,10 @@ export const FEATURE_FLAGS = {
    * WhatsApp; on an event's page the whole "Chi ci va" list and each person's profile. Off, the
    * account still sends every field when saving (see toUserUpdate). */
   dancerProfile: 'dancerProfile',
+  /** Following, friends, blocking, the bell and invites (docs/social-fe.md): /persona, /@username,
+   * /il-tuo-profilo, /amici, /avvisi, the admin's reports, and "Il tuo account" as "Modifica
+   * profilo". Off, the account still sends the new fields when saving (see toUserUpdate). */
+  social: 'social',
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

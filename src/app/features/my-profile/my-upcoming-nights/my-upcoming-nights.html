@@ -1,0 +1,31 @@
+@if (nights(); as nights) {
+@if (nights.length) {
+<ul class="nights">
+  @for (item of nights; track item.night.id) {
+  <li>
+    <app-night-row [night]="item.night" [now]="now()">
+      @if (item.friends.length) {
+      <span nightExtra class="friends">
+        <span class="faces" aria-hidden="true">
+          @for (friend of item.friends.slice(0, faces); track friend.userId) {
+          <app-person-avatar class="face" [userId]="friend.userId" [name]="friend.displayName" [url]="friend.avatarUrl" />
+          }
+        </span>
+        {{ friendsText(item.friends) }}
+      </span>
+      }
+    </app-night-row>
+  </li>
+  }
+</ul>
+<a routerLink="/le-tue-serate" class="all">Tutte le tue serate</a>
+} @else {
+<p class="note">
+  Nessuna serata in programma. <a routerLink="/lista">Trova dove ballare</a> e di' «Ci vado».
+</p>
+}
+} @else if (failed()) {
+<p class="note" role="alert">Non siamo riusciti a caricare le tue serate.</p>
+} @else {
+<p class="note" role="status">Caricamento delle serate…</p>
+}

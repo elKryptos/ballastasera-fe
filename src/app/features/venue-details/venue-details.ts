@@ -194,7 +194,7 @@ export class VenueDetails {
     return this.pageShare.share(venue.name);
   }
 
-  protected copyAddress(venue: VenueDetailDto): Promise<void> {
+  protected copyAddress(venue: VenueDetailDto): Promise<boolean> {
     return this.pageShare.copy(withoutCountry(venue.address), 'address');
   }
 }

@@ -1,0 +1,18 @@
+<div class="flex flex-col gap-1.5">
+  <label for="account-origin" class="request-label">
+    Paese d'origine <span class="request-optional">· facoltativo</span>
+  </label>
+  <select id="account-origin" class="request-input cursor-pointer" (change)="pick($any($event.target).value)">
+    <option value="" [selected]="!value()">Non indicato</option>
+    <optgroup label="I più frequenti">
+      @for (country of frequent; track country.code) {
+      <option [value]="country.code" [selected]="value() === country.code">{{ country.name }}</option>
+      }
+    </optgroup>
+    <optgroup label="Tutti i paesi">
+      @for (country of all; track country.code) {
+      <option [value]="country.code" [selected]="value() === country.code">{{ country.name }}</option>
+      }
+    </optgroup>
+  </select>
+</div>

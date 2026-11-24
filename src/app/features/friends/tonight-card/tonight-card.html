@@ -1,0 +1,18 @@
+<div class="who">
+  <span class="faces" aria-hidden="true">
+    @for (person of faces(); track person.userId) {
+    <app-person-avatar class="face" [userId]="person.userId" [name]="person.displayName" [url]="person.avatarUrl" />
+    }
+    @if (more()) {
+    <span class="face more">+{{ more() }}</span>
+    }
+  </span>
+  <span class="text">
+    <span class="line"><strong>{{ who().names }}</strong> <span class="soft">{{ who().verb }}</span></span>
+    <a class="title" [routerLink]="['/evento', night().eventId]">{{ night().eventTitle }}</a>
+    <span class="where">{{ where() }}</span>
+  </span>
+</div>
+<button type="button" class="going" [class.on]="going()" [attr.aria-pressed]="going()" (click)="toggle()">
+  {{ going() ? 'Ci vai anche tu' : 'Vado anch\'io' }}<span class="sr-only">: {{ night().eventTitle }}</span>
+</button>

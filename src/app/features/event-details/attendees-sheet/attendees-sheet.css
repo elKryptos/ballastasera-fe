@@ -471,3 +471,32 @@ doesn't make the sheet jump. */
 app-attendee-profile {
   padding: 0.25rem 0.5rem 0;
 }
+
+/* The face and, when they're looking for someone to dance with, a mint dot on it (social). */
+.face-wrap {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.partner-dot {
+  position: absolute;
+  right: -0.125rem;
+  bottom: -0.125rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 3px solid var(--ev-surface);
+  border-radius: 999px;
+  background: var(--color-mint);
+}
+
+/* Both follow each other (social). */
+.friend {
+  flex-shrink: 0;
+  padding: 0.0625rem 0.4375rem;
+  border-radius: 0.4375rem;
+  background: var(--ev-zone-on-bg);
+  color: var(--ev-zone-on-text);
+  font-size: 0.6875rem;
+  font-weight: 800;
+}

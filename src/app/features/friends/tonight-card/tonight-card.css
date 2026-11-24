@@ -1,0 +1,89 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 1.125rem;
+  background: var(--ev-surface);
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* The faces overlap, each ringed in the card's colour. */
+.faces {
+  display: flex;
+  flex-shrink: 0;
+  padding-right: 0.625rem;
+}
+
+.face {
+  width: 2.25rem;
+  margin-right: -0.625rem;
+  border: 2px solid var(--ev-surface);
+}
+
+.more {
+  display: flex;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ev-raised);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.line {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.soft,
+.where {
+  color: var(--ev-soft);
+}
+
+.title {
+  color: var(--ev-text);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.title:hover {
+  text-decoration: underline;
+}
+
+.where {
+  font-size: 0.75rem;
+}
+
+.going {
+  width: 100%;
+  height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.going.on {
+  border-color: color-mix(in srgb, var(--ev-zone-on-text) 40%, transparent);
+  background: var(--ev-zone-on-bg);
+  color: var(--ev-zone-on-text);
+}

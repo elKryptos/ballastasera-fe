@@ -1,0 +1,186 @@
+<!-- Canvas 4, "Il tuo profilo (com'è e come ti vedono)", laid out by app-profile-layout: stacked on a
+  phone, who you are on the left from @4xl (container query on <main>). -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  @if (user(); as user) {
+  @if (view(); as view) {
+  <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-5 pb-10 @4xl:max-w-7xl @4xl:px-8 @4xl:pt-8">
+    <div class="tabs @4xl:max-w-md" role="tablist" aria-label="Vista del profilo">
+      <button type="button" role="tab" id="profile-tab-own" aria-controls="profile-panel" class="tab"
+        [attr.aria-selected]="tab() === 'own'" (click)="tab.set('own')">Il tuo profilo</button>
+      <button type="button" role="tab" id="profile-tab-public" aria-controls="profile-panel" class="tab"
+        [attr.aria-selected]="tab() === 'public'" (click)="tab.set('public')">Come ti vedono</button>
+    </div>
+
+    <app-profile-layout id="profile-panel" role="tabpanel" class="panel"
+      [attr.aria-labelledby]="tab() === 'own' ? 'profile-tab-own' : 'profile-tab-public'">
+      <div profileSide class="side">
+        @if (tab() === 'public') {
+        <p class="preview-note">
+          <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          @if (user.showProfilePublic) {
+          Così ti vede chi apre il tuo profilo da una serata o dalla lista amici.
+          } @else {
+          Il tuo profilo è privato: nessuno lo vede. Così lo vedrebbero se lo rendessi pubblico.
+          }
+        </p>
+        }
+
+        <app-profile-hero [view]="view" [linkStats]="tab() === 'own'">
+          @if (tab() === 'own') {
+          <a avatarAction routerLink="/il-tuo-account" fragment="foto" class="camera" aria-label="Cambia foto">
+            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+              <circle cx="12" cy="13" r="3.5" />
+            </svg>
+          </a>
+          }
+          <!-- Its own @if: a block projected into [avatarAction] must hold only that node. -->
+          @if (tab() === 'own') {
+          <div class="actions">
+            <a routerLink="/il-tuo-account" class="action primary">
+              <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 20h4L19 9l-4-4L4 16z" />
+                <path d="M13.5 6.5l4 4" />
+              </svg>
+              Modifica profilo
+            </a>
+            <button type="button" class="action" (click)="shareOpen.set(true)">
+              <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 15V3M7 8l5-5 5 5" />
+                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+              </svg>
+              Condividi
+            </button>
+          </div>
+          } @else {
+          <div class="actions" aria-label="I pulsanti di chi ti guarda" role="group">
+            <button type="button" class="action primary" disabled>Segui</button>
+            <button type="button" class="action" disabled>Invita a ballare</button>
+          </div>
+          <p class="preview-hint">Nell'anteprima i pulsanti non fanno niente.</p>
+          }
+        </app-profile-hero>
+      </div>
+
+        @if (tab() === 'own' && stepsMissing().length) {
+        <section class="request-card complete" aria-labelledby="profile-complete-title">
+          <div class="complete-head">
+            <h2 id="profile-complete-title" class="complete-title">Completa il profilo</h2>
+            <span class="complete-count">{{ stepsDone().length }} di {{ steps().length }}</span>
+          </div>
+          <progress class="bar" [max]="steps().length" [value]="stepsDone().length" aria-labelledby="profile-complete-title">
+            {{ stepsDone().length }} di {{ steps().length }}
+          </progress>
+          <p class="complete-text">Chi apre il tuo profilo capisce subito cosa balli, dove e con chi.</p>
+          <ul class="todo">
+            @for (step of stepsMissing(); track step.key) {
+            <li>
+              <a routerLink="/il-tuo-account" class="todo-row">
+                <span class="todo-plus" aria-hidden="true">+</span>
+                <span class="grow">{{ step.todoLabel }}</span>
+                <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-(--ev-soft)" fill="none" stroke="currentColor"
+                  stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </a>
+            </li>
+            }
+          </ul>
+          @if (stepsDone().length) {
+          <p class="done">
+            <svg viewBox="0 0 24 24" class="size-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.6"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+            Fatto: {{ stepsDoneText() }}
+          </p>
+          }
+        </section>
+        }
+
+        <app-profile-section [heading]="tab() === 'own' ? 'Cosa balli' : 'Cosa balla'">
+          @if (tab() === 'own') {
+          <a sectionAction routerLink="/il-tuo-account" class="edit">Modifica</a>
+          }
+          <app-profile-styles [styles]="view.danceStyles"
+            [emptyText]="tab() === 'own' ? 'Non hai ancora detto cosa balli.' : 'Non ha ancora detto cosa balla.'" />
+        </app-profile-section>
+
+        @if (tab() === 'own') {
+        <app-profile-section heading="Prossime serate">
+          <span sectionAction class="seen-by">{{ nightsSeenBy() }}</span>
+          <app-my-upcoming-nights [now]="now()" />
+        </app-profile-section>
+        }
+
+        <app-profile-section heading="Traguardi">
+          <app-profile-milestones [own]="tab() === 'own'" [eventsCount]="view.eventsCount"
+            [venuesCount]="view.venuesCount" [memberSince]="view.memberSince" [firstEventAt]="user.firstEventAt" />
+        </app-profile-section>
+
+        <app-profile-section heading="Scuola o crew">
+          @if (view.schoolName; as school) {
+          <app-profile-school [name]="school" />
+          } @else if (tab() === 'own') {
+          <a routerLink="/il-tuo-account" class="school-add">
+            <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Dove hai imparato a ballare?
+          </a>
+          } @else {
+          <p class="note">Nessuna scuola indicata.</p>
+          }
+        </app-profile-section>
+
+        @if (tab() === 'public') {
+        <app-profile-section heading="Contatti">
+          <app-profile-contacts [instagram]="view.instagram" [whatsapp]="view.whatsapp"
+            [lockedText]="view.whatsapp ? null : previewWhatsappLock()" emptyText="Non mostri contatti." />
+        </app-profile-section>
+        } @else {
+        <app-profile-section heading="Chi vede cosa">
+          <ul class="person-list privacy">
+            @for (row of privacy(); track row.label) {
+            <li>
+              <a routerLink="/il-tuo-account" class="privacy-row">
+                <span class="grow font-bold">{{ row.label }}</span>
+                <span class="privacy-value">{{ row.value }}</span>
+                <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-(--ev-soft)" fill="none" stroke="currentColor"
+                  stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </a>
+            </li>
+            }
+          </ul>
+          <p class="note small">Email e data di nascita non le vede nessuno.</p>
+        </app-profile-section>
+
+        <button type="button" class="logout wide" (click)="logout()">
+          <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />
+          </svg>
+          Esci
+        </button>
+        }
+
+        @if (memberSince(); as since) {
+        <p class="member wide">Su ballastasera da {{ since }}</p>
+        }
+    </app-profile-layout>
+  </div>
+
+  <app-share-sheet [(open)]="shareOpen" [user]="user" />
+  }
+  }
+</main>

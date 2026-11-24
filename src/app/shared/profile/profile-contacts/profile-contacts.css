@@ -1,0 +1,92 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* Each in its app's colour. */
+.contact {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--brand) 13%, var(--ev-surface));
+  color: var(--ev-text);
+  text-decoration: none;
+}
+
+.contact-whatsapp {
+  --brand: #25d366;
+}
+.contact-instagram {
+  --brand: #d6249f;
+}
+
+/* Not shown to the viewer: no colour, a dashed edge. */
+.contact-locked {
+  border: 1px dashed var(--ev-edge);
+  background: var(--ev-surface);
+}
+
+.contact-tile {
+  display: flex;
+  width: 2.375rem;
+  height: 2.375rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  color: #ffffff;
+}
+
+.tile-whatsapp {
+  background: #25d366;
+}
+
+.tile-locked {
+  background: var(--ev-raised);
+  color: var(--ev-soft);
+}
+
+.contact-text {
+  display: flex;
+  min-width: 0;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.contact-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.contact-hint {
+  overflow: hidden;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ev-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-hint.wrap {
+  white-space: normal;
+}
+
+.chevron {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--ev-soft);
+}
+
+.note {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}

@@ -1,0 +1,65 @@
+<div class="flex flex-col gap-1.5">
+  <label for="account-city" class="request-label">
+    Città dove vivi <span class="request-optional">· facoltativa</span>
+  </label>
+
+  @if (city(); as city) {
+  <div class="picked">
+    <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+    <span class="grow">{{ label(city) }}</span>
+    <button type="button" class="clear" [attr.aria-label]="'Togli ' + city.name" (click)="clear()">
+      <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  </div>
+  } @else {
+  <div class="request-input request-input-group">
+    <svg viewBox="0 0 24 24" class="size-4.5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+    <input id="account-city" type="search" autocomplete="off" placeholder="Es. Milano" aria-describedby="account-city-hint"
+      [value]="search.search()" (input)="search.search.set($any($event.target).value)" />
+  </div>
+  @if (search.search().trim().length >= minLength) {
+  @if (search.searching()) {
+  <p class="status" role="status">Ricerca in corso…</p>
+  } @else if (search.results().length) {
+  <ul class="results" aria-label="Città trovate">
+    @for (result of search.results(); track result.name + result.region + result.country) {
+    <li>
+      <button type="button" class="result" (click)="pick(result)">
+        <span class="font-bold">{{ result.name }}</span>
+        @if (result.region) {
+        <span class="text-(--ev-soft)">{{ result.region }}</span>
+        }
+      </button>
+    </li>
+    }
+  </ul>
+  } @else {
+  <p class="status" role="status">Nessuna città trovata.</p>
+  }
+  }
+  }
+  <p id="account-city-hint" class="status">Solo il comune, mai l'indirizzo.</p>
+</div>
+
+@if (city()) {
+<div class="flex items-start gap-3">
+  <div class="min-w-0 grow">
+    <p id="account-city-shown" class="text-[0.9375rem] font-bold">Mostra la città nel profilo</p>
+    <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">
+      {{ shown() ? 'Chi apre il tuo profilo vede solo il nome della città.' : 'Non la vede nessuno: ci serve per capire dove aprire.' }}
+    </p>
+  </div>
+  <app-toggle-switch labelledBy="account-city-shown" [checked]="shown()" (toggled)="toggleShown()" />
+</div>
+}

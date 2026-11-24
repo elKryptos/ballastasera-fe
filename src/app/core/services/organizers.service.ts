@@ -35,6 +35,13 @@ export class OrganizersService {
     return this.http.get<OrganizerSummaryDto[]>(`${environment.apiUrl}${endpoints.organizers.claimable}`, { params, context: publicApi() });
   }
 
+  /** Verified SCHOOL organizers whose name holds `name` (at least 2 characters), alphabetical:
+   * "Scuola o crew" in the profile. Public. */
+  searchSchools(name: string, limit = 5): Observable<OrganizerSummaryDto[]> {
+    const params = new HttpParams().set('name', name).set('limit', limit);
+    return this.http.get<OrganizerSummaryDto[]>(`${environment.apiUrl}${endpoints.organizers.schools}`, { params, context: publicApi() });
+  }
+
   getBySlug(slug: string): Observable<OrganizerDetailDto> {
     return this.http.get<OrganizerDetailDto>(`${environment.apiUrl}${endpoints.organizers.getBySlug(slug)}`, { context: publicApi() });
   }

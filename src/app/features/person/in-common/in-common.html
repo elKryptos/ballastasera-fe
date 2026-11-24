@@ -1,0 +1,44 @@
+<ul class="person-list">
+  @for (item of items(); track item.kind) {
+  <li class="item" [class]="item.kind">
+    <span class="icon" aria-hidden="true">
+      @switch (item.kind) {
+      @case ('style') {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M9 18V6l10-2v12" />
+        <circle cx="6.5" cy="18" r="2.5" />
+        <circle cx="16.5" cy="16" r="2.5" />
+      </svg>
+      }
+      @case ('roles') {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M7 17L17 7M17 7h-7M17 7v7" />
+        <path d="M4 20h4" />
+      </svg>
+      }
+      @case ('friends') {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="9" cy="8" r="3.5" />
+        <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+        <circle cx="17" cy="9" r="2.5" />
+        <path d="M16 14.2c2.8.3 5 2.6 5 5.8" />
+      </svg>
+      }
+      @case ('nights') {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <rect x="3" y="5" width="18" height="16" rx="3" />
+        <path d="M3 10h18M8 3v4M16 3v4" />
+      </svg>
+      }
+      }
+    </span>
+    <span class="text">
+      <span class="title">{{ item.title }}</span>
+      @if (item.text) {
+      <span class="detail">{{ item.text }}</span>
+      }
+    </span>
+  </li>
+  }
+</ul>

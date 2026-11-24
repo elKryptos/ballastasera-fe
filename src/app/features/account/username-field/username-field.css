@@ -1,0 +1,47 @@
+.box {
+  gap: 0.0625rem;
+}
+
+.box.invalid {
+  border-color: var(--ev-error);
+}
+
+.prefix {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.suggestion {
+  display: flex;
+  height: 2.75rem;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.75rem;
+  background: var(--ev-raised);
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-muted);
+}
+
+.hint.free {
+  font-weight: 700;
+  color: var(--ev-zone-on-text);
+}
+
+.hint.error {
+  color: var(--ev-error);
+}

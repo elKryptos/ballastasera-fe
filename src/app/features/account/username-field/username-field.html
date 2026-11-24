@@ -1,0 +1,24 @@
+<div class="flex flex-col gap-1.5">
+  <label for="account-username" class="request-label">
+    Nome utente <span class="request-optional">· facoltativo</span>
+  </label>
+  <!-- The link's start shown before the name: it says what the name is for. -->
+  <div class="request-input request-input-group box" [class.invalid]="invalid()">
+    <span class="prefix" aria-hidden="true">{{ prefix }}</span>
+    <input id="account-username" type="text" inputmode="text" autocapitalize="none" autocomplete="off"
+      spellcheck="false" placeholder="nome" [maxLength]="maxLength" [formControl]="control"
+      aria-describedby="account-username-hint" [attr.aria-invalid]="invalid()" (input)="normalize()" />
+  </div>
+  @if (suggestion(); as suggestion) {
+  <button type="button" class="suggestion" (click)="useSuggestion(suggestion)">
+    <svg viewBox="0 0 24 24" class="size-4.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" aria-hidden="true">
+      <rect x="4" y="4" width="16" height="16" rx="5" />
+      <circle cx="12" cy="12" r="3.5" />
+    </svg>
+    Usa «{{ suggestion }}», come su Instagram
+  </button>
+  }
+  <p id="account-username-hint" class="hint" [class.error]="invalid()" [class.free]="availability() === 'free'"
+    aria-live="polite">{{ hint() }}</p>
+</div>

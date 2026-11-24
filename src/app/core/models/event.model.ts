@@ -1,4 +1,5 @@
 import { OrganizerDetailDto } from "./organizer.model";
+import { SocialRelation } from "./social.model";
 import { VenueDetailDto } from "./venue.model";
 
 /** Mirrors EventType in the backend. */
@@ -121,6 +122,10 @@ export interface EventAttendeeDto {
   displayName: string;
   avatarUrl: string | null;
   instagram: string | null;
+  /** "Cerco qualcuno con cui ballare" at this night (social). */
+  lookingForPartner?: boolean;
+  /** The viewer's relation with them; null signed out (social). */
+  relation?: SocialRelation | null;
 }
 
 export interface EventSeriesCreateDto {

@@ -1,0 +1,103 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.notices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.person-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* What's new this time: a rose edge on the left, without moving the row. */
+.unread {
+  box-shadow: inset 3px 0 0 var(--color-rose);
+  background: color-mix(in srgb, var(--color-rose) 6%, var(--ev-surface));
+}
+
+.see {
+  display: flex;
+  height: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.75rem;
+  color: var(--ev-text);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.settings {
+  padding: 1rem;
+}
+
+.note,
+.failed {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}
+
+.failed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.failed p {
+  margin: 0;
+}
+
+.retry {
+  height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1.25rem 1rem;
+  border: 1px dashed var(--ev-edge);
+  border-radius: 1.25rem;
+}
+
+.empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+
+/* Desktop: the list, and "Ricevi email" beside it. */
+@container (min-width: 56rem) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    align-items: start;
+    gap: 2rem;
+  }
+
+  .settings {
+    position: sticky;
+    top: 1.5rem;
+  }
+}

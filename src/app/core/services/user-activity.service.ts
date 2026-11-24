@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
+import { cursorParams } from '../api/cursor-params';
 import { endpoints } from '../api/endpoints';
 import { CursorPage, PageCursor } from '../models/page.model';
 import { EventCardDto } from '../models/event.model';
@@ -33,8 +34,7 @@ export class UserActivityService {
     past: boolean,
     cursor: PageCursor | null = null,
   ): Observable<CursorPage<EventCardDto>> {
-    let params = new HttpParams().set('past', past).set('limit', MY_NIGHTS_PAGE_SIZE);
-    if (cursor) params = params.set('cursorStartAt', cursor.startAt).set('cursorId', cursor.id);
+    const params = cursorParams(cursor, MY_NIGHTS_PAGE_SIZE, new HttpParams().set('past', past));
     const path = kind === 'going' ? endpoints.users.myAttendance : endpoints.users.myFavorites;
     return this.http.get<CursorPage<EventCardDto>>(`${environment.apiUrl}${path}`, { params });
   }

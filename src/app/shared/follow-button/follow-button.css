@@ -1,0 +1,73 @@
+:host {
+  display: contents;
+}
+
+.follow,
+.private {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid transparent;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.follow {
+  cursor: pointer;
+}
+
+.follow:disabled {
+  cursor: default;
+}
+
+/* At the end of a list's row. */
+.row {
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+/* On a profile, sharing the line with "Invita a ballare". */
+.wide {
+  flex: 1;
+  height: 2.75rem;
+  padding: 0 0.875rem;
+  border-radius: 0.875rem;
+  font-size: 0.9375rem;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* Not followed yet: the call to act, cream by night, ink by day. */
+.NONE,
+.FOLLOWED_BY {
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+}
+
+.FOLLOWING {
+  border-color: var(--ev-edge);
+  background: var(--ev-surface);
+  color: var(--ev-text);
+}
+
+/* Friends: the mint of things that are on. */
+.MUTUAL {
+  border-color: color-mix(in srgb, var(--ev-zone-on-text) 40%, transparent);
+  background: var(--ev-zone-on-bg);
+  color: var(--ev-zone-on-text);
+}
+
+.private {
+  border-style: dashed;
+  border-color: var(--ev-edge);
+  color: var(--color-muted);
+  font-weight: 700;
+}

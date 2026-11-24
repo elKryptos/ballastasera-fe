@@ -9,9 +9,10 @@ export interface PageShare<T extends string> {
    * key — for a couple of seconds, so that button can say "Copiato". */
   readonly copied: Signal<T | 'link' | null>;
   /** The native share sheet where the browser has one, otherwise copies
-   * the page's URL (as 'link'). */
-  share(title: string): Promise<void>;
-  copy(text: string, what: T | 'link'): Promise<void>;
+   * the URL — the page's, or `url` — (as 'link'). */
+  share(title: string, url?: string): Promise<void>;
+  /** Whether it got to the clipboard: it can be refused (no permission, an insecure page). */
+  copy(text: string, what: T | 'link'): Promise<boolean>;
 }
 
 /**
@@ -24,21 +25,22 @@ export function injectPageShare<T extends string = never>(): PageShare<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   inject(DestroyRef).onDestroy(() => clearTimeout(timer));
 
-  const copy = async (text: string, what: T | 'link'): Promise<void> => {
+  const copy = async (text: string, what: T | 'link'): Promise<boolean> => {
     try {
       await navigator.clipboard.writeText(text);
     } catch {
-      // No clipboard API (insecure context) or permission denied: nothing to show.
-      return;
+      // No clipboard API (insecure context) or permission denied: the caller may say so.
+      return false;
     }
     copied.set(what);
     clearTimeout(timer);
     timer = setTimeout(() => copied.set(null), COPIED_MS);
+    return true;
   };
 
-  const share = async (title: string): Promise<void> => {
+  const share = async (title: string, url?: string): Promise<void> => {
     if (!isBrowser) return;
-    const url = window.location.href;
+    url ??= window.location.href;
 
     if (navigator.share) {
       try {

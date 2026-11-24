@@ -1,0 +1,3 @@
+@for (chip of chips(); track chip.kind) {
+<li class="chip" [class]="'chip-' + chip.kind">{{ chip.label }}</li>
+}

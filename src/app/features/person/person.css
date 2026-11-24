@@ -1,0 +1,203 @@
+.top-bar {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.back {
+  display: flex;
+  height: 2.75rem;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.75rem 0 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--color-lead);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.top-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.icon-button {
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.875rem;
+  background: none;
+  color: var(--ev-text);
+  cursor: pointer;
+}
+
+.icon-button.raised {
+  background: var(--ev-raised);
+}
+
+/* Signed out, gone, failed, blocked: one card with what happened and the way on. */
+.notice {
+  display: flex;
+  max-width: 36rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem;
+}
+
+.notice-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.notice-text,
+.loading {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ev-soft);
+}
+
+.primary-button,
+.secondary-button {
+  display: flex;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.125rem;
+  border-radius: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary-button {
+  border: 0;
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+}
+
+.secondary-button {
+  border: 1px solid var(--ev-edge);
+  background: transparent;
+  color: var(--ev-text);
+}
+
+.secondary-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* WhatsApp next to "Segui": green once friends, locked otherwise. */
+.whatsapp {
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.875rem;
+  background: #1f8f4a;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.whatsapp.locked {
+  border: 1px dashed var(--ev-edge);
+  background: transparent;
+  color: var(--ev-soft);
+}
+
+/* "Cerca qualcuno con cui ballare". */
+.partner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: 1rem;
+  background: var(--ev-zone-on-bg);
+  color: var(--ev-zone-on-text);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.partner-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--color-mint);
+}
+
+.report-link {
+  align-self: center;
+  height: 2.75rem;
+  padding: 0 0.875rem;
+  border: 0;
+  background: none;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* The report link takes the whole row when the sections go two by two (app-profile-layout). */
+@container (min-width: 72rem) {
+  .wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/* "Invita a ballare" next to "Segui", friends only. */
+.invite {
+  display: flex;
+  height: 2.75rem;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.invite:disabled {
+  border-style: dashed;
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.invite-private {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ev-soft);
+}
+
+.invite-private a {
+  color: var(--ev-link);
+  font-weight: 700;
+}

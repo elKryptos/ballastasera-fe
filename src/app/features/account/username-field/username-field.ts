@@ -98,6 +98,14 @@ export class UsernameField {
         }
       });
 
+    // A name refused on saving (taken in the meantime, reserved): the account puts it on the control
+    // as its error, after resetting the form to the same name, so no new check runs: the hint says it
+    // as one would have.
+    this.control.statusChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      const refused = this.control.errors?.['username'];
+      if (refused === 'taken' || refused === 'reserved') this.availability.set(refused);
+    });
+
     // A suggestion only for an empty field, and only once its name is known to be free; asked once
     // the Instagram field has stopped changing, like the check above.
     const candidate = computed(() => (this.value() ? null : usernameFromInstagram(this.instagram())));

@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, concatMap, map, of } from 'rxjs';
+import { catchError, concatMap, map, of, tap } from 'rxjs';
 import { FEATURE_FLAGS, FeatureFlag } from '../../core/config/feature-flags';
 import { ORGANIZER_TYPE_LABELS } from '../../core/config/organizer-types';
 import { AuthService } from '../../core/services/auth.service';
@@ -17,7 +17,12 @@ import { REQUEST_URL, requestStatusOf } from '../../core/utils/organizer-request
 import { FormSave } from '../../core/utils/pending-action';
 import { profileErrorMessage } from '../../core/utils/profile-errors';
 import { ProfileFormValue, profileFormValue, sameProfile, toUserUpdate } from '../../core/utils/user-update';
-import { normalizeUsername, usernameErrorMessage } from '../../core/utils/username';
+import {
+  USERNAME_NOT_SAVED_TEXT,
+  normalizeUsername,
+  usernameErrorMessage,
+  usernameRefusal,
+} from '../../core/utils/username';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { EmailNotificationsToggle } from '../../shared/email-notifications-toggle/email-notifications-toggle';
 import { InstagramInput } from '../../shared/instagram-input/instagram-input';
@@ -171,23 +176,32 @@ export class Account {
     // The profile first, then the username on its own endpoint (S7): the profile's PATCH doesn't
     // carry it. "Salva" is disabled while saving (FormSave.busy): two PATCHes adding the same style
     // at once would make the backend fail on the second.
-    const request = this.auth
-      .updateMe(toUserUpdate(value))
-      .pipe(
-        concatMap((user) =>
-          usernameChanged ? this.users.setUsername(username).pipe(map(() => ({ ...user, username }))) : of(user),
-        ),
-      );
+    // Whether the profile's PATCH went through: an error after it is the username's alone.
+    let profileSaved = false;
+    const request = this.auth.updateMe(toUserUpdate(value)).pipe(
+      tap(() => (profileSaved = true)),
+      concatMap((user) =>
+        usernameChanged ? this.users.setUsername(username).pipe(map(() => ({ ...user, username }))) : of(user),
+      ),
+    );
     this.saving.run(request, {
       next: (user) => this.load(profileFormValue(user)),
       errorMessage: (error) => {
-        const usernameMessage = usernameErrorMessage(error);
-        if (!usernameMessage) return profileErrorMessage(error);
-        // The profile was saved, the username wasn't: what's saved is the profile, and the name typed
-        // stays in the field, as a change still to save.
+        if (!profileSaved) return profileErrorMessage(error);
+        // The profile was saved, the username wasn't (taken, or the request failed): what's saved is
+        // the profile, so "Annulla" and the next "Salva" start from it, and the name typed stays in
+        // the field, as the one change still to save.
         const saved = this.user();
         if (saved) this.load({ ...profileFormValue(saved), username: saved.username ?? '' }, value.username);
-        return usernameMessage;
+        // A name refused for itself: the field says so (the reset above cleared its check), and
+        // "Salva" waits for another.
+        const refused = usernameRefusal(error);
+        if (refused) {
+          const control = this.form.controls.username;
+          control.setErrors({ ...control.errors, username: refused });
+          control.markAsTouched();
+        }
+        return usernameErrorMessage(error) ?? USERNAME_NOT_SAVED_TEXT;
       },
     });
   }

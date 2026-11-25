@@ -52,6 +52,17 @@ export function usernameLink(username: string): string {
 }
 
 /** What to say when saving the username failed, or null when the failure is about something else. */
+/** The profile was saved and the username's own request failed for a reason of its own (the
+ * network, the server): said so, as the rest is saved. */
+export const USERNAME_NOT_SAVED_TEXT = 'Il profilo è salvato, il nome utente no: riprova tra poco.';
+
+/** Saving refused the name itself: taken in the meantime, or reserved. The field shows it as its own
+ * check would (UsernameField). */
+export function usernameRefusal(error: unknown): 'taken' | 'reserved' | null {
+  const code = apiErrorCode(error);
+  return code === 'USERNAME_TAKEN' ? 'taken' : code === 'USERNAME_RESERVED' ? 'reserved' : null;
+}
+
 export function usernameErrorMessage(error: unknown): string | null {
   const code = apiErrorCode(error);
   if (code === 'USERNAME_TAKEN') return 'Questo nome utente è appena stato preso: scegline un altro.';

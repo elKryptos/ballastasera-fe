@@ -39,6 +39,18 @@ Todo escrito, compila (`ng build --configuration development`) y los tests unita
    `<app-toast>` vacío (se quitó la etiqueta oculta «Annunci» de su live region para no meter texto en la home).
 3. Probar contra el BE local (checklist de abajo), con el SQL de `social-prod-db.md` en dev. **← aquí**
 4. Pendiente de diseño: la chip «N escono stasera» de «Amici» en el menú (no se hizo: pediría el feed en cada carga).
+   Para hacerla sin pedir el feed entero haría falta un contador en el BE (como `unread-count`).
+
+**Orden del deploy (S4, revisado el 25/11).** Con el flag apagado el formulario devuelve cada campo nuevo con
+el valor guardado y el switch de WhatsApp no toca un `MUTUALS`; `/il-tuo-account` espera a `/auth/me`
+(`roleGuard`), así que nunca rellena el formulario con el usuario viejo de localStorage. Pero el body depende del
+orden:
+- **FE primero** (este FE contra el BE de prod actual): manda `bio`, `homeCity`, etc. que ese BE no conoce. Va
+  bien solo si el BE ignora propiedades desconocidas (Jackson `FAIL_ON_UNKNOWN_PROPERTIES=false`, el default de
+  Spring Boot): comprobarlo en el BE antes.
+- **BE primero** (el FE de `main` contra el BE social): el `PATCH /auth/me` viejo no lleva los campos nuevos y el
+  BE los guardaría a `null` (`attendanceVisibility`, `showHomeCity`…): o fallan los guardados o se pierden los
+  valores por defecto. Evitarlo: FE antes o a la vez.
 5. Revisión con el usuario y commit/merge.
 
 ---

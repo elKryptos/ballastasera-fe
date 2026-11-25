@@ -141,10 +141,10 @@
     } @else {
     @for (group of groups(); track group.night) {
     <section class="mt-5 flex flex-col gap-2.5" [attr.aria-labelledby]="'night-' + group.night">
-      <!-- Each day stands apart from the last: in the links' rose ("La tua scena"), not the cards'
-          grey, with a rule after it as far as the row goes. -->
+      <!-- Each day stands apart from the last: in the text's own colour, cream by night and ink by
+          day, not the cards' grey nor an accent, with a rule after it as far as the row goes. -->
       <h2 [id]="'night-' + group.night"
-        class="flex items-center gap-3 text-xs font-extrabold tracking-[0.11em] text-(--ev-link) uppercase after:h-px after:flex-1 after:bg-(--ev-edge)">
+        class="flex items-center gap-3 text-xs font-extrabold tracking-[0.11em] text-(--ev-text) uppercase after:h-px after:flex-1 after:bg-(--ev-edge)">
         {{ group.heading }}
       </h2>
       <!-- grid-cols-1, not the implicit auto column: that one grows to the

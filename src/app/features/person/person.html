@@ -105,10 +105,18 @@
               <path d="M9 9c0 3.3 2.7 6 6 6" />
             </svg>
           </a>
-          } @else {
+          } @else if (whatsappLock()) {
+          <!-- Only while following each other would unlock it: between friends a missing number is
+            just missing ("Contatti" says so), with nothing to tap. WhatsApp's bubble with a lock on it,
+            so it reads as WhatsApp. -->
           <button type="button" class="whatsapp locked" aria-label="WhatsApp: perché non lo vedi"
             (click)="whatsappLocked()">
-            <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2"
+            <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 20l1.4-4A8 8 0 1 1 8.6 19z" />
+              <path d="M9 9c0 3.3 2.7 6 6 6" />
+            </svg>
+            <svg viewBox="0 0 24 24" class="lock-badge" fill="none" stroke="currentColor" stroke-width="2.6"
               stroke-linecap="round" aria-hidden="true">
               <rect x="5" y="11" width="14" height="10" rx="2" />
               <path d="M8 11V8a4 4 0 0 1 8 0v3" />

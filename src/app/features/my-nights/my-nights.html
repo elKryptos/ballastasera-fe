@@ -1,9 +1,10 @@
 <!-- The canvas's "La tua scena" (LeTueSerate, SeratePassate, the Vuoto and
     Paginazione boards), on the --ev-* tokens in styles.css, so it follows the
-    day theme too (LeTueSerateGiorno). The selected tab is rose with ink on it
-    (--ev-on-rose), as on the canvas. A phone screen there: here one column on
+    day theme too (LeTueSerateGiorno). A phone screen there: here one column on
     a phone; from @5xl as wide as the nights' other lists (max-w-300, px-8,
-    pt-6), each night's cards two, then three, to a row. -->
+    pt-6), each night's cards two, then three, to a row. The tabs are the
+    app's .segmented-tabs (styles.css), as in Amici: the picked one cream by
+    night, ink by day, so rose stays the page's buttons'. -->
 <main appSidebarPush class="@container pt-(--header-h) md:pt-0">
   <div class="mx-auto flex max-w-300 flex-col gap-5 px-4 pt-5 pb-[calc(6rem+env(safe-area-inset-bottom))] @5xl:px-8 @5xl:pt-6">
     <div>
@@ -11,10 +12,9 @@
       <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Le tue serate</h1>
     </div>
 
-    <div role="tablist" aria-label="Le tue serate"
-      class="flex shrink-0 gap-1 rounded-2xl border border-(--ev-edge) bg-(--ev-surface) p-1 @3xl:max-w-xl">
+    <div role="tablist" aria-label="Le tue serate" class="segmented-tabs shrink-0 @3xl:max-w-xl">
       <button type="button" role="tab" id="tab-going" aria-controls="panel"
-        class="group flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-extrabold text-(--ev-soft) transition-colors aria-selected:bg-rose aria-selected:text-(--ev-on-rose)"
+        class="segmented-tab group flex items-center justify-center gap-2"
         [attr.aria-selected]="tab() === 'going'" (click)="selectTab('going')">
         <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -24,13 +24,13 @@
         Parteciperò
         @if (goingList.loaded()) {
         <span
-          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--ev-text)/14 px-1.5 text-xs font-extrabold tabular-nums group-aria-selected:bg-(--ev-on-rose)/18">
+          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--ev-text)/14 px-1.5 text-xs font-extrabold tabular-nums group-aria-selected:bg-(--ev-invert-text)/15">
           {{ goingList.total() }}
         </span>
         }
       </button>
       <button type="button" role="tab" id="tab-liked" aria-controls="panel"
-        class="group flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-extrabold text-(--ev-soft) transition-colors aria-selected:bg-rose aria-selected:text-(--ev-on-rose)"
+        class="segmented-tab group flex items-center justify-center gap-2"
         [attr.aria-selected]="tab() === 'liked'" (click)="selectTab('liked')">
         <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
           stroke-linejoin="round" aria-hidden="true">
@@ -39,7 +39,7 @@
         Mi piace
         @if (likedList.loaded()) {
         <span
-          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--ev-text)/14 px-1.5 text-xs font-extrabold tabular-nums group-aria-selected:bg-(--ev-on-rose)/18">
+          class="flex h-5.5 min-w-5.5 items-center justify-center rounded-full bg-(--ev-text)/14 px-1.5 text-xs font-extrabold tabular-nums group-aria-selected:bg-(--ev-invert-text)/15">
           {{ likedList.total() }}
         </span>
         }

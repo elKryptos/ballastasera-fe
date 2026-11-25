@@ -1,5 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Component, ElementRef, PLATFORM_ID, effect, inject, input, model, viewChild } from '@angular/core';
+import { BackdropDismiss } from '../../core/utils/backdrop-dismiss';
 
 /** Light dismiss without closedby (Safari): only a click on the backdrop itself. */
 const NATIVE_LIGHT_DISMISS = typeof HTMLDialogElement !== 'undefined' && 'closedBy' in HTMLDialogElement.prototype;
@@ -29,6 +30,7 @@ export class Sheet {
 
   protected readonly titleId = `sheet-title-${++nextId}`;
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
+  private readonly backdrop = new BackdropDismiss();
 
   constructor() {
     // showModal() puts it in the top layer, makes the page behind inert and traps the focus.
@@ -49,14 +51,12 @@ export class Sheet {
     if (this.busy()) event.preventDefault();
   }
 
-  /** The fallback for light dismiss: a click on the dialog element outside its box is the backdrop. */
-  protected onClick(event: MouseEvent): void {
-    if (NATIVE_LIGHT_DISMISS) return;
-    const dialog = this.dialog().nativeElement;
-    if (event.target !== dialog) return;
-    const box = dialog.getBoundingClientRect();
-    const inside =
-      box.top <= event.clientY && event.clientY <= box.bottom && box.left <= event.clientX && event.clientX <= box.right;
-    if (!inside) this.close();
+  /** The fallback for light dismiss, where closedby isn't known: see BackdropDismiss. */
+  protected pointerDown(event: PointerEvent): void {
+    if (!NATIVE_LIGHT_DISMISS) this.backdrop.down(event, this.dialog().nativeElement);
+  }
+
+  protected pointerUp(event: PointerEvent): void {
+    if (!NATIVE_LIGHT_DISMISS && this.backdrop.up(event, this.dialog().nativeElement)) this.close();
   }
 }

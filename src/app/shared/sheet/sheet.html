@@ -1,5 +1,5 @@
 <dialog #dialog class="ev-dialog" closedby="any" [attr.aria-labelledby]="titleId" (close)="open.set(false)"
-  (cancel)="onCancel($event)" (click)="onClick($event)">
+  (cancel)="onCancel($event)" (pointerdown)="pointerDown($event)" (pointerup)="pointerUp($event)">
   <header class="header">
     <span class="grabber md:hidden" aria-hidden="true"></span>
     <div class="heading">

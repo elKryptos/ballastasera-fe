@@ -9,6 +9,9 @@
 }
 
 .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
   padding: 0.25rem 0.625rem;
   border: 1px solid color-mix(in srgb, var(--chip) 35%, transparent);
   border-radius: 0.625rem;
@@ -16,6 +19,12 @@
   color: var(--chip);
   font-size: 0.8125rem;
   font-weight: 700;
+}
+
+/* The flag a touch bigger than the text, as emojis sit small next to bold letters. */
+.flag {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .chip-age {

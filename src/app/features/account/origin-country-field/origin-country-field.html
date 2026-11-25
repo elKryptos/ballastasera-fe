@@ -6,12 +6,12 @@
     <option value="" [selected]="!value()">Non indicato</option>
     <optgroup label="I più frequenti">
       @for (country of frequent; track country.code) {
-      <option [value]="country.code" [selected]="value() === country.code">{{ country.name }}</option>
+      <option [value]="country.code" [selected]="value() === country.code">{{ country.label }}</option>
       }
     </optgroup>
     <optgroup label="Tutti i paesi">
       @for (country of all; track country.code) {
-      <option [value]="country.code" [selected]="value() === country.code">{{ country.name }}</option>
+      <option [value]="country.code" [selected]="value() === country.code">{{ country.label }}</option>
       }
     </optgroup>
   </select>

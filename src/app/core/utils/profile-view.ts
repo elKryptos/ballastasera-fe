@@ -85,6 +85,8 @@ export type ProfileChipKind = 'age' | 'gender' | 'role' | 'origin';
 export interface ProfileChip {
   kind: ProfileChipKind;
   label: string;
+  /** The origin's ISO code, for its flag before the name (ProfileChips, where the device draws flags). */
+  country?: string;
 }
 
 /** Age, gender, role and country of origin, the ones given, for the chips next to the face.
@@ -94,7 +96,9 @@ export function profileChips(view: Pick<ProfileView, 'age' | 'gender' | 'danceRo
   if (view.danceRole) chips.push({ kind: 'role', label: DANCE_ROLE_LABELS[view.danceRole] });
   if (view.age != null) chips.push({ kind: 'age', label: `${view.age} anni` });
   if (view.gender && view.gender !== 'UNDISCLOSED') chips.push({ kind: 'gender', label: GENDER_LABELS[view.gender as Gender] });
-  if (view.originCountry) chips.push({ kind: 'origin', label: countryName(view.originCountry) });
+  if (view.originCountry) {
+    chips.push({ kind: 'origin', label: countryName(view.originCountry), country: view.originCountry });
+  }
   return chips;
 }
 

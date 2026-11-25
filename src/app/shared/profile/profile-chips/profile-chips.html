@@ -1,3 +1,9 @@
 @for (chip of chips(); track chip.kind) {
-<li class="chip" [class]="'chip-' + chip.kind">{{ chip.label }}</li>
+<li class="chip" [class]="'chip-' + chip.kind">
+  @if (flags.of(chip.country); as flag) {
+  <!-- The name says it: the flag is only for the eye. -->
+  <span class="flag" aria-hidden="true">{{ flag }}</span>
+  }
+  {{ chip.label }}
+</li>
 }

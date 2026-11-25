@@ -63,8 +63,12 @@
   background: var(--color-mint);
 }
 
+/* From the face on, like the text they are: a chip that wraps starts the next line under the first,
+   not alone at the far end. */
 .chips {
-  justify-content: flex-end;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
   padding-bottom: 0.375rem;
 }
 

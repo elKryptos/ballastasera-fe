@@ -46,7 +46,8 @@ export class FriendsLists {
   );
 
   /** The chips' numbers: followers and following from the session (asked again when Amici opens), friends
-   * from their list once it's loaded without a search. */
+   * asked on their own, whichever chip is picked: arriving on "Seguaci" from the profile's numbers,
+   * "Amici" had no number and looked empty. All three asked again after a follow made here. */
   private readonly friendsTotal = signal<number | null>(null);
   protected readonly chips = computed(() => {
     const user = this.auth.currentUser();
@@ -78,6 +79,8 @@ export class FriendsLists {
       .pipe(debounceTime(SEARCH_DEBOUNCE_MS), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((query) => this.query.set(query.trim()));
 
+    this.loadFriendsTotal();
+
     this.feeds.getFeed().subscribe({
       next: (feed) => {
         const where = new Map<string, string>();
@@ -104,6 +107,21 @@ export class FriendsLists {
 
   protected relationChanged(person: UserSummaryDto, relation: SocialRelation): void {
     this.people.updateLocal(person.userId, (item) => ({ ...item, relation }));
+  }
+
+  /** A follow or unfollow made here reached the backend: the chips' numbers again (following back in
+   * "Seguaci" makes a friend). */
+  protected countsChanged(): void {
+    this.loadFriendsTotal();
+    this.auth.restoreSession().subscribe();
+  }
+
+  private loadFriendsTotal(): void {
+    this.follows.list('friends', null).subscribe({
+      next: (page) => this.friendsTotal.set(page.total),
+      // Without it the chip just has no number.
+      error: () => undefined,
+    });
   }
 
   protected emptyText(): string {

@@ -34,7 +34,7 @@
   @let where = tonightOf(person);
   <li>
     <app-person-row [person]="person" [subtitle]="where" [highlight]="!!where" [dot]="!!where">
-      <app-follow-button [person]="person" (relationChange)="relationChanged(person, $event)" />
+      <app-follow-button [person]="person" (relationChange)="relationChanged(person, $event)" (saved)="countsChanged()" />
     </app-person-row>
   </li>
   }

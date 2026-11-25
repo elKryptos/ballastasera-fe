@@ -39,6 +39,8 @@ export class FollowButton {
   /** 'row': small, at the end of a list's row. 'wide': the profile's, sharing a line with others. */
   readonly size = input<'row' | 'wide'>('row');
   readonly relationChange = output<SocialRelation>();
+  /** The backend took the follow or the unfollow: what counts people (a list's numbers) can ask again. */
+  readonly saved = output<SocialRelation>();
 
   /** Who the button is for and the relation the page says they have: changes only when one of the two
    * does, not with every new object a template hands in for the same person. */
@@ -75,6 +77,7 @@ export class FollowButton {
       complete: () => {
         this.busy.set(false);
         this.confirmOpen.set(false);
+        this.saved.emit(this.relation());
       },
       error: (error: unknown) => this.undo(before, error),
     });
@@ -89,6 +92,7 @@ export class FollowButton {
       complete: () => {
         this.busy.set(false);
         if (after === 'MUTUAL') this.toasts.show(`Ora tu e ${this.firstName()} siete amici.`);
+        this.saved.emit(after);
       },
       error: (error: unknown) => this.undo(before, error),
     });

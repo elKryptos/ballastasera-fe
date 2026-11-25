@@ -16,6 +16,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEyeOff } from '@ng-icons/lucide';
 import { EventAttendeeDto } from '../../../core/models/event.model';
+import { SocialRelation } from '../../../core/models/social.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { EventsService } from '../../../core/services/events.service';
 import { instagramHandle } from '../../../core/utils/event-format';
@@ -164,6 +165,14 @@ export class AttendeesSheet {
 
   protected backToList(): void {
     this.selected.set(null);
+  }
+
+  /** Followed or unfollowed from their profile: their row says so ("Amici") back in the list. Not
+   * `selected`, whose change would load the profile again. */
+  protected relationChanged(userId: string, relation: SocialRelation): void {
+    this.attendees.update((list) =>
+      list.map((attendee) => (attendee.userId === userId ? { ...attendee, relation } : attendee)),
+    );
   }
 
   protected loadMore(): void {

@@ -40,8 +40,14 @@ export class FollowButton {
   readonly size = input<'row' | 'wide'>('row');
   readonly relationChange = output<SocialRelation>();
 
-  /** Follows the person given, and what was tapped since. */
-  protected readonly relation = linkedSignal(() => this.person().relation);
+  /** Who the button is for and the relation the page says they have: changes only when one of the two
+   * does, not with every new object a template hands in for the same person. */
+  private readonly given = computed(() => ({ userId: this.person().userId, relation: this.person().relation }), {
+    equal: (a, b) => a.userId === b.userId && a.relation === b.relation,
+  });
+  /** The relation given, and what was tapped since: a tap holds until the page gives another person,
+   * or another relation, for them. */
+  protected readonly relation = linkedSignal(() => this.given().relation);
   protected readonly busy = signal(false);
   protected readonly confirmOpen = signal(false);
   protected readonly confirmId = `follow-confirm-${++nextId}`;

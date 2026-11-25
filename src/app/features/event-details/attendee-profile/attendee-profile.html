@@ -38,7 +38,9 @@
 <!-- With the social features: follow them from here, or open their whole page. -->
 @if (socialEnabled && !isMe()) {
 <div class="social-actions">
-  <app-follow-button size="wide" [person]="followTarget(profile)" />
+  @if (followTarget(); as target) {
+  <app-follow-button size="wide" [person]="target" (relationChange)="relationChanged($event)" />
+  }
   <a class="secondary-button link-button" [routerLink]="profilePath()">Vedi il profilo</a>
 </div>
 }

@@ -49,7 +49,8 @@
     comes back from its own. -->
   @if (selected(); as attendee) {
   <div class="body">
-    <app-attendee-profile [attendee]="attendee" (back)="backToList()" />
+    <app-attendee-profile [attendee]="attendee" (back)="backToList()"
+      (relationChange)="relationChanged(attendee.userId, $event)" />
   </div>
   } @else {
   <div class="body">

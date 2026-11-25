@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FEATURE_FLAGS } from '../../../core/config/feature-flags';
 import { EventAttendeeDto } from '../../../core/models/event.model';
 import { UserProfileDto } from '../../../core/models/user.model';
+import { SocialRelation } from '../../../core/models/social.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { FeatureFlagService } from '../../../core/services/feature-flag.service';
 import { UsersService } from '../../../core/services/users.service';
@@ -37,6 +38,8 @@ export class AttendeeProfile {
   readonly attendee = input.required<EventAttendeeDto>();
   /** "‹ Chi ci va" (in the sheet's header) is the way back; "Profilo non disponibile" has its own. */
   readonly back = output<void>();
+  /** Followed or unfollowed from here. */
+  readonly relationChange = output<SocialRelation>();
 
   protected readonly socialEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.social);
   protected readonly state = signal<ProfileState>('loading');
@@ -70,8 +73,16 @@ export class AttendeeProfile {
   }
 
   /** The profile loaded is public (it answered): the button can follow them. */
-  protected followTarget(profile: UserProfileDto): FollowTarget {
-    return { ...profile, profilePublic: true };
+  protected readonly followTarget = computed<FollowTarget | null>(() => {
+    const profile = this.profile();
+    return profile ? { ...profile, profilePublic: true } : null;
+  });
+
+  /** "Segui" tapped: the profile keeps the new relation (its contacts depend on it), and "Chi ci va"
+   * hears it for its row. */
+  protected relationChanged(relation: SocialRelation): void {
+    this.profile.update((profile) => (profile ? { ...profile, relation } : profile));
+    this.relationChange.emit(relation);
   }
 
   protected retry(): void {

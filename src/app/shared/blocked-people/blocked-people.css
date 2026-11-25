@@ -1,3 +1,22 @@
+/* The small one, in "Amici": quiet text, as tall as a finger. */
+.link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--ev-soft);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: var(--ev-text);
+}
+
 .row {
   display: flex;
   width: 100%;

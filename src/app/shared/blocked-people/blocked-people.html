@@ -1,3 +1,13 @@
+@if (appearance() === 'link') {
+<button type="button" class="link" aria-haspopup="dialog" (click)="show()">
+  <svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M5.6 5.6l12.8 12.8" />
+  </svg>
+  Persone bloccate
+</button>
+} @else {
 <button type="button" class="row" aria-haspopup="dialog" (click)="show()">
   <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-(--ev-error)" fill="none" stroke="currentColor"
     stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -13,6 +23,7 @@
     <path d="M9 6l6 6-6 6" />
   </svg>
 </button>
+}
 
 <app-sheet [(open)]="open" title="Persone bloccate">
   @if (people(); as people) {

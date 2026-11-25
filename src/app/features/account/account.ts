@@ -26,7 +26,7 @@ import { RequestField } from '../../shared/request-field/request-field';
 import { ToggleSwitch } from '../../shared/toggle-switch/toggle-switch';
 import { AboutFields } from './about-fields/about-fields';
 import { AvatarEditor } from './avatar-editor/avatar-editor';
-import { BlockedPeople } from './blocked-people/blocked-people';
+import { BlockedPeople } from '../../shared/blocked-people/blocked-people';
 import { DanceStylesField } from './dance-styles-field/dance-styles-field';
 import { DancerFields } from './dancer-fields/dancer-fields';
 import { PrivacyFields } from './privacy-fields/privacy-fields';

@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { FeedService } from '../../../core/services/feed.service';
 import { FollowsService, PeopleList } from '../../../core/services/follows.service';
 import { CursorList } from '../../../core/utils/cursor-list';
+import { BlockedPeople } from '../../../shared/blocked-people/blocked-people';
 import { InfiniteScrollDirective } from '../../../shared/directives/infinite-scroll.directive';
 import { FollowButton } from '../../../shared/follow-button/follow-button';
 import { PersonRow } from '../../../shared/person-row/person-row';
@@ -21,7 +22,7 @@ const SEARCH_DEBOUNCE_MS = 300;
  */
 @Component({
   selector: 'app-friends-lists',
-  imports: [InfiniteScrollDirective, FollowButton, PersonRow],
+  imports: [InfiniteScrollDirective, FollowButton, PersonRow, BlockedPeople],
   templateUrl: './friends-lists.html',
   styleUrl: './friends-lists.css',
 })

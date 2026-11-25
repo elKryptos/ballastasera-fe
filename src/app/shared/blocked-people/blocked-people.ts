@@ -1,14 +1,15 @@
-import { Component, inject, signal } from '@angular/core';
-import { UserSummaryDto } from '../../../core/models/social.model';
-import { FollowsService } from '../../../core/services/follows.service';
-import { ToastService } from '../../../core/services/toast.service';
-import { firstNameOf } from '../../../core/utils/initials';
-import { PersonRow } from '../../../shared/person-row/person-row';
-import { Sheet } from '../../../shared/sheet/sheet';
+import { Component, inject, input, signal } from '@angular/core';
+import { UserSummaryDto } from '../../core/models/social.model';
+import { FollowsService } from '../../core/services/follows.service';
+import { ToastService } from '../../core/services/toast.service';
+import { firstNameOf } from '../../core/utils/initials';
+import { PersonRow } from '../person-row/person-row';
+import { Sheet } from '../sheet/sheet';
 
 /**
- * "Persone bloccate" (social phase 1): a row in the account that opens the list of the people the
- * user blocked, each with "Sblocca". Their pages aren't linked: neither sees the other's while
+ * "Persone bloccate" (social phase 1): a row in the account ("Avvisi e persone") that opens the list of
+ * the people the user blocked, each with "Sblocca"; a small link under the lists in "Amici" opens the
+ * same, for whoever looks for it there. Their pages aren't linked: neither sees the other's while
  * blocked. Unblocking brings no follow back (the block deleted them).
  */
 @Component({
@@ -20,6 +21,9 @@ import { Sheet } from '../../../shared/sheet/sheet';
 export class BlockedPeople {
   private readonly follows = inject(FollowsService);
   private readonly toasts = inject(ToastService);
+
+  /** 'row': the account's, with what blocking means. 'link': a small one, under the lists of "Amici". */
+  readonly appearance = input<'row' | 'link'>('row');
 
   protected readonly open = signal(false);
   protected readonly people = signal<UserSummaryDto[] | null>(null);

@@ -38,10 +38,13 @@ export class GeocodingService {
       .pipe(map((response) => dedupeByLabel(response.features.map(toAddressSuggestion))));
   }
 
-  /** Towns only (Photon's city layer), in Italian: "Città dove vivi" in the profile. Never an address. */
+  /** Towns only (Photon's city layer): "Città dove vivi" in the profile. Never an address. Named in
+   * their own language (lang=default), so Italy's in Italian ("Milano, Lombardia") whatever the
+   * browser's language, which Photon would follow otherwise ("Milan, Lombardy"). Not lang=it: Photon
+   * has no Italian, it answers 400 to it, and then no town is ever found. */
   searchCities(query: string, limit = 5): Observable<HomeCityDto[]> {
     return this.http
-      .get<PhotonResponse>(PHOTON_API_URL, { params: { q: query, limit, layer: 'city', lang: 'it' } })
+      .get<PhotonResponse>(PHOTON_API_URL, { params: { q: query, limit, layer: 'city', lang: 'default' } })
       .pipe(map((response) => dedupeCities(response.features.map(toHomeCity).filter((city) => city !== null))));
   }
 }

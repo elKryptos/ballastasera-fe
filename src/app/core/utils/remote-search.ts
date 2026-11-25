@@ -1,4 +1,4 @@
-import { Signal, WritableSignal, signal } from '@angular/core';
+import { Signal, WritableSignal, computed, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Observable, catchError, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
 
@@ -12,6 +12,9 @@ export interface RemoteSearch<T> {
   searching: Signal<boolean>;
   /** The last answer; empty below minLength or when the search failed. */
   results: Signal<T[]>;
+  /** The answer on screen is for what's typed now, and nothing is on its way: only then can "nothing
+   * found" be said (before the debounce, results are still the previous term's, or none yet). */
+  settled: Signal<boolean>;
 }
 
 /**
@@ -27,6 +30,8 @@ export function injectRemoteSearch<T>(
 ): RemoteSearch<T> {
   const search = signal('');
   const searching = signal(false);
+  /** The term the results belong to. */
+  const answered = signal<string | null>(null);
   const results = toSignal(
     toObservable(search).pipe(
       map((term) => term.trim()),
@@ -35,16 +40,21 @@ export function injectRemoteSearch<T>(
       switchMap((term) => {
         if (term.length < minLength) {
           searching.set(false);
+          answered.set(term);
           return of<T[]>([]);
         }
         searching.set(true);
         return fetch(term).pipe(
           catchError(() => of<T[]>([])),
-          tap(() => searching.set(false)),
+          tap(() => {
+            searching.set(false);
+            answered.set(term);
+          }),
         );
       }),
     ),
     { initialValue: [] as T[] },
   );
-  return { search, searching: searching.asReadonly(), results };
+  const settled = computed(() => !searching() && answered() === search().trim());
+  return { search, searching: searching.asReadonly(), results, settled };
 }

@@ -105,9 +105,14 @@ export class OrganizerProfile {
   /** D15: claimed is "it came through a CLAIM". Those are left, the owner's own are deleted. */
   private readonly createdByOwner = computed(() => this.organizer()?.claimed === false);
   protected readonly exit = computed(() => (this.createdByOwner() ? EXITS.delete : EXITS.release));
-  /** Back to the account, or to the menu while the account page is off. */
-  protected readonly back = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.accountPage)
-    ? { url: '/il-tuo-account', label: 'Il tuo account' }
+  private readonly flags = inject(FeatureFlagService);
+  /** Back to the account (with the social features titled "Modifica profilo"), or to the menu
+   * while the account page is off. */
+  protected readonly back = this.flags.isEnabled(FEATURE_FLAGS.accountPage)
+    ? {
+        url: '/il-tuo-account',
+        label: this.flags.isEnabled(FEATURE_FLAGS.social) ? 'Modifica profilo' : 'Il tuo account',
+      }
     : { url: '/menu', label: 'Menu' };
 
   protected readonly form = inject(NonNullableFormBuilder).group({

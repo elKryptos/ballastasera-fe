@@ -31,12 +31,13 @@ Todo escrito, compila (`ng build --configuration development`) y los tests unita
 | 7 | Traguardi, «Nome utente», `/@username`, «Condividi» | [~] |
 
 **Siguiente paso (al retomar):**
-1. Repasar los enlaces a `/il-tuo-account` (grep): con el flag, «Modifica» y «Cambia la privacy» están bien ahí;
-   `organizer-profile.ts:110` («Il tuo account») podría ir a `/il-tuo-profilo`.
-2. `pnpm run build:staging` (optimizado): comprobar en el CSS compilado los `@container` de los componentes y el
-   `@starting-style` del toast (memoria: animaciones y at-rules en CSS minificado). Comparar el `index.html`
-   prerenderizado de la home con el de antes: solo debe cambiar el `<body>` (`<app-toast>`), nunca el `<head>`.
-3. Probar contra el BE local (checklist de abajo), con el SQL de `social-prod-db.md` en dev.
+1. ~~Enlaces a `/il-tuo-account`~~ (25/11): todos bien ahí. `organizer-profile` vuelve a `/il-tuo-account` (de ahí
+   se abre), con la etiqueta «Modifica profilo» cuando el flag está encendido.
+2. ~~Build optimizado~~ (25/11): los `@container` de los componentes y el `@starting-style`/`transition` del toast
+   llegan al bundle; ninguna animación nueva dentro de `@media`. Home prerenderizada contra `main` (los dos con
+   `build:staging`): title, meta, link y JSON-LD idénticos, y el texto del `<body>` también. Solo se añade
+   `<app-toast>` vacío (se quitó la etiqueta oculta «Annunci» de su live region para no meter texto en la home).
+3. Probar contra el BE local (checklist de abajo), con el SQL de `social-prod-db.md` en dev. **← aquí**
 4. Pendiente de diseño: la chip «N escono stasera» de «Amici» en el menú (no se hizo: pediría el feed en cada carga).
 5. Revisión con el usuario y commit/merge.
 

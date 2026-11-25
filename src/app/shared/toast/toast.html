@@ -21,8 +21,5 @@
 </div>
 
 <!-- Where ariaNotify() is missing: a live region that's here from the first render, as screen readers
-  need, said to be what it is for anyone who reads the page through. -->
-<div class="sr-only">
-  <p>Annunci</p>
-  <p aria-live="polite">{{ liveText() }}</p>
-</div>
+  need. Empty, without a label: prerendered pages (the home) get no text of its own. -->
+<p class="sr-only" aria-live="polite">{{ liveText() }}</p>

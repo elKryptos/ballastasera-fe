@@ -107,7 +107,15 @@ export class ToastHost {
     if (modal) {
       const waiting = new AbortController();
       this.waiting = waiting;
-      modal.addEventListener('close', () => this.present(this.toasts.current()), { once: true, signal: waiting.signal });
+      const resume = () => this.present(this.toasts.current());
+      modal.addEventListener('close', resume, { once: true, signal: waiting.signal });
+      // A dialog can also go without closing: removed with its page on a navigation, which fires no
+      // close. Without this the toast would wait for ever, and the same message after it would be
+      // taken for the one on screen (ToastService.show) and never shown either.
+      const check = setInterval(() => {
+        if (!modal.isConnected || !modal.open) resume();
+      }, 300);
+      waiting.signal.addEventListener('abort', () => clearInterval(check), { once: true });
       return;
     }
 

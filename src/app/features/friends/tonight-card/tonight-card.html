@@ -8,7 +8,8 @@
     }
   </span>
   <span class="text">
-    <span class="line"><strong>{{ who().names }}</strong> <span class="soft">{{ who().verb }}</span></span>
+    <!-- The space inside the second span: Angular drops a text node of spaces alone between two tags. -->
+    <span class="line"><strong>{{ who().names }}</strong><span class="soft"> {{ who().verb }}</span></span>
     <a class="title" [routerLink]="['/evento', night().eventId]">{{ night().eventTitle }}</a>
     <span class="where">{{ where() }}</span>
   </span>

@@ -7,7 +7,8 @@
       <app-person-avatar class="face" [userId]="friend.userId" [name]="friend.displayName" [url]="friend.avatarUrl" />
       }
     </span>
-    <span><strong>{{ friendsText() }}</strong> <span class="soft">· amici tuoi</span></span>
+    <!-- The space inside the second span: Angular drops a text node of spaces alone between two tags. -->
+    <span><strong>{{ friendsText() }}</strong><span class="soft"> · amici tuoi</span></span>
   </p>
   }
 

@@ -9,12 +9,11 @@
     </a>
     <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Richieste organizzatore</h1>
 
-    <div role="tablist" aria-label="Stato delle richieste" class="request-card mt-4 flex rounded-[0.875rem]! p-1 @3xl:max-w-xl">
+    <!-- The app's .segmented-tabs (styles.css): the picked one cream by night, ink by day, as in Amici. -->
+    <div role="tablist" aria-label="Stato delle richieste" class="segmented-tabs mt-4 @3xl:max-w-xl">
       @for (tab of tabs; track tab.status) {
       @let selected = status() === tab.status;
-      <button type="button" role="tab" class="h-9 flex-1 rounded-[0.625rem] text-[0.8125rem]"
-        [class]="selected ? 'bg-rose font-extrabold text-(--ev-on-rose)' : 'font-bold text-(--ev-soft)'"
-        [attr.aria-selected]="selected" (click)="selectTab(tab.status)">
+      <button type="button" role="tab" class="segmented-tab" [attr.aria-selected]="selected" (click)="selectTab(tab.status)">
         {{ tab.label }}
         @if (tab.status === 'PENDING' && pendingCount() !== null) {
         · {{ pendingCount() }}

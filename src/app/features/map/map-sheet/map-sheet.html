@@ -115,7 +115,15 @@
             </span>
             <span class="line-clamp-2 font-display text-base leading-tight font-extrabold">{{ card.event.title }}</span>
             <app-event-place [venue]="card.event.venueName" [address]="card.address" [town]="card.town" />
-            <app-event-price class="text-sm font-extrabold" [event]="card.event" />
+            <!-- Who's going beside the price, as on the open card: their faces (or the count in words,
+                nobody showing a face), nothing at 0. -->
+            <span class="flex items-center gap-2 text-[0.8125rem] text-(--ev-soft) tabular-nums">
+              <app-event-price class="text-sm font-extrabold" [event]="card.event" />
+              @if (card.event.goingCount; as going) {
+              <span aria-hidden="true">·</span>
+              <app-going-faces [avatars]="card.event.goingAvatars" [count]="going" ring="var(--ev-raised)" />
+              }
+            </span>
           </span>
         </button>
       </li>

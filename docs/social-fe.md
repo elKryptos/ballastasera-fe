@@ -47,6 +47,10 @@ Todo escrito, compila (`ng build --configuration development`) y los tests unita
    verlo en el navegador (Claude in Chrome o a mano): diseño, toasts, el login de vuelta a `/@username`.
 4. Pendiente de diseño: la chip «N escono stasera» de «Amici» en el menú (no se hizo: pediría el feed en cada carga).
    Para hacerla sin pedir el feed entero haría falta un contador en el BE (como `unread-count`).
+5. Optimización (25/11, no urgente): `/lista` hace dos llamadas aparte para pintar sus botones, `/users/me/favorites/ids`
+   (♥) y `/users/me/attendance?past=false` (✓, `syncAllGoing`), porque `EventCardDto` no dice si el que mira le dio
+   like o va. Con `meLiked` y `meGoing` en `EventCardDto` (solo con sesión, en el mapper con el usuario actual) la
+   respuesta de `GET /rest/events` lo traería todo y sobrarían las dos (y `EventEngagementService.syncAll*`).
 
 **Orden del deploy (S4, revisado el 25/11).** Con el flag apagado el formulario devuelve cada campo nuevo con
 el valor guardado y el switch de WhatsApp no toca un `MUTUALS`; `/il-tuo-account` espera a `/auth/me`

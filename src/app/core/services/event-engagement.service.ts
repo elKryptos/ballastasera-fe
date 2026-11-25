@@ -28,6 +28,8 @@ export class EventEngagementService {
 
   /** Whose likes syncAllLikes() already loaded. */
   private likesSyncedFor: string | null = null;
+  /** Whose nights syncAllGoing() already loaded. */
+  private goingSyncedFor: string | null = null;
 
   isGoing(eventId: string): boolean {
     return this.goingEventIds().has(eventId);
@@ -48,8 +50,7 @@ export class EventEngagementService {
 
   /** Every like of the signed-in user in one request, for pages showing many
    * hearts at once (/lista), where sync() per card would be a request each.
-   * Once per user per visit: from then on the toggles keep it current. Only
-   * likes — Parteciperò isn't shown on those cards. */
+   * Once per user per visit: from then on the toggles keep it current. */
   syncAllLikes(): void {
     const userId = this.authService.currentUser()?.userId;
     if (!userId || this.likesSyncedFor === userId) return;
@@ -60,6 +61,22 @@ export class EventEngagementService {
       error: (err) => {
         this.likesSyncedFor = null;
         console.error('Failed to load liked events', err);
+      },
+    });
+  }
+
+  /** Every upcoming night the signed-in user goes to, for the list's ✓ buttons: as syncAllLikes,
+   * once per user per visit. */
+  syncAllGoing(): void {
+    const userId = this.authService.currentUser()?.userId;
+    if (!userId || this.goingSyncedFor === userId) return;
+    this.goingSyncedFor = userId;
+
+    this.userActivityService.getMyUpcomingGoingIds().subscribe({
+      next: (eventIds) => this.goingEventIds.update((ids) => new Set([...ids, ...eventIds])),
+      error: (err) => {
+        this.goingSyncedFor = null;
+        console.error('Failed to load the nights one goes to', err);
       },
     });
   }

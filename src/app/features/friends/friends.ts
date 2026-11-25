@@ -2,7 +2,6 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, DestroyRef, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { PeopleList } from '../../core/services/follows.service';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';

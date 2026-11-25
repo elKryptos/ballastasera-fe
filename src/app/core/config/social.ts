@@ -83,9 +83,6 @@ export const INVITE_STATUS_LABELS: Record<Exclude<InviteFriendStatus, 'INVITABLE
   PRIVATE: 'Profilo privato: non può essere invitato',
 };
 
-/** Invites a day (the last 24 hours), as the backend counts them. */
-export const MAX_INVITES_A_DAY = 10;
-
 /** A private profile can't invite: said wherever "Invita a ballare" shows. */
 export const INVITE_PRIVATE_TEXT = 'Il tuo profilo è privato: rendilo pubblico per invitare i tuoi amici.';
 

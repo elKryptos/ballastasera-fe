@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, defer, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { cursorParams } from '../api/cursor-params';
 import { endpoints } from '../api/endpoints';
@@ -22,6 +22,9 @@ export class NotificationsService {
 
   private readonly unreadSignal = signal(0);
   readonly unread = this.unreadSignal.asReadonly();
+  /** Bumped when everything is marked read: a count asked before it arrives out of date (the watcher
+   * asks on every navigation, opening /avvisi included) and mustn't put the old number back. */
+  private readVersion = 0;
 
   /** Newest first. Notices of muted people, banned ones and invites to nights over or cancelled are left out. */
   list(cursor: PageCursor | null): Observable<CursorPage<NotificationDto>> {
@@ -31,9 +34,14 @@ export class NotificationsService {
   }
 
   loadUnread(): Observable<UnreadCountDto> {
-    return this.http
-      .get<UnreadCountDto>(`${this.api}${endpoints.users.myUnreadCount}`)
-      .pipe(tap(({ unread }) => this.unreadSignal.set(unread)));
+    return defer(() => {
+      const asked = this.readVersion;
+      return this.http.get<UnreadCountDto>(`${this.api}${endpoints.users.myUnreadCount}`).pipe(
+        tap(({ unread }) => {
+          if (asked === this.readVersion) this.unreadSignal.set(unread);
+        }),
+      );
+    });
   }
 
   /** Signed out: nothing to count. */
@@ -44,6 +52,11 @@ export class NotificationsService {
   markAllRead(): Observable<void> {
     return this.http
       .patch<void>(`${this.api}${endpoints.users.myNotificationsRead}`, {})
-      .pipe(tap(() => this.unreadSignal.set(0)));
+      .pipe(
+        tap(() => {
+          this.readVersion++;
+          this.unreadSignal.set(0);
+        }),
+      );
   }
 }

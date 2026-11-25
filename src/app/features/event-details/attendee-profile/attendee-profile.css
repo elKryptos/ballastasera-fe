@@ -68,13 +68,6 @@
   color: var(--color-muted);
 }
 
-.note {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--ev-soft);
-}
-
 /* "Profilo non disponibile" and a failed load. */
 .message {
   display: flex;

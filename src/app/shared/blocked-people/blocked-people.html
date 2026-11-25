@@ -40,12 +40,12 @@
     }
   </ul>
   } @else {
-  <p class="note">Non hai bloccato nessuno.</p>
+  <p class="state-note">Non hai bloccato nessuno.</p>
   }
   } @else if (failed()) {
-  <p class="note" role="alert">Non siamo riusciti a caricare la lista.</p>
+  <p class="state-note" role="alert">Non siamo riusciti a caricare la lista.</p>
   <button type="button" class="unblock self-start" (click)="load()">Riprova</button>
   } @else {
-  <p class="note" role="status">Caricamento…</p>
+  <p class="state-note" role="status">Caricamento…</p>
   }
 </app-sheet>

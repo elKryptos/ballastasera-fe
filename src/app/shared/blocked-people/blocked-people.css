@@ -68,9 +68,3 @@
   opacity: 0.6;
 }
 
-.note {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--ev-soft);
-}

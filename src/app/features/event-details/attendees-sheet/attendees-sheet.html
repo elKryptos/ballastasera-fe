@@ -113,7 +113,7 @@
         <ng-icon name="lucideEyeOff" class="size-6" />
       </span>
       <p class="empty-title">Tutti in incognito</p>
-      <p class="note">Chi partecipa ha il profilo privato: per ora non si vede nessun nome.</p>
+      <p class="state-note">Chi partecipa ha il profilo privato: per ora non si vede nessun nome.</p>
     </div>
     } @else if (loading()) {
     <!-- The first page on its way: rows' shapes, not a line of text. -->
@@ -132,11 +132,11 @@
 
     @if (failed()) {
     <div class="message">
-      <p class="note" role="alert">Non siamo riusciti a caricare chi partecipa.</p>
+      <p class="state-note" role="alert">Non siamo riusciti a caricare chi partecipa.</p>
       <button type="button" class="secondary-button" (click)="loadMore()">Riprova</button>
     </div>
     } @else if (loading() && rows().length) {
-    <p class="note loading-more" role="status">Caricamento…</p>
+    <p class="state-note loading-more" role="status">Caricamento…</p>
     } @else if (hasMore()) {
     <button type="button" class="secondary-button" (click)="loadMore()">
       Carica altri <span class="count">{{ remaining() }}</span>

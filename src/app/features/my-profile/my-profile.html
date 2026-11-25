@@ -5,10 +5,10 @@
   @if (view(); as view) {
   <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-5 pb-10 @4xl:max-w-7xl @4xl:px-8 @4xl:pt-8">
     <!-- The two views only swap what's shown: the arrows select as they move (TablistDirective). -->
-    <div class="tabs @4xl:max-w-md" role="tablist" aria-label="Vista del profilo" selectOnFocus>
-      <button type="button" role="tab" id="profile-tab-own" aria-controls="profile-panel" class="tab"
+    <div class="segmented-tabs mb-4 @4xl:max-w-md" role="tablist" aria-label="Vista del profilo" selectOnFocus>
+      <button type="button" role="tab" id="profile-tab-own" aria-controls="profile-panel" class="segmented-tab"
         [attr.aria-selected]="tab() === 'own'" (click)="tab.set('own')">Il tuo profilo</button>
-      <button type="button" role="tab" id="profile-tab-public" aria-controls="profile-panel" class="tab"
+      <button type="button" role="tab" id="profile-tab-public" aria-controls="profile-panel" class="segmented-tab"
         [attr.aria-selected]="tab() === 'public'" (click)="tab.set('public')">Come ti vedono</button>
     </div>
 

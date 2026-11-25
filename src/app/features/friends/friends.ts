@@ -33,7 +33,6 @@ const LIST_SLUGS: Record<PeopleList, string> = { friends: 'amici', followers: 's
   selector: 'app-friends',
   imports: [SidebarPushDirective, FriendsActivity, FriendsDiscover, FriendsLists, TablistDirective],
   templateUrl: './friends.html',
-  styleUrl: './friends.css',
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })
 export class Friends {

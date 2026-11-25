@@ -7,9 +7,9 @@
       <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Amici</h1>
     </div>
 
-    <div role="tablist" aria-label="Amici" class="tabs @3xl:max-w-xl">
+    <div role="tablist" aria-label="Amici" class="segmented-tabs @3xl:max-w-xl">
       @for (item of tabs; track item.tab) {
-      <button type="button" role="tab" class="tab" [id]="'friends-tab-' + item.tab" aria-controls="friends-panel"
+      <button type="button" role="tab" class="segmented-tab" [id]="'friends-tab-' + item.tab" aria-controls="friends-panel"
         [attr.aria-selected]="tab() === item.tab" (click)="selectTab(item.tab)">
         {{ item.label }}
       </button>

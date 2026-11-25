@@ -15,20 +15,20 @@
 
 @switch (state()) {
 @case ('loading') {
-<p class="note" role="status">Caricamento del profilo…</p>
+<p class="state-note" role="status">Caricamento del profilo…</p>
 }
 
 @case ('gone') {
 <div class="message">
   <p class="message-title">Profilo non disponibile</p>
-  <p class="note">{{ firstName() }} ha reso privato il suo profilo, oppure non usa più ballastasera.</p>
+  <p class="state-note">{{ firstName() }} ha reso privato il suo profilo, oppure non usa più ballastasera.</p>
   <button type="button" class="secondary-button" (click)="back.emit()">Torna a Chi ci va</button>
 </div>
 }
 
 @case ('error') {
 <div class="message">
-  <p class="note" role="alert">Non siamo riusciti a caricare il profilo.</p>
+  <p class="state-note" role="alert">Non siamo riusciti a caricare il profilo.</p>
   <button type="button" class="secondary-button" (click)="retry()">Riprova</button>
 </div>
 }

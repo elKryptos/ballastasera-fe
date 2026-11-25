@@ -12,18 +12,18 @@
     }
   </ul>
   } @else {
-  <p class="note">
+  <p class="state-note">
     Per ora nessun suggerimento. Di' «Ci vado» alle serate che ti piacciono: ti mostreremo chi ci va.
   </p>
   }
 </section>
 } @else if (failed()) {
-<div class="failed">
+<div class="state-failed">
   <p role="alert">Non siamo riusciti a caricare i suggerimenti.</p>
-  <button type="button" class="retry" (click)="load()">Riprova</button>
+  <button type="button" class="state-retry" (click)="load()">Riprova</button>
 </div>
 } @else {
-<p class="note" role="status">Caricamento dei suggerimenti…</p>
+<p class="state-note" role="status">Caricamento dei suggerimenti…</p>
 }
 
 @if (myLink()) {

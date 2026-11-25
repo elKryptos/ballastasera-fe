@@ -13,7 +13,7 @@
     }
   </ul>
   } @else {
-  <p class="empty">Per ora nessuno di chi segui esce stasera.</p>
+  <p class="state-note">Per ora nessuno di chi segui esce stasera.</p>
   }
 </section>
 
@@ -36,14 +36,14 @@
     }
   </ul>
   } @else {
-  <p class="empty">Niente di nuovo negli ultimi 7 giorni. Segui chi balla con te per vedere dove va.</p>
+  <p class="state-note">Niente di nuovo negli ultimi 7 giorni. Segui chi balla con te per vedere dove va.</p>
   }
 </section>
 } @else if (failed()) {
-<div class="failed">
+<div class="state-failed">
   <p role="alert">Non siamo riusciti a caricare le attività.</p>
-  <button type="button" class="retry" (click)="load()">Riprova</button>
+  <button type="button" class="state-retry" (click)="load()">Riprova</button>
 </div>
 } @else {
-<p class="empty" role="status">Caricamento delle attività…</p>
+<p class="state-note" role="status">Caricamento delle attività…</p>
 }

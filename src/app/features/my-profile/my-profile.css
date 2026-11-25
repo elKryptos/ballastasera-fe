@@ -1,30 +1,4 @@
-/* "Il tuo profilo" | "Come ti vedono": the canvas' segmented tabs. */
-.tabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-  padding: 0.25rem;
-  border: 1px solid var(--ev-edge);
-  border-radius: 0.875rem;
-  background: var(--ev-surface);
-}
-
-.tab {
-  height: 2.5rem;
-  border: 0;
-  border-radius: 0.6875rem;
-  background: transparent;
-  color: var(--ev-soft);
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.tab[aria-selected='true'] {
-  background: var(--ev-invert-bg);
-  color: var(--ev-invert-text);
-}
+/* "Il tuo profilo" | "Come ti vedono" are .segmented-tabs (styles.css), shared with Amici. */
 
 .side {
   display: flex;

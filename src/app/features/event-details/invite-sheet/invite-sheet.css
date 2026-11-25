@@ -89,8 +89,7 @@
   color: var(--ev-zone-on-text);
 }
 
-.refused,
-.note {
+.refused {
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.5;

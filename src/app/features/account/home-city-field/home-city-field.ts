@@ -18,7 +18,7 @@ const MIN_LENGTH = 2;
   selector: 'app-home-city-field',
   imports: [ToggleSwitch],
   templateUrl: './home-city-field.html',
-  styleUrl: './home-city-field.css',
+  styleUrls: ['../search-field.css', './home-city-field.css'],
 })
 export class HomeCityField {
   private readonly form = inject(PROFILE_FORM);

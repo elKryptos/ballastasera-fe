@@ -17,12 +17,12 @@
 </button>
 }
 } @else if (nights.error()) {
-<p class="note" role="alert">
+<p class="state-note" role="alert">
   Non siamo riusciti a caricare le sue serate.
   <button type="button" class="retry" (click)="nights.reload()">Riprova</button>
 </p>
 } @else if (nights.loaded()) {
-<p class="note">{{ firstName() }} non ha serate in programma da mostrarti.</p>
+<p class="state-note">{{ firstName() }} non ha serate in programma da mostrarti.</p>
 } @else {
-<p class="note" role="status">Caricamento delle serate…</p>
+<p class="state-note" role="status">Caricamento delle serate…</p>
 }

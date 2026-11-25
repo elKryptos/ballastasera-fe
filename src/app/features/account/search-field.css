@@ -1,0 +1,69 @@
+/* What "Città dove vivi" and "Scuola o crew" share (home-city-field, school-field: each lists this
+   file first in its styleUrls, then its own): the value picked as a chip as wide as the field, with ✕;
+   the results under the search; the line that says how the search is going. Each field sets its own
+   padding for the chip and spacing for a result. */
+
+.picked {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.625rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: var(--ev-raised);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.clear {
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.75rem;
+  background: none;
+  color: var(--ev-soft);
+  cursor: pointer;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  list-style: none;
+}
+
+.results li + li {
+  border-top: 1px solid var(--ev-edge);
+}
+
+.result {
+  display: flex;
+  width: 100%;
+  min-height: 3rem;
+  align-items: center;
+  border: 0;
+  background: var(--ev-surface);
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.result:hover {
+  background: var(--ev-raised);
+}
+
+.status {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-muted);
+}

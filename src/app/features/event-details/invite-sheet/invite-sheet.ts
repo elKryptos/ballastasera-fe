@@ -49,7 +49,6 @@ export class InviteSheet {
   }));
   protected readonly statusLabels = INVITE_STATUS_LABELS;
   protected readonly hiddenNightsText = INVITE_HIDDEN_NIGHTS_TEXT;
-  protected readonly noInvitesLeftText = NO_INVITES_LEFT_TEXT;
 
   protected readonly query = signal('');
   protected readonly friends = signal<InviteFriendDto[]>([]);

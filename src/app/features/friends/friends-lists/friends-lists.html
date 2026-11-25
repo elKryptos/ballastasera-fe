@@ -43,16 +43,16 @@
 <div (appInfiniteScroll)="people.loadMore()" aria-hidden="true"></div>
 }
 @if (people.loading()) {
-<p class="note" role="status">Caricamento…</p>
+<p class="state-note" role="status">Caricamento…</p>
 }
 } @else if (people.error()) {
-<div class="failed">
+<div class="state-failed">
   <p role="alert">Non siamo riusciti a caricare la lista.</p>
-  <button type="button" class="retry" (click)="people.reload()">Riprova</button>
+  <button type="button" class="state-retry" (click)="people.reload()">Riprova</button>
 </div>
 } @else if (people.isEmpty()) {
-<p class="note">{{ emptyText() }}</p>
+<p class="state-note">{{ emptyText() }}</p>
 } @else {
-<p class="note" role="status">Caricamento…</p>
+<p class="state-note" role="status">Caricamento…</p>
 }
 </div>

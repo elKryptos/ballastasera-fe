@@ -20,12 +20,12 @@
 </ul>
 <a routerLink="/le-tue-serate" class="all">Tutte le tue serate</a>
 } @else {
-<p class="note">
+<p class="state-note">
   Nessuna serata in programma. <a routerLink="/lista">Trova dove ballare</a> e di' «Ci vado».
 </p>
 }
 } @else if (failed()) {
-<p class="note" role="alert">Non siamo riusciti a caricare le tue serate.</p>
+<p class="state-note" role="alert">Non siamo riusciti a caricare le tue serate.</p>
 } @else {
-<p class="note" role="status">Caricamento delle serate…</p>
+<p class="state-note" role="status">Caricamento delle serate…</p>
 }

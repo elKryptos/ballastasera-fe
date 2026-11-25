@@ -19,7 +19,7 @@ const MIN_LENGTH = 2;
   selector: 'app-school-field',
   imports: [OrganizerAvatar],
   templateUrl: './school-field.html',
-  styleUrl: './school-field.css',
+  styleUrls: ['../search-field.css', './school-field.css'],
 })
 export class SchoolField {
   private readonly form = inject(PROFILE_FORM);

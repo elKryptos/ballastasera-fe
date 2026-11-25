@@ -54,14 +54,14 @@
   <div (appInfiniteScroll)="loadMore()" aria-hidden="true"></div>
   }
   } @else if (failed()) {
-  <p class="note" role="alert">Non siamo riusciti a caricare i tuoi amici.</p>
+  <p class="state-note" role="alert">Non siamo riusciti a caricare i tuoi amici.</p>
   } @else if (loaded()) {
-  <p class="note">
+  <p class="state-note">
     {{ query() ? 'Nessun amico con questo nome.' : 'Si invitano solo gli amici: chi vi seguite a vicenda.' }}
   </p>
   }
   @if (loading()) {
-  <p class="note" role="status">Caricamento…</p>
+  <p class="state-note" role="status">Caricamento…</p>
   }
   }
 

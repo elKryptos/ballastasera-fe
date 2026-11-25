@@ -32,20 +32,20 @@
         <div (appInfiniteScroll)="list.loadMore()" aria-hidden="true"></div>
         }
         @if (list.loading()) {
-        <p class="note" role="status">Caricamento…</p>
+        <p class="state-note" role="status">Caricamento…</p>
         }
         } @else if (list.error()) {
-        <div class="failed">
+        <div class="state-failed">
           <p role="alert">Non siamo riusciti a caricare gli avvisi.</p>
-          <button type="button" class="retry" (click)="list.reload()">Riprova</button>
+          <button type="button" class="state-retry" (click)="list.reload()">Riprova</button>
         </div>
         } @else if (list.isEmpty()) {
         <div class="empty">
           <p class="empty-title">Nessun avviso</p>
-          <p class="note">Qui trovi chi inizia a seguirti, i nuovi amici e gli inviti a ballare.</p>
+          <p class="state-note">Qui trovi chi inizia a seguirti, i nuovi amici e gli inviti a ballare.</p>
         </div>
         } @else {
-        <p class="note" role="status">Caricamento degli avvisi…</p>
+        <p class="state-note" role="status">Caricamento degli avvisi…</p>
         }
       </section>
 

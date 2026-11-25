@@ -96,7 +96,8 @@ export const INVITE_HIDDEN_NIGHTS_TEXT = 'Il tuo amico vedrà che ci vai.';
 export const NIGHT_MILESTONES = [10, 25, 50, 100, 200];
 
 /** "Ricevi email". */
-export const EMAIL_NOTIFICATIONS_TEXT = 'Ti scriviamo solo quando diventi amico di qualcuno o ricevi un invito.';
+export const EMAIL_NOTIFICATIONS_TEXT =
+  'Ti scriviamo quando qualcuno inizia a seguirti, quando diventi amico di qualcuno o ricevi un invito.';
 
 /** The profile's own limits (UserUpdateDto, PATCH /users/me/avatar). */
 export const BIO_MAX = 150;

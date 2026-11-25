@@ -17,9 +17,10 @@ so people's photos and colours, rose and the levels are what stands out; and it'
 ink on rose. */
   --color-ink: #1b1819;
   --color-ink-2: #2a2527;
-  /* The pages' ground under all of that: a warm black, a step below the ink. By day the
-  pages that follow the light theme swap it for paper, like --color-ink. */
-  --color-ground: #0f0d0e;
+  /* The pages' ground under all of that: the charcoal itself (25/11: the warm black #0f0d0e read
+  as a hole). The pages on the shared palette lift their cards a step above it (see app-menu, … below).
+  By day the pages that follow the light theme swap it for paper, like --color-ink. */
+  --color-ground: #1b1819;
 
   /* One accent, coral-rose rather than hot-pink — the warm end of the
 sunset. Everything loud is this colour. */
@@ -627,6 +628,10 @@ app-notifications,
 app-reports,
 app-banned-users,
 app-toast {
+  /* The ink of these pages' cards, one step above the charcoal ground (25/11), like the light theme's
+  own swap below; everything else on them is mixed from it. */
+  --color-ink: #252122;
+  --color-ink-2: #302a2c;
   /* Surfaces: the charcoal ink, each step lighter with a little bone in it (no violet). */
   --ev-surface: var(--color-ink);
   --ev-raised: color-mix(in srgb, var(--color-bone) 7%, var(--color-ink));

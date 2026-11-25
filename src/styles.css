@@ -1569,3 +1569,10 @@ behind it. Global: on phones the menu renders in a CDK overlay, outside the navb
   stroke: var(--color-ink);
   stroke-width: 2;
 }
+
+/* "Il tuo account": a field reached with Tab scrolls clear of the bar stuck to the bottom with
+"Salva" (account.css), not under it (WCAG 2.4.11). Global: the fields are in the field groups' own
+templates. */
+.account-form :is(input, textarea, select, button) {
+  scroll-margin-block-end: 6rem;
+}

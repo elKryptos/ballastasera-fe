@@ -13,7 +13,8 @@ import { UsernameField } from '../username-field/username-field';
   selector: 'app-about-fields',
   imports: [ReactiveFormsModule, RequestField, HomeCityField, OriginCountryField, UsernameField],
   templateUrl: './about-fields.html',
-  host: { class: 'flex flex-col gap-4' },
+  // Its fields are items of the section's grid ("Chi sei" in the account): two columns where there's room.
+  host: { class: 'contents' },
 })
 export class AboutFields {
   protected readonly form = inject(PROFILE_FORM);

@@ -23,7 +23,8 @@ import { PROFILE_FORM } from '../profile-form';
   selector: 'app-privacy-fields',
   imports: [ReactiveFormsModule, ChoiceGroup, ToggleSwitch],
   templateUrl: './privacy-fields.html',
-  host: { class: 'flex flex-col gap-4' },
+  // Its two settings are items of the section's grid ("Chi ti vede"): side by side where there's room.
+  host: { class: 'contents' },
 })
 export class PrivacyFields {
   protected readonly form = inject(PROFILE_FORM);

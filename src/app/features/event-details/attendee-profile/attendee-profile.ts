@@ -61,7 +61,14 @@ export class AttendeeProfile {
   /** One's own WhatsApp shows to its owner even when hidden from the others: say which. */
   protected readonly whatsappHint = computed(() => {
     if (!this.isMe()) return 'Si apre la chat';
-    return this.auth.currentUser()?.whatsappVisibility === 'NOBODY' ? 'Lo vedi solo tu' : 'Lo vede chi apre il tuo profilo';
+    switch (this.auth.currentUser()?.whatsappVisibility) {
+      case 'NOBODY':
+        return 'Lo vedi solo tu';
+      case 'MUTUALS':
+        return 'Lo vedono solo i tuoi amici';
+      default:
+        return 'Lo vede chi apre il tuo profilo';
+    }
   });
 
   constructor() {

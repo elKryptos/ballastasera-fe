@@ -15,13 +15,9 @@
 <div class="switch-row">
   <div class="min-w-0 grow">
     <p id="account-whatsapp-visible-label" class="text-[0.9375rem] font-bold">Mostra il mio WhatsApp</p>
-    <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">
-      @if (visible()) {
-      Chi apre il tuo profilo può scriverti.
-      } @else {
-      Non lo vede nessuno: resta salvato solo per te.
-      }
-    </p>
+    <!-- What the saved value means, "Amici" too: a user can have it (the backend's default for new
+      users) though this switch only sets everyone or nobody. -->
+    <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">{{ visibilityText() }}</p>
   </div>
   <app-toggle-switch labelledBy="account-whatsapp-visible-label" [checked]="visible()" (toggled)="toggleVisible()" />
 </div>

@@ -14,7 +14,8 @@ import { PROFILE_FORM } from '../profile-form';
 /** WhatsApp in "Il tuo account": the number, typed however the user likes (normalizeWhatsapp
  * makes it +39…, and the hint shows it), and who sees it. With the social features, "Chi vede il
  * tuo WhatsApp": everyone, friends or nobody. Without, the old "Mostra il mio WhatsApp" switch,
- * which leaves "friends" as it is unless it's tapped (a new user starts there). */
+ * which leaves "friends" as it is unless it's tapped (a new user starts there), and says what the
+ * value saved means, "friends" included. */
 @Component({
   selector: 'app-whatsapp-field',
   imports: [ReactiveFormsModule, ChoiceGroup, RequestField, ToggleSwitch],

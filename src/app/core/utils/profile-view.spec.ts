@@ -1,5 +1,5 @@
 import { UserDto, UserProfileDto } from '../models/user.model';
-import { ageFrom, inCommon, joinNames, nextMilestone, ownProfileView, profileChips, profileSteps, sharedStyleIds } from './profile-view';
+import { ageFrom, andOthers, inCommon, joinNames, nextMilestone, ownProfileView, profileChips, profileSteps, sharedStyleIds } from './profile-view';
 
 const salsa = { danceStyleId: 1, name: 'Salsa', slug: 'salsa', level: 'ADVANCED' as const };
 const bachata = { danceStyleId: 2, name: 'Bachata', slug: 'bachata', level: 'INTERMEDIATE' as const };
@@ -42,11 +42,21 @@ describe('ageFrom', () => {
   });
 });
 
+describe('andOthers', () => {
+  it('says one in words and more as a number', () => {
+    expect(andOthers(1)).toBe('e un altro');
+    expect(andOthers(3)).toBe('e altri 3');
+  });
+});
+
 describe('ownProfileView', () => {
   it('shows the city only when the user shows it, and no WhatsApp kept from everyone', () => {
     expect(ownProfileView(me()).homeCityName).toBeNull();
     expect(ownProfileView(me({ showHomeCity: true })).homeCityName).toBe('Milano');
     expect(ownProfileView(me({ whatsappVisibility: 'NOBODY' })).whatsapp).toBeNull();
+    // With "Amici" the preview is a stranger's: the lock, not the number.
+    expect(ownProfileView(me({ whatsappVisibility: 'MUTUALS' })).whatsapp).toBeNull();
+    expect(ownProfileView(me({ whatsappVisibility: 'EVERYONE' })).whatsapp).toBe('+393331234567');
   });
 
   it('reads a user stored before the social features with nothing for what\'s missing', () => {

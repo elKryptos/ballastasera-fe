@@ -40,8 +40,10 @@ export function ageFrom(birthDate: string | null, today = new Date()): number | 
   return age;
 }
 
-/** One's own profile the way the others see it: the age, not the date; the city only if shown. A
- * user kept in localStorage from before the social features lacks some fields: they read as none. */
+/** One's own profile the way the others see it: the age, not the date; the city only if shown; the
+ * WhatsApp number as someone who isn't a friend sees it, so only when it's for everyone (with
+ * "Amici" the preview shows its lock and says who sees it). A user kept in localStorage from before
+ * the social features lacks some fields: they read as none. */
 export function ownProfileView(user: UserDto): ProfileView {
   return {
     userId: user.userId,
@@ -49,7 +51,7 @@ export function ownProfileView(user: UserDto): ProfileView {
     username: user.username ?? null,
     avatarUrl: user.avatarUrl,
     instagram: user.instagram,
-    whatsapp: user.whatsappVisibility === 'NOBODY' ? null : user.whatsapp,
+    whatsapp: user.whatsappVisibility === 'EVERYONE' ? user.whatsapp : null,
     age: ageFrom(user.birthDate),
     gender: user.gender,
     danceRole: user.danceRole,
@@ -139,7 +141,7 @@ export function inCommon(me: UserDto, them: UserProfileDto, dateLabel: (iso: str
     const others = shared.length - 1;
     items.push({
       kind: 'style',
-      title: others ? `${first.name} e altri ${others}` : first.name,
+      title: others ? `${first.name} ${andOthers(others)}` : first.name,
       text,
     });
   }
@@ -155,7 +157,7 @@ export function inCommon(me: UserDto, them: UserProfileDto, dateLabel: (iso: str
   if (them.mutualFriendsCount > 0) {
     const names = them.mutualFriends.map((friend) => firstNameOf(friend.displayName));
     const others = them.mutualFriendsCount - names.length;
-    const who = others > 0 ? `${names.join(', ')} e altri ${others}` : joinNames(names);
+    const who = others > 0 ? `${names.join(', ')} ${andOthers(others)}` : joinNames(names);
     items.push({
       kind: 'friends',
       title: them.mutualFriendsCount === 1 ? '1 amico in comune' : `${them.mutualFriendsCount} amici in comune`,
@@ -177,6 +179,11 @@ export function inCommon(me: UserDto, them: UserProfileDto, dateLabel: (iso: str
 }
 
 /** "Sara e Luca", "Sara, Luca e Marco". */
+/** "e altri 3", and "e un altro" for one: "e altri 1" isn't Italian. */
+export function andOthers(count: number): string {
+  return count === 1 ? 'e un altro' : `e altri ${count}`;
+}
+
 export function joinNames(names: string[]): string {
   if (names.length <= 1) return names[0] ?? '';
   return `${names.slice(0, -1).join(', ')} e ${names[names.length - 1]}`;

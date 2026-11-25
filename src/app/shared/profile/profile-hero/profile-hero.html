@@ -63,14 +63,15 @@
       <dd>{{ view().eventsCount }}</dd>
     </div>
     @if (linkStats()) {
-    <a class="stat" routerLink="/amici" [queryParams]="{ tab: 'amici', lista: 'seguaci' }">
-      <dt>seguaci</dt>
+    <!-- A <dl> holds only dt/dd or their div: the link is in the term, stretched over the whole cell. -->
+    <div class="stat linked">
+      <dt><a class="stat-link" routerLink="/amici" [queryParams]="{ tab: 'amici', lista: 'seguaci' }">seguaci</a></dt>
       <dd>{{ view().followersCount }}</dd>
-    </a>
-    <a class="stat" routerLink="/amici" [queryParams]="{ tab: 'amici', lista: 'seguiti' }">
-      <dt>seguiti</dt>
+    </div>
+    <div class="stat linked">
+      <dt><a class="stat-link" routerLink="/amici" [queryParams]="{ tab: 'amici', lista: 'seguiti' }">seguiti</a></dt>
       <dd>{{ view().followingCount }}</dd>
-    </a>
+    </div>
     } @else {
     <div class="stat">
       <dt>seguaci</dt>

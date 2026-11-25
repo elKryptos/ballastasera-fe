@@ -115,6 +115,8 @@ export class PersonPage {
   /** Follows the profile, and the button's taps since. */
   protected readonly relation = linkedSignal<SocialRelation>(() => this.profile()?.relation ?? 'NONE');
   protected readonly muted = linkedSignal(() => this.profile()?.muted ?? false);
+  /** A mute or unmute on its way: another tap waits for it, or two PATCHes could land out of order. */
+  private muting = false;
 
   protected readonly authOpen = signal(false);
   protected readonly menuOpen = signal(false);
@@ -193,9 +195,16 @@ export class PersonPage {
     if (!iFollow(relation)) this.muted.set(false);
   }
 
+  /** The device's share sheet; where there's none (Firefox on a computer), the link copied as from the
+   * ⋯ menu, which says so: this page has no "Copiato" on the button. */
   protected share(): void {
     const profile = this.profile();
-    if (profile) void this.pageShare.share(profile.displayName, profileShareUrl(profile.userId, profile.username));
+    if (!profile) return;
+    if (typeof navigator.share !== 'function') {
+      this.copyLink(profile);
+      return;
+    }
+    void this.pageShare.share(profile.displayName, profileShareUrl(profile.userId, profile.username));
   }
 
   protected whatsappLocked(): void {
@@ -273,16 +282,21 @@ export class PersonPage {
   }
 
   private toggleMute(profile: UserProfileDto): void {
+    if (this.muting) return;
+    this.muting = true;
     const muted = !this.muted();
     this.muted.set(muted);
     this.follows.setMuted(profile.userId, muted).subscribe({
-      complete: () =>
+      complete: () => {
+        this.muting = false;
         this.toasts.show(
           muted
             ? `Non vedi più le attività di ${this.firstName()}. Non lo sa.`
             : `Vedi di nuovo le attività di ${this.firstName()}.`,
-        ),
+        );
+      },
       error: () => {
+        this.muting = false;
         this.muted.set(!muted);
         this.toasts.show('Non siamo riusciti a cambiarlo. Riprova tra poco.');
       },

@@ -1,4 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AVATAR_MAX_MB, AVATAR_TYPES } from '../../../core/config/social';
 import { UserDto } from '../../../core/models/user.model';
@@ -35,6 +36,18 @@ export class AvatarEditor {
 
   protected readonly user = this.auth.currentUser;
   protected readonly menuOpen = signal(false);
+
+  constructor() {
+    // Arrived from the profile's camera (/il-tuo-account#foto): the photo's choices open, in view.
+    // The router doesn't scroll to fragments in this app, so it's done here.
+    const fragment = inject(ActivatedRoute).snapshot.fragment;
+    const host: HTMLElement = inject(ElementRef).nativeElement;
+    afterNextRender(() => {
+      if (fragment !== 'foto') return;
+      this.menuOpen.set(true);
+      host.scrollIntoView({ block: 'center' });
+    });
+  }
   protected readonly saving = new PendingAction();
   protected readonly status = signal<string | null>(null);
   protected readonly preview = new FilePreview();

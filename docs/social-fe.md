@@ -4,8 +4,14 @@ Fecha: 24/11/2026 · Rama `feature/social` (desde `main`). Backend: rama `featur
 `ballastasera-be`, fases 0–7 hechas y con tests; plan en `ballastasera-be/docs/social-plan.md` (decisiones
 en su §3) y contrato en `ballastasera-be/docs/API.md` (§1 Rate limit y §4 desde «Quién ve tus serate»).
 
-Todo lo visible va detrás del flag **`social`**: `true` en staging, `false` en prod hasta el deploy. Lo
-único que cambia sin flag es el body de `PATCH /auth/me`, que lleva siempre los campos nuevos (S4).
+Las funciones sociales van detrás del flag **`social`**: `true` en staging, `false` en prod hasta el deploy.
+Cambia sin flag, y llega a prod con el merge (decidido el 25/11):
+- El body de `PATCH /auth/me`, que lleva siempre los campos nuevos (S4).
+- El fondo oscuro de toda la app: `--color-ground` pasa de `#0f0d0e` al carbón `#1b1819`, y las tarjetas de las
+  páginas con la paleta compartida suben a `#252122` (el negro «se veía como un agujero»); también el splash de la PWA.
+- «Il tuo account» por secciones, con el índice a la izquierda y la barra de «Salva» fija (con el flag apagado tiene
+  menos campos, pero el mismo esquema).
+- El teclado de todas las pestañas (TablistDirective) y la confirmación con el foco en «Annulla».
 
 Canvas: «ballastasera – Mappa e scheda evento» (https://claude.ai/artifact/JqQ8CdmVDhnZENtcaNfWfK),
 artboards **4** (tu perfil), **4b** (modifica perfil), **4c** (perfil de otra persona) y **4d** (Amici).

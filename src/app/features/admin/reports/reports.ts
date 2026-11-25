@@ -8,6 +8,7 @@ import { SpringPageList } from '../../../core/utils/spring-page-list';
 import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.directive';
 import { PageNav } from '../../../shared/page-nav/page-nav';
 import { ReportCard } from './report-card/report-card';
+import { TablistDirective } from '../../../shared/directives/tablist.directive';
 
 const TABS: { status: ReportStatus; label: string }[] = [
   { status: 'OPEN', label: 'Da rivedere' },
@@ -22,7 +23,7 @@ const TABS: { status: ReportStatus; label: string }[] = [
  */
 @Component({
   selector: 'app-reports',
-  imports: [RouterLink, NgIcon, SidebarPushDirective, PageNav, ReportCard],
+  imports: [RouterLink, NgIcon, SidebarPushDirective, PageNav, ReportCard, TablistDirective],
   providers: [provideIcons({ lucideChevronLeft })],
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
   templateUrl: './reports.html',

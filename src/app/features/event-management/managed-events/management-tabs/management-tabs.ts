@@ -1,5 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { EventManagementTab } from '../../../../core/models/event.model';
+import { TablistDirective } from '../../../../shared/directives/tablist.directive';
 
 interface TabItem {
   tab: EventManagementTab;
@@ -23,6 +24,7 @@ const ORGANIZER_TABS: TabItem[] = [
  * segmented bar for the organizer, as the canvas draws them. */
 @Component({
   selector: 'app-management-tabs',
+  imports: [TablistDirective],
   host: { class: 'block' },
   templateUrl: './management-tabs.html',
 })

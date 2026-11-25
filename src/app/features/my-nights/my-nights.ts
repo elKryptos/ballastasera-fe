@@ -12,6 +12,7 @@ import { DAY_MS, eventNight, nightHeading, nightOf } from '../../core/utils/even
 import { InfiniteScrollDirective } from '../../shared/directives/infinite-scroll.directive';
 import { SidebarPushDirective } from '../../shared/directives/sidebar-push.directive';
 import { MyNightCard } from './my-night-card/my-night-card';
+import { TablistDirective } from '../../shared/directives/tablist.directive';
 
 /** Keeps the LIVE badges current with the page left open. */
 const CLOCK_TICK_MS = 30 * 1000;
@@ -55,7 +56,7 @@ interface PendingRemoval {
  */
 @Component({
   selector: 'app-my-nights',
-  imports: [NgTemplateOutlet, RouterLink, SidebarPushDirective, InfiniteScrollDirective, MyNightCard],
+  imports: [NgTemplateOutlet, RouterLink, SidebarPushDirective, InfiniteScrollDirective, MyNightCard, TablistDirective],
   templateUrl: './my-nights.html',
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },
 })

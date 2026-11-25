@@ -19,6 +19,7 @@ import { ProfileSection } from '../../shared/profile/profile-section/profile-sec
 import { ProfileStyles } from '../../shared/profile/profile-styles/profile-styles';
 import { MyUpcomingNights } from './my-upcoming-nights/my-upcoming-nights';
 import { ShareSheet } from './share-sheet/share-sheet';
+import { TablistDirective } from '../../shared/directives/tablist.directive';
 
 type ProfileTab = 'own' | 'public';
 
@@ -50,6 +51,7 @@ const NIGHTS_SEEN_BY: Record<UserDto['attendanceVisibility'], string> = {
     ProfileStyles,
     MyUpcomingNights,
     ShareSheet,
+    TablistDirective,
   ],
   templateUrl: './my-profile.html',
   styleUrl: './my-profile.css',

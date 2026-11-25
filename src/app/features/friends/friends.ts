@@ -8,6 +8,7 @@ import { SidebarPushDirective } from '../../shared/directives/sidebar-push.direc
 import { FriendsActivity } from './friends-activity/friends-activity';
 import { FriendsDiscover } from './friends-discover/friends-discover';
 import { FriendsLists } from './friends-lists/friends-lists';
+import { TablistDirective } from '../../shared/directives/tablist.directive';
 
 type FriendsTab = 'attivita' | 'amici' | 'scopri';
 
@@ -30,7 +31,7 @@ const LIST_SLUGS: Record<PeopleList, string> = { friends: 'amici', followers: 's
  */
 @Component({
   selector: 'app-friends',
-  imports: [SidebarPushDirective, FriendsActivity, FriendsDiscover, FriendsLists],
+  imports: [SidebarPushDirective, FriendsActivity, FriendsDiscover, FriendsLists, TablistDirective],
   templateUrl: './friends.html',
   styleUrl: './friends.css',
   host: { class: 'block min-h-dvh bg-ground text-(--ev-text)' },

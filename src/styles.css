@@ -1581,3 +1581,12 @@ templates. */
 .account-form :is(input, textarea, select, button) {
   scroll-margin-block-end: 6rem;
 }
+
+/* Every role="tab" marks its selected one with a filled background, which high-contrast modes
+(forced colors) take away: there, a line under it instead, in the system's highlight. */
+@media (forced-colors: active) {
+  [role='tab'][aria-selected='true'] {
+    text-decoration: underline 0.1875rem Highlight;
+    text-underline-offset: 0.375rem;
+  }
+}

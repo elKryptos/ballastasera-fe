@@ -227,6 +227,12 @@
       </section>
       </div>
 
+      <!-- With friends (social): who of them goes, and once going "Cerco qualcuno" and "Invita a ballare". -->
+      @if (socialEnabled && !cancelled()) {
+      <app-night-social [eventId]="event.id" [eventTitle]="event.title" [endAt]="event.endAt" [going]="going()"
+        [now]="now()" />
+      }
+
       <!-- Who's going: their faces and names once EventsService.getAttendees
         answers, the count until then — and no section at all while nobody
         is (crowd() is null). With the dancerProfile flag, the faces and

@@ -1,0 +1,25 @@
+@if (locked()) {
+<span class="private" [class]="size()">{{ privateLabel }}</span>
+} @else {
+<!-- aria-pressed: on while following. The name says whom, for a list read out row by row. -->
+<button type="button" class="follow" [class]="[size(), relation()]" [attr.aria-pressed]="following()"
+  [disabled]="busy()" (click)="tap()">
+  @if (following()) {
+  <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+    stroke-linejoin="round" aria-hidden="true">
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+  } @else {
+  <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+    aria-hidden="true">
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M19 8v6M16 11h6" />
+  </svg>
+  }
+  {{ label() }}<span class="sr-only">: {{ person().displayName }}</span>
+</button>
+}
+
+<app-confirm-sheet [(open)]="confirmOpen" [titleId]="confirmId" [title]="'Smetti di seguire ' + firstName() + '?'"
+  [text]="unfollowPrivateText" confirmLabel="Smetti di seguire" cancelLabel="Annulla" [busy]="busy()"
+  (confirmed)="unfollow()" />

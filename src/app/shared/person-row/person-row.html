@@ -1,0 +1,26 @@
+<ng-template #who>
+  <span class="face">
+    <app-person-avatar class="size-11" [userId]="person().userId" [name]="person().displayName"
+      [url]="person().avatarUrl" />
+    @if (dot()) {
+    <span class="dot" aria-hidden="true"></span>
+    }
+  </span>
+  <span class="text">
+    <span class="name">{{ person().displayName }}</span>
+    @if (subtitle(); as subtitle) {
+    <span class="subtitle" [class.highlight]="highlight()">{{ subtitle }}</span>
+    }
+  </span>
+</ng-template>
+
+@if (link(); as link) {
+<a class="who" [routerLink]="link">
+  <ng-container [ngTemplateOutlet]="who" />
+</a>
+} @else {
+<div class="who">
+  <ng-container [ngTemplateOutlet]="who" />
+</div>
+}
+<ng-content />

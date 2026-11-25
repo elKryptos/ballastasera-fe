@@ -8,94 +8,60 @@
   <div class="hero-text">
     <h3 class="name">{{ name() }}</h3>
     @if (chips().length) {
-    <ul class="chips" aria-label="Chi è">
-      @for (chip of chips(); track chip.kind) {
-      <li class="chip" [class]="'chip-' + chip.kind">{{ chip.label }}</li>
-      }
-    </ul>
+    <ul [appProfileChips]="chips()"></ul>
     }
   </div>
 </div>
 
 @switch (state()) {
 @case ('loading') {
-<p class="note" role="status">Caricamento del profilo…</p>
+<p class="state-note" role="status">Caricamento del profilo…</p>
 }
 
 @case ('gone') {
 <div class="message">
   <p class="message-title">Profilo non disponibile</p>
-  <p class="note">{{ firstName() }} ha reso privato il suo profilo, oppure non usa più ballastasera.</p>
+  <p class="state-note">{{ firstName() }} ha reso privato il suo profilo, oppure non usa più ballastasera.</p>
   <button type="button" class="secondary-button" (click)="back.emit()">Torna a Chi ci va</button>
 </div>
 }
 
 @case ('error') {
 <div class="message">
-  <p class="note" role="alert">Non siamo riusciti a caricare il profilo.</p>
+  <p class="state-note" role="alert">Non siamo riusciti a caricare il profilo.</p>
   <button type="button" class="secondary-button" (click)="retry()">Riprova</button>
 </div>
 }
 
 @case ('ready') {
 @if (profile(); as profile) {
+<!-- With the social features: follow them from here, or open their whole page. -->
+@if (socialEnabled && !isMe()) {
+<div class="social-actions">
+  @if (followTarget(); as target) {
+  <app-follow-button size="wide" [person]="target" (relationChange)="relationChanged($event)" />
+  }
+  <a class="secondary-button link-button" [routerLink]="profilePath()">Vedi il profilo</a>
+</div>
+}
+
 <section class="section" aria-labelledby="attendee-styles-title">
   <h4 id="attendee-styles-title" class="section-title">Cosa balla</h4>
-  @if (profile.danceStyles.length) {
-  <ul class="styles">
-    @for (style of profile.danceStyles; track style.danceStyleId) {
-    <li class="style-row">
-      <span class="style-name">{{ style.name }}</span>
-      <app-level-meter [level]="style.level" />
-    </li>
-    }
-  </ul>
-  } @else {
-  <p class="note">{{ isMe() ? 'Non hai ancora detto cosa balli.' : 'Non ha ancora detto cosa balla.' }}</p>
-  }
+  <app-profile-styles [styles]="profile.danceStyles"
+    [emptyText]="isMe() ? 'Non hai ancora detto cosa balli.' : 'Non ha ancora detto cosa balla.'" />
 </section>
 
 <section class="section" aria-labelledby="attendee-contacts-title">
   <h4 id="attendee-contacts-title" class="section-title">Contatti</h4>
-  @if (whatsappUrl(); as url) {
-  <a class="contact contact-whatsapp" [href]="url" target="_blank" rel="noopener">
-    <span class="contact-tile tile-whatsapp">
-      <svg viewBox="0 0 24 24" class="size-5" fill="currentColor" aria-hidden="true">
-        <path [attr.d]="whatsappPath" />
-      </svg>
-    </span>
-    <span class="contact-text">
-      <span class="contact-label">{{ isMe() ? 'Il tuo WhatsApp' : 'Scrivi su WhatsApp' }}</span>
-      <span class="contact-hint">{{ whatsappHint() }}</span>
-    </span>
-    <svg viewBox="0 0 24 24" class="chevron" fill="none" stroke="currentColor" stroke-width="2.2"
-      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M9 6l6 6-6 6" />
-    </svg>
-  </a>
-  }
-  @if (instagram(); as instagram) {
-  <a class="contact contact-instagram" [href]="instagram.url" target="_blank" rel="noopener">
-    <span class="contact-tile instagram-gradient">
-      <ng-icon name="lucideInstagram" class="size-5" />
-    </span>
-    <span class="contact-text">
-      <span class="contact-label">Instagram</span>
-      <span class="contact-hint">&#64;{{ instagram.handle }}</span>
-    </span>
-    <svg viewBox="0 0 24 24" class="chevron" fill="none" stroke="currentColor" stroke-width="2.2"
-      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M9 6l6 6-6 6" />
-    </svg>
-  </a>
-  }
-  @if (!whatsappUrl() && !instagram()) {
-  <p class="note">{{ isMe() ? 'Non mostri i tuoi contatti.' : firstName() + ' non mostra i suoi contatti.' }}</p>
-  }
+  <app-profile-contacts [instagram]="profile.instagram" [whatsapp]="profile.whatsapp"
+    [whatsappLabel]="isMe() ? 'Il tuo WhatsApp' : 'Scrivi su WhatsApp'" [whatsappHint]="whatsappHint()"
+    [emptyText]="isMe() ? 'Non mostri i tuoi contatti.' : firstName() + ' non mostra i suoi contatti.'" />
 </section>
 
 @if (isMe()) {
-<a routerLink="/il-tuo-account" class="primary-button">Modifica il tuo profilo</a>
+<a [routerLink]="socialEnabled ? '/il-tuo-profilo' : '/il-tuo-account'" class="primary-button">
+  {{ socialEnabled ? 'Il tuo profilo' : 'Modifica il tuo profilo' }}
+</a>
 }
 }
 }

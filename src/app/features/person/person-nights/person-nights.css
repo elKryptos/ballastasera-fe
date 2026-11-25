@@ -1,0 +1,53 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.going {
+  height: 2.5rem;
+  flex-shrink: 0;
+  padding: 0 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Both going: the mint of things that are on. */
+.going.on {
+  border-color: color-mix(in srgb, var(--ev-zone-on-text) 40%, transparent);
+  background: var(--ev-zone-on-bg);
+  color: var(--ev-zone-on-text);
+}
+
+.more,
+.retry {
+  height: 2.75rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.retry {
+  height: 2.25rem;
+  margin-left: 0.5rem;
+  padding: 0 0.75rem;
+}
+

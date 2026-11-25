@@ -1,91 +1,229 @@
 <!-- From the Claude Design canvas "Diventa organizzatore": "Il tuo account" (an
     organizer) and "Il tuo account · utente", and "4 · Il tuo account" of "Mappa e scheda evento".
-    A phone stacks everything in one column. From @4xl (896px of <main>'s width, after
-    appSidebarPush's padding: a container query, like the event's page) who you are, the
-    organizer's page and "Esci" move to a column on the left, "I tuoi dati" to the right; from
-    @6xl the form itself splits in two: contacts and visibility | the dancer's profile. -->
+    In sections, each a card with its title (account.ts, ACCOUNT_SECTIONS). A phone stacks everything
+    in one column. From @4xl (896px of <main>'s width, after appSidebarPush's padding: a container
+    query, like the event's page) the photo, an index of the sections, the organizer's page and "Esci"
+    stay in a column on the left while the sections scroll on the right; a section 40rem wide puts its
+    fields two to a row (account.css). -->
 <main appSidebarPush class="@container pt-(--header-h) md:pt-0">
   @if (user(); as user) {
   <div class="mx-auto flex w-full max-w-xl flex-col px-4 pt-6 pb-10 @4xl:max-w-7xl @4xl:px-8 @4xl:pt-8">
-    <h1 class="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Il tuo account</h1>
+    @if (socialEnabled) {
+    <!-- With the social features this is where "Il tuo profilo" is changed: the way back to it. -->
+    <a routerLink="/il-tuo-profilo" class="-ml-1 mb-3 flex h-11 items-center gap-1 self-start pr-3 text-sm font-bold text-lead no-underline">
+      <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      Il tuo profilo
+    </a>
+    }
+    <h1 class="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.02em]">
+      {{ socialEnabled ? 'Modifica profilo' : 'Il tuo account' }}
+    </h1>
 
-    <div class="mt-5 flex flex-col @4xl:mt-6 @4xl:grid @4xl:grid-cols-[20rem_minmax(0,1fr)] @4xl:grid-rows-[auto_auto_1fr] @4xl:items-start @4xl:gap-x-8">
-      <div class="request-card flex items-center gap-3.5 p-4 @4xl:col-start-1">
-        @if (user.avatarUrl) {
-        <img [src]="user.avatarUrl" alt="" referrerpolicy="no-referrer" class="size-16 shrink-0 rounded-full object-cover" />
+    <div class="mt-5 flex flex-col @4xl:mt-6 @4xl:grid @4xl:grid-cols-[18rem_minmax(0,1fr)] @4xl:items-start @4xl:gap-x-8">
+      <!-- The left column. On a phone its parts join the one column (display: contents), in the order
+        their order-* says: the photo first, the organizer's page and "Esci" after the sections. -->
+      <div class="contents @4xl:sticky @4xl:top-8 @4xl:col-start-1 @4xl:row-start-1 @4xl:flex @4xl:flex-col @4xl:gap-5">
+        @if (socialEnabled) {
+        <app-avatar-editor class="order-1" />
         } @else {
-        <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-rose font-display text-[1.625rem] font-extrabold text-(--ev-on-rose)" aria-hidden="true">{{ initial() }}</span>
-        }
-        <div class="min-w-0">
-          <p class="truncate text-[1.1875rem] font-extrabold">{{ user.displayName }}</p>
-          <p class="truncate text-sm text-(--ev-soft)">{{ user.email }}</p>
-          <p class="mt-1 flex items-center gap-1.5 text-xs text-muted">
-            <svg viewBox="0 0 24 24" class="size-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="5" y="11" width="14" height="10" rx="2" />
-              <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-            </svg>
-            Nome, foto ed email arrivano da Google
-          </p>
+        <div class="request-card order-1 flex items-center gap-3.5 p-4">
+          @if (user.avatarUrl) {
+          <img [src]="user.avatarUrl" alt="" referrerpolicy="no-referrer" class="size-16 shrink-0 rounded-full object-cover" />
+          } @else {
+          <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-rose font-display text-[1.625rem] font-extrabold text-(--ev-on-rose)" aria-hidden="true">{{ initial() }}</span>
+          }
+          <div class="min-w-0">
+            <p class="truncate text-[1.1875rem] font-extrabold">{{ user.displayName }}</p>
+            <p class="truncate text-sm text-(--ev-soft)">{{ user.email }}</p>
+            <p class="mt-1 flex items-center gap-1.5 text-xs text-muted">
+              <svg viewBox="0 0 24 24" class="size-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
+              Nome, foto ed email arrivano da Google
+            </p>
+          </div>
         </div>
+        }
+
+        <nav class="order-2 hidden @4xl:block" aria-labelledby="account-index-title">
+          <h2 id="account-index-title" class="px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">In questa pagina</h2>
+          <ul class="account-index">
+            @for (section of sections; track section.id) {
+            <li><button type="button" (click)="jumpTo(section.id)">{{ section.label }}</button></li>
+            }
+          </ul>
+        </nav>
+
+        @if (organizerEnabled) {
+        <div class="order-3">
+          @if (organizer(); as organizer) {
+          <h2 class="mt-7 px-0.5 @4xl:mt-0 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">La tua pagina da organizzatore</h2>
+          <a routerLink="/profilo-organizzatore"
+            class="mt-2.5 flex items-center gap-3.5 rounded-[1.125rem] border border-(--ev-zone-on-text)/40 bg-(--ev-zone-on-bg) p-3.5 text-(--ev-text) no-underline">
+            <app-organizer-avatar class="size-13 rounded-full font-display text-[1.1875rem]" [name]="organizer.name" [logoUrl]="organizer.logoUrl" />
+            <span class="flex min-w-0 grow flex-col gap-0.5">
+              <span class="truncate text-base font-extrabold">{{ organizer.name }}</span>
+              <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ organizerType() }}</span>
+              <span class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)">Modifica la pagina</span>
+            </span>
+            <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-(--ev-zone-on-text)" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </a>
+          <p class="mt-2 px-0.5 text-[0.8125rem] leading-snug text-muted">Logo, descrizione e contatti che vedono i ballerini nelle tue serate.</p>
+          } @else if (isUser()) {
+          <h2 class="mt-7 px-0.5 @4xl:mt-0 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">Organizza</h2>
+          @if (requestStatus(); as status) {
+          <div class="request-card mt-2.5 flex flex-col gap-3 p-3.5">
+            <div>
+              <p class="text-[0.9375rem] font-extrabold" [class]="status.tone === 'pending' ? 'text-amber' : 'text-(--ev-error)'">{{ status.title }}</p>
+              <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--ev-soft)">{{ status.text }}</p>
+            </div>
+            @if (status.reason || status.reasonMessage) {
+            <p class="rounded-xl bg-(--ev-raised) px-3 py-2.5 text-[0.8125rem] leading-snug text-(--ev-soft)">
+              @if (status.reason; as reason) {
+              <b class="block text-(--ev-text)">Motivo: {{ reason }}</b>
+              }
+              {{ status.reasonMessage }}
+            </p>
+            }
+            <a [routerLink]="status.action.url" [queryParams]="status.action.queryParams"
+              class="flex h-11 items-center justify-center rounded-[0.875rem] text-sm font-extrabold no-underline"
+              [class]="status.action.primary ? 'bg-rose text-(--ev-on-rose)' : 'border border-(--ev-edge) text-(--ev-text)'">
+              {{ status.action.label }}
+            </a>
+          </div>
+          } @else {
+          <div class="mt-2.5 flex flex-col gap-3 rounded-[1.125rem] border border-(--ev-zone-on-text)/40 bg-(--ev-zone-on-bg) p-3.5">
+            <div>
+              <p class="text-[0.9375rem] font-extrabold">Organizzi serate?</p>
+              <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--ev-soft)">
+                Crea la tua pagina o rivendica quella che esiste già: pubblichi le serate e ti trovano sulla mappa.
+              </p>
+            </div>
+            <a [routerLink]="requestUrl" class="flex h-11 items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-(--ev-on-rose) no-underline">
+              Diventa organizzatore
+              <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </div>
+          }
+          }
+        </div>
+        }
+
+        <button type="button" (click)="logout()"
+          class="order-4 mt-8 flex h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-error)/45 text-[0.9375rem] font-extrabold text-(--ev-error) @4xl:mt-0">
+          <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />
+          </svg>
+          Esci
+        </button>
       </div>
 
-      <section aria-labelledby="account-data-title" class="mt-7 @4xl:col-start-2 @4xl:row-span-3 @4xl:row-start-1 @4xl:mt-0">
-        <h2 id="account-data-title" class="px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase @4xl:sr-only">I tuoi dati</h2>
-        <!-- Two columns only with the dancer's profile: without it there's nothing for the second. -->
-        <form [formGroup]="form" (ngSubmit)="save()"
-          class="request-card mt-2.5 grid gap-4 p-4 @4xl:mt-0 @6xl:gap-x-8 @6xl:p-6"
-          [class]="dancerProfileEnabled ? '@6xl:grid-cols-2' : ''">
-          <!-- Contacts and visibility; next to them from @6xl, the dancer's profile. -->
-          <div class="flex min-w-0 flex-col gap-4">
-            <app-request-field label="Instagram" fieldId="account-instagram" [control]="form.controls.instagram" [optional]="true"
-              error="Inserisci il nome del profilo Instagram, senza spazi.">
-              <app-instagram-input fieldId="account-instagram" [control]="form.controls.instagram" />
-            </app-request-field>
-
-            <!-- The dancer's profile (dancerProfile flag): its fields share this form through
-              PROFILE_FORM, and "Salva" below saves them all at once. -->
-            @if (dancerProfileEnabled) {
-            <hr class="border-(--ev-edge)" />
-            <app-whatsapp-field />
-            }
-
-            <hr class="border-(--ev-edge)" />
-
-            <div class="flex items-start gap-3">
-              <div class="min-w-0 grow">
-                <p id="account-public-label" class="text-[0.9375rem] font-bold">Profilo visibile</p>
-                <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">
-                  @if (isPublic()) {
-                  Chi apre una serata ti vede tra chi partecipa.
-                  } @else {
-                  Partecipi in incognito: gli altri non vedono il tuo nome.
-                  }
-                </p>
-              </div>
-              <app-toggle-switch labelledBy="account-public-label" [checked]="isPublic()" (toggled)="togglePublic()" />
+      <!-- The sections. The form's are saved together with one "Salva"; "Avvisi e persone" each on its own. -->
+      <div class="order-2 mt-5 flex min-w-0 flex-col gap-5 @4xl:col-start-2 @4xl:row-start-1 @4xl:mt-0">
+        <form [formGroup]="form" (ngSubmit)="save()" class="account-form flex flex-col gap-5">
+          @if (socialEnabled || dancerProfileEnabled) {
+          <section id="account-about" tabindex="-1" class="account-section request-card" aria-labelledby="account-about-title">
+            <div>
+              <h2 id="account-about-title" class="section-title">Chi sei</h2>
+              <p class="section-text">Quello che vede chi apre il tuo profilo.</p>
             </div>
-          </div>
-
-          @if (dancerProfileEnabled) {
-          <hr class="border-(--ev-edge) @6xl:hidden" />
-          <div class="flex min-w-0 flex-col gap-4 @6xl:border-l @6xl:border-(--ev-edge) @6xl:pl-8">
-            <app-dancer-fields />
-          </div>
-          <!-- The styles can be many: from @6xl they take the form's whole width, under both
-            columns, their cards side by side. -->
-          <hr class="border-(--ev-edge) @6xl:col-span-2" />
-          <app-dance-styles-field class="min-w-0 @6xl:col-span-2" />
+            <div class="section-fields">
+              @if (socialEnabled) {
+              <app-about-fields />
+              }
+              @if (dancerProfileEnabled) {
+              <app-dancer-fields part="about" />
+              }
+            </div>
+          </section>
           }
 
-          <!-- Wraps on a phone: a long error goes on its own line above the buttons. -->
-          <div class="flex flex-wrap items-center justify-end gap-3"
-            [class]="dancerProfileEnabled ? '@6xl:col-span-2' : ''">
-            @if (saving.saved()) {
-            <p class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)" role="status">Salvato</p>
-            }
+          @if (dancerProfileEnabled) {
+          <section id="account-dance" tabindex="-1" class="account-section request-card" aria-labelledby="account-dance-title">
+            <div>
+              <h2 id="account-dance-title" class="section-title">Come balli</h2>
+              <p class="section-text">Ruolo, stili e livello: chi balla con te sa cosa aspettarsi.</p>
+            </div>
+            <div class="section-fields">
+              <div class="min-w-0" [class.span-all]="!socialEnabled">
+                <app-dancer-fields part="role" />
+              </div>
+              @if (socialEnabled) {
+              <app-school-field class="min-w-0" />
+              }
+              <!-- The styles can be many: the section's whole width, their cards side by side. -->
+              <app-dance-styles-field class="span-all min-w-0" />
+            </div>
+          </section>
+          }
+
+          <section id="account-contacts" tabindex="-1" class="account-section request-card" aria-labelledby="account-contacts-title">
+            <div>
+              <h2 id="account-contacts-title" class="section-title">Contatti</h2>
+              <p class="section-text">Come può scriverti chi ti trova in una serata.</p>
+            </div>
+            <div class="section-fields">
+              <app-request-field label="Instagram" fieldId="account-instagram" [control]="form.controls.instagram" [optional]="true"
+                error="Inserisci il nome del profilo Instagram, senza spazi.">
+                <app-instagram-input fieldId="account-instagram" [control]="form.controls.instagram" />
+              </app-request-field>
+              <!-- The dancer's profile (dancerProfile flag): its fields share this form through
+                PROFILE_FORM, and "Salva" saves them all at once. -->
+              @if (dancerProfileEnabled) {
+              <app-whatsapp-field class="min-w-0" />
+              }
+            </div>
+          </section>
+
+          <section id="account-privacy" tabindex="-1" class="account-section request-card" aria-labelledby="account-privacy-title">
+            <div>
+              <h2 id="account-privacy-title" class="section-title">Chi ti vede</h2>
+              <p class="section-text">Il tuo profilo e le serate a cui vai.</p>
+            </div>
+            <div class="section-fields">
+              @if (socialEnabled) {
+              <!-- Who sees the nights one goes to, and "Profilo pubblico" said in full. -->
+              <app-privacy-fields />
+              } @else {
+              <div class="span-all flex items-start gap-3">
+                <div class="min-w-0 grow">
+                  <p id="account-public-label" class="text-[0.9375rem] font-bold">Profilo visibile</p>
+                  <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">
+                    @if (isPublic()) {
+                    Chi apre una serata ti vede tra chi partecipa.
+                    } @else {
+                    Partecipi in incognito: gli altri non vedono il tuo nome.
+                    }
+                  </p>
+                </div>
+                <app-toggle-switch labelledBy="account-public-label" [checked]="isPublic()" (toggled)="togglePublic()" />
+              </div>
+              }
+            </div>
+          </section>
+
+          <!-- "Annulla" and "Salva": at the form's end, and stuck to the screen's bottom while something's
+            unsaved (account.css), so they're at hand from any section. Wraps on a phone: a long error goes
+            on its own line above the buttons. -->
+          <div class="save-bar" [class.pending]="pending()">
             @if (saving.error(); as message) {
-            <p class="min-w-0 grow text-right text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+            <p class="save-note error" role="alert">{{ message }}</p>
+            } @else if (pending()) {
+            <p class="save-note">Modifiche non salvate</p>
+            } @else if (saving.saved()) {
+            <p class="save-note saved" role="status">Salvato</p>
             }
             @if (changed()) {
             <button type="button" [disabled]="saving.busy()" (click)="discard()"
@@ -99,77 +237,22 @@
             </button>
           </div>
         </form>
-      </section>
 
-      @if (organizerEnabled) {
-      <div class="@4xl:col-start-1">
-        @if (organizer(); as organizer) {
-        <h2 class="mt-7 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">La tua pagina da organizzatore</h2>
-        <a routerLink="/profilo-organizzatore"
-          class="mt-2.5 flex items-center gap-3.5 rounded-[1.125rem] border border-(--ev-zone-on-text)/40 bg-(--ev-zone-on-bg) p-3.5 text-(--ev-text) no-underline">
-          <app-organizer-avatar class="size-13 rounded-full font-display text-[1.1875rem]" [name]="organizer.name" [logoUrl]="organizer.logoUrl" />
-          <span class="flex min-w-0 grow flex-col gap-0.5">
-            <span class="truncate text-base font-extrabold">{{ organizer.name }}</span>
-            <span class="truncate text-[0.8125rem] text-(--ev-soft)">{{ organizerType() }}</span>
-            <span class="text-[0.8125rem] font-bold text-(--ev-zone-on-text)">Modifica la pagina</span>
-          </span>
-          <svg viewBox="0 0 24 24" class="size-5 shrink-0 text-(--ev-zone-on-text)" fill="none" stroke="currentColor"
-            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </a>
-        <p class="mt-2 px-0.5 text-[0.8125rem] leading-snug text-muted">Logo, descrizione e contatti che vedono i ballerini nelle tue serate.</p>
-        } @else if (isUser()) {
-        <h2 class="mt-7 px-0.5 text-[0.6875rem] font-extrabold tracking-[0.11em] text-muted uppercase">Organizza</h2>
-        @if (requestStatus(); as status) {
-        <div class="request-card mt-2.5 flex flex-col gap-3 p-3.5">
+        <!-- Saved each on its own, at a tap: not part of the form's "Salva". -->
+        @if (socialEnabled) {
+        <section id="account-people" tabindex="-1" class="account-section request-card" aria-labelledby="account-people-title">
           <div>
-            <p class="text-[0.9375rem] font-extrabold" [class]="status.tone === 'pending' ? 'text-amber' : 'text-(--ev-error)'">{{ status.title }}</p>
-            <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--ev-soft)">{{ status.text }}</p>
+            <h2 id="account-people-title" class="section-title">Avvisi e persone</h2>
+            <p class="section-text">Si salvano da soli, appena li cambi.</p>
           </div>
-          @if (status.reason || status.reasonMessage) {
-          <p class="rounded-xl bg-(--ev-raised) px-3 py-2.5 text-[0.8125rem] leading-snug text-(--ev-soft)">
-            @if (status.reason; as reason) {
-            <b class="block text-(--ev-text)">Motivo: {{ reason }}</b>
-            }
-            {{ status.reasonMessage }}
-          </p>
-          }
-          <a [routerLink]="status.action.url" [queryParams]="status.action.queryParams"
-            class="flex h-11 items-center justify-center rounded-[0.875rem] text-sm font-extrabold no-underline"
-            [class]="status.action.primary ? 'bg-rose text-(--ev-on-rose)' : 'border border-(--ev-edge) text-(--ev-text)'">
-            {{ status.action.label }}
-          </a>
-        </div>
-        } @else {
-        <div class="mt-2.5 flex flex-col gap-3 rounded-[1.125rem] border border-(--ev-zone-on-text)/40 bg-(--ev-zone-on-bg) p-3.5">
-          <div>
-            <p class="text-[0.9375rem] font-extrabold">Organizzi serate?</p>
-            <p class="mt-0.5 text-[0.8125rem] leading-snug text-(--ev-soft)">
-              Crea la tua pagina o rivendica quella che esiste già: pubblichi le serate e ti trovano sulla mappa.
-            </p>
+          <div class="flex flex-col gap-4">
+            <app-email-notifications-toggle />
+            <hr class="border-(--ev-edge)" />
+            <app-blocked-people />
           </div>
-          <a [routerLink]="requestUrl" class="flex h-11 items-center justify-center gap-1.5 rounded-[0.875rem] bg-rose text-sm font-extrabold text-(--ev-on-rose) no-underline">
-            Diventa organizzatore
-            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.4"
-              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
-        </div>
-        }
+        </section>
         }
       </div>
-      }
-
-      <button type="button" (click)="logout()"
-        class="mt-8 flex h-12 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-(--ev-error)/45 text-[0.9375rem] font-extrabold text-(--ev-error) @4xl:col-start-1 @4xl:mt-7">
-        <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" />
-        </svg>
-        Esci
-      </button>
     </div>
   </div>
   }

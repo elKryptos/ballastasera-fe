@@ -1,0 +1,49 @@
+@if (feed(); as feed) {
+<section class="section" aria-labelledby="friends-tonight-title">
+  <div class="section-head">
+    <h2 id="friends-tonight-title" class="section-label">Stasera escono</h2>
+    @if (feed.tonight.length) {
+    <span class="count">{{ outTonight() }}</span>
+    }
+  </div>
+  @if (feed.tonight.length) {
+  <ul class="cards">
+    @for (night of feed.tonight; track night.eventId) {
+    <li><app-tonight-card [night]="night" /></li>
+    }
+  </ul>
+  } @else {
+  <p class="state-note">Per ora nessuno di chi segui esce stasera.</p>
+  }
+</section>
+
+<section class="section" aria-labelledby="friends-news-title">
+  <h2 id="friends-news-title" class="section-label">Novità</h2>
+  @if (feed.news.length) {
+  <ul class="person-list">
+    @for (news of feed.news; track news.type + news.user.userId + news.eventId) {
+    <li>
+      <app-person-row [person]="news.user" [subtitle]="newsText(news)">
+        @if (news.type === 'FOLLOWED_YOU') {
+        <app-follow-button [person]="news.user" (relationChange)="relationChanged(news, $event)" />
+        } @else if (news.eventId) {
+        <a class="see" [routerLink]="['/evento', news.eventId]">
+          Vedi<span class="sr-only"> {{ news.eventTitle }}</span>
+        </a>
+        }
+      </app-person-row>
+    </li>
+    }
+  </ul>
+  } @else {
+  <p class="state-note">Niente di nuovo negli ultimi 7 giorni. Segui chi balla con te per vedere dove va.</p>
+  }
+</section>
+} @else if (failed()) {
+<div class="state-failed">
+  <p role="alert">Non siamo riusciti a caricare le attività.</p>
+  <button type="button" class="state-retry" (click)="load()">Riprova</button>
+</div>
+} @else {
+<p class="state-note" role="status">Caricamento delle attività…</p>
+}

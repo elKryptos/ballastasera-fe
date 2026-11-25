@@ -141,8 +141,10 @@
     } @else {
     @for (group of groups(); track group.night) {
     <section class="mt-5 flex flex-col gap-2.5" [attr.aria-labelledby]="'night-' + group.night">
+      <!-- Each day stands apart from the last: in sky blue (--ev-pick, light by night, deep by day),
+          which nothing else on the cards wears, with a rule after it as far as the row goes. -->
       <h2 [id]="'night-' + group.night"
-        class="text-xs font-extrabold tracking-[0.11em] text-(--ev-soft) uppercase">
+        class="flex items-center gap-3 text-xs font-extrabold tracking-[0.11em] text-(--ev-pick) uppercase after:h-px after:flex-1 after:bg-(--ev-edge)">
         {{ group.heading }}
       </h2>
       <!-- grid-cols-1, not the implicit auto column: that one grows to the
@@ -213,16 +215,35 @@
               shorter of the two. Beside the flyer a small phone has ~175px
               here: who's going gives way first ("Prezzo su invito" is long),
               its faces down to as many as fit (GoingFaces), so the row never
-              spills out of the card. Neither count is shown at 0: a column
-              of zeros reads as nobody being here. -->
-          <div class="mt-auto flex items-center gap-1.5 pt-0.5 text-[0.8125rem] text-(--ev-soft) tabular-nums md:gap-2">
+              spills out of the card. "Ci vado" and "Mi piace" at the end, each
+              with its count, neither shown at 0: a column of zeros reads as
+              nobody being here. The faces say who, the ✓ how many: with no
+              face to show, nothing in words (countInWords). The faces keep
+              their size (!flex-none): where they and the buttons don't fit
+              on one line, the buttons go to the next, to the right. -->
+          <div class="mt-auto flex flex-wrap items-center gap-x-1.5 gap-y-2 pt-0.5 text-[0.8125rem] text-(--ev-soft) tabular-nums md:gap-x-2">
             <app-event-price class="text-sm font-extrabold" [event]="row.pricing" />
-            @if (row.going > 0) {
+            @if (row.goingAvatars?.length) {
             <span aria-hidden="true">·</span>
-            <app-going-faces [avatars]="row.goingAvatars" [count]="row.going" ring="var(--ev-raised)" />
+            <app-going-faces class="!flex-none" [avatars]="row.goingAvatars" [count]="row.going"
+              ring="var(--ev-raised)" [countInWords]="false" />
             }
+            <div class="ml-auto flex gap-1.5 md:gap-2">
+            <!-- Pressed (going): the cream of the map's "Parteciperò". -->
             <button type="button"
-              class="relative z-10 ml-auto flex h-8 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-like-on) aria-pressed:bg-(--ev-like-bg) aria-pressed:text-(--ev-like) md:h-9"
+              class="relative z-10 flex h-8 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-primary) aria-pressed:bg-(--ev-primary) aria-pressed:text-(--ev-on-primary) md:h-9"
+              [attr.aria-pressed]="row.goingMe" (click)="toggleGoing(row.id)" aria-label="Ci vado">
+              <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 12.5l2.5 2.5L16 9.5" />
+              </svg>
+              @if (row.going > 0) {
+              <span>{{ row.going }}</span>
+              }
+            </button>
+            <button type="button"
+              class="relative z-10 flex h-8 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-(--ev-edge) px-2.5 text-[0.8125rem] font-bold transition-colors aria-pressed:border-(--ev-like-on) aria-pressed:bg-(--ev-like-bg) aria-pressed:text-(--ev-like) md:h-9"
               [attr.aria-pressed]="row.liked" (click)="toggleLike(row.id)" aria-label="Mi piace">
               <svg viewBox="0 0 24 24" class="size-4" [attr.fill]="row.liked ? 'currentColor' : 'none'"
                 stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
@@ -232,6 +253,7 @@
               <span>{{ row.likes }}</span>
               }
             </button>
+            </div>
           </div>
         </div>
       </article>

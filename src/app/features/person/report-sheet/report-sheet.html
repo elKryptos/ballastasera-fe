@@ -1,0 +1,42 @@
+<app-sheet [open]="open()" (openChange)="reset($event)" title="Cosa non va?" [busy]="sending.busy()"
+  [subtitle]="firstName() + ' non saprà chi l\'ha segnalato. La segnalazione la controlliamo noi.'">
+  <fieldset class="reasons">
+    <legend class="sr-only">Motivo</legend>
+    @for (option of reasons; track option.value) {
+    <label class="reason" [class.picked]="reason() === option.value">
+      <input type="radio" name="report-reason" [value]="option.value" [checked]="reason() === option.value"
+        (change)="reason.set(option.value)" />
+      {{ option.label }}
+    </label>
+    }
+  </fieldset>
+
+  @if (noteRequired()) {
+  <label class="note-field">
+    <span class="note-label">Raccontaci cosa succede</span>
+    <textarea rows="3" [maxLength]="noteMax" [value]="note()" (input)="note.set($any($event.target).value)"
+      placeholder="Due parole bastano"></textarea>
+    <span class="count">{{ note().length }} / {{ noteMax }}</span>
+  </label>
+  }
+
+  @if (!blocked()) {
+  <label class="block-too">
+    <input type="checkbox" [checked]="alsoBlock()" (change)="alsoBlock.set($any($event.target).checked)" />
+    <span>
+      Blocca anche {{ firstName() }}
+      <span class="hint">Non vi vedrete più e smetterete di seguirvi.</span>
+    </span>
+  </label>
+  }
+
+  @if (sending.error(); as message) {
+  <p class="error" role="alert">{{ message }}</p>
+  }
+
+  <div sheetFooter class="footer">
+    <button type="button" class="send" [disabled]="!canSend()" (click)="send()">
+      {{ sending.busy() ? 'Invio…' : !reportSent() ? 'Invia la segnalazione' : alsoBlock() ? 'Blocca' : 'Fatto' }}
+    </button>
+  </div>
+</app-sheet>

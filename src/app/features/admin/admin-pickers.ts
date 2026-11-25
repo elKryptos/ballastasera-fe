@@ -1,13 +1,14 @@
 import { computed, effect, inject, signal, WritableSignal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
-import { catchError, combineLatest, debounceTime, distinctUntilChanged, map, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { AdminService } from '../../core/services/admin.service';
 import { GeocodingService } from '../../core/services/geocoding.service';
 import { VenuesService } from '../../core/services/venues.service';
 import { AddressSuggestion } from '../../core/models/geocoding.model';
 import { OrganizerAdminDto } from '../../core/models/organizer.model';
 import { VenuesSummaryDto } from '../../core/models/venue.model';
+import { SEARCH_DEBOUNCE_MS, injectRemoteSearch } from '../../core/utils/remote-search';
 
 /*
  * The admin forms' shared pickers — organizer, address, venue: the signals an
@@ -20,8 +21,6 @@ import { VenuesSummaryDto } from '../../core/models/venue.model';
 
 /** Photon needs at least this many characters before a search is worth firing. */
 const ADDRESS_SEARCH_MIN_LENGTH = 3;
-/** How long to wait after the last keystroke before querying the venues or Photon. */
-const SEARCH_DEBOUNCE_MS = 300;
 
 /** The verified organizers (first 100), filtered client-side by what's typed. */
 export function injectOrganizerPicker(organizerId: FormControl<string>) {
@@ -57,26 +56,10 @@ export function injectAddressSearch(
   debounceMs = SEARCH_DEBOUNCE_MS,
 ) {
   const geocoding = inject(GeocodingService);
-  const search = signal('');
-  const searching = signal(false);
-  const suggestions = toSignal(
-    toObservable(search).pipe(
-      map((term) => term.trim()),
-      debounceTime(debounceMs),
-      distinctUntilChanged(),
-      switchMap((term) => {
-        if (term.length < ADDRESS_SEARCH_MIN_LENGTH) {
-          searching.set(false);
-          return of<AddressSuggestion[]>([]);
-        }
-        searching.set(true);
-        return geocoding.searchAddress(term).pipe(
-          catchError(() => of<AddressSuggestion[]>([])),
-          tap(() => searching.set(false)),
-        );
-      }),
-    ),
-    { initialValue: [] as AddressSuggestion[] },
+  const { search, searching, results: suggestions } = injectRemoteSearch(
+    (term) => geocoding.searchAddress(term),
+    ADDRESS_SEARCH_MIN_LENGTH,
+    debounceMs,
   );
 
   effect(() => {
@@ -92,7 +75,7 @@ export function injectAddressSearch(
 
   return {
     search,
-    searching: searching.asReadonly(),
+    searching,
     suggestions,
     itemToString: (suggestion: AddressSuggestion): string => suggestion.label,
   };

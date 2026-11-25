@@ -1,0 +1,33 @@
+<!-- Canvas 4d, "Amici: attività, lista, scopri". One column on a phone; on a desktop as wide as the
+  app's other lists (max-w-300), the tabs capped like Le tue serate's. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex max-w-300 flex-col gap-5 px-4 pt-5 pb-10 @5xl:px-8 @5xl:pt-6">
+    <div>
+      <p class="text-[0.9375rem] font-semibold text-(--ev-link)">La tua scena</p>
+      <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Amici</h1>
+    </div>
+
+    <div role="tablist" aria-label="Amici" class="segmented-tabs @3xl:max-w-xl">
+      @for (item of tabs; track item.tab) {
+      <button type="button" role="tab" class="segmented-tab" [id]="'friends-tab-' + item.tab" aria-controls="friends-panel"
+        [attr.aria-selected]="tab() === item.tab" (click)="selectTab(item.tab)">
+        {{ item.label }}
+      </button>
+      }
+    </div>
+
+    <div id="friends-panel" role="tabpanel" [attr.aria-labelledby]="'friends-tab-' + tab()">
+      @switch (tab()) {
+      @case ('attivita') {
+      <app-friends-activity [now]="now()" />
+      }
+      @case ('amici') {
+      <app-friends-lists [list]="list()" (listChange)="selectList($event)" />
+      }
+      @case ('scopri') {
+      <app-friends-discover [now]="now()" />
+      }
+      }
+    </div>
+  </div>
+</main>

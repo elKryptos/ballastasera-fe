@@ -124,12 +124,23 @@ export class AuthService {
   /** The whole profile, from the account page (see toUserUpdate). The answer is the
    * whole user again: it replaces the one in the session and in storage. */
   updateMe(body: UserUpdateDto): Observable<UserDto> {
-    return this.http.patch<UserDto>(`${environment.apiUrl}${endpoints.auth.updateMe}`, body).pipe(
-      tap((user) => {
-        this.currentUserSignal.set(user);
-        this.tokenStorage.setUser(user);
-      }),
-    );
+    return this.http
+      .patch<UserDto>(`${environment.apiUrl}${endpoints.auth.updateMe}`, body)
+      .pipe(tap((user) => this.setUser(user)));
+  }
+
+  /** The whole user as another endpoint answered with it (the photo's): it replaces the one in the
+   * session and in storage. */
+  setUser(user: UserDto): void {
+    this.currentUserSignal.set(user);
+    this.tokenStorage.setUser(user);
+  }
+
+  /** A few fields saved by an endpoint that answers nothing (the username, "Ricevi email"), so
+   * the session says what the backend now has. */
+  patchUser(changes: Partial<UserDto>): void {
+    const user = this.currentUserSignal();
+    if (user) this.setUser({ ...user, ...changes });
   }
 
   logout() {

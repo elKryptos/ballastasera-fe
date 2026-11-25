@@ -5,18 +5,24 @@ import { CursorPage, PageCursor } from '../models/page.model';
 /** Asks for one page: null for the first, else where the previous one left off. */
 export type PageFetcher<T> = (cursor: PageCursor | null) => Observable<CursorPage<T>>;
 
+/** What tells two items of a list apart: `id` for the nights, `userId` for people. */
+export type ItemKey<T> = (item: T) => string;
+
+const byId: ItemKey<unknown> = (item) => (item as { id: string }).id;
+
 /**
  * One list paged by cursor (CursorPage), as signals: the items loaded so far,
  * the total, whether there's a next page, loading/error. Per list, not a
  * singleton: "Le tue serate" keeps four (Parteciperò and Mi piace, upcoming
  * and past). Create it in a field initializer or a constructor — it injects
- * DestroyRef to cancel its request with the component.
+ * DestroyRef to cancel its request with the component. Items are told apart
+ * by their `id`, or by the key given (people: `userId`).
  *
  * The total comes from the first page only; after that the list adjusts it
  * itself on remove/restore. A later page's total would count an item removed
  * here whose DELETE is still waiting out its Annulla.
  */
-export class CursorList<T extends { id: string }> {
+export class CursorList<T> {
   private readonly itemsSignal = signal<readonly T[]>([]);
   private readonly totalSignal = signal(0);
   private readonly cursor = signal<PageCursor | null>(null);
@@ -38,6 +44,7 @@ export class CursorList<T extends { id: string }> {
     private readonly fetch: PageFetcher<T>,
     /** Each page's items as they arrive, e.g. to mark them as going/liked. */
     private readonly onPage?: (items: T[]) => void,
+    private readonly keyOf: ItemKey<T> = byId,
   ) {
     inject(DestroyRef).onDestroy(() => this.request?.unsubscribe());
   }
@@ -61,9 +68,9 @@ export class CursorList<T extends { id: string }> {
   /** Takes an item out on the spot (optimistic remove) and returns where it
    * was, for restore(). null: it wasn't in the list. */
   removeLocal(id: string): number | null {
-    const index = this.itemsSignal().findIndex((item) => item.id === id);
+    const index = this.itemsSignal().findIndex((item) => this.keyOf(item) === id);
     if (index === -1) return null;
-    this.itemsSignal.update((items) => items.filter((item) => item.id !== id));
+    this.itemsSignal.update((items) => items.filter((item) => this.keyOf(item) !== id));
     this.totalSignal.update((total) => Math.max(0, total - 1));
     return index;
   }
@@ -71,12 +78,17 @@ export class CursorList<T extends { id: string }> {
   /** Puts back what removeLocal took out — Annulla, or the DELETE failed. */
   restore(item: T, index: number): void {
     this.itemsSignal.update((items) => {
-      if (items.some((existing) => existing.id === item.id)) return items;
+      if (items.some((existing) => this.keyOf(existing) === this.keyOf(item))) return items;
       const next = [...items];
       next.splice(Math.min(index, next.length), 0, item);
       return next;
     });
     this.totalSignal.update((total) => total + 1);
+  }
+
+  /** Changes one item where it is: someone followed back from the list, a toggle saved. */
+  updateLocal(id: string, change: (item: T) => T): void {
+    this.itemsSignal.update((items) => items.map((item) => (this.keyOf(item) === id ? change(item) : item)));
   }
 
   private fetchPage(cursor: PageCursor | null): void {

@@ -1,0 +1,123 @@
+.warning {
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.875rem;
+  background: color-mix(in srgb, var(--color-amber) 14%, var(--ev-surface));
+  color: var(--color-amber);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.nights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.label {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ev-soft);
+}
+
+.night {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  cursor: pointer;
+}
+
+.night.picked {
+  border-color: var(--ev-text);
+  background: var(--ev-raised);
+}
+
+.night input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--ev-text);
+}
+
+.night-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.night-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.night-when {
+  font-size: 0.75rem;
+  color: var(--ev-soft);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+}
+
+.error,
+.note {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.error {
+  color: var(--ev-error);
+}
+
+.note {
+  color: var(--ev-soft);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 1.5rem;
+  border-top: 1px solid var(--ev-edge);
+}
+
+.send {
+  display: flex;
+  height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.875rem;
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.send:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--ev-soft);
+}

@@ -1,0 +1,53 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.count {
+  font-size: 0.75rem;
+  color: var(--ev-soft);
+}
+
+/* One under the other on a phone; side by side when there's room. */
+.cards {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@container (min-width: 48rem) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+.see {
+  display: flex;
+  height: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.75rem;
+  color: var(--ev-text);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+

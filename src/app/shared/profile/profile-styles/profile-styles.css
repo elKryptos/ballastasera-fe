@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.styles {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ev-edge);
+  border-radius: 1.125rem;
+  background: var(--ev-raised);
+  list-style: none;
+}
+
+.style-row {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.875rem;
+}
+
+.style-row + .style-row {
+  border-top: 1px solid var(--ev-edge);
+}
+
+.style-name {
+  display: flex;
+  min-width: 0;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* Rose, like the canvas: what the two have in common. */
+.also-you {
+  padding: 0.125rem 0.4375rem;
+  border-radius: 0.4375rem;
+  background: color-mix(in srgb, var(--color-rose) 18%, var(--ev-surface));
+  color: var(--color-rose);
+  font-size: 0.6875rem;
+  font-weight: 800;
+}
+

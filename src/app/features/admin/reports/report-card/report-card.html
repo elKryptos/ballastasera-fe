@@ -1,0 +1,51 @@
+@let report = this.report();
+<article class="request-card card">
+  <div class="who">
+    <app-person-avatar class="size-12" [userId]="report.reportedId" [name]="report.reportedName"
+      [url]="report.reportedAvatarUrl" />
+    <div class="min-w-0 grow">
+      <p class="name">
+        {{ report.reportedName }}
+        @if (report.reportedBanned) {
+        <span class="banned">Account bannato</span>
+        }
+      </p>
+      <p class="email">{{ report.reportedEmail }}</p>
+      @if (report.status === 'OPEN' && report.openReportsAgainst > 1) {
+      <p class="count">{{ report.openReportsAgainst }} segnalazioni aperte su questo profilo</p>
+      }
+    </div>
+  </div>
+
+  <div class="reason">
+    <p class="reason-label">{{ reason() }}</p>
+    @if (report.note) {
+    <p class="note">«{{ report.note }}»</p>
+    }
+  </div>
+
+  <p class="meta">Segnalato da {{ report.reporterName }} · {{ createdAt() }}</p>
+
+  @if (report.status === 'OPEN') {
+  @if (error(); as message) {
+  <p class="error" role="alert">{{ message }}</p>
+  }
+  <div class="actions">
+    <button type="button" class="action" [disabled]="busy()" (click)="dismiss()">Ignora</button>
+    <button type="button" class="action danger" [disabled]="busy()" (click)="confirmBan.set(true)">Banna</button>
+  </div>
+  } @else {
+  <p class="meta">
+    {{ report.status === 'BANNED' ? 'Account bannato' : 'Ignorata' }}
+    @if (report.reviewedByName) {
+    da {{ report.reviewedByName }}
+    }
+    @if (reviewedAt(); as at) {
+    · {{ at }}
+    }
+  </p>
+  }
+</article>
+
+<app-confirm-sheet [(open)]="confirmBan" [titleId]="'ban-title-' + report.id" [title]="'Bannare ' + report.reportedName + '?'"
+  [text]="banText()" confirmLabel="Banna" cancelLabel="Annulla" [busy]="busy()" [error]="error()" (confirmed)="ban()" />

@@ -1,0 +1,37 @@
+<!-- A list of people, at a list's width on a desktop, two columns of rows from @5xl. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex w-full max-w-300 flex-col px-4 pt-1 pb-8 @5xl:px-8 @5xl:pt-6">
+    <a routerLink="/admin/segnalazioni" class="-ml-1 flex h-11 items-center gap-1 self-start text-sm font-semibold text-(--ev-soft)">
+      <ng-icon name="lucideChevronLeft" size="1.125rem" aria-hidden="true" />
+      Segnalazioni
+    </a>
+    <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Utenti bannati</h1>
+
+    @if (notice(); as message) {
+    <p class="mt-4 rounded-[0.875rem] bg-(--ev-zone-on-bg) px-3.5 py-3 text-sm text-(--ev-zone-on-text)" role="status">{{ message }}</p>
+    }
+    @if (error(); as message) {
+    <p class="mt-4 text-sm text-(--ev-error)" role="alert">{{ message }}</p>
+    }
+
+    @if (banned.failed()) {
+    <p class="mt-6 text-sm text-(--ev-error)" role="alert">Non siamo riusciti a caricare la lista. Ricarica la pagina.</p>
+    } @else if (banned.items().length === 0) {
+    <p class="mt-6 text-(--ev-soft)" role="status">{{ banned.loading() ? 'Caricamento…' : 'Nessun utente bannato.' }}</p>
+    } @else {
+    <ul class="person-list list">
+      @for (user of banned.items(); track user.userId) {
+      <li>
+        <app-person-row [person]="user" [subtitle]="subtitle(user)" [linked]="false">
+          <button type="button" class="unban" [disabled]="unbanning() !== null" (click)="unban(user)">
+            {{ unbanning() === user.userId ? 'Un momento…' : 'Sbanna' }}<span class="sr-only">: {{ user.displayName }}</span>
+          </button>
+        </app-person-row>
+      </li>
+      }
+    </ul>
+    }
+
+    <app-page-nav [page]="banned.page()" [totalPages]="banned.totalPages()" (pageChange)="banned.goTo($event)" />
+  </div>
+</main>

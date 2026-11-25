@@ -343,7 +343,7 @@ export class SocialPosts {
   }
 
   /** `what` names the button that says "Copiato" for a moment. */
-  protected copy(text: string, what: string): Promise<void> {
+  protected copy(text: string, what: string): Promise<boolean> {
     return this.pageShare.copy(text, what);
   }
 

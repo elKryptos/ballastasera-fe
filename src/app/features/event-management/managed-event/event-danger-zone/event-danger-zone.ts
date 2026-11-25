@@ -4,7 +4,7 @@ import { EventManagementService } from '../../../../core/services/event-manageme
 import { PendingAction } from '../../../../core/utils/pending-action';
 import { EVENT_MANAGEMENT_CONTEXT } from '../../event-management.context';
 import { eventErrorMessage } from '../../event-management-errors';
-import { ConfirmSheet } from '../confirm-sheet/confirm-sheet';
+import { ConfirmSheet } from '../../../../shared/confirm-sheet/confirm-sheet';
 
 /**
  * "Se qualcosa cambia", at the bottom of a night's page (SerataModifica.dc.html): cancelling it,

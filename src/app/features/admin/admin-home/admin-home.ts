@@ -25,6 +25,20 @@ export class AdminHome {
           routerLink: '/admin/organizer-requests',
         }]
       : []),
+    ...(inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.social)
+      ? [
+          {
+            title: 'Segnalazioni',
+            description: 'I profili segnalati: ignora la segnalazione o banna la persona.',
+            routerLink: '/admin/segnalazioni',
+          },
+          {
+            title: 'Utenti bannati',
+            description: 'Chi è stato bannato, con «Sbanna».',
+            routerLink: '/admin/utenti-bannati',
+          },
+        ]
+      : []),
     ...(inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.eventManagementPage)
       ? [{
           title: 'Serate',

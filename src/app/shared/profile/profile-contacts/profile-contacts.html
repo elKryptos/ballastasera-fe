@@ -1,0 +1,51 @@
+@if (whatsappUrl(); as url) {
+<a class="contact contact-whatsapp" [href]="url" target="_blank" rel="noopener">
+  <span class="contact-tile tile-whatsapp">
+    <svg viewBox="0 0 24 24" class="size-5" fill="currentColor" aria-hidden="true">
+      <path [attr.d]="whatsappPath" />
+    </svg>
+  </span>
+  <span class="contact-text">
+    <span class="contact-label">{{ whatsappLabel() }}</span>
+    <span class="contact-hint">{{ whatsappHint() }}</span>
+  </span>
+  <svg viewBox="0 0 24 24" class="chevron" fill="none" stroke="currentColor" stroke-width="2.2"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+</a>
+} @else if (lockedText(); as text) {
+<div class="contact contact-locked">
+  <span class="contact-tile tile-locked">
+    <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" aria-hidden="true">
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  </span>
+  <span class="contact-text">
+    <span class="contact-label">WhatsApp</span>
+    <span class="contact-hint wrap">{{ text }}</span>
+  </span>
+</div>
+}
+
+@if (instagramLink(); as instagram) {
+<a class="contact contact-instagram" [href]="instagram.url" target="_blank" rel="noopener">
+  <span class="contact-tile instagram-gradient">
+    <ng-icon name="lucideInstagram" class="size-5" />
+  </span>
+  <span class="contact-text">
+    <span class="contact-label">Instagram</span>
+    <span class="contact-hint">&#64;{{ instagram.handle }}</span>
+  </span>
+  <svg viewBox="0 0 24 24" class="chevron" fill="none" stroke="currentColor" stroke-width="2.2"
+    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M9 6l6 6-6 6" />
+  </svg>
+</a>
+}
+
+@if (!whatsappUrl() && !lockedText() && !instagramLink()) {
+<p class="state-note">{{ emptyText() }}</p>
+}

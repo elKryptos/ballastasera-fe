@@ -1,0 +1,29 @@
+:host {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 1rem;
+  background: var(--ev-surface);
+}
+
+/* Violet: the schools' colour on the map and in the menu. */
+.icon {
+  display: flex;
+  width: 2.375rem;
+  height: 2.375rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-violet) 18%, transparent);
+  color: var(--color-violet);
+}
+
+.name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}

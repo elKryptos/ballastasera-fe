@@ -1,0 +1,266 @@
+/* "Il tuo profilo" | "Come ti vedono" are .segmented-tabs (styles.css), shared with Amici. */
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.preview-note {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.875rem;
+  background: var(--ev-zone-on-bg);
+  color: var(--ev-zone-on-text);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* The camera on the face: to the photo in "Modifica profilo". */
+.camera {
+  position: absolute;
+  right: -0.25rem;
+  bottom: -0.125rem;
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid var(--color-ground);
+  border-radius: 999px;
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action {
+  display: flex;
+  height: 2.75rem;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--ev-edge);
+  border-radius: 0.875rem;
+  background: transparent;
+  color: var(--ev-text);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action.primary {
+  border-color: var(--ev-invert-bg);
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+}
+
+.action:disabled {
+  cursor: default;
+}
+
+.preview-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+/* "Completa il profilo". */
+.complete {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.complete-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.complete-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.complete-count {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ev-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  width: 100%;
+  height: 0.5rem;
+  appearance: none;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ev-raised);
+  color: var(--color-rose);
+}
+
+.bar::-webkit-progress-bar {
+  background: var(--ev-raised);
+}
+
+.bar::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--color-rose);
+}
+
+.bar::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--color-rose);
+}
+
+.complete-text,
+.note {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ev-soft);
+}
+
+.todo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.todo-row {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.75rem;
+  border-radius: 0.875rem;
+  background: var(--ev-raised);
+  color: var(--ev-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.todo-plus {
+  display: flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--ev-edge);
+  border-radius: 999px;
+  color: var(--ev-soft);
+  font-weight: 800;
+}
+
+.done {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--ev-soft);
+}
+
+.done svg {
+  color: var(--ev-zone-on-text);
+}
+
+.edit {
+  color: var(--ev-link);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.seen-by {
+  font-size: 0.75rem;
+  color: var(--ev-soft);
+}
+
+/* No school yet: a dashed invitation to say where. */
+.school-add {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.875rem;
+  border: 2px dashed var(--ev-edge);
+  border-radius: 1rem;
+  color: var(--ev-soft);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.privacy {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.privacy-row {
+  display: flex;
+  min-height: 3.375rem;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 0.875rem;
+  color: var(--ev-text);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.privacy-value {
+  font-size: 0.8125rem;
+  color: var(--ev-soft);
+}
+
+.note.small {
+  font-size: 0.75rem;
+}
+
+.logout {
+  display: flex;
+  height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--ev-error) 45%, transparent);
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--ev-error);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.member {
+  margin: 0;
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+/* When the sections go two by two (app-profile-layout), "Esci" and the date take the whole row. */
+@container (min-width: 72rem) {
+  .wide {
+    grid-column: 1 / -1;
+  }
+}

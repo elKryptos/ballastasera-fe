@@ -1,0 +1,60 @@
+@if (own()) {
+<ul class="tiles">
+  <li class="tile" style="--accent: var(--color-rose)">
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0zM19 16a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+      </svg>
+    </span>
+    <span class="tile-title">{{ nights() }}</span>
+    <span class="tile-text">{{ since() }}</span>
+  </li>
+  <li class="tile" style="--accent: var(--ev-pick)">
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+      </svg>
+    </span>
+    <span class="tile-title">{{ venues() }}</span>
+    <span class="tile-text">dove hai ballato</span>
+  </li>
+  @if (firstNight(); as first) {
+  <li class="tile" style="--accent: var(--color-amber)">
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
+      </svg>
+    </span>
+    <span class="tile-title">Prima serata</span>
+    <span class="tile-text">{{ first }}</span>
+  </li>
+  }
+  @if (next(); as next) {
+  <li class="tile locked">
+    <span class="icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" />
+      </svg>
+    </span>
+    <span class="tile-title">{{ next.target }} serate</span>
+    <span class="tile-text">ne mancano {{ next.missing }}</span>
+    <progress class="bar" max="100" [value]="next.percent" [attr.aria-label]="'Verso ' + next.target + ' serate'">
+      {{ next.percent }}%
+    </progress>
+  </li>
+  }
+</ul>
+<p class="footnote">Contano le serate già finite a cui hai detto «Ci vado».</p>
+} @else {
+<ul class="chips">
+  <li class="chip"><span class="dot" style="--accent: var(--color-rose)"></span>{{ nights() }}</li>
+  <li class="chip"><span class="dot" style="--accent: var(--ev-pick)"></span>{{ venues() }}</li>
+  @if (member(); as member) {
+  <li class="chip"><span class="dot" style="--accent: var(--color-amber)"></span>{{ member }}</li>
+  }
+</ul>
+}

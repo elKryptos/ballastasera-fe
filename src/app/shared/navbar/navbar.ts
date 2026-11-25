@@ -7,6 +7,8 @@ import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { AuthModal } from '../auth-modal/auth-modal';
 import { AuthService } from '../../core/services/auth.service';
 import { watchOrganizerRequest } from '../../core/services/organizer-request-watcher';
+import { NotificationsService } from '../../core/services/notifications.service';
+import { watchUnreadNotifications } from '../../core/services/notifications-watcher';
 import { FeatureFlagService } from '../../core/services/feature-flag.service';
 import { FEATURE_FLAGS } from '../../core/config/feature-flags';
 import { AVAILABLE_LANGS } from '../../core/config/i18n';
@@ -79,6 +81,17 @@ export class Navbar {
   protected readonly anyTab = { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' } as const;
   /** The profile card opens "Il tuo account". */
   protected readonly accountEnabled = computed(() => this.featureFlags.isEnabled(FEATURE_FLAGS.accountPage));
+  /** Following and friends (docs/social-fe.md): the profile card and the bar's face open "Il tuo
+   * profilo", "Amici" is a link, and the bell shows with its number. */
+  protected readonly socialEnabled = this.featureFlags.isEnabled(FEATURE_FLAGS.social);
+  protected readonly profileUrl = this.socialEnabled ? '/il-tuo-profilo' : '/il-tuo-account';
+  protected readonly unread = inject(NotificationsService).unread;
+  /** The bell's name says how many: "Avvisi, 3 nuovi". */
+  protected readonly bellLabel = computed(() => {
+    const unread = this.unread();
+    if (!unread) return 'Avvisi';
+    return unread === 1 ? 'Avvisi, 1 nuovo' : `Avvisi, ${unread} nuovi`;
+  });
   /** "Pubblica una serata" and "Serate pubblicate" lead to the nights' pages. */
   protected readonly eventManagementEnabled = computed(() =>
     this.featureFlags.isEnabled(FEATURE_FLAGS.eventManagementPage),
@@ -117,6 +130,8 @@ export class Navbar {
   constructor() {
     // Here, not in the "Organizza" card: on mobile the card only exists while the drawer is open.
     watchOrganizerRequest();
+    // The bell's number, for as long as the app is open.
+    watchUnreadNotifications();
   }
 
   protected toggleTheme(): void {

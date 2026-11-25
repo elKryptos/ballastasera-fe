@@ -1,0 +1,53 @@
+<app-sheet [(open)]="open" [title]="'Invita ' + firstName() + ' a ballare'" [busy]="sending.busy()">
+  @if (nights()) {
+  @if (upcoming().length) {
+  @if (nightsHidden()) {
+  <p class="warning">Le tue serate le vedi solo tu: {{ hiddenNightsText }}</p>
+  }
+
+  <fieldset class="nights">
+    <legend class="label">A quale serata?</legend>
+    @for (night of upcoming(); track night.id) {
+    <label class="night" [class.picked]="picked() === night.id">
+      <input type="radio" name="invite-night" [value]="night.id" [checked]="picked() === night.id"
+        (change)="picked.set(night.id)" />
+      <span class="night-text">
+        <span class="night-title">{{ night.title }}</span>
+        <span class="night-when">{{ whenWhere(night) }}</span>
+      </span>
+    </label>
+    }
+  </fieldset>
+
+  <div class="block">
+    <p class="label">Due parole</p>
+    <app-choice-group appearance="chips" tone="invert" label="Due parole" [choices]="phrases" [formControl]="phrase" />
+  </div>
+
+  @if (sending.error(); as message) {
+  <p class="error" role="alert">{{ message }}</p>
+  }
+  } @else {
+  <p class="note">
+    Si invita a una serata a cui vai anche tu: di' «Ci vado» a una serata e poi invita {{ firstName() }}.
+  </p>
+  }
+  } @else if (failed()) {
+  <p class="note" role="alert">Non siamo riusciti a caricare le tue serate.</p>
+  } @else {
+  <p class="note" role="status">Caricamento delle tue serate…</p>
+  }
+
+  @if (upcoming().length) {
+  <div sheetFooter class="footer">
+    <button type="button" class="send" [disabled]="!picked() || sending.busy()" (click)="send()">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
+      </svg>
+      {{ sending.busy() ? 'Invio…' : 'Invia l\'invito' }}
+    </button>
+    <p class="hint">{{ firstName() }} lo trova negli avvisi e risponde dicendo «Ci vado».</p>
+  </div>
+  }
+</app-sheet>

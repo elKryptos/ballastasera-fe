@@ -30,6 +30,7 @@ import { EventPrice } from '../../shared/event-price/event-price';
 import { MapPreview } from '../../shared/map-preview/map-preview';
 import { EventPinIcon, VenuePinIcon } from '../../shared/event-filters/pin-icons';
 import { AttendeesSheet } from './attendees-sheet/attendees-sheet';
+import { NightSocial } from './night-social/night-social';
 import { EventsService } from '../../core/services/events.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ORIGIN, PageSeo, SeoService, ShareImage, clip } from '../../core/services/seo.service';
@@ -95,6 +96,7 @@ const CROWD_FACES = 3;
     LinkedText,
     EventPrice,
     AttendeesSheet,
+    NightSocial,
     ClaimPagePrompt,
   ],
   host: {
@@ -149,6 +151,8 @@ export class EventDetails {
 
   /** "Chi ci va" as a whole list, and from it each person's profile (AttendeesSheet). */
   protected readonly dancerProfileEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.dancerProfile);
+  /** Friends going, "Cerco qualcuno" and "Invita a ballare" (NightSocial). */
+  protected readonly socialEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.social);
   protected readonly attendeesOpen = signal(false);
   protected readonly going = signal(false);
   protected readonly liked = signal(false);
@@ -209,7 +213,7 @@ export class EventDetails {
   // Ticks once a minute (browser only) so the badge and the date move on by
   // themselves ("Inizia tra 5 min" → "Live · dalle 22:30") while the page
   // stays open. Purely local: startAt/endAt are already loaded.
-  private readonly now = signal(Date.now());
+  protected readonly now = signal(Date.now());
 
   /** On the flyer (or, without one, next to the eyebrow): "Live · dalle
    * 22:30" or "Inizia tra 12 min", "Annullata" whenever it's cancelled;
@@ -420,7 +424,7 @@ export class EventDetails {
     return this.pageShare.share(event.title);
   }
 
-  protected copyAddress(event: EventDetailDto): Promise<void> {
+  protected copyAddress(event: EventDetailDto): Promise<boolean> {
     return this.pageShare.copy(withoutCountry(event.address), 'address');
   }
 

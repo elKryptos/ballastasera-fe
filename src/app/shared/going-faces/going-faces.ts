@@ -32,7 +32,7 @@ const OVERLAP_PX = 8;
       </span>
       }
     </span>
-    } @else {
+    } @else if (countInWords()) {
     <span class="min-w-0 truncate"><strong class="font-bold text-(--ev-text)">{{ count() }}</strong> {{ words() }}</span>
     }
   `,
@@ -43,6 +43,9 @@ export class GoingFaces {
   readonly count = input.required<number>();
   /** The card's background, as a colour. */
   readonly ring = input('var(--ev-surface)');
+  /** With no face to show, the count in words ("3 ci vanno"). Off where the count is said already
+   * (the list's ✓ button): then nothing. */
+  readonly countInWords = input(true);
 
   /** The room this has, once measured: null server-side and until then,
    * which shows every face. */

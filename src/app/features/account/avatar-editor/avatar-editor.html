@@ -1,0 +1,70 @@
+@if (user(); as user) {
+<div class="top">
+  <div class="face">
+    <app-person-avatar class="avatar" [userId]="user.userId" [name]="user.displayName" [url]="shownUrl()"
+      loading="eager" />
+    <button type="button" class="camera" aria-label="Cambia foto" aria-controls="avatar-menu"
+      [attr.aria-expanded]="menuOpen()" [disabled]="saving.busy()" (click)="toggleMenu()">
+      <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.3"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+        <circle cx="12" cy="13" r="3.5" />
+      </svg>
+    </button>
+  </div>
+  <div class="who">
+    <p class="name">{{ user.displayName }}</p>
+    <p class="email">{{ user.email }}</p>
+    <p class="caption" [class.custom]="source() === 'CUSTOM'">{{ saving.busy() ? 'Salvataggio…' : caption() }}</p>
+  </div>
+</div>
+
+@if (menuOpen()) {
+<div id="avatar-menu" class="menu">
+  <label class="option primary">
+    <input type="file" class="sr-only" [accept]="accept" [disabled]="saving.busy()" (change)="picked($event)" />
+    <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="M21 16l-5-5-9 9" />
+    </svg>
+    Carica una foto
+  </label>
+  @if (canUseGoogle()) {
+  <button type="button" class="option" [disabled]="saving.busy()" (click)="useGoogle()">
+    <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4" />
+    </svg>
+    Usa la foto di Google
+  </button>
+  }
+  @if (canRemove()) {
+  <button type="button" class="option danger" [disabled]="saving.busy()" (click)="remove()">
+    <svg viewBox="0 0 24 24" class="size-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13" />
+    </svg>
+    Togli la foto
+  </button>
+  }
+  <p class="note">JPG, PNG o WebP fino a {{ maxMb }} MB. La vedono tutti quelli che vedono il tuo nome.</p>
+</div>
+}
+
+@if (saving.error(); as message) {
+<p class="error" role="alert">{{ message }}</p>
+} @else if (status(); as status) {
+<p class="done" role="status">{{ status }}</p>
+}
+
+<p class="lock">
+  <svg viewBox="0 0 24 24" class="size-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" aria-hidden="true">
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </svg>
+  Nome ed email arrivano da Google
+</p>
+}

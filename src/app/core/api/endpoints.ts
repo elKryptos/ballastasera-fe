@@ -32,6 +32,12 @@ export const endpoints = {
     organizerRequests: '/rest/admin/organizer-requests',
     approveOrganizerRequest: (id: string) => `/rest/admin/organizer-requests/${id}/approve`,
     rejectOrganizerRequest: (id: string) => `/rest/admin/organizer-requests/${id}/reject`,
+    // Moderation (social, phase 4).
+    reports: '/rest/admin/reports',
+    reviewReport: (id: string) => `/rest/admin/reports/${id}`,
+    banUser: (id: string) => `/rest/admin/users/${id}/ban`,
+    unbanUser: (id: string) => `/rest/admin/users/${id}/unban`,
+    bannedUsers: '/rest/admin/users/banned',
   },
 
   users: {
@@ -39,6 +45,27 @@ export const endpoints = {
     myFavorites: '/rest/users/me/favorites',
     myAttendance: '/rest/users/me/attendance',
     profile: (id: string) => `/rest/users/${id}`,
+    // Social (social-plan.md).
+    profileByUsername: (username: string) => `/rest/users/by-username/${encodeURIComponent(username)}`,
+    attendance: (id: string) => `/rest/users/${id}/attendance`,
+    follow: (id: string) => `/rest/users/${id}/follow`,
+    block: (id: string) => `/rest/users/${id}/block`,
+    report: (id: string) => `/rest/users/${id}/report`,
+    invites: (id: string) => `/rest/users/${id}/invites`,
+    myFollowers: '/rest/users/me/followers',
+    myFollowing: '/rest/users/me/following',
+    myFriends: '/rest/users/me/friends',
+    myBlocks: '/rest/users/me/blocks',
+    myFeed: '/rest/users/me/feed',
+    mySuggestions: '/rest/users/me/suggestions',
+    myNotifications: '/rest/users/me/notifications',
+    myUnreadCount: '/rest/users/me/notifications/unread-count',
+    myNotificationsRead: '/rest/users/me/notifications/read',
+    myEmailNotifications: '/rest/users/me/email-notifications',
+    myAvatar: '/rest/users/me/avatar',
+    myAvatarSource: '/rest/users/me/avatar/source',
+    myUsername: '/rest/users/me/username',
+    usernameAvailable: '/rest/users/username-available',
   },
 
   cities: {
@@ -75,6 +102,10 @@ export const endpoints = {
     isFavorite: (id: string) => `/rest/events/${id}/favorite`,
     updateFlyer: (id: string) => `/rest/events/${id}/flyer`,
     deleteFlyer: (id: string) => `/rest/events/${id}/flyer`,
+    // Social (social-plan.md, phases 3 and 6).
+    myAttendance: (id: string) => `/rest/events/${id}/attendance/me`,
+    friendsGoing: (id: string) => `/rest/events/${id}/friends-going`,
+    inviteFriends: (id: string) => `/rest/events/${id}/invites/friends`,
   },
 
   eventSeries: {
@@ -107,6 +138,8 @@ export const endpoints = {
     delete: (id: string) => `/rest/organizers/${id}`,
     logo: (id: string) => `/rest/organizers/${id}/logo`,
     release: (id: string) => `/rest/organizers/${id}/release`,
+    /** Verified SCHOOL organizers by name: "Scuola o crew" in the profile. */
+    schools: '/rest/organizers/schools',
   },
 
 }

@@ -49,7 +49,8 @@
     comes back from its own. -->
   @if (selected(); as attendee) {
   <div class="body">
-    <app-attendee-profile [attendee]="attendee" (back)="backToList()" />
+    <app-attendee-profile [attendee]="attendee" (back)="backToList()"
+      (relationChange)="relationChanged(attendee.userId, $event)" />
   </div>
   } @else {
   <div class="body">
@@ -60,16 +61,27 @@
         <!-- --tone: the person's colour (personTone), for the ring round the face. -->
         <button type="button" class="person" [class.is-me]="row.isMe" [style.--tone]="row.tone.bg"
           (click)="openProfile(row.attendee)">
-          @if (row.attendee.avatarUrl; as url) {
-          <img class="face" [src]="url" alt="" referrerpolicy="no-referrer" />
-          } @else {
-          <span class="face face-initial" [style.color]="row.tone.fg" aria-hidden="true">{{ row.initial }}</span>
-          }
+          <span class="face-wrap">
+            @if (row.attendee.avatarUrl; as url) {
+            <img class="face" [src]="url" alt="" referrerpolicy="no-referrer" />
+            } @else {
+            <span class="face face-initial" [style.color]="row.tone.fg" aria-hidden="true">{{ row.initial }}</span>
+            }
+            <!-- "Cerco qualcuno con cui ballare" at this night (social). -->
+            @if (row.attendee.lookingForPartner) {
+            <span class="partner-dot" aria-hidden="true"></span>
+            }
+          </span>
           <span class="person-text">
             <span class="person-name">
               <span class="name">{{ row.attendee.displayName }}</span>
               @if (row.isMe) {
               <span class="me">Tu</span>
+              } @else if (row.attendee.relation === 'MUTUAL') {
+              <span class="friend">Amici</span>
+              }
+              @if (row.attendee.lookingForPartner) {
+              <span class="sr-only">, cerca qualcuno con cui ballare</span>
               }
             </span>
             @if (row.handle; as handle) {
@@ -101,7 +113,7 @@
         <ng-icon name="lucideEyeOff" class="size-6" />
       </span>
       <p class="empty-title">Tutti in incognito</p>
-      <p class="note">Chi partecipa ha il profilo privato: per ora non si vede nessun nome.</p>
+      <p class="state-note">Chi partecipa ha il profilo privato: per ora non si vede nessun nome.</p>
     </div>
     } @else if (loading()) {
     <!-- The first page on its way: rows' shapes, not a line of text. -->
@@ -120,11 +132,11 @@
 
     @if (failed()) {
     <div class="message">
-      <p class="note" role="alert">Non siamo riusciti a caricare chi partecipa.</p>
+      <p class="state-note" role="alert">Non siamo riusciti a caricare chi partecipa.</p>
       <button type="button" class="secondary-button" (click)="loadMore()">Riprova</button>
     </div>
     } @else if (loading() && rows().length) {
-    <p class="note loading-more" role="status">Caricamento…</p>
+    <p class="state-note loading-more" role="status">Caricamento…</p>
     } @else if (hasMore()) {
     <button type="button" class="secondary-button" (click)="loadMore()">
       Carica altri <span class="count">{{ remaining() }}</span>

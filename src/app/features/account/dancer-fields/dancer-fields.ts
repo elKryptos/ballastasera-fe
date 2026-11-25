@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DANCE_ROLES, DANCE_ROLE_LABELS, GENDERS, GENDER_LABELS } from '../../../core/config/dance-profile';
 import { DanceRole, Gender } from '../../../core/models/user.model';
@@ -7,8 +7,8 @@ import { RequestField } from '../../../shared/request-field/request-field';
 import { BirthDatePicker } from '../birth-date-picker/birth-date-picker';
 import { PROFILE_FORM } from '../profile-form';
 
-/** Who the user is as a dancer, in "Il tuo account": birth date (others only see the age),
- * gender and role. All three optional: gender and role are ChoiceGroups that can be unpicked
+/** Who the user is as a dancer, in "Il tuo account": birth date (others only see the age) and
+ * gender in its "Chi sei" (part about), the role in "Come balli" (part role). All three optional: gender and role are ChoiceGroups that can be unpicked
  * by tapping the picked one again (clearable), picked in the inverted colour. */
 @Component({
   selector: 'app-dancer-fields',
@@ -18,6 +18,8 @@ import { PROFILE_FORM } from '../profile-form';
 })
 export class DancerFields {
   protected readonly form = inject(PROFILE_FORM);
+  /** Which of its fields: each goes in its own section of the account. */
+  readonly part = input.required<'about' | 'role'>();
 
   protected readonly genders: Choice<Gender>[] = GENDERS.map((value) => ({ value, label: GENDER_LABELS[value] }));
   protected readonly roles: Choice<DanceRole>[] = DANCE_ROLES.map((value) => ({ value, label: DANCE_ROLE_LABELS[value] }));

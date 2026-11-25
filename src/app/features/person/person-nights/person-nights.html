@@ -1,0 +1,28 @@
+@if (nights.items().length) {
+<ul class="nights">
+  @for (night of nights.items(); track night.id) {
+  @let going = isGoing(night);
+  <li>
+    <app-night-row [night]="night" [now]="now()">
+      <button type="button" class="going" [class.on]="going" [attr.aria-pressed]="going" (click)="toggle(night)">
+        {{ going ? 'Ci andate' : 'Ci vado' }}<span class="sr-only">: {{ night.title }}</span>
+      </button>
+    </app-night-row>
+  </li>
+  }
+</ul>
+@if (nights.hasMore()) {
+<button type="button" class="more" [disabled]="nights.loading()" (click)="nights.loadMore()">
+  {{ nights.loading() ? 'Caricamento…' : 'Altre serate' }}
+</button>
+}
+} @else if (nights.error()) {
+<p class="state-note" role="alert">
+  Non siamo riusciti a caricare le sue serate.
+  <button type="button" class="retry" (click)="nights.reload()">Riprova</button>
+</p>
+} @else if (nights.loaded()) {
+<p class="state-note">{{ firstName() }} non ha serate in programma da mostrarti.</p>
+} @else {
+<p class="state-note" role="status">Caricamento delle serate…</p>
+}

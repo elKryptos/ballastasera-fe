@@ -1,0 +1,88 @@
+<!-- The band: concentric rings in the person's colour (--tone), only decoration. -->
+<div class="band" aria-hidden="true">
+  <svg viewBox="0 0 358 112" preserveAspectRatio="xMaxYMid slice">
+    <circle cx="300" cy="130" r="40" />
+    <circle cx="300" cy="130" r="72" />
+    <circle cx="300" cy="130" r="106" />
+    <circle cx="300" cy="130" r="142" />
+    <circle class="spark" cx="236" cy="34" r="4" />
+  </svg>
+</div>
+
+<div class="body">
+  <div class="top">
+    <div class="face">
+      <app-person-avatar class="avatar" [userId]="view().userId" [name]="view().displayName" [url]="view().avatarUrl"
+        loading="eager" />
+      @if (lookingForPartner()) {
+      <span class="dot" role="img" aria-label="Cerca qualcuno con cui ballare"></span>
+      }
+      <ng-content select="[avatarAction]" />
+    </div>
+    @if (chips().length) {
+    <ul class="chips" [appProfileChips]="chips()"></ul>
+    }
+  </div>
+
+  <div class="names">
+    <div class="name-line">
+      <h1 class="name">{{ view().displayName }}</h1>
+      @if (badge(); as badge) {
+      <span class="badge" [class.friends]="badge.friends">{{ badge.label }}</span>
+      }
+    </div>
+    @if (view().username || view().homeCityName) {
+    <p class="meta">
+      @if (view().username; as username) {
+      <span>&#64;{{ username }}</span>
+      }
+      @if (view().username && view().homeCityName) {
+      <span aria-hidden="true">·</span>
+      }
+      @if (view().homeCityName; as city) {
+      <span class="city">
+        <svg viewBox="0 0 24 24" class="size-3.5" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+          <circle cx="12" cy="9.5" r="2.5" />
+        </svg>
+        {{ city }}
+      </span>
+      }
+    </p>
+    }
+  </div>
+
+  @if (view().bio; as bio) {
+  <p class="bio">{{ bio }}</p>
+  }
+
+  <dl class="stats">
+    <div class="stat">
+      <dt>serate</dt>
+      <dd>{{ view().eventsCount }}</dd>
+    </div>
+    @if (linkStats()) {
+    <!-- A <dl> holds only dt/dd or their div: the link is in the term, stretched over the whole cell. -->
+    <div class="stat linked">
+      <dt><a class="stat-link" routerLink="/amici" [queryParams]="{ tab: 'amici', lista: 'seguaci' }">seguaci</a></dt>
+      <dd>{{ view().followersCount }}</dd>
+    </div>
+    <div class="stat linked">
+      <dt><a class="stat-link" routerLink="/amici" [queryParams]="{ tab: 'amici', lista: 'seguiti' }">seguiti</a></dt>
+      <dd>{{ view().followingCount }}</dd>
+    </div>
+    } @else {
+    <div class="stat">
+      <dt>seguaci</dt>
+      <dd>{{ view().followersCount }}</dd>
+    </div>
+    <div class="stat">
+      <dt>seguiti</dt>
+      <dd>{{ view().followingCount }}</dd>
+    </div>
+    }
+  </dl>
+
+  <ng-content />
+</div>

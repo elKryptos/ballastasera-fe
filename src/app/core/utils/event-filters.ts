@@ -213,3 +213,13 @@ export function nightDateLabel(event: { startAt: string }, now: number): string 
   if (night === tonight + 1) return `Domani, ${nightDate(night, 'short')}`;
   return capitalize(nightDate(night, 'long'));
 }
+
+/** The little date card of a night in a profile's list: "OGGI" or the weekday ("DOM"), the day of
+ * the month, and whether it's tonight (drawn in rose). */
+export function nightTile(event: { startAt: string }, now: number): { weekday: string; day: number; tonight: boolean } {
+  const night = eventNight(event, now);
+  const tonight = night === nightOf(now);
+  const date = new Date(night * DAY_MS);
+  const weekday = date.toLocaleDateString('it-IT', { weekday: 'short', timeZone: 'UTC' }).replace('.', '');
+  return { weekday: tonight ? 'OGGI' : weekday.toUpperCase(), day: date.getUTCDate(), tonight };
+}

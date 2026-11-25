@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { apiErrorCode } from './api-errors';
 
 /** The backend's 409s on organizer requests carry a code in errors.code. */
 const CONFLICT_MESSAGES: Record<string, string> = {
@@ -22,9 +23,8 @@ const STATUS_MESSAGES: Record<number, string> = {
 
 const FALLBACK_MESSAGE = 'Qualcosa è andato storto. Riprova tra poco.';
 
-export function requestErrorCode(error: unknown): string | null {
-  return error instanceof HttpErrorResponse ? (error.error?.errors?.code ?? null) : null;
-}
+/** The code of an organizer request's error (see apiErrorCode). */
+export const requestErrorCode = apiErrorCode;
 
 /** The backend's error, in the user's words. The admin reads some of them
  * differently: overrides, by code or by status, win. */

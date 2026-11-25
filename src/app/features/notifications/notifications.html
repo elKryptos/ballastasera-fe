@@ -1,0 +1,57 @@
+<!-- The bell's page. A phone: the list, "Ricevi email" under it. From @4xl, as the account: the list
+  on the left, the settings card on the right. -->
+<main appSidebarPush class="@container pt-(--header-h) md:pt-0">
+  <div class="mx-auto flex max-w-300 flex-col gap-5 px-4 pt-5 pb-10 @5xl:px-8 @5xl:pt-6">
+    <div>
+      <p class="text-[0.9375rem] font-semibold text-(--ev-link)">La tua scena</p>
+      <h1 class="mt-1 font-display text-[1.75rem] leading-[1.1] font-extrabold tracking-[-0.02em]">Avvisi</h1>
+    </div>
+
+    <div class="layout">
+      <section aria-label="I tuoi avvisi" class="notices">
+        @if (list.items().length) {
+        <ul class="person-list">
+          @for (notice of list.items(); track notice.id) {
+          <li [class.unread]="!notice.read">
+            <app-person-row [person]="notice.actor" [subtitle]="text(notice)">
+              @if (notice.type === 'INVITE' && notice.eventId) {
+              <a class="see" [routerLink]="['/evento', notice.eventId]">
+                Vedi<span class="sr-only"> {{ notice.eventTitle }}</span>
+              </a>
+              } @else {
+              <app-follow-button [person]="notice.actor" (relationChange)="relationChanged(notice, $event)" />
+              }
+            </app-person-row>
+            @if (!notice.read) {
+            <span class="sr-only">Nuovo</span>
+            }
+          </li>
+          }
+        </ul>
+        @if (list.hasMore() && !list.loading()) {
+        <div (appInfiniteScroll)="list.loadMore()" aria-hidden="true"></div>
+        }
+        @if (list.loading()) {
+        <p class="state-note" role="status">Caricamento…</p>
+        }
+        } @else if (list.error()) {
+        <div class="state-failed">
+          <p role="alert">Non siamo riusciti a caricare gli avvisi.</p>
+          <button type="button" class="state-retry" (click)="list.reload()">Riprova</button>
+        </div>
+        } @else if (list.isEmpty()) {
+        <div class="empty">
+          <p class="empty-title">Nessun avviso</p>
+          <p class="state-note">Qui trovi chi inizia a seguirti, i nuovi amici e gli inviti a ballare.</p>
+        </div>
+        } @else {
+        <p class="state-note" role="status">Caricamento degli avvisi…</p>
+        }
+      </section>
+
+      <aside class="request-card settings" aria-label="Email">
+        <app-email-notifications-toggle />
+      </aside>
+    </div>
+  </div>
+</main>

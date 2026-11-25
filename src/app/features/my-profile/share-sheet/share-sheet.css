@@ -1,0 +1,57 @@
+/* The 1080×1920 card, shown small: as tall as the sheet allows. */
+.card {
+  display: block;
+  width: auto;
+  height: min(26rem, 52dvh);
+  aspect-ratio: 9 / 16;
+  align-self: center;
+  border: 1px solid var(--ev-edge);
+  border-radius: 1.25rem;
+  background: #0f0d0e;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--ev-soft);
+}
+
+.hint a {
+  color: var(--ev-link);
+  font-weight: 700;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 1.5rem;
+  border-top: 1px solid var(--ev-edge);
+}
+
+.primary,
+.secondary {
+  display: flex;
+  height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary {
+  border: 0;
+  background: var(--color-rose);
+  color: var(--ev-on-rose);
+}
+
+.secondary {
+  border: 1px solid var(--ev-edge);
+  background: transparent;
+  color: var(--ev-text);
+}

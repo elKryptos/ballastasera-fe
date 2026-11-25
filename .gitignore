@@ -49,3 +49,8 @@ Thumbs.db
 !.dev.vars.example
 .env*
 !.env.example
+
+# Agent skills installed locally (skills CLI)
+/.agents/
+/.claude/skills/
+/skills-lock.json

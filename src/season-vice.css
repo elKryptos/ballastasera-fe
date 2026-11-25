@@ -34,8 +34,8 @@ season-halloween.css. */
 }
 
 /* Neon pink in place of rose, in the top bar, the drawer and the rail only,
-as Halloween's pumpkin: the logo's glow, the avatar, the switches, the "Nuovo"
-chip and the bar's edge follow. */
+as Halloween's pumpkin: the logo's glow, the avatar, the switches and the bar's
+edge follow. */
 :root[data-season='vice'] :is(.mobile-bar, [data-mobile='true'], app-navbar [data-slot='sidebar-inner']) {
   --color-rose: var(--vice-rose);
 }

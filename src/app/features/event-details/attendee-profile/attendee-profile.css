@@ -53,36 +53,6 @@
   letter-spacing: -0.01em;
 }
 
-/* Age, gender and role, each in its own colour. */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chip {
-  padding: 0.25rem 0.625rem;
-  border: 1px solid color-mix(in srgb, var(--chip) 35%, transparent);
-  border-radius: 0.625rem;
-  background: color-mix(in srgb, var(--chip) 16%, transparent);
-  color: var(--chip);
-  font-size: 0.8125rem;
-  font-weight: 700;
-}
-
-.chip-age {
-  --chip: var(--ev-pick);
-}
-.chip-gender {
-  --chip: var(--ev-like);
-}
-.chip-role {
-  --chip: var(--ev-zone-on-text);
-}
-
 .section {
   display: flex;
   flex-direction: column;
@@ -96,107 +66,6 @@
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--color-muted);
-}
-
-.note {
-  margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--ev-soft);
-}
-
-/* "Cosa balla": one row per style, its level on the right (app-level-meter). */
-.styles {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--ev-edge);
-  border-radius: 1.125rem;
-  background: var(--ev-raised);
-  list-style: none;
-}
-
-.style-row {
-  display: flex;
-  min-height: 3.25rem;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 0.875rem;
-}
-
-.style-row + .style-row {
-  border-top: 1px solid var(--ev-edge);
-}
-
-.style-name {
-  flex-grow: 1;
-  min-width: 0;
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
-
-/* Contacts: each in its app's colour. */
-.contact {
-  display: flex;
-  min-height: 3.75rem;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 0.875rem;
-  border: 1px solid color-mix(in srgb, var(--brand) 40%, transparent);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--brand) 13%, var(--ev-surface));
-  color: var(--ev-text);
-  text-decoration: none;
-}
-
-.contact-whatsapp {
-  --brand: #25d366;
-}
-.contact-instagram {
-  --brand: #d6249f;
-}
-
-.contact-tile {
-  display: flex;
-  width: 2.375rem;
-  height: 2.375rem;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.75rem;
-  color: #ffffff;
-}
-
-.tile-whatsapp {
-  background: #25d366;
-}
-
-.contact-text {
-  display: flex;
-  min-width: 0;
-  flex-grow: 1;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.contact-label {
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
-
-.contact-hint {
-  overflow: hidden;
-  font-size: 0.75rem;
-  color: var(--ev-soft);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chevron {
-  width: 1.125rem;
-  height: 1.125rem;
-  flex-shrink: 0;
-  color: var(--ev-soft);
 }
 
 /* "Profilo non disponibile" and a failed load. */
@@ -235,5 +104,19 @@
   color: var(--ev-on-rose);
   font-size: 1rem;
   font-weight: 800;
+  text-decoration: none;
+}
+
+/* "Segui" and the way to their whole page (social), side by side. */
+.social-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.link-button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
 }

@@ -4,16 +4,21 @@
     placeholder="333 123 4567" [formControl]="form.controls.whatsapp" />
 </app-request-field>
 
+@if (socialEnabled) {
+<div class="flex flex-col gap-2">
+  <p id="account-whatsapp-who" class="text-[0.9375rem] font-bold">Chi vede il tuo WhatsApp</p>
+  <app-choice-group appearance="segmented" tone="invert" label="Chi vede il tuo WhatsApp"
+    [choices]="visibilityChoices" [formControl]="form.controls.whatsappVisibility" />
+  <p class="text-[0.8125rem] leading-snug text-(--ev-soft)">{{ visibilityText() }}</p>
+</div>
+} @else {
 <div class="switch-row">
   <div class="min-w-0 grow">
     <p id="account-whatsapp-visible-label" class="text-[0.9375rem] font-bold">Mostra il mio WhatsApp</p>
-    <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">
-      @if (visible()) {
-      Chi apre il tuo profilo può scriverti.
-      } @else {
-      Non lo vede nessuno: resta salvato solo per te.
-      }
-    </p>
+    <!-- What the saved value means, "Amici" too: a user can have it (the backend's default for new
+      users) though this switch only sets everyone or nobody. -->
+    <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">{{ visibilityText() }}</p>
   </div>
   <app-toggle-switch labelledBy="account-whatsapp-visible-label" [checked]="visible()" (toggled)="toggleVisible()" />
 </div>
+}

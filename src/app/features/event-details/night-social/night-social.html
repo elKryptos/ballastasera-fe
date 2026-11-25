@@ -1,0 +1,51 @@
+@if (visible()) {
+<section class="request-card card" aria-label="Con i tuoi amici">
+  @if (friends().length) {
+  <p class="friends">
+    <span class="faces" aria-hidden="true">
+      @for (friend of faces(); track friend.userId) {
+      <app-person-avatar class="face" [userId]="friend.userId" [name]="friend.displayName" [url]="friend.avatarUrl" />
+      }
+    </span>
+    <!-- The space inside the second span: Angular drops a text node of spaces alone between two tags. -->
+    <span><strong>{{ friendsText() }}</strong><span class="soft"> · amici tuoi</span></span>
+  </p>
+  }
+
+  @if (canAct()) {
+  @if (friends().length) {
+  <hr class="rule" />
+  }
+  <div class="partner">
+    <div class="min-w-0 grow">
+      <p id="night-partner-label" class="title">Cerco qualcuno con cui ballare</p>
+      <p class="text">
+        {{ lookingForPartner()
+          ? 'Accanto al tuo nome in «Chi ci va» e sul tuo profilo c\'è un pallino verde: chi va da solo ti trova.'
+          : 'Accendilo se a questa serata cerchi con chi ballare.' }}
+      </p>
+    </div>
+    <app-toggle-switch labelledBy="night-partner-label" [checked]="lookingForPartner()" (toggled)="togglePartner()" />
+  </div>
+
+  @if (isPrivate()) {
+  <div class="private">
+    <button type="button" class="invite" disabled>Invita a ballare</button>
+    <p class="text">{{ privateText }} <a routerLink="/il-tuo-account">Cambia la privacy</a></p>
+  </div>
+  } @else {
+  <button type="button" class="invite" aria-haspopup="dialog" (click)="inviteOpen.set(true)">
+    <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
+    </svg>
+    Invita a ballare
+  </button>
+  }
+  }
+</section>
+}
+
+@if (canAct() && !isPrivate()) {
+<app-invite-sheet [(open)]="inviteOpen" [eventId]="eventId()" [eventTitle]="eventTitle()" />
+}

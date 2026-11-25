@@ -1,8 +1,7 @@
 /* The choices' look is ChoiceGroup's, the labels' .request-label (styles.css): here only the spacing. */
+/* Its fields are items of the section's grid (see the part input). */
 :host {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  display: contents;
 }
 
 .group {

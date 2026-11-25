@@ -1,29 +1,32 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideInstagram } from '@ng-icons/lucide';
-import { WHATSAPP_PATH } from '../../../core/config/brand-icons';
-import { DANCE_ROLE_LABELS, GENDER_LABELS } from '../../../core/config/dance-profile';
+import { FEATURE_FLAGS } from '../../../core/config/feature-flags';
 import { EventAttendeeDto } from '../../../core/models/event.model';
 import { UserProfileDto } from '../../../core/models/user.model';
+import { SocialRelation } from '../../../core/models/social.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { FeatureFlagService } from '../../../core/services/feature-flag.service';
 import { UsersService } from '../../../core/services/users.service';
-import { instagramHandle, instagramUrl, waMeUrl } from '../../../core/utils/event-format';
 import { firstNameOf, initialOf } from '../../../core/utils/initials';
+import { personPath } from '../../../core/utils/person-links';
 import { personTone } from '../../../core/utils/person-tone';
-import { LevelMeter } from '../../../shared/level-meter/level-meter';
+import { profileChips } from '../../../core/utils/profile-view';
+import { FollowButton, FollowTarget } from '../../../shared/follow-button/follow-button';
+import { ProfileChips } from '../../../shared/profile/profile-chips/profile-chips';
+import { ProfileContacts } from '../../../shared/profile/profile-contacts/profile-contacts';
+import { ProfileStyles } from '../../../shared/profile/profile-styles/profile-styles';
 
 type ProfileState = 'loading' | 'ready' | 'gone' | 'error';
 
 /** Someone going to the night, opened from "Chi ci va" (attendees-sheet): their age, gender,
  * role, the styles they dance at their level and how to reach them. From the canvas' "Tocchi
  * una persona: il suo profilo". Their profile may have turned private since the list was
- * loaded: GET /users/{id} answers 404, and it says so ("Profilo non disponibile"). */
+ * loaded: GET /users/{id} answers 404, and it says so ("Profilo non disponibile"). With the
+ * social flag, "Segui" and the way to their whole page (/persona/{id}) too. */
 @Component({
   selector: 'app-attendee-profile',
-  imports: [RouterLink, NgIcon, LevelMeter],
-  providers: [provideIcons({ lucideInstagram })],
+  imports: [RouterLink, FollowButton, ProfileChips, ProfileContacts, ProfileStyles],
   templateUrl: './attendee-profile.html',
   styleUrl: './attendee-profile.css',
 })
@@ -35,40 +38,37 @@ export class AttendeeProfile {
   readonly attendee = input.required<EventAttendeeDto>();
   /** "‹ Chi ci va" (in the sheet's header) is the way back; "Profilo non disponibile" has its own. */
   readonly back = output<void>();
+  /** Followed or unfollowed from here. */
+  readonly relationChange = output<SocialRelation>();
 
+  protected readonly socialEnabled = inject(FeatureFlagService).isEnabled(FEATURE_FLAGS.social);
   protected readonly state = signal<ProfileState>('loading');
   protected readonly profile = signal<UserProfileDto | null>(null);
 
-  protected readonly whatsappPath = WHATSAPP_PATH;
   protected readonly name = computed(() => this.attendee().displayName);
   protected readonly firstName = computed(() => firstNameOf(this.name()));
   protected readonly initial = computed(() => initialOf(this.name()));
   protected readonly tone = computed(() => personTone(this.attendee().userId));
   protected readonly isMe = computed(() => this.auth.currentUser()?.userId === this.attendee().userId);
+  protected readonly profilePath = computed(() => personPath(this.attendee().userId));
 
-  /** Age, gender and role, the ones given: the chips under the name. "Preferisco non dirlo" is
-   * an answer for the form, not something to show. */
+  /** Role, age, gender and country of origin, the ones given: the chips under the name. */
   protected readonly chips = computed(() => {
     const profile = this.profile();
-    if (!profile) return [];
-    const chips: { kind: 'age' | 'gender' | 'role'; label: string }[] = [];
-    if (profile.age != null) chips.push({ kind: 'age', label: `${profile.age} anni` });
-    if (profile.gender && profile.gender !== 'UNDISCLOSED') {
-      chips.push({ kind: 'gender', label: GENDER_LABELS[profile.gender] });
-    }
-    if (profile.danceRole) chips.push({ kind: 'role', label: DANCE_ROLE_LABELS[profile.danceRole] });
-    return chips;
+    return profile ? profileChips(profile) : [];
   });
 
-  protected readonly whatsappUrl = computed(() => waMeUrl(this.profile()?.whatsapp));
-  protected readonly instagram = computed(() => {
-    const handle = this.profile()?.instagram;
-    return handle ? { handle: instagramHandle(handle), url: instagramUrl(handle) } : null;
-  });
   /** One's own WhatsApp shows to its owner even when hidden from the others: say which. */
   protected readonly whatsappHint = computed(() => {
     if (!this.isMe()) return 'Si apre la chat';
-    return this.auth.currentUser()?.whatsappVisibility === 'NOBODY' ? 'Lo vedi solo tu' : 'Lo vede chi apre il tuo profilo';
+    switch (this.auth.currentUser()?.whatsappVisibility) {
+      case 'NOBODY':
+        return 'Lo vedi solo tu';
+      case 'MUTUALS':
+        return 'Lo vedono solo i tuoi amici';
+      default:
+        return 'Lo vede chi apre il tuo profilo';
+    }
   });
 
   constructor() {
@@ -77,6 +77,19 @@ export class AttendeeProfile {
       const userId = this.attendee().userId;
       untracked(() => this.load(userId));
     });
+  }
+
+  /** The profile loaded is public (it answered): the button can follow them. */
+  protected readonly followTarget = computed<FollowTarget | null>(() => {
+    const profile = this.profile();
+    return profile ? { ...profile, profilePublic: true } : null;
+  });
+
+  /** "Segui" tapped: the profile keeps the new relation (its contacts depend on it), and "Chi ci va"
+   * hears it for its row. */
+  protected relationChanged(relation: SocialRelation): void {
+    this.profile.update((profile) => (profile ? { ...profile, relation } : profile));
+    this.relationChange.emit(relation);
   }
 
   protected retry(): void {

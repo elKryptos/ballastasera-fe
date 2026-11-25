@@ -14,7 +14,7 @@ import { SidebarPushDirective } from '../../../shared/directives/sidebar-push.di
 import { EVENT_MANAGEMENT_CONTEXT } from '../event-management.context';
 import { eventErrorMessage } from '../event-management-errors';
 import { EventStatusBadge } from '../event-status-badge/event-status-badge';
-import { ConfirmSheet } from './confirm-sheet/confirm-sheet';
+import { ConfirmSheet } from '../../../shared/confirm-sheet/confirm-sheet';
 import { EventDangerZone } from './event-danger-zone/event-danger-zone';
 import { EventDetailsSummary } from './event-details-summary/event-details-summary';
 import { FlyerCover } from './flyer-cover/flyer-cover';

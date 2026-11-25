@@ -86,6 +86,8 @@ interface ListRow {
   pricing: Pricing;
   going: number;
   goingAvatars: readonly string[] | undefined;
+  /** The visitor goes: the ✓ button is pressed. */
+  goingMe: boolean;
   likes: number;
   liked: boolean;
   /** Named for Halloween, among the Halloween nights: first, in pumpkin. */
@@ -252,8 +254,9 @@ export class EventList {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({ next: (styles) => this.danceStyles.set(styles), error: () => this.danceStyles.set([]) });
 
-      // One request for every heart on the page, instead of one per card.
+      // One request for every heart on the page, and one for every ✓, instead of one per card.
       this.engagement.syncAllLikes();
+      this.engagement.syncAllGoing();
 
       interval(CLOCK_TICK_MS)
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -316,6 +319,14 @@ export class EventList {
     this.filters.clear();
   }
 
+  /** "Ci vado" straight from the card, as on the map's: signed out, the sign-in instead. */
+  protected toggleGoing(eventId: string): void {
+    const handled = this.engagement.toggleGoing(eventId, (delta) =>
+      this.cityEvents.adjustCount(eventId, 'goingCount', delta),
+    );
+    if (!handled) this.authOpen.set(true);
+  }
+
   protected toggleLike(eventId: string): void {
     const handled = this.engagement.toggleLike(eventId, (delta) =>
       this.cityEvents.adjustCount(eventId, 'likesCount', delta),
@@ -360,6 +371,7 @@ export class EventList {
       pricing: event,
       going: event.goingCount,
       goingAvatars: event.goingAvatars,
+      goingMe: this.engagement.isGoing(event.id),
       likes: event.likesCount,
       liked: this.engagement.isLiked(event.id),
       halloween: halloween && isHalloweenEvent(event),

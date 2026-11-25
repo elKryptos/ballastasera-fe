@@ -11,6 +11,7 @@ import { MapLayer, layerShowsEvents } from '../map-layer';
 import { EventPinIcon } from '../../../shared/event-filters/pin-icons';
 import { EventPlace } from '../../../shared/event-place/event-place';
 import { EventPrice } from '../../../shared/event-price/event-price';
+import { GoingFaces } from '../../../shared/going-faces/going-faces';
 
 /** A swipe on the header shorter than this is a tap. */
 const SWIPE_PX = 32;
@@ -35,7 +36,7 @@ interface SheetCard {
  */
 @Component({
   selector: 'app-map-sheet',
-  imports: [EventMapCard, VenueMapCard, EventPinIcon, EventPlace, EventPrice, RouterLink],
+  imports: [EventMapCard, VenueMapCard, EventPinIcon, EventPlace, EventPrice, GoingFaces, RouterLink],
   templateUrl: './map-sheet.html',
   host: { class: 'block' },
 })

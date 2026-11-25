@@ -1,0 +1,42 @@
+@if (suggestions(); as suggestions) {
+<section class="section" aria-labelledby="discover-title">
+  <h2 id="discover-title" class="section-label">Potresti conoscere</h2>
+  @if (suggestions.length) {
+  <ul class="person-list">
+    @for (suggestion of suggestions; track suggestion.user.userId) {
+    <li>
+      <app-person-row [person]="suggestion.user" [subtitle]="why(suggestion)" [dot]="suggestion.lookingForPartner">
+        <app-follow-button [person]="suggestion.user" (relationChange)="relationChanged(suggestion, $event)" />
+      </app-person-row>
+    </li>
+    }
+  </ul>
+  } @else {
+  <p class="state-note">
+    Per ora nessun suggerimento. Di' «Ci vado» alle serate che ti piacciono: ti mostreremo chi ci va.
+  </p>
+  }
+</section>
+} @else if (failed()) {
+<div class="state-failed">
+  <p role="alert">Non siamo riusciti a caricare i suggerimenti.</p>
+  <button type="button" class="state-retry" (click)="load()">Riprova</button>
+</div>
+} @else {
+<p class="state-note" role="status">Caricamento dei suggerimenti…</p>
+}
+
+@if (myLink()) {
+<section class="invite" aria-labelledby="discover-invite-title">
+  <h2 id="discover-invite-title" class="invite-title">Balli con qualcuno che non è qui?</h2>
+  <p class="invite-text">Mandagli il link del tuo profilo: quando entra, ti trova e ti segue con un tocco.</p>
+  <button type="button" class="invite-button" (click)="copyMyLink()">
+    <svg viewBox="0 0 24 24" class="size-4.5" fill="none" stroke="currentColor" stroke-width="2.2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+      <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+    </svg>
+    Copia il link del tuo profilo
+  </button>
+</section>
+}

@@ -1,0 +1,17 @@
+@if (styles().length) {
+<ul class="styles">
+  @for (style of styles(); track style.danceStyleId) {
+  <li class="style-row">
+    <span class="style-name">
+      {{ style.name }}
+      @if (shared().has(style.danceStyleId)) {
+      <span class="also-you">anche tu</span>
+      }
+    </span>
+    <app-level-meter [level]="style.level" />
+  </li>
+  }
+</ul>
+} @else {
+<p class="state-note">{{ emptyText() }}</p>
+}

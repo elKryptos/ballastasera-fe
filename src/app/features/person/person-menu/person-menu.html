@@ -1,0 +1,55 @@
+<app-sheet [(open)]="open" title="Altre azioni">
+  <ul class="actions">
+    <li>
+      <button type="button" class="action" (click)="pick('copy-link')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+          <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+        </svg>
+        Copia il link del profilo
+      </button>
+    </li>
+    @if (canMute()) {
+    <li>
+      <button type="button" class="action" (click)="pick('mute')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" />
+          <path d="M10 21h4" />
+          @if (!muted()) {
+          <path d="M3 3l18 18" />
+          }
+        </svg>
+        <span class="text">
+          {{ muted() ? 'Riattiva le sue attività' : 'Silenzia le sue attività' }}
+          <span class="hint">
+            {{ muted() ? 'Torni a vedere ' + firstName() + ' nelle attività e negli avvisi.' : firstName() + ' esce dalle tue attività e dagli avvisi. Non lo sa.' }}
+          </span>
+        </span>
+      </button>
+    </li>
+    }
+  </ul>
+  <ul class="actions">
+    <li>
+      <button type="button" class="action report" (click)="pick('report')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
+        </svg>
+        Segnala
+      </button>
+    </li>
+    <li>
+      <button type="button" class="action danger" (click)="pick('block')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M5.6 5.6l12.8 12.8" />
+        </svg>
+        Blocca
+      </button>
+    </li>
+  </ul>
+</app-sheet>

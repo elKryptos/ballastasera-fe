@@ -1,0 +1,100 @@
+/* Under the phone's top bar, centred; from md, where there's no bar, near the top. The region is
+   only as big as its toast: the page around it stays tappable. */
+.toast-region {
+  position: fixed;
+  inset: calc(var(--header-h) + 0.75rem) 1rem auto;
+  z-index: 60;
+  width: auto;
+  max-width: 26rem;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: none;
+  color: inherit;
+}
+
+/* A popover's own rule hides it while closed; without popovers, an empty region takes no room. */
+.toast-region:empty {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .toast-region {
+    inset-block-start: 1rem;
+  }
+}
+
+.toast-card {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 3rem;
+  padding: 0.375rem 0.375rem 0.375rem 1rem;
+  border-radius: 1rem;
+  background: var(--ev-invert-bg);
+  color: var(--ev-invert-text);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.45);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.toast-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  flex-grow: 1;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* 44px to tap, as the canvas' buttons. */
+.toast-close {
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.75rem;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* In and out of the top layer: transition-behavior on its own line, so a browser that doesn't know
+   it still keeps the transition. */
+.toast-region[popover] {
+  opacity: 0;
+  translate: 0 -0.5rem;
+  transition:
+    opacity 0.2s ease,
+    translate 0.2s ease,
+    overlay 0.2s ease,
+    display 0.2s ease;
+  transition-behavior: allow-discrete;
+}
+
+.toast-region[popover]:popover-open {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@starting-style {
+  .toast-region[popover]:popover-open {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-region[popover] {
+    transition: none;
+  }
+}

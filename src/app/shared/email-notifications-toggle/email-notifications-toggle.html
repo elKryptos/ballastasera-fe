@@ -1,0 +1,12 @@
+<div class="flex items-start gap-3">
+  <div class="min-w-0 grow">
+    <p [id]="labelId" class="text-[0.9375rem] font-bold">Ricevi email</p>
+    <p class="mt-1 text-[0.8125rem] leading-snug text-(--ev-soft)">{{ text }}</p>
+    @if (saving.error(); as message) {
+    <p class="mt-1 text-[0.8125rem] text-(--ev-error)" role="alert">{{ message }}</p>
+    } @else if (status(); as status) {
+    <p class="mt-1 text-[0.8125rem] font-bold text-(--ev-zone-on-text)" role="status">{{ status }}</p>
+    }
+  </div>
+  <app-toggle-switch [labelledBy]="labelId" [checked]="enabled()" (toggled)="toggle()" />
+</div>

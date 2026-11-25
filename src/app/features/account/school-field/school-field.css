@@ -1,0 +1,24 @@
+/* The chip, the results and the status line are search-field.css's, shared with "Città dove vivi". */
+
+/* The school picked: its violet icon close to the field's edge. */
+.picked {
+  padding: 0 0.25rem 0 0.5rem;
+}
+
+/* Violet: the schools' colour on the map and in the menu. */
+.icon {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--color-violet) 18%, transparent);
+  color: var(--color-violet);
+}
+
+.result {
+  gap: 0.625rem;
+  padding: 0.375rem 0.75rem;
+}

@@ -1,0 +1,16 @@
+<div class="flex flex-col gap-2">
+  <p class="text-[0.9375rem] font-bold">Chi vede le serate a cui vai</p>
+  <app-choice-group appearance="segmented" tone="invert" label="Chi vede le serate a cui vai"
+    [choices]="attendanceChoices" [formControl]="form.controls.attendanceVisibility" />
+  <p class="text-[0.8125rem] leading-snug text-(--ev-soft)">{{ attendanceText() }}</p>
+</div>
+
+<div class="flex items-start gap-3">
+  <div class="min-w-0 grow">
+    <p id="account-public-label" class="text-[0.9375rem] font-bold">Profilo pubblico</p>
+    <!-- Off, the whole consequence: the plan wants it said plainly where it's switched. -->
+    <p class="mt-1 text-[0.8125rem] leading-snug" [class]="isPublic() ? 'text-(--ev-soft)' : 'text-amber'"
+      aria-live="polite">{{ publicText() }}</p>
+  </div>
+  <app-toggle-switch labelledBy="account-public-label" [checked]="isPublic()" (toggled)="togglePublic()" />
+</div>

@@ -601,7 +601,8 @@ e bottom sheet", "Lista per giorno", "Scheda evento", "Pagina luogo – mobile"
 with its "Lista scuole" rows, "Menu rivisto") translated onto the brand tokens
 above. Global rather than in each component: they're read by components of
 all three, the dialog included. The nights' management (features/event-management:
-its list, a night's page and its form) is on it too. By day the brand tokens switch to the
+its list, a night's page and its form) is on it too, and so are the social pages (profiles, Amici, Avvisi, the
+admin's reports and bans) and the toast. By day the brand tokens switch to the
 basemap's paper palette, same values as the daytime sidebar's, and the few
 colours that don't follow from them get their own. */
 app-menu,
@@ -618,7 +619,14 @@ app-account,
 app-organizer-profile,
 app-managed-events,
 app-managed-event,
-app-event-editor {
+app-event-editor,
+app-my-profile,
+app-person,
+app-friends,
+app-notifications,
+app-reports,
+app-banned-users,
+app-toast {
   /* Surfaces: the charcoal ink, each step lighter with a little bone in it (no violet). */
   --ev-surface: var(--color-ink);
   --ev-raised: color-mix(in srgb, var(--color-bone) 7%, var(--color-ink));
@@ -691,7 +699,7 @@ app-event-editor {
   --ev-invert-link: #be123c;
 }
 
-:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list, app-my-nights, app-organizer-request, app-organizer-requests, app-organizer-welcome, app-account, app-organizer-profile, app-managed-events, app-managed-event, app-event-editor) {
+:root[data-theme='light'] :is(app-menu, app-map, app-event-list, app-event-details, app-venue-details, app-school-list, app-my-nights, app-organizer-request, app-organizer-requests, app-organizer-welcome, app-account, app-organizer-profile, app-managed-events, app-managed-event, app-event-editor, app-my-profile, app-person, app-friends, app-notifications, app-reports, app-banned-users, app-toast) {
   --color-ground: #fbf8f3;
   --color-ink: #fbf8f3;
   --color-ink-2: #f5ede1;
@@ -1215,7 +1223,8 @@ bg-* on a .drawer-chip) still wins over these defaults. */
   /* How many notices are new, next to "Avvisi" (social). */
   .drawer-chip-count {
     background: var(--color-rose);
-    color: var(--ev-on-rose);
+    /* --ev-on-rose, which the sidebar (outside the pages above) doesn't have: the same in both themes. */
+    color: #1b1819;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
   }

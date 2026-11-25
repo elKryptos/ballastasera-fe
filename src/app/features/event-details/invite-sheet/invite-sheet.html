@@ -50,12 +50,16 @@
     </li>
     }
   </ul>
-  @if (hasMore() && !loading()) {
+  @if (hasMore() && !loading() && !failed()) {
   <div (appInfiniteScroll)="loadMore()" aria-hidden="true"></div>
   }
-  } @else if (failed()) {
-  <p class="state-note" role="alert">Non siamo riusciti a caricare i tuoi amici.</p>
-  } @else if (loaded()) {
+  }
+  @if (failed()) {
+  <div class="state-failed">
+    <p role="alert">{{ friends().length ? 'Non siamo riusciti a caricarne altri.' : 'Non siamo riusciti a caricare i tuoi amici.' }}</p>
+    <button type="button" class="state-retry" (click)="retry()">Riprova</button>
+  </div>
+  } @else if (!friends().length && loaded()) {
   <p class="state-note">
     {{ query() ? 'Nessun amico con questo nome.' : 'Si invitano solo gli amici: chi vi seguite a vicenda.' }}
   </p>

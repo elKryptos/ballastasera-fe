@@ -21,6 +21,9 @@ import { PersonRow } from '../../../shared/person-row/person-row';
 import { Sheet } from '../../../shared/sheet/sheet';
 import { SEARCH_DEBOUNCE_MS } from '../../../core/utils/remote-search';
 
+/** Answers that rule out inviting to this night at all: said in place of the list. */
+const DIALOG_REFUSALS = new Set(['PROFILE_PRIVATE', 'NOT_GOING', 'EVENT_NOT_INVITABLE']);
+
 /**
  * "Invita a ballare" from a night's page (social phase 6, S10): a phrase on top (fixed, no free text),
  * the friends below, searchable, each with "Invita" or why not ("Ci va già", "Già invitato",
@@ -64,6 +67,9 @@ export class InviteSheet {
   /** Whose invite is on its way. */
   protected readonly sending = signal<string | null>(null);
   private request: Subscription | null = null;
+  /** The search the list on screen was asked with: the search box's reset on opening, debounced,
+   * mustn't ask for the same list again. */
+  private listedQuery: string | null = null;
 
   protected readonly hasMore = computed(() => this.cursor() !== null);
   /** Their nights hidden from everyone: the invite tells the friend which night they go to. */
@@ -87,9 +93,14 @@ export class InviteSheet {
     });
     toObservable(this.query)
       .pipe(skip(1), debounceTime(SEARCH_DEBOUNCE_MS), distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe(() => {
-        if (this.open()) this.load(null);
+      .subscribe((query) => {
+        if (this.open() && query !== this.listedQuery) this.load(null);
       });
+  }
+
+  /** "Riprova": the page that failed, the first or the next. */
+  protected retry(): void {
+    this.load(this.friends().length ? this.cursor() : null);
   }
 
   protected loadMore(): void {
@@ -133,6 +144,7 @@ export class InviteSheet {
     this.loading.set(true);
     this.refused.set(null);
     this.failed.set(false);
+    this.listedQuery = this.query();
     this.request = this.invites.friends(this.eventId(), this.query(), cursor).subscribe({
       next: (answer) => {
         this.invitesLeft.set(answer.invitesLeft);
@@ -144,7 +156,10 @@ export class InviteSheet {
       },
       error: (error: unknown) => {
         this.loading.set(false);
-        if (apiErrorCode(error)) this.refused.set(inviteErrorMessage(error));
+        // Only what rules out the whole dialog takes the list's place; anything else (a 429, the
+        // network, a next page) can be tried again, with what's listed kept.
+        const code = apiErrorCode(error);
+        if (first && code && DIALOG_REFUSALS.has(code)) this.refused.set(inviteErrorMessage(error));
         else this.failed.set(true);
       },
     });

@@ -1,5 +1,5 @@
 import { Component, computed, inject, input, model, output, signal } from '@angular/core';
-import { concat } from 'rxjs';
+import { concat, tap } from 'rxjs';
 import { REPORT_NOTE_MAX, REPORT_REASON_LABELS, REPORT_REASONS } from '../../../core/config/social';
 import { ReportReason } from '../../../core/models/social.model';
 import { FollowsService } from '../../../core/services/follows.service';
@@ -39,16 +39,22 @@ export class ReportSheet {
   protected readonly note = signal('');
   protected readonly alsoBlock = signal(false);
   protected readonly sending = new PendingAction();
+  /** The report went through in this opening: what's left (a failed block) is all a retry sends, as
+   * the backend keeps one open report per pair. */
+  protected readonly reportSent = signal(false);
 
   protected readonly noteRequired = computed(() => this.reason() === 'OTHER');
   protected readonly canSend = computed(
     () => this.reason() !== null && (!this.noteRequired() || this.note().trim().length > 0) && !this.sending.busy(),
   );
 
-  /** Each opening starts blank. */
+  /** Each opening starts blank. Closed after the report went and the block didn't: the page hears
+   * of the report (sent, not blocked). */
   protected reset(open: boolean): void {
     this.open.set(open);
     if (open) return;
+    if (this.reportSent()) this.reported.emit({ blocked: false });
+    this.reportSent.set(false);
     this.reason.set(null);
     this.note.set('');
     this.alsoBlock.set(false);
@@ -60,18 +66,26 @@ export class ReportSheet {
     if (!reason || !this.canSend()) return;
     const userId = this.userId();
     const block = this.alsoBlock() && !this.blocked();
-    const report = this.follows.report(userId, { reason, note: this.note().trim() || null });
-    this.sending.run(block ? concat(report, this.follows.block(userId)) : report, {
+    const steps = [];
+    if (!this.reportSent()) {
+      const report = this.follows.report(userId, { reason, note: this.note().trim() || null });
+      steps.push(report.pipe(tap({ complete: () => this.reportSent.set(true) })));
+    }
+    if (block) steps.push(this.follows.block(userId));
+    this.sending.run(concat(...steps), {
       complete: () => {
+        this.reportSent.set(false);
         this.reported.emit({ blocked: block });
         this.reset(false);
       },
       errorMessage: (error) =>
-        apiErrorMessage(
-          error,
-          { 400: 'Scrivi due parole su cosa non va.', 404: 'Questo profilo non esiste più.' },
-          'Non siamo riusciti a inviare la segnalazione. Riprova tra poco.',
-        ),
+        this.reportSent()
+          ? `La segnalazione è arrivata, il blocco no. Riprova a bloccare ${this.firstName()}.`
+          : apiErrorMessage(
+              error,
+              { 400: 'Scrivi due parole su cosa non va.', 404: 'Questo profilo non esiste più.' },
+              'Non siamo riusciti a inviare la segnalazione. Riprova tra poco.',
+            ),
     });
   }
 }

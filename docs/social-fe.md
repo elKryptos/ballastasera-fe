@@ -37,7 +37,8 @@ Todo escrito, compila (`ng build --configuration development`) y los tests unita
    llegan al bundle; ninguna animación nueva dentro de `@media`. Home prerenderizada contra `main` (los dos con
    `build:staging`): title, meta, link y JSON-LD idénticos, y el texto del `<body>` también. Solo se añade
    `<app-toast>` vacío (se quitó la etiqueta oculta «Annunci» de su live region para no meter texto en la home).
-3. Probar contra el BE local (checklist de abajo), con el SQL de `social-prod-db.md` en dev. **← aquí**
+3. Probar contra el BE local (checklist de abajo). El contrato, hecho el 25/11 (todo coincide). **← aquí:** falta
+   verlo en el navegador (Claude in Chrome o a mano): diseño, toasts, el login de vuelta a `/@username`.
 4. Pendiente de diseño: la chip «N escono stasera» de «Amici» en el menú (no se hizo: pediría el feed en cada carga).
    Para hacerla sin pedir el feed entero haría falta un contador en el BE (como `unread-count`).
 
@@ -139,11 +140,24 @@ Cada componente con su `.ts`, su `.html` y, si hace falta, su `.css`, en su carp
 ## 4. Checklist
 
 ### Prueba contra el BE local (`ng serve --configuration staging`, con el SQL de `social-prod-db.md` en dev)
-- [ ] 429: pasar el límite de lectura y ver el aviso
-- [ ] Seguir, dejar de seguir, «Ricambia» → «Amici»; seguir a un privado da 404
-- [ ] Bloquear y desbloquear; el bloqueado no aparece en «Chi ci va» ni en las listas
-- [ ] Guardar el perfil completo con el flag apagado: no se pierde nada de lo nuevo
-- [ ] Foto: subir, volver a la de Google, quitarla
-- [ ] Invitar: límite de 10, «Ci va già», «Già invitato», perfil privado
-- [ ] Campanita: número, lista, marcar leídos
-- [ ] `/@username` sin sesión → login → vuelve al perfil
+
+25/11: probado **el contrato** (curl con los tokens de dos usuarios, uno normal y un admin): cada respuesta
+comparada con los modelos del FE, cada ruta con `endpoints.ts`, cada error con su `code`. Todo coincide, no
+hizo falta cambiar nada. `API ✓` = el contrato está bien; falta verlo en el navegador (`[x]`).
+
+- [ ] 429: pasar el límite de lectura y ver el aviso — API ✓ (a la ~138ª lectura seguida: `RATE_LIMITED`; un
+      429 en `/auth/me` no cierra la sesión)
+- [ ] Seguir, dejar de seguir, «Ricambia» → «Amici»; seguir a un privado da 404 — API ✓ (también silenciar, la
+      búsqueda `?q=`, los avisos `NEW_FOLLOWER`/`NEW_FRIEND`)
+- [ ] Bloquear y desbloquear; el bloqueado no aparece en «Chi ci va» ni en las listas — API ✓ (404 en los dos
+      sentidos; desbloquear no devuelve los follows)
+- [ ] Guardar el perfil completo con el flag apagado: no se pierde nada de lo nuevo — API ✓ (guardado con bio,
+      ciudad, país, escuela escrita, `MUTUALS`; el mismo body otra vez no cambia nada)
+- [ ] Foto: subir, volver a la de Google, quitarla — API ✓
+- [ ] Invitar: límite de 10, «Ci va già», «Già invitato», perfil privado — API ✓ salvo el límite de 10 (hacen
+      falta 10 amigos). Invitar dos veces no gasta dos invitaciones
+- [ ] Campanita: número, lista, marcar leídos — API ✓ (`INVITE` con su frase)
+- [ ] `/@username` sin sesión → login → vuelve al perfil — API ✓ (sin sesión 401; mayúsculas en el link: el
+      matcher pasa a minúsculas)
+- [ ] Admin: segnalazioni, banear/desbanear — API ✓ (`REPORT_NOT_OPEN`, `CANNOT_BAN_ADMIN`; baneado → 401)
+- [ ] Amici: feed y sugerencias; «Sus serate» — API ✓ (sugerencias vacías con solo dos usuarios)

@@ -57,14 +57,6 @@ gradient (styles.css, "Sidebar menu"). The paper of the light theme stays. */
   display: inline;
 }
 
-/* "Nuovo": pumpkin into candlelight, with night-ink text, which reads better
-on it than white. */
-:root[data-season='halloween'] .drawer-chip-new {
-  background: linear-gradient(135deg, var(--pumpkin), var(--pumpkin-candle));
-  color: var(--pumpkin-ink);
-  box-shadow: 0 0 0.75rem color-mix(in srgb, var(--pumpkin) 50%, transparent);
-}
-
 /* "Serate di Halloween" (HalloweenCard): a profile-like card, glowing. Its
 pumpkin tile is a .drawer-avatar, so the collapsed rail keeps just that, as it
 does the profile's avatar. */
